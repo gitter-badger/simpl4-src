@@ -447,7 +447,8 @@
 							//} ).bind( this ), 3000 );
 						}
 					} catch ( e ) {
-						this.toast_message = tr( "data.form.save" ) + ":" + e.message;
+				 		var msg = e.substring(e.indexOf("entityName:")+11);
+						this.toast_message = tr( "data.form.save" ) + ": (" + msg;
 						this.querySelector( "#toast" ).show();
 						return;
 					}
