@@ -89,6 +89,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 		info("CamelServiceImpl.activate.props:" + props);
 		try {
 			m_bundleContext = bundleContext;
+			registerEventHandler(bundleContext);
 			_createRoutesFromJson();
 		} catch (Exception e) {
 			e.printStackTrace();

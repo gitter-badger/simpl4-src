@@ -45,9 +45,12 @@ import static org.ms123.common.libhelper.Utils.formatGroovyException;
 import org.ms123.common.system.compile.java.JavaCompiler;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Bundle;
 
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Extent;
@@ -106,7 +109,7 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_ACTIVITY_NA
  */
 @groovy.transform.CompileStatic
 @groovy.transform.TypeChecked
-abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.api.CamelService {
+abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.api.CamelService,EventHandler {
 	private static final Logger m_logger = LoggerFactory.getLogger(BaseCamelServiceImpl.class);
 
 	protected Inflector m_inflector = Inflector.getInstance();
@@ -133,6 +136,42 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 	private Map<String, ContextCacheEntry> m_contextCache = new LinkedHashMap();
 	private Map<String, List<Route>> m_routeCache = new LinkedHashMap();
 	private Map<String, Map<String,Object>> m_procedureCache = new LinkedHashMap();
+
+	final static String[] topics = [
+		"namespace/installed",
+		"namespace/created",
+		"namespace/preCommit",
+		"namespace/preUpdate",
+		"namespace/postUpdate",
+		"namespace/preGet",
+		"namespace/pull",
+		"namespace/deleted"
+	];
+
+	protected void registerEventHandler(BundleContext bundleContext) {
+		try {
+			Bundle b = bundleContext.getBundle();
+			Dictionary d = new Hashtable();
+			d.put(EventConstants.EVENT_TOPIC, topics);
+			b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public void handleEvent(Event event) {
+		debug("BaseCamelServiceImpl.Event: " + event);
+		try{
+			if( "namespace/installed".equals(event.getTopic())){
+				String namespace= (String)event.getProperty("namespace")
+				info("BaseCamelServiceImpl.handleEvent:"+namespace);
+				_createRoutesFromJson( namespace);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+		}
+	}
+
 
 	public CamelContext getCamelContext(String namespace) {
 		try{
