@@ -23,10 +23,9 @@ public class OsgiStarter implements ServletContextListener {
 	public static int jettyPort = -1;
 
 	public static String jettyHost = null;
-
 	public static String simpl4BaseUrl = null;
-
 	public static String simpl4Dir;
+	private static String FELIX_VERSION="4.6.1";
 
 	private static Object osgiFrameworkObj = null;
 
@@ -158,17 +157,26 @@ public class OsgiStarter implements ServletContextListener {
 		}
 	}
 
+	private static void copySystemProperties(Map configProps) {
+		for (Enumeration e = System.getProperties().propertyNames(); e.hasMoreElements(); ) {
+			String key = (String) e.nextElement();
+			if (key.startsWith("felix.") || key.equals("org.osgi.framework.storage")) {
+				System.out.println("copySystemProperties:" + key + "=" + System.getProperty(key));
+				configProps.put(key, System.getProperty(key));
+			}
+		}
+	}
+
 	private static void startFramework() {
 		URL felixURL = null;
 		setProperties();
-		info("getProperties:" + System.getProperties());
 		Main.loadSystemProperties();
 		Map<String, String> configProps = Main.loadConfigProperties();
 		if (configProps == null) {
 			info("No " + Main.CONFIG_PROPERTIES_FILE_VALUE + " found.");
 			configProps = new HashMap<String, String>();
 		}
-		Main.copySystemProperties(configProps);
+		copySystemProperties(configProps);
 		String enableHook = configProps.get(Main.SHUTDOWN_HOOK_PROP);
 		if ((enableHook == null) || !enableHook.equalsIgnoreCase("false")) {
 			Runtime.getRuntime().addShutdownHook(new Thread("Felix Shutdown Hook") {
@@ -187,7 +195,7 @@ public class OsgiStarter implements ServletContextListener {
 		}
 		try {
 			List<URL> classLoaderUrls = new ArrayList<URL>();
-			classLoaderUrls.add(new URL("file:" + simpl4Dir + "/WEB-INF/lib/org.apache.felix.main-4.6.1.jar"));
+			classLoaderUrls.add(new URL("file:" + simpl4Dir + "/WEB-INF/lib/org.apache.felix.main-"+FELIX_VERSION+".jar"));
 			info("classLoaderUrls:" + classLoaderUrls);
 			CustomClassLoader ccl = new CustomClassLoader(classLoaderUrls);
 			Thread.currentThread().setContextClassLoader(ccl);
