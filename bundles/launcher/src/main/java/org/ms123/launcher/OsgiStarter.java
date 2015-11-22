@@ -7,14 +7,20 @@ import java.util.concurrent.ExecutorService;
 import java.net.ServerSocket;
 import java.net.InetAddress;
 
-import org.apache.felix.framework.*;
 import java.util.*;
+import java.net.*;
 import java.io.File;
+import java.io.FileInputStream;
 import org.apache.felix.main.Main;
 import org.apache.felix.main.AutoProcessor;
-import org.apache.felix.framework.FrameworkFactory;
+import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.FrameworkEvent;
+import java.util.concurrent.Callable;
+import org.sonar.classloader.ClassloaderBuilder;
+import org.xeustechnologies.jcl.*;
+import org.xeustechnologies.jcl.proxy.*;
+import static org.joor.Reflect.*;
 
 public class OsgiStarter implements ServletContextListener {
 	public static int jettyPort = -1;
@@ -44,17 +50,38 @@ public class OsgiStarter implements ServletContextListener {
 		System.out.println("contextInitialized:" + jettyPort + "|" + loopBack + "|" + simpl4BaseUrl);
 
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		executor.submit(() -> {
+		executor.submit(new MyCallable(sce));
+		//	String cp = sce.getServletContext().getRealPath("/WEB-INF");
+		//	simpl4Dir = cp.substring(0, cp.length() - 8);
+		//	start();
+	}
+
+	public class MyCallable implements Callable<String> {
+		ServletContextEvent sce;
+		public MyCallable(ServletContextEvent _sce){
+			this.sce = _sce;
+		}
+		@Override
+		public String call() throws Exception {
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(15000);
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
 
-			String cp = sce.getServletContext().getRealPath("/WEB-INF");
+			String cp = this.sce.getServletContext().getRealPath("/WEB-INF");
 			simpl4Dir = cp.substring(0, cp.length() - 8);
 			start();
-		});
+			return null;
+		}
+	}
+
+	public static void main(String[] args){
+		jettyPort = 10000;
+		jettyHost = "127.0.0.1";
+		simpl4Dir = (String)System.getProperty("simpl4.dir");
+		System.out.println("simpl4Dir:"+simpl4Dir);
+		start();
 	}
 
 	public void contextDestroyed(ServletContextEvent sce) {
@@ -136,13 +163,27 @@ public class OsgiStarter implements ServletContextListener {
 	}
 
 	private static void startFramework() {
+		URL felixURL=null;
+	/*	try{
+			felixURL = new URL( "jar:"+ simpl4Dir+"/WEB-INF/lib/org.apache.felix.main-3.2.2.jar");
+		}catch(Exception e){
+			e.printStackTrace();
+			return;
+		}*/
+		//ClassloaderBuilder builder = new ClassloaderBuilder();
+		//Map<String, ClassLoader> classloaders = builder.newClassloader("felix")
+	//		.addURL("felix", felixURL)
+	//		.setLoadingOrder("felix", ClassloaderBuilder.LoadingOrder.SELF_FIRST)
+	//		.build();
+		//ClassLoader felix = classloaders.get("felix");
+
 		setProperties();
 		info("getProperties:" + System.getProperties());
 		Main.loadSystemProperties();
-		Map<String, String> configProps = Main.loadConfigProperties();
+		Map<String,String> configProps = Main.loadConfigProperties();
 		if (configProps == null) {
 			info("No " + Main.CONFIG_PROPERTIES_FILE_VALUE + " found.");
-			configProps = new HashMap<String, String>();
+			configProps = new HashMap<String,String>();
 		}
 		Main.copySystemProperties(configProps);
 		String enableHook = configProps.get(Main.SHUTDOWN_HOOK_PROP);
@@ -162,15 +203,40 @@ public class OsgiStarter implements ServletContextListener {
 			});
 		}
 		try {
-			FrameworkFactory factory = new FrameworkFactory();
-			osgiFramework = factory.newFramework(configProps);
-			osgiFramework.init();
-			AutoProcessor.process(configProps, osgiFramework.getBundleContext());
+			//FrameworkFactory factory = new FrameworkFactory();
+			//osgiFramework = factory.newFramework(configProps);
+
+			FileInputStream fis = new FileInputStream(simpl4Dir+"/WEB-INF/lib/org.apache.felix.main-4.6.1.jar");
+			JarClassLoader jcl = new JarClassLoader();
+			jcl.add(fis);
+			JclObjectFactory objFactory = JclObjectFactory.getInstance();
+			Object frameworkFactoryObj = objFactory.create(jcl, "org.apache.felix.framework.FrameworkFactory");
+                Thread.currentThread().setContextClassLoader(jcl); 
+			info("frameworkFactoryObj:"+frameworkFactoryObj);
+
+//			Class ba = jcl.loadClass("org.osgi.framework.BundleActivator",true); info("BundleActivator:"+ba);
+			Object osgiFrameworkObj = on(frameworkFactoryObj).call("newFramework",configProps).get();
+
+			info("osgiFrameworkObj:"+osgiFrameworkObj);
+			on(osgiFrameworkObj).call("init");
+			Object bundleContextObj = on(osgiFrameworkObj).call("getBundleContext").get();
+			info("bundleContextObj:"+bundleContextObj);
+
+
+			//osgiFramework.init();
+			Object autoProcessorObj = objFactory.create(jcl, "org.apache.felix.main.AutoProcessor");
+			info("autoProcessorObj:"+autoProcessorObj);
+			//AutoProcessor.process(configProps, osgiFramework.getBundleContext());
+			on(autoProcessorObj).call("process", configProps, bundleContextObj);
 			FrameworkEvent event;
+			Object eventObj;
 			do {
-				osgiFramework.start();
-				event = osgiFramework.waitForStop(0);
-			} while (event.getType() == FrameworkEvent.STOPPED_UPDATE);
+				//osgiFramework.start();
+				on(osgiFrameworkObj).call("start");
+				//event = osgiFramework.waitForStop(0);
+				eventObj = on(osgiFrameworkObj).call("waitForStop",0L).get();
+			} while ((int)on(eventObj).call("getType").get() == FrameworkEvent.STOPPED_UPDATE);
+		//	} while (event.getType() == FrameworkEvent.STOPPED_UPDATE);
 			osgiFramework = null;
 		} catch (Exception ex) {
 			info("Could not create osgi-framework: " + ex);
@@ -179,7 +245,7 @@ public class OsgiStarter implements ServletContextListener {
 	}
 
 	private static void info(String msg) {
-		System.out.println("FelixServletLauncher:" + msg);
+		System.out.println("OsgiStarter:" + msg);
 	}
 
 }

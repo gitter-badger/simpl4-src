@@ -69,10 +69,10 @@ public class FelixLauncher {
 
 	private static void startFramework() {
 		Main.loadSystemProperties();
-		Map<String, String> configProps = Main.loadConfigProperties();
+		Map<String,String> configProps = Main.loadConfigProperties();
 		if (configProps == null) {
 			System.err.println("No " + Main.CONFIG_PROPERTIES_FILE_VALUE + " found.");
-			configProps = new HashMap<String, String>();
+			configProps = new HashMap<String,String>();
 		}
 		Main.copySystemProperties(configProps);
 		String enableHook = configProps.get(Main.SHUTDOWN_HOOK_PROP);
