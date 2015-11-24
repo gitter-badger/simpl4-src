@@ -95,8 +95,9 @@ cp $BUNDLESBUILD/org.ms123.launcher-1.0.0.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/org.apache.felix.main-4.6.1.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/jetty-proxy-9.2.9.v20150224.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/pax-web-jetty-bundle-4.1.1.jar ${WEBDIRECTORY}/lib
-cp $REPOSITORY/flexjson-2.1.bar ${WEBDIRECTORY}/lib
+cp $REPOSITORY/flexjson-2.1.bar ${WEBDIRECTORY}/lib/flexjson-2.1.jar
 cp $REPOSITORY/jsoup-1.8.3.jar ${WEBDIRECTORY}/lib
+cp $REPOSITORY/joor-0.9.5.jar ${WEBDIRECTORY}/lib
 cp $SRCTOPDIR/etc/webinf/web.xml ${WEBDIRECTORY}
 zip -d ${WEBDIRECTORY}/lib/pax-web-jetty-bundle-4.1.1.jar "javax/*" >/dev/null 
 
