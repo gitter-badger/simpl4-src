@@ -59,7 +59,7 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 	private static String STATUS = "status";
 
 	protected void upsertHistory(String key, Date time, String type, String hint, String msg) {
-		initHistory();
+		/*@@@MS_17 initHistory();
 		String key1 = null;
 		String key2 = null;
 		if (type != null && HISTORY_CAMEL_TRACE.equals(type)) {
@@ -82,21 +82,22 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 							.value(historyRoute::instanceId, key2)
 							.value(historyRoute::time, time)
 								.sync();
-		}
+		}*/
 	}
 
 	protected void upsertAcc(String activitiId, String routeInstanceId) {
-		initHistory();
+		/*@@@MS_17 initHistory();
 			m_session.upsert()
 							.value(activitiCamel::activitiId, activitiId)
 							.value(activitiCamel::time, new Date())
 							.value(activitiCamel::routeInstanceId, routeInstanceId)
 								.sync();
+		*/
 	}
 
 	protected List<Map> _getHistory(String key, String type, Long startTime, Long endTime) throws Exception {
 		final List<Map> retList = new ArrayList();
-		initHistory();
+		/*@@@MS_17 initHistory();
 		if (startTime == null) {
 			startTime = new Date().getTime() - (long) 1 * 1000 * 60 * 60 * 24;
 		}
@@ -120,13 +121,13 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 			});
 		} else {
 			retList.addAll(_getOneEntry(key, type));
-		}
+		}*/
 		return retList;
 	}
 
 	private List<Map> _getOneEntry(String key, String type) {
 		List<Map> retList = new ArrayList();
-		m_session.select(history::key, history::time, history::type, history::hint, history::msg)
+		/*@@@MS_17 m_session.select(history::key, history::time, history::type, history::hint, history::msg)
 							.where(history::key, eq(key))
 								.and(history::type, eq(type))
 									.orderBy(asc(history::time)).sync().forEach(h -> {
@@ -137,7 +138,7 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 			m.put(HISTORY_HINT, h._4);
 			m.put(HISTORY_MSG, h._5);
 			retList.add(m);
-		});
+		});*/
 		return retList;
 	}
 
@@ -198,8 +199,8 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 		}
 	}
 	protected Set<String> _getActivitiCamelCorrelation(String activitiId) throws Exception {
-		initHistory();
 		Set<String> ret = new LinkedHashSet<String>();
+		/*@@@MS_17 initHistory();
 		try{
 			m_session.select(activitiCamel::routeInstanceId) .where(activitiCamel::activitiId, eq(activitiId)).sync().forEach(h -> {
 				ret.add( h._1);
@@ -208,7 +209,7 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 		}catch(Exception e){
 			info("_getActivitiCamelCorrelation:"+ e.getMessage());
 			return null;
-		}
+		}*/
 		return ret;
 	}
 
@@ -216,7 +217,7 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 		if (m_session != null) {
 			return;
 		}
-		try {
+		/*@@@MS_17 try {
 			Session session = m_cassandraService.getSession(GLOBAL_KEYSPACE);
 			history = Casser.dsl(History.class);
 			historyRoute = Casser.dsl(HistoryRoute.class);
@@ -231,7 +232,7 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 			info("BaseHistoryServiceImpl.initHistory:" + e.getMessage());
 			m_session = null;
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 
