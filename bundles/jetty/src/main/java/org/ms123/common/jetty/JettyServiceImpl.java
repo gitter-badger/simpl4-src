@@ -162,6 +162,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 					m_rpcServlet.putServiceMapping(rpc_prefix, objectClass[0]);
 					System.out.println("Jetty.ServiceName:" + objectClass[0] + "/rpc_prefix:" + rpc_prefix);
 					if( m_notStarted && rpc_prefix.equals("wamp")){
+						info("initJetty3.ok");
 						m_notStarted=false;
 		   			m_server.start();
 					}
@@ -201,17 +202,28 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 		m_basedir = new File(sh).getCanonicalFile().getParent();
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 
-		WebAppContext webappOpenfire = new WebAppContext(contexts, m_basedir + "/etc/openfire/web", "/openfire/");
-		webappOpenfire.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
-		webappOpenfire.setWelcomeFiles(new String[]{"index.jsp"});
-		webappOpenfire.setResourceBase(m_basedir + "/etc/openfire/web");
-		webappOpenfire.setContextPath("/openfire/");
-
-		WebAppContext webAppActivemq = new WebAppContext(contexts, m_basedir + "/etc/activemq/web", "/activemq/");
-		webAppActivemq.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
-		webAppActivemq.setWelcomeFiles(new String[]{"index.jsp"});
-		webAppActivemq.setResourceBase(m_basedir + "/etc/activemq/web");
-		webAppActivemq.setContextPath("/activemq/");
+		boolean isOpenfireDisabled = System.getProperty("simpl4.openfire.disabled") != null && "true".equals(System.getProperty("simpl4.openfire.disabled"));
+		boolean isActiveMQDisabled = System.getProperty("simpl4.activemq.disabled") != null && "true".equals(System.getProperty("simpl4.activemq.disabled"));
+		boolean isWAMPDisabled = System.getProperty("simple4.wamp.disabled") != null && "true".equals(System.getProperty("simple4.wamp.disabled"));
+		info("Jetty:isWAMPDisabled:"+isWAMPDisabled);
+		info("Jetty:isOpenfireDisabled:"+isOpenfireDisabled);
+		info("Jetty:isActiveMQDisabled:"+isActiveMQDisabled);
+		WebAppContext webappOpenfire=null;
+		if( !isOpenfireDisabled){
+			webappOpenfire = new WebAppContext(contexts, m_basedir + "/etc/openfire/web", "/openfire/");
+			webappOpenfire.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
+			webappOpenfire.setWelcomeFiles(new String[]{"index.jsp"});
+			webappOpenfire.setResourceBase(m_basedir + "/etc/openfire/web");
+			webappOpenfire.setContextPath("/openfire/");
+		}
+		WebAppContext webAppActivemq = null;
+		if( !isActiveMQDisabled){
+			webAppActivemq = new WebAppContext(contexts, m_basedir + "/etc/activemq/web", "/activemq/");
+			webAppActivemq.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
+			webAppActivemq.setWelcomeFiles(new String[]{"index.jsp"});
+			webAppActivemq.setResourceBase(m_basedir + "/etc/activemq/web");
+			webAppActivemq.setContextPath("/activemq/");
+		}
 
 		LoginFilter loginFilter = new LoginFilter(m_permissionService);
 		FilterHolder loginFilterHolder = new FilterHolder(loginFilter);
@@ -291,10 +303,20 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 				}
 			}
 		}), "/*");
-		contexts.setHandlers(new Handler[] { context0, webappOpenfire, webAppActivemq });
+		if( webappOpenfire != null && webAppActivemq!=null){
+			contexts.setHandlers(new Handler[] { context0, webappOpenfire, webAppActivemq });
+		}else if( webappOpenfire != null){
+			contexts.setHandlers(new Handler[] { context0, webappOpenfire });
+		}else if( webAppActivemq != null){
+			contexts.setHandlers(new Handler[] { context0, webAppActivemq });
+		}else{
+			contexts.setHandlers(new Handler[] { context0 });
+		}
 		m_server.setHandler(contexts);
-//		m_server.start();
-		info("initJetty.ok");
+		if( isWAMPDisabled){
+			m_server.start();
+			info("initJetty.ok");
+		}
 	}
 
 	private void unknownRequest(HttpServletRequest request, HttpServletResponse response) {
@@ -677,6 +699,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 				m_notStarted=false;
 				try{
 					m_server.start();
+					info("initJetty2.ok");
 				}catch( Exception e){
 					e.printStackTrace();
 				}
