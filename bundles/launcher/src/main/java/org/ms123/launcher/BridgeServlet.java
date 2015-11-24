@@ -51,7 +51,7 @@ public class BridgeServlet extends ProxyServlet {
 		try {
 			String pathInfo = request.getPathInfo();
 			info("proxying downstream: bytes:" + pathInfo);
-			if (pathInfo.endsWith("start.html")) {
+			if (pathInfo.endsWith("xtart.html")) {
 				String content = new String(buffer, offset, length, "UTF-8");
 				Document doc = Jsoup.parse(content, this.prefix);
 				setPrefix(doc, "script", "src");
@@ -104,8 +104,9 @@ public class BridgeServlet extends ProxyServlet {
 				continue;
 			String val = e.attr(attr);
 			if (val != null && val.length() > 0) {
-				info("setting:" + this.prefix + val);
-				e.attr(attr, this.prefix + val);
+				String slash = val.startsWith("/") ? "" : "/";
+				info("setting:" + this.prefix + slash + val);
+				e.attr(attr, this.prefix + slash + val);
 			}
 		}
 	}

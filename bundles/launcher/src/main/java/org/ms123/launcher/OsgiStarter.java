@@ -37,7 +37,7 @@ public class OsgiStarter implements ServletContextListener {
 		try {
 			loopBack = InetAddress.getLoopbackAddress();
 			ServerSocket socket = new ServerSocket(0, 1, loopBack);
-			jettyPort = socket.getLocalPort();
+			jettyPort = 10000;//socket.getLocalPort();
 			jettyHost = loopBack.getHostAddress();
 			socket.close();
 		} catch (Exception e) {
@@ -64,7 +64,7 @@ public class OsgiStarter implements ServletContextListener {
 			try {
 				Thread.sleep(15000);
 			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
+				ex.printStackTrace();
 			}
 			String cp = this.sce.getServletContext().getRealPath("/WEB-INF");
 			simpl4Dir = cp.substring(0, cp.length() - 8);
@@ -124,6 +124,7 @@ public class OsgiStarter implements ServletContextListener {
 		System.setProperty("git.repos", simpl4Dir + "/gitrepos");
 		System.setProperty("groovy.target.indy", "false");
 		System.setProperty("jetty.host", jettyHost);
+//		System.setProperty("org.eclipse.jetty.LEVEL", "DEBUG");
 		System.setProperty("jetty.port", String.valueOf(jettyPort));
 		System.setProperty("karaf.etc", simpl4Dir + "/etc/activemq/etc");
 		System.setProperty("karaf.local.roles", "admin,manager");
@@ -148,6 +149,17 @@ public class OsgiStarter implements ServletContextListener {
 		System.setProperty("workspace", simpl4Dir + "/workspace");
 		System.setProperty("bitronix.tm.journal.disk.logPart1Filename", simpl4Dir + "/server/btm1.tlog");
 		System.setProperty("bitronix.tm.journal.disk.logPart2Filename", simpl4Dir + "/server/btm2.tlog");
+		Double version = Double.parseDouble(System.getProperty("java.specification.version"));
+		System.out.println("JavaVersion:"+version);
+		if( version < 1.8){
+			System.setProperty("simpl4.wamp.disabled", "true");
+		}
+		boolean isWS = System.getProperty("com.ibm.oti.jcl.build")!=null ||  System.getProperty("ibm.system.encoding")!=null;
+		System.out.println("isWS:"+isWS);
+		if( isWS ){
+			System.setProperty("simpl4.activemq.disabled", "true");
+			System.setProperty("simpl4.openfire.disabled", "true");
+		}
 	}
 
 	private static void setUserDir(String directory_name) {
@@ -196,6 +208,7 @@ public class OsgiStarter implements ServletContextListener {
 		try {
 			List<URL> classLoaderUrls = new ArrayList<URL>();
 			classLoaderUrls.add(new URL("file:" + simpl4Dir + "/WEB-INF/lib/org.apache.felix.main-"+FELIX_VERSION+".jar"));
+			classLoaderUrls.add(new URL("file:" + simpl4Dir + "/WEB-INF/lib/xml-w3c.jar"));
 			info("classLoaderUrls:" + classLoaderUrls);
 			CustomClassLoader ccl = new CustomClassLoader(classLoaderUrls);
 			Thread.currentThread().setContextClassLoader(ccl);
@@ -213,7 +226,9 @@ public class OsgiStarter implements ServletContextListener {
 			Object eventObj;
 			do {
 				on(osgiFrameworkObj).call("start");
+info("waitForStop");
 				eventObj = on(osgiFrameworkObj).call("waitForStop", 0L).get();
+info("waitForStop2:"+eventObj);
 			} while ((int) on(eventObj).call("getType").get() == FrameworkEvent.STOPPED_UPDATE);
 			osgiFrameworkObj = null;
 		} catch (Exception ex) {

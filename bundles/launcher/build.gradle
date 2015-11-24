@@ -7,5 +7,6 @@ dependencies {
   compile files("${repository}/flexjson-2.1.bar")
  	compile files("${repository}/pax-logging-api-1.7.1.jar")
  	compile files("${repository}/jsoup-1.8.3.jar")
+ 	compile files("${repository}/joor-0.9.5.jar")
 
 }
