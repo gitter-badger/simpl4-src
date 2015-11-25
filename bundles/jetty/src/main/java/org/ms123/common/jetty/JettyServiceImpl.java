@@ -204,7 +204,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 
 		boolean isOpenfireDisabled = System.getProperty("simpl4.openfire.disabled") != null && "true".equals(System.getProperty("simpl4.openfire.disabled"));
 		boolean isActiveMQDisabled = System.getProperty("simpl4.activemq.disabled") != null && "true".equals(System.getProperty("simpl4.activemq.disabled"));
-		boolean isWAMPDisabled = System.getProperty("simple4.wamp.disabled") != null && "true".equals(System.getProperty("simple4.wamp.disabled"));
+		boolean isWAMPDisabled = System.getProperty("simpl4.wamp.disabled") != null && "true".equals(System.getProperty("simpl4.wamp.disabled"));
 		info("Jetty:isWAMPDisabled:"+isWAMPDisabled);
 		info("Jetty:isOpenfireDisabled:"+isOpenfireDisabled);
 		info("Jetty:isActiveMQDisabled:"+isActiveMQDisabled);
@@ -313,7 +313,8 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 			contexts.setHandlers(new Handler[] { context0 });
 		}
 		m_server.setHandler(contexts);
-		if( isWAMPDisabled){
+		if( isWAMPDisabled && m_notStarted){
+			m_notStarted = false;
 			m_server.start();
 			info("initJetty.ok");
 		}
