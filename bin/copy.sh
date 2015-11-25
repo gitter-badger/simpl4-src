@@ -98,6 +98,8 @@ cp $REPOSITORY/pax-web-jetty-bundle-4.1.1.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/flexjson-2.1.bar ${WEBDIRECTORY}/lib/flexjson-2.1.jar
 cp $REPOSITORY/jsoup-1.8.3.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/joor-0.9.5.jar ${WEBDIRECTORY}/lib
+cp $REPOSITORY/dirmi-1.1.4.jar ${WEBDIRECTORY}/lib
+cp $REPOSITORY/cojen-2.2.5.jar ${WEBDIRECTORY}/lib
 cp $SRCTOPDIR/etc/webinf/web.xml ${WEBDIRECTORY}
 zip -d ${WEBDIRECTORY}/lib/pax-web-jetty-bundle-4.1.1.jar "javax/*" >/dev/null 
 

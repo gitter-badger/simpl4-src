@@ -1,3 +1,21 @@
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.ms123.launcher;
 
 import javax.servlet.ServletContextListener;
@@ -17,7 +35,14 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.FrameworkEvent;
 import java.util.concurrent.Callable;
 import static org.joor.Reflect.*;
+import java.io.*;
+import java.net.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import org.cojen.dirmi.Environment;
+import org.cojen.dirmi.Session;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class OsgiStarter implements ServletContextListener {
 
 	public static int jettyPort = -1;
@@ -37,7 +62,7 @@ public class OsgiStarter implements ServletContextListener {
 		try {
 			loopBack = InetAddress.getLoopbackAddress();
 			ServerSocket socket = new ServerSocket(0, 1, loopBack);
-			jettyPort = 10000;//socket.getLocalPort();
+			jettyPort = 11111;//socket.getLocalPort();
 			jettyHost = loopBack.getHostAddress();
 			socket.close();
 		} catch (Exception e) {
@@ -156,7 +181,7 @@ public class OsgiStarter implements ServletContextListener {
 		}
 		boolean isWS = System.getProperty("com.ibm.oti.jcl.build")!=null ||  System.getProperty("ibm.system.encoding")!=null;
 		System.out.println("isWS:"+isWS);
-		if( isWS ){
+		if( isWS || version < 1.8){
 			System.setProperty("simpl4.activemq.disabled", "true");
 			System.setProperty("simpl4.openfire.disabled", "true");
 		}
@@ -179,6 +204,22 @@ public class OsgiStarter implements ServletContextListener {
 		}
 	}
 
+	public static class RemoteExampleClient {
+		public RemoteExampleClient() throws Exception{
+			init();
+		}
+		public void init() throws Exception {
+info("RemoteExampleClient call1");
+			Environment env = new Environment();
+			Session session = env.newSessionConnector("localhost", 11112).connect();
+			CommunicationServer.RemoteExample example = (CommunicationServer.RemoteExample) session.receive();
+info("RemoteExampleClient call2");
+			String response = example.talk("Dirmi");
+			System.out.println(response);
+
+			env.close();
+		}
+	}
 	private static void startFramework() {
 		URL felixURL = null;
 		setProperties();
@@ -227,6 +268,7 @@ public class OsgiStarter implements ServletContextListener {
 			do {
 				on(osgiFrameworkObj).call("start");
 info("waitForStop");
+new RemoteExampleClient();
 				eventObj = on(osgiFrameworkObj).call("waitForStop", 0L).get();
 info("waitForStop2:"+eventObj);
 			} while ((int) on(eventObj).call("getType").get() == FrameworkEvent.STOPPED_UPDATE);

@@ -1,3 +1,21 @@
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.ms123.launcher;
 
 import java.net.URI;
@@ -23,6 +41,7 @@ import org.eclipse.jetty.proxy.ProxyServlet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class BridgeServlet extends ProxyServlet {
 
 	private static final long serialVersionUID = -7441088044680657919L;
@@ -33,6 +52,9 @@ public class BridgeServlet extends ProxyServlet {
 	public void init() throws ServletException {
 		super.init();
 		ServletConfig config = getServletConfig();
+		DatasourceManager dm = new DatasourceManager();
+		new CommunicationServer(11112);
+		dm.initialize();
 		info("INITEND");
 	}
 
