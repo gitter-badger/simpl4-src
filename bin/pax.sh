@@ -337,7 +337,7 @@ ${cassandrabundles} \
   scan-bundle:file:$REPOSITORY/shiro-core-1.2.0.jar \
 	scan-bundle:file:$REPOSITORY/xdocreport-1.0.5.jar \
 	scan-bundle:file:$REPOSITORY/freemarker-2.3.33.jar \
-	scan-bundle:file:$REPOSITORY/xercesImpl-2.11.0.bar \
+	scan-bundle:file:$REPOSITORY/xerces-2.11.0.jar \
 	scan-bundle:file:$REPOSITORY/java-rdfa-0.4.2.bar \
 	scan-bundle:file:$REPOSITORY/jena-arq-2.13.0.bar \
 	scan-bundle:file:$REPOSITORY/jena-core-2.13.0.bar \
@@ -386,6 +386,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/EasyFlow-1.3.2.bar \
 	scan-bundle:file:$REPOSITORY/phidias-0.3.5.jar \
 	scan-bundle:file:$REPOSITORY/jsoup-1.8.3.jar \
+	scan-bundle:file:$REPOSITORY/commonj-executor-1.0.0.jar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \
 	--workingDirectory=${SERVERDIR} \
