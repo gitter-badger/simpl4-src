@@ -52,7 +52,13 @@ public class TransactionServiceImpl implements TransactionService {
 			m_ts = new BitronixTransactionServiceImpl();
 
 			Context ctx = new InitialContext();
-			Context javaCompCtx = ctx.createSubcontext("java:comp");	
+			Context javaCompCtx = null;	
+			try{
+				javaCompCtx = ctx.createSubcontext("java:comp");	
+			}catch(javax.naming.NameAlreadyBoundException e){
+				javaCompCtx = (Context)ctx.lookup("java:comp");
+			}
+			System.out.println("javaCompCtx:"+javaCompCtx);
 			javaCompCtx.bind("UserTransaction",m_ts.getTransactionManager() );
 			javaCompCtx.bind("TransactionSynchronizationRegistry",TransactionManagerServices.getTransactionSynchronizationRegistry() );
 
