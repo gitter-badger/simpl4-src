@@ -52,9 +52,6 @@ public class BridgeServlet extends ProxyServlet {
 	public void init() throws ServletException {
 		super.init();
 		ServletConfig config = getServletConfig();
-		DatasourceManager dm = new DatasourceManager();
-		new CommunicationServer(11112);
-		dm.initialize();
 		info("INITEND");
 	}
 

@@ -37,16 +37,13 @@ import java.util.concurrent.Callable;
 import static org.joor.Reflect.*;
 import java.io.*;
 import java.net.*;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import org.cojen.dirmi.Environment;
-import org.cojen.dirmi.Session;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class OsgiStarter implements ServletContextListener {
 
 	public static int jettyPort = -1;
 
+	private static boolean isWS = false;
 	public static String jettyHost = null;
 	public static String simpl4BaseUrl = null;
 	public static String simpl4Dir;
@@ -179,12 +176,13 @@ public class OsgiStarter implements ServletContextListener {
 		if( version < 1.8){
 			System.setProperty("simpl4.wamp.disabled", "true");
 		}
-		boolean isWS = System.getProperty("com.ibm.oti.jcl.build")!=null ||  System.getProperty("ibm.system.encoding")!=null;
+		isWS = System.getProperty("com.ibm.oti.jcl.build")!=null ||  System.getProperty("ibm.system.encoding")!=null;
 		System.out.println("isWS:"+isWS);
 		if( isWS || version < 1.8){
 			System.setProperty("simpl4.activemq.disabled", "true");
 			System.setProperty("simpl4.openfire.disabled", "true");
 		}
+		
 	}
 
 	private static void setUserDir(String directory_name) {
@@ -204,22 +202,6 @@ public class OsgiStarter implements ServletContextListener {
 		}
 	}
 
-	public static class RemoteExampleClient {
-		public RemoteExampleClient() throws Exception{
-			init();
-		}
-		public void init() throws Exception {
-info("RemoteExampleClient call1");
-			Environment env = new Environment();
-			Session session = env.newSessionConnector("localhost", 11112).connect();
-			CommunicationServer.RemoteExample example = (CommunicationServer.RemoteExample) session.receive();
-info("RemoteExampleClient call2");
-			String response = example.talk("Dirmi");
-			System.out.println(response);
-
-			env.close();
-		}
-	}
 	private static void startFramework() {
 		URL felixURL = null;
 		setProperties();
@@ -260,6 +242,7 @@ info("RemoteExampleClient call2");
 			on(osgiFrameworkObj).call("init");
 			Object bundleContextObj = on(osgiFrameworkObj).call("getBundleContext").get();
 			info("bundleContextObj:" + bundleContextObj);
+
 			Object autoProcessorObj = ccl.loadClass("org.apache.felix.main.AutoProcessor").newInstance();
 			info("autoProcessorObj:" + autoProcessorObj);
 			on(autoProcessorObj).call("process", configProps, bundleContextObj);
@@ -267,10 +250,9 @@ info("RemoteExampleClient call2");
 			Object eventObj;
 			do {
 				on(osgiFrameworkObj).call("start");
-info("waitForStop");
-new RemoteExampleClient();
+				info("waitForStop");
 				eventObj = on(osgiFrameworkObj).call("waitForStop", 0L).get();
-info("waitForStop2:"+eventObj);
+				info("waitForStop2:"+eventObj);
 			} while ((int) on(eventObj).call("getType").get() == FrameworkEvent.STOPPED_UPDATE);
 			osgiFrameworkObj = null;
 		} catch (Exception ex) {
