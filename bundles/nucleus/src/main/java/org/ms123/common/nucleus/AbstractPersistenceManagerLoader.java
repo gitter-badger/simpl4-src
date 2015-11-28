@@ -84,7 +84,7 @@ public abstract class AbstractPersistenceManagerLoader {
 	}
 
 	protected void initFactory() {
-		org.ms123.common.nucleus.OsgiPluginRegistry.setBundleContext(m_bundleContext);
+//		org.ms123.common.nucleus.OsgiPluginRegistry.setBundleContext(m_bundleContext);
 		ClassLoader previous = Thread.currentThread().getContextClassLoader();
 		try {
 			ClassLoader bundleDelegatingCL = new BundleDelegatingClassLoader(m_bundleContext.getBundle());

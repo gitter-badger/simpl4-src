@@ -91,6 +91,7 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		try {
 			m_bc = bundleContext;
+			org.ms123.common.nucleus.OsgiPluginRegistry.setBundleContext(bundleContext);
 			debug("NucleusServiceImpl.activate:" + bundleContext);
 			Dictionary d = new Hashtable();
 			d.put(EventConstants.EVENT_TOPIC, topics);
