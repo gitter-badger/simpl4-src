@@ -78,6 +78,12 @@ import flexjson.*;
 import org.yaml.snakeyaml.*;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.SimpleInstanceManager;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingEnumeration;
+import javax.naming.NameClassPair;
+import java.util.concurrent.ExecutorService;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 /** JettyService implementation
  */
@@ -141,17 +147,30 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 		return Collections.unmodifiableMap(result);
 	}
 
+	private ExecutorService getExecutorService() {
+		try {
+			Context ctx = new InitialContext();
+			if (ctx == null){
+				throw new Exception("JNDI could not create InitalContext ");
+			}
+			return  (ExecutorService)ctx.lookup("wm/jettyWorkManger");
+		} catch (Throwable e) {
+			info("JettyServiceImpl.getExecutorService:"+ e);
+		}
+		return null;
+	}
+
 	//protected void activate(ComponentContext context) {
 	protected void __activate() {
 		System.out.println("JettyServiceImpl.activate");
+		BundleContext bc = m_bundleContext;
+		bc.addServiceListener(this);
 		try {
-			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 			initJetty();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		BundleContext bc = m_bundleContext;
-		bc.addServiceListener(this);
+
 		try {
 			ServiceReference[] sr = bc.getServiceReferences((String)null, "(rpc.prefix=*)");
 			for (int i = 0; i < sr.length; i++) {
@@ -180,9 +199,16 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 	}
 
 	private void initJetty() throws Exception {
+		ExecutorService es = getExecutorService();
+		info("ExecutorService:"+es);
+		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 		String port = System.getProperty("jetty.port");
 		String host = System.getProperty("jetty.host");
-		m_server = new Server();
+		if( es != null ){
+			m_server = new Server(new ExecutorThreadPool(es)); 
+		}else{
+			m_server = new Server();
+		}
 
 		ServerConnector connector=new ServerConnector(m_server);
     connector.setPort(getInt(port, 8075));
