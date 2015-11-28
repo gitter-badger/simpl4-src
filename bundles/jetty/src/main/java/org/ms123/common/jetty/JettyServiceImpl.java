@@ -153,7 +153,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 			if (ctx == null){
 				throw new Exception("JNDI could not create InitalContext ");
 			}
-			return  (ExecutorService)ctx.lookup("wm/jettyWorkManger");
+			return  (ExecutorService)ctx.lookup("wm/simpl4WorkManager");
 		} catch (Throwable e) {
 			info("JettyServiceImpl.getExecutorService:"+ e);
 		}
