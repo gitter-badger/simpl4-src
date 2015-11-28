@@ -386,7 +386,6 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/EasyFlow-1.3.2.bar \
 	scan-bundle:file:$REPOSITORY/phidias-0.3.5.jar \
 	scan-bundle:file:$REPOSITORY/jsoup-1.8.3.jar \
-	scan-bundle:file:$REPOSITORY/commonj-executor-1.0.0.jar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \
 	--workingDirectory=${SERVERDIR} \
