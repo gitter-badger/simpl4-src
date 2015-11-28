@@ -37,6 +37,9 @@ import java.util.concurrent.Callable;
 import static org.joor.Reflect.*;
 import java.io.*;
 import java.net.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import java.util.concurrent.ExecutorService;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class OsgiStarter implements ServletContextListener {
@@ -69,7 +72,7 @@ public class OsgiStarter implements ServletContextListener {
 		}
 		simpl4BaseUrl = "http://" + loopBack.getHostAddress() + ":" + jettyPort;
 		System.out.println("contextInitialized:" + jettyPort + "|" + loopBack + "|" + simpl4BaseUrl);
-		ExecutorService executor = Executors.newSingleThreadExecutor();
+		ExecutorService executor = getExecutorService();
 		executor.submit(new MyCallable(sce));
 	}
 
@@ -95,6 +98,20 @@ public class OsgiStarter implements ServletContextListener {
 		}
 	}
 
+	private ExecutorService getExecutorService() {
+		try {
+			Context ctx = new InitialContext();
+			if (ctx == null){
+				throw new Exception("OsgiStarter.JNDI could not create InitalContext ");
+			}
+			ExecutorService es = (ExecutorService)ctx.lookup("wm/simpl4WorkManager");
+			info("OsgiStarter.getExecutorService:"+ es);
+			return es;
+		} catch (Throwable e) {
+			info("OsgiStarter.getExecutorService:"+ e);
+		}
+		return Executors.newSingleThreadExecutor();
+	}
 	public static void main(String[] args) {
 		jettyPort = 10000;
 		jettyHost = "127.0.0.1";
