@@ -62,11 +62,11 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 	protected CassandraService m_cassandraService;
 	protected Session m_session;
-	private PreparedStatement insertHistoryStatement;
-	private PreparedStatement insertHistoryRouteStatement;
+	private PreparedStatement insertHistory;
+	private PreparedStatement insertHistoryRoute;
 	private PreparedStatement insertActivitiCamelCorrelation;
 	private PreparedStatement selectActivitiCamelCorrelation;
-	private PreparedStatement selectOneHistory;
+	private PreparedStatement selectHistory;
 	private PreparedStatement selectHistoryRoute;
 
 	public CassandraAccessImpl(CassandraService cs){
@@ -86,7 +86,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 		UUID time = UUIDs.startOf(date.getTime());
 
 		BoundStatement boundStatement = null;
-		boundStatement = new BoundStatement(insertHistoryStatement);
+		boundStatement = new BoundStatement(insertHistory);
 		boundStatement.setString(0, key);
 		boundStatement.setUUID(1, time);
 		boundStatement.setString(2, type);
@@ -94,7 +94,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 		boundStatement.setString(4, msg);
 		m_session.execute(boundStatement );
 		if (key1 != null) {
-			boundStatement = new BoundStatement(insertHistoryRouteStatement);
+			boundStatement = new BoundStatement(insertHistoryRoute);
 			boundStatement.setString(0, key1);
 			boundStatement.setString(1, key2);
 			boundStatement.setUUID(2, time);
@@ -147,19 +147,20 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 	private List<Map> _getOneEntry(String key, String type) {
 		List<Map> retList = new ArrayList();
 
-		BoundStatement statement = new BoundStatement(selectOneHistory);
+		BoundStatement statement = new BoundStatement(selectHistory);
 		statement.setString(0, key);
 		statement.setString(1, type);
 		ResultSet results = m_session.execute(statement);
 		for (Row row : results) {
 			Map m = new HashMap();
 			m.put(HISTORY_KEY, row.getString(HISTORY_KEY));
-			m.put(HISTORY_TIME, row.getString(HISTORY_TIME));
+			m.put(HISTORY_TIME, new Date(UUIDs.unixTimestamp(row.getUUID(HISTORY_TIME))));
 			m.put(HISTORY_TYPE, row.getString(HISTORY_TYPE));
 			m.put(HISTORY_HINT, row.getString(HISTORY_HINT));
 			m.put(HISTORY_MSG, row.getString(HISTORY_MSG));
 			retList.add(m);
 		}
+		info("_getOneEntry:"+retList);
 		return retList;
 	}
 
@@ -188,14 +189,14 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 
 
 	private void createStatements(){
-		insertHistoryStatement = m_session.prepare(insertInto(GLOBAL_KEYSPACE, "history")
+		insertHistory = m_session.prepare(insertInto(GLOBAL_KEYSPACE, "history")
 				.value("key", bindMarker())
 				.value("time", bindMarker())
 				.value("type", bindMarker())
 				.value("hint", bindMarker())
 				.value("msg", bindMarker()));
 
-		insertHistoryRouteStatement = m_session.prepare(insertInto(GLOBAL_KEYSPACE, "history_route")
+		insertHistoryRoute = m_session.prepare(insertInto(GLOBAL_KEYSPACE, "history_route")
 				.value("routeId", bindMarker())
 				.value("instanceId", bindMarker())
 				.value("time", bindMarker()));
@@ -207,11 +208,11 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 
 		selectActivitiCamelCorrelation = m_session.prepare(select()
             .from(GLOBAL_KEYSPACE, "activiti_camel_correlation")
-            .where(eq("id", bindMarker())));
+            .where(eq("activitiId", bindMarker())));
 
-		selectOneHistory = m_session.prepare(select()
+		selectHistory = m_session.prepare(select()
             .from(GLOBAL_KEYSPACE, "history")
-            .where( eq("id", bindMarker()))
+            .where( eq("key", bindMarker()))
 							 .and(eq("type", bindMarker()))
 							 .orderBy( asc("time")));
 
@@ -238,22 +239,22 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 
 		m_session.execute(
 				"CREATE TABLE IF NOT EXISTS "+GLOBAL_KEYSPACE+".history_route ("+
-				"route_id text,"+
+				"routeId text,"+
 				"time timeuuid,"+
-				"instance_id text,"+
-				"PRIMARY KEY (route_id, time));" );
+				"instanceId text,"+
+				"PRIMARY KEY (routeId, time));" );
 
 		m_session.execute(
 				"CREATE TABLE IF NOT EXISTS "+GLOBAL_KEYSPACE+".activiti_camel_correlation ("+
-				"activiti_id text,"+
+				"activitiId text,"+
 				"time timeuuid,"+
-				"route_instance_id text,"+
-				"PRIMARY KEY (activiti_id, time));" );
+				"routeInstanceId text,"+
+				"PRIMARY KEY (activitiId, time));" );
 	}
 
 
 	protected static void info(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.info(msg);
 	}
 
