@@ -469,6 +469,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	}
 
 	public synchronized void h2Close(DataSource ds) {
+		System.out.println("h2Close.jta:"+m_transactionService.getJtaLocator());
 		if( m_transactionService.getJtaLocator().equals("bitronix")){
 			((PoolingDataSource)((DataSourceWrapper)m_dataSource).getDataSource()).close();
 		}else{

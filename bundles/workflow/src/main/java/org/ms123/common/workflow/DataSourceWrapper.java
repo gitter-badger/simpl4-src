@@ -48,8 +48,10 @@ public class DataSourceWrapper implements DataSource {
 	public void destroy(){
 		try{
 			for(Connection c : m_connList){
-				System.out.println("DataSourceWrapper.destroy:"+c+"/"+c.isClosed());
-				c.close();
+				if( c.isClosed() == false ){
+					System.out.println("DataSourceWrapper.destroy:"+c+"/"+c.isClosed());
+					c.close();
+				}
 			}
 		}catch(Exception e){
 			e.printStackTrace();
