@@ -86,13 +86,13 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 			if( ACTIVITI_CAMEL_CORRELATION_TYPE.equals(type)){
 				String activitiId = (String) event.getProperty(ACC_ACTIVITI_ID);
 				String routeInstanceId = (String) event.getProperty(ACC_ROUTE_INSTANCE_ID);
-				upsertAcc(activitiId, routeInstanceId);
+				this.cassandraAccess.upsertAcc(activitiId, routeInstanceId);
 			}else{
 				String key = (String) event.getProperty(HISTORY_KEY);
 				Date time = new Date();
 				String hint = (String) event.getProperty(HISTORY_HINT);
 				String msg = (String) event.getProperty(HISTORY_MSG);
-				upsertHistory(key, time, type, hint, msg);
+				this.cassandraAccess.upsertHistory(key, time, type, hint, msg);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -109,7 +109,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 		try {
 			Map<String, List<Map>> retMap = new HashMap();
 			for (String key : keyList) {
-				List<Map> logs = _getHistory(key, type, null, null);
+				List<Map> logs = this.cassandraAccess.getHistory(key, type, null, null);
 				if (logs.size() > 0) {
 					retMap.put(key, logs);
 				}
@@ -127,7 +127,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 			@PName("startTime") @POptional Long startTime, 
 			@PName("endTime") @POptional Long endTime) throws RpcException {
 		try {
-			return _getHistory(key, type, startTime, endTime);
+			return this.cassandraAccess.getHistory(key, type, startTime, endTime);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "LogServiceImpl.getHistory:", e);
 		}
@@ -166,7 +166,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 		try {
 			Map<String,List<Map>> ret = new LinkedHashMap<String,List<Map>>();
 			info("getRouteInstance.activitiId:"+activitiId);
-			Set<String> routeDefIds = _getActivitiCamelCorrelation(activitiId);
+			Set<String> routeDefIds = this.cassandraAccess.getActivitiCamelCorrelation(activitiId);
 			info("getRouteInstance.routeDefIds:"+routeDefIds);
 			if( routeDefIds.size() == 0) return null;
 			for( String routeDefId : routeDefIds){	
@@ -186,6 +186,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	public void setCassandraService(CassandraService cassandraService) {
 		System.out.println("HistoryServiceImpl.setCassandraService:" + cassandraService);
 		this.m_cassandraService = cassandraService;
+		this.cassandraAccess = new org.ms123.common.system.history.cql.CassandraAccessImpl(cassandraService);
 	}
 }
 

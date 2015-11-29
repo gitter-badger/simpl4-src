@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.system.history;
+package org.ms123.common.system.history.casser;
 
 import java.util.UUID;
 import java.util.Date;
@@ -29,21 +29,15 @@ import com.noorq.casser.mapping.annotation.Table;
 import com.noorq.casser.mapping.annotation.Index;
 
 @Table
-public interface History{
+public interface ActivitiCamelCorrelation{
 
 	@PartitionKey(ordinal=0)
-	String key();
-
-	@PartitionKey(ordinal=1)
-	String type();
+	String activitiId();
 
 	@ClusteringColumn
 	@Types.Timeuuid
 	Date time();
 
-	@Column
-	String hint();
+	String routeInstanceId();
 
-	@Column
-	String msg();
 }

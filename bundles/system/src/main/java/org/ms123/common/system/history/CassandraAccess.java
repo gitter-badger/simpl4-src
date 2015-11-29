@@ -18,26 +18,29 @@
  */
 package org.ms123.common.system.history;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Date;
 
-import com.noorq.casser.mapping.annotation.Column;
-import com.noorq.casser.mapping.annotation.PartitionKey;
-import com.noorq.casser.mapping.annotation.ClusteringColumn;
-import com.noorq.casser.mapping.annotation.Types;
-import com.noorq.casser.mapping.annotation.Table;
-import com.noorq.casser.mapping.annotation.Index;
+/**
+ *
+ */
+@SuppressWarnings("unchecked")
+public interface CassandraAccess {
+	public final String GLOBAL_KEYSPACE = "global";
+	public final String STARTTIME = "startTime";
+	public final String ENDTIME = "endTime";
+	public final String STATUS = "status";
 
-@Table
-public interface ActivitiCamelCorrelation{
+	public void upsertHistory(String key, Date time, String type, String hint, String msg);
 
-	@PartitionKey(ordinal=0)
-	String activitiId();
+	public void upsertAcc(String activitiId, String routeInstanceId);
 
-	@ClusteringColumn
-	@Types.Timeuuid
-	Date time();
+	public List<Map> getHistory(String key, String type, Long startTime, Long endTime) throws Exception;
 
-	String routeInstanceId();
-
+	public Set<String> getActivitiCamelCorrelation(String activitiId) throws Exception;
 }
+
