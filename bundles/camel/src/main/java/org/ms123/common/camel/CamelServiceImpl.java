@@ -75,6 +75,7 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+import org.osgi.service.jndi.JNDIContextManager;
 
 /** CamelService implementation
  */
@@ -397,5 +398,10 @@ System.out.println("Process:"+key);
 	public void setEventAdmin(EventAdmin paramEventAdmin) {
 		System.out.println("CamelServiceImpl.setEventAdmin:" + paramEventAdmin);
 		this.m_eventAdmin = paramEventAdmin;
+	}
+	@Reference(dynamic = true,optional=true)
+	public void setJNDIContextManager  (JNDIContextManager   cmService) {
+		info("JNDIContextManager.set:" + cmService);
+		this.m_jdniContextManager = cmService;
 	}
 }

@@ -19,6 +19,7 @@
 package org.ms123.common.camel;
 
 import java.util.EventObject;
+import java.util.Hashtable;
 import org.apache.camel.builder.DefaultErrorHandlerBuilder;
 import org.apache.camel.CamelContext;
 import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
@@ -68,6 +69,8 @@ import static org.ms123.common.system.history.HistoryService.ACC_ACTIVITI_ID;
 import static org.ms123.common.system.history.HistoryService.ACC_ROUTE_INSTANCE_ID;
 import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_ACTIVITY_KEY;
 import static org.ms123.common.system.history.HistoryService.CAMEL_ROUTE_DEFINITION_KEY;
+import org.osgi.service.jndi.JNDIContextManager;
+import javax.naming.Context;
 
 /**
  *
@@ -80,6 +83,13 @@ public class CamelContextBuilder {
 		SimpleRegistry sr = new SimpleRegistry();
 		OsgiServiceRegistry or = new OsgiServiceRegistry(bc);
 		PermissionService permissionService = (PermissionService) or.lookupByName(PermissionService.class.getName());
+
+		JNDIContextManager jndiContextManager = (JNDIContextManager) or.lookupByName(JNDIContextManager.class.getName());
+		info("createCamelContext.JNDIContextManager:"+jndiContextManager);
+		Hashtable env=new Hashtable();
+		Context jndiContext=jndiContextManager.newInitialContext(env);
+		info("CamelContextBuilder.jndiContext:"+jndiContext);	
+
 		sr.put(PermissionService.PERMISSION_SERVICE, permissionService);
 		sr.put(DataLayer.DATA_LAYER, or.lookupByNameAndType("dataLayer", DataLayer.class));
 		sr.put("datamapper", or.lookupByName(DatamapperService.class.getName()));
@@ -95,6 +105,7 @@ public class CamelContextBuilder {
 		sr.put("xdocreport", new XDocReportComponent());
 		sr.put("template", new TemplateComponent());
 		sr.put("asciidoctor", new AsciidoctorComponent());
+		sr.put("jndiContext", jndiContext);
 		TransactionService ts = (TransactionService) or.lookupByName(TransactionService.class.getName());
 		sr.put(org.springframework.transaction.PlatformTransactionManager.class.getName(), ts.getPlatformTransactionManager());
 		createTransactionPolicies(ts.getPlatformTransactionManager(), sr);
@@ -149,6 +160,7 @@ public class CamelContextBuilder {
 			sr.put(name, stp);
 		}
 	}
+
 
 	public static class ExchangeEventNotifer extends EventNotifierSupport {
 		PermissionService m_permissionService;

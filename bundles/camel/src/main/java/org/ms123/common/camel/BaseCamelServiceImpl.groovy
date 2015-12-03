@@ -51,6 +51,7 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.osgi.service.jndi.JNDIContextManager;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Extent;
@@ -127,6 +128,7 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 
 	protected UtilsService m_utilsService;
 	protected EventAdmin m_eventAdmin;
+	protected JNDIContextManager m_jdniContextManager;
 
 
 	protected BundleContext m_bundleContext;
