@@ -84,7 +84,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 			}
 		}
 		UUID time = UUIDs.startOf(date.getTime());
-
+		info("upsertHistory:"+key+"/"+type);
 		BoundStatement boundStatement = null;
 		boundStatement = new BoundStatement(insertHistory);
 		boundStatement.setString(0, key);
@@ -112,6 +112,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 	}
 
 	public List<Map> getHistory(String key, String type, Long startTime, Long endTime) throws Exception {
+		info("getHistory.start:"+key+"/"+type);
 		final List<Map> retList = new ArrayList();
 		if (startTime == null) {
 			startTime = new Date().getTime() - (long) 1 * 1000 * 60 * 60 * 24;
@@ -129,22 +130,27 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 			statement.setUUID(1, uuidStart);
 			statement.setUUID(2, uuidEnd);
 			ResultSet results = m_session.execute(statement);
-			for (Row row : results) {
+			List<Row> rows = results.all();
+			info("getHistory.results:"+rows.size());
+			for (Row row : rows) {
 				Map m = new HashMap();
 				String _key = row.getString("routeId") + "|" + row.getString("instanceId");
 				if(doubleMap.get(_key) == null){
 					doubleMap.put(_key,"");
-					List<Map> lm = _getOneEntry(_key, type);
+					List<Map> lm = getOneHistoryEntry(_key, type);
 					retList.addAll(lm);
 				}
 			}
+			info("getHistory.isfullyFetched:"+results.isFullyFetched());
 		}else{
-			retList.addAll(_getOneEntry(key, type));
+			retList.addAll(getOneHistoryEntry(key, type));
 		}
+		info("getHistory.return:"+retList.size());
 		return retList;
 	}
 
-	private List<Map> _getOneEntry(String key, String type) {
+	private List<Map> getOneHistoryEntry(String key, String type) {
+		info("getOneHistoryEntry:"+key+"/"+type);
 		List<Map> retList = new ArrayList();
 
 		BoundStatement statement = new BoundStatement(selectHistory);
@@ -160,7 +166,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 			m.put(HISTORY_MSG, row.getString(HISTORY_MSG));
 			retList.add(m);
 		}
-		info("_getOneEntry:"+retList);
+		info("getOneHistoryEntry.return:"+retList.size());
 		return retList;
 	}
 

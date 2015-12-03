@@ -92,9 +92,13 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 				Date time = new Date();
 				String hint = (String) event.getProperty(HISTORY_HINT);
 				String msg = (String) event.getProperty(HISTORY_MSG);
+				info("handleEvent:"+this.cassandraAccess);
+				if( this.cassandraAccess == null){
+					throw new RuntimeException("HistoryServiceImpl.handleEvent:cassandraAccess is null");
+				}
 				this.cassandraAccess.upsertHistory(key, time, type, hint, msg);
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {
 		}
@@ -187,6 +191,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 		System.out.println("HistoryServiceImpl.setCassandraService:" + cassandraService);
 		this.m_cassandraService = cassandraService;
 		this.cassandraAccess = new org.ms123.common.system.history.cql.CassandraAccessImpl(cassandraService);
+		info("HistoryServiceImpl.setCassandraService.cassandraAccess:"+this.cassandraAccess);
 	}
 }
 

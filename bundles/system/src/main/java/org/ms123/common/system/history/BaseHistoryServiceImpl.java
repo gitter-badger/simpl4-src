@@ -46,7 +46,6 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 
 	protected List<Map> _getRouteInstances(String contextKey, String routeId, java.lang.Long _startTime, java.lang.Long endTime) throws Exception {
 		List<Map> retList = new ArrayList();
-System.out.println("_getRouteInstances:"+this.cassandraAccess);
 		List<Map> historyEntries = this.cassandraAccess.getHistory(contextKey + "/" + routeId, HISTORY_CAMEL_TRACE, _startTime, endTime);
 		String currentKey = null;
 		Date startTime = null;
@@ -103,7 +102,7 @@ System.out.println("_getRouteInstances:"+this.cassandraAccess);
 	}
 
 	protected static void info(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.info(msg);
 	}
 
