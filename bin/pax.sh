@@ -2,6 +2,7 @@
 
 SRCTOPDIR=
 DESTTOPDIR=
+WAR=
 #########################################################
 # usage
 #########################################################
@@ -12,8 +13,8 @@ usage() {
 #########################################################
 # parameter
 #########################################################
-shortoptions='s:d:'
-longoptions='srcdir:destdir:'
+shortoptions='s:d:w'
+longoptions='srcdir:destdir:war'
 getopt=$(getopt -o $shortoptions --longoptions  $longoptions -- "$@")
 if [ $? != 0 ]; then
    usage
@@ -34,11 +35,16 @@ while true; do
          SRCTOPDIR=$1
          shift
       ;;
+      -w|--war)
+         WAR=true
+         shift
+      ;;
       *)
 				break
       ;;
    esac
 done
+
 
 if [ -z "$SRCTOPDIR" ] ; then
 	SRCTOPDIR=$TOPDIR/simpl4-src
@@ -399,9 +405,11 @@ ${cassandrabundles} \
 
 
 rm -f $SRCTOPDIR/etc/felix.xml 
-sed -i "s/javax.transaction.xa/dummy/g" $SERVERDIR/felix/config.ini
-sed -i "s/javax.transaction/dummy/g" $SERVERDIR/felix/config.ini
-sed -i "s/,javax.sql,/,dummy,/g" $SERVERDIR/felix/config.ini
+if [ -z "$WAR" ] ; then
+	sed -i "s/javax.transaction.xa/dummy/g" $SERVERDIR/felix/config.ini
+	sed -i "s/javax.transaction/dummy/g" $SERVERDIR/felix/config.ini
+	sed -i "s/,javax.sql,/,dummy,/g" $SERVERDIR/felix/config.ini
+fi
 chmod +x $SERVERDIR/run.sh
 
 sed -i 's/startLocalConsole=true/startLocalConsole=$START_CONSOLE/' $SERVERDIR/run.sh

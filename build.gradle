@@ -323,8 +323,9 @@ def deployServerPart(destdir){
 		dir.mkdirs();
 	}
 	if( os == "unix" || os == "mac" ){
+		def flag = war == "1" ? "-w" : "";
 		exec {
-			commandLine "${rootDir}/bin/pax.sh -s ${rootDir}  -d ${destdir}".tokenize()
+			commandLine "${rootDir}/bin/pax.sh -s ${rootDir}  -d ${destdir} ${flag}".tokenize()
 		}
 	}else{
 		exec {
