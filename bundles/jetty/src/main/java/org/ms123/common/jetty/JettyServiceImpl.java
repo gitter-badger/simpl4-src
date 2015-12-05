@@ -67,6 +67,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import java.net.*;
 import org.ms123.common.docbook.DocbookService;
 import org.ms123.common.git.GitService;
+import org.ms123.common.libhelper.ClassLoaderWrapper;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.rpc.JsonRpcServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -200,8 +201,9 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 
 	private void initJetty() throws Exception {
 		ExecutorService es = getExecutorService();
-		info("ExecutorService:"+es);
-		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+		info("Jetty.ExecutorService:"+es);
+		ClassLoaderWrapper clw = new ClassLoaderWrapper(this.getClass().getClassLoader(), Thread.currentThread().getContextClassLoader());
+		Thread.currentThread().setContextClassLoader(clw);
 		String port = System.getProperty("jetty.port");
 		String host = System.getProperty("jetty.host");
 		if( es != null ){
@@ -231,9 +233,9 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 		boolean isOpenfireDisabled = System.getProperty("simpl4.openfire.disabled") != null && "true".equals(System.getProperty("simpl4.openfire.disabled"));
 		boolean isActiveMQDisabled = System.getProperty("simpl4.activemq.disabled") != null && "true".equals(System.getProperty("simpl4.activemq.disabled"));
 		boolean isWAMPDisabled = System.getProperty("simpl4.wamp.disabled") != null && "true".equals(System.getProperty("simpl4.wamp.disabled"));
-		info("Jetty:isWAMPDisabled:"+isWAMPDisabled);
-		info("Jetty:isOpenfireDisabled:"+isOpenfireDisabled);
-		info("Jetty:isActiveMQDisabled:"+isActiveMQDisabled);
+		info("Jetty.isWAMPDisabled:"+isWAMPDisabled);
+		info("Jetty.isOpenfireDisabled:"+isOpenfireDisabled);
+		info("Jetty.isActiveMQDisabled:"+isActiveMQDisabled);
 		WebAppContext webappOpenfire=null;
 		if( !isOpenfireDisabled){
 			webappOpenfire = new WebAppContext(contexts, m_basedir + "/etc/openfire/web", "/openfire/");
