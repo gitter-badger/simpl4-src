@@ -392,6 +392,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/EasyFlow-1.3.2.bar \
 	scan-bundle:file:$REPOSITORY/phidias-0.3.5.jar \
 	scan-bundle:file:$REPOSITORY/jsoup-1.8.3.jar \
+	scan-bundle:file:$REPOSITORY/unix4j-0.3.1.jar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \
 	--workingDirectory=${SERVERDIR} \
@@ -409,6 +410,10 @@ if [ -z "$WAR" ] ; then
 	sed -i "s/javax.transaction.xa/dummy/g" $SERVERDIR/felix/config.ini
 	sed -i "s/javax.transaction/dummy/g" $SERVERDIR/felix/config.ini
 	sed -i "s/,javax.sql,/,dummy,/g" $SERVERDIR/felix/config.ini
+else
+	sed -i "s/javax.transaction.xa,/javax.transaction.xa;version=1.1.0,/g" $SERVERDIR/felix/config.ini
+	sed -i "s/javax.transaction,/javax.transaction;version=1.1.0,/g" $SERVERDIR/felix/config.ini
+	sed -i "/org.apache.geronimo.specs.geronimo-jta/d" $SERVERDIR/felix/config.ini
 fi
 chmod +x $SERVERDIR/run.sh
 
