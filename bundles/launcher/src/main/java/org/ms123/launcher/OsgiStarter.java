@@ -40,6 +40,14 @@ import java.net.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.concurrent.ExecutorService;
+import org.unix4j.Unix4j;
+import org.unix4j.builder.Unix4jCommandBuilder;
+import org.unix4j.io.Output;
+import org.unix4j.io.StreamOutput;
+import org.unix4j.unix.Ls;
+import org.unix4j.unix.Sort;
+import org.unix4j.unix.grep.GrepOption;
+import org.unix4j.variable.Arg;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class OsgiStarter implements ServletContextListener {
@@ -145,6 +153,34 @@ public class OsgiStarter implements ServletContextListener {
 		}
 	}
 
+	private static void doSetup(){
+		File loggingConfig = new File(simpl4Dir, "etc/logging.config");
+		if( loggingConfig.exists()){
+			info("no setup needed");
+			return;
+		}
+		String loggingConfigTpl = new File(simpl4Dir, "etc/logging.config.tpl").toString();
+		info("doSetup.loggingConfigTpl:"+loggingConfigTpl);
+		String basedir = simpl4Dir.replaceAll("\\\\", "/");
+		info("doSetup.basedir:"+basedir);
+		File logDir = new File(simpl4Dir,"log");
+		if( !logDir.exists()){
+			logDir.mkdir();
+		}
+		info("doSetup.logDir:"+logDir);
+		Unix4j.cat(loggingConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").
+		sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(loggingConfig);
+
+		File logBackTpl = new File(simpl4Dir, "etc/logback.xml.tpl");
+		File logBack = new File(simpl4Dir,"etc/logback.xml");
+		Unix4j.cat(logBackTpl).sed("s!_BASEDIR_!"+basedir+"!g").
+		sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(logBack);
+
+		File logConfigTpl = new File(simpl4Dir, "etc/config/org/ops4j/pax/logging.config.tpl");
+		File logConfig = new File(simpl4Dir,"etc/config/org/ops4j/pax/logging.config");
+		Unix4j.cat(logConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").toFile(logConfig);
+	}
+
 	private static void setProperties() {
 		String af = new File(".").getAbsolutePath();
 		info("currentDir:" + af);
@@ -221,6 +257,7 @@ public class OsgiStarter implements ServletContextListener {
 
 	private static void startFramework() {
 		URL felixURL = null;
+		doSetup();
 		setProperties();
 		Main.loadSystemProperties();
 		Map<String, String> configProps = Main.loadConfigProperties();
@@ -280,5 +317,6 @@ public class OsgiStarter implements ServletContextListener {
 
 	private static void info(String msg) {
 		System.out.println("OsgiStarter:" + msg);
+		System.err.println("OsgiStarter:" + msg);
 	}
 }
