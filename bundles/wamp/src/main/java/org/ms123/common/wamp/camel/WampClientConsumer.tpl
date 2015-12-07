@@ -70,6 +70,7 @@ public class WampClientConsumer extends DefaultConsumer {
 	}
 
 	private void wampClientConnected() {
+/* $if version >= 1.8 $ */
 		String namespace = endpoint.getCamelContext().getName().split("/")[0];
 		info("Consumer.register:" + namespace + "." + endpoint.getProcedure());
 		Subscription addProcSubscription = this.clientSession.registerProcedure(namespace + "." + endpoint.getProcedure()).subscribe((request) -> {
@@ -108,6 +109,7 @@ public class WampClientConsumer extends DefaultConsumer {
 
 			}
 		});
+/* $endif$ */
 	}
 
 	private void prepareExchange(Exchange exchange, Request request) {
@@ -326,6 +328,7 @@ public class WampClientConsumer extends DefaultConsumer {
 	}
 
 	protected void doStart() throws Exception {
+/* $if version >= 1.8 $
 		if( !this.endpoint.getMode().equals("rpc")){
 			return;
 		}
@@ -349,6 +352,7 @@ public class WampClientConsumer extends DefaultConsumer {
 		}, () -> {
 			debug("Consumer.ClientSession ended normally");
 		});
+$endif$ */
 	}
 
 	protected void doStop() throws Exception {

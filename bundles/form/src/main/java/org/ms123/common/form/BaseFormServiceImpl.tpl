@@ -172,11 +172,15 @@ class BaseFormServiceImpl {
 		String json = m_gitService.searchContent(namespace, formKey, "sw.form");
 		Map rootShape = (Map) m_ds.deserialize(json);
 		List<Map> 	inputShapes = new ArrayList<Map>();
+/* $if version >= 1.8 $ */
 		traverseElement(inputShapes, rootShape, (shape) -> {
 			Map<String,String> properties = (Map)shape.get("properties");
 			String il = properties.get("xf_inputlistname");
 			return !isEmpty(il);
 		});
+/* $else$ */
+		getElementsWithInputlist(inputShapes, rootShape);
+/* $endif$ */
 
 		for( Map shape : inputShapes){
 			Map<String,String> properties = (Map)shape.get("properties");
@@ -362,6 +366,21 @@ class BaseFormServiceImpl {
 	interface ShapeCompare {
       boolean compare(Map shape);
   }
+
+  /*java17 hack*/
+	private void getElementsWithInputlist(List<Map> result, Map shape) throws Exception {
+		String id = getStencilId(shape);
+
+		Map<String,String> properties = (Map)shape.get("properties");
+		String il = properties.get("xf_inputlistname");
+		if (!isEmpty(il)) {
+			result.add(shape);
+		}
+		List<Map> childShapes = (List) shape.get("childShapes");
+		for (Map child : childShapes) {
+			getElementsWithInputlist(result, child);
+		}
+	}
 
 	private void traverseElement(List<Map> result, Map shape, ShapeCompare sc) throws Exception {
 		String id = getStencilId(shape);

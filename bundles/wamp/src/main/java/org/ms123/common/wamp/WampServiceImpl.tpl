@@ -106,6 +106,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 
 	//@RequiresRoles("admin")
 	private void registerMethods() {
+/* $if version >= 1.8 $ */
 		List<String> methodList = new ArrayList();
 		methodList.add("enumeration.get");
 		methodList.add("data.query");
@@ -150,6 +151,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 		} else {
 			doRegisterMethods(methodList);
 		}
+/* $endif$ */
 	}
 
 	private void doRegisterMethods(List<String> methodList) {
@@ -166,6 +168,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 
 	@RequiresRoles("admin")
 	public void start() throws RpcException {
+/* $if version >= 1.8 $ */
 		final WampClientSession client1 = createWampClientSession("realm1");
 		client1.statusChanged().subscribe((t1) -> {
 			System.out.println("Session1 status changed to " + t1);
@@ -206,6 +209,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 		});
 
 		//client1.open();
+/* $endif$ */
 	}
 	private static Map<String, Realm> getRealms (){
 		if( m_realms == null){
@@ -241,11 +245,13 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 		}
 
 		public void sendStringByFuture(String message) {
+/* $if version >= 1.8 $ */
 			info("WampClientWebSocket.sendStringByFuture:" + message);
 			ExecutorService executor = Executors.newSingleThreadExecutor();
 			executor.submit(() -> {
 				m_wampClientSession.onWebSocketText(message);
 			});
+/* $endif$ */
 		}
 		@Override
 		public void onWebSocketConnect(Session sess) {
@@ -259,11 +265,13 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 		}
 		@Override
 		public void onWebSocketClose(int status, String reason) {
+/* $if version >= 1.8 $ */
 			info("WampClientWebSocket.onWebSocketClose");
 			ExecutorService executor = Executors.newSingleThreadExecutor();
 			executor.submit(() -> {
 				m_wampRouterSession.onWebSocketClose(status,reason);
 			});
+/* $endif$ */
 		}
 	}
 

@@ -157,13 +157,16 @@ public class WampClientSession {
 		m_wampRouterSession = new WampRouterSession(ws, realms);
 		ws.setWampRouterSession(m_wampRouterSession);
 		executor = Executors.newSingleThreadExecutor();
+/* $if version >= 1.8 $
 		executor.submit(() -> {
 			ws.onWebSocketConnect(null);
 			ws.onWebSocketText(WampCodec.encode(new HelloMessage(realmName, null)));
 		});
+$endif$ */
 	}
 
 	public void close() {
+/* $if version >= 1.8 $
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.submit(() -> {
 			if (!isCompleted) {
@@ -184,6 +187,7 @@ public class WampClientSession {
 			}
 
 		});
+$endif$ */
 	}
 
 	public Observable<Long> publish(final String topic, Object... args) {
@@ -211,6 +215,7 @@ public class WampClientSession {
 			return resultSubject;
 		}
 
+/* $if version >= 1.8 $ */
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.submit(() -> {
 			if (this.status != Status.Connected) {
@@ -232,6 +237,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 			requestMap.put(requestId, new RequestMapEntry(WampMessages.PublishMessage.ID, resultSubject));
 			WampClientSession.this.webSocket.onWebSocketText(WampCodec.encode(msg));
 		});
+/* $endif$ */
 		return resultSubject;
 	}
 
@@ -246,6 +252,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 					return;
 				}
 
+/* $if version >= 1.8 $ */
 				ExecutorService executor = Executors.newSingleThreadExecutor();
 				executor.submit(() -> {
 					// If the Subscriber unsubscribed in the meantime we return early
@@ -314,6 +321,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 					requestMap.put(requestId, new RequestMapEntry(RegisterMessage.ID, registerFuture));
 					WampClientSession.this.webSocket.onWebSocketText(WampCodec.encode(msg));
 				});
+/* $endif$ */
 			}
 		});
 	}
@@ -327,6 +335,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 		subscriber.add(Subscriptions.create(new Action0() {
 			@Override
 			public void call() {
+/* $if version >= 1.8 $ */
 				ExecutorService executor = Executors.newSingleThreadExecutor();
 				executor.submit(() -> {
 					if (mapEntry.state != RegistrationState.Registered)
@@ -358,6 +367,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 					requestMap.put(requestId, new RequestMapEntry(UnregisterMessage.ID, unregisterFuture));
 					WampClientSession.this.webSocket.onWebSocketText(WampCodec.encode(msg));
 				});
+/* $endif$ */
 			}
 		}));
 	}
@@ -401,6 +411,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 		return Observable.create(new OnSubscribe<PubSubData>() {
 			@Override
 			public void call(final Subscriber<? super PubSubData> subscriber) {
+/* $if version >= 1.8 $ */
 				try {
 					UriValidator.validate(topic, useStrictUriValidation, flags == SubscriptionFlags.Wildcard);
 				} catch (WampError e) {
@@ -490,6 +501,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 						WampClientSession.this.webSocket.onWebSocketText(WampCodec.encode(msg));
 					}
 				});
+/* $endif$ */
 			}
 		});
 	}
@@ -498,6 +510,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 		subscriber.add(Subscriptions.create(new Action0() {
 			@Override
 			public void call() {
+/* $if version >= 1.8 $ */
 				ExecutorService executor = Executors.newSingleThreadExecutor();
 				executor.submit(() -> {
 					mapEntry.subscribers.remove(subscriber);
@@ -529,6 +542,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 						WampClientSession.this.webSocket.onWebSocketText(WampCodec.encode(msg));
 					}
 				});
+/* $endif$ */
 			}
 		}));
 	}
@@ -557,6 +571,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 			return resultSubject;
 		}
 
+/* $if version >= 1.8 $ */
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.submit(() -> {
 			if (this.status != Status.Connected) {
@@ -571,6 +586,7 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 			requestMap.put(requestId, new RequestMapEntry(CallMessage.ID, resultSubject));
 			this.webSocket.onWebSocketText(WampCodec.encode(callMsg));
 		});
+/* $endif$ */
 		return resultSubject;
 	}
 

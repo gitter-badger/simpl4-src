@@ -82,16 +82,21 @@ public class RegistryServiceImpl extends BaseRegistryServiceImpl implements Regi
 	public void  upsert(
 		@PName("key") String key, 
 		@PName("value") String value) throws RpcException {
+/* $if version >= 1.8 $ */
 		if( m_session == null) initRegistry();
 		m_session.upsert() .value(registry::key, key) .value(registry::value, value) .sync();
+/* $endif$ */
 	}
 
 	@RequiresRoles("admin")
 	public String  get(
 		@PName("key") String key ) throws RpcException {
+		String value = null;
 		if( m_session == null) initRegistry();
-		String value = m_session.select(registry::value).where(registry::key, eq(key)).sync().findFirst().get()._1;
+/* $if version >= 1.8 $ */
+		value = m_session.select(registry::value).where(registry::key, eq(key)).sync().findFirst().get()._1;
 		info("get.value("+key+"):"+value);
+/* $endif$ */
 		return value;
 	}
 
@@ -99,7 +104,9 @@ public class RegistryServiceImpl extends BaseRegistryServiceImpl implements Regi
 		public void  delete(
 		@PName("key") String key ) throws RpcException {
 		if( m_session == null) initRegistry();
+/* $if version >= 1.8 $ */
 		m_session.delete().where(registry::key, eq(key)).sync();
+/* $endif$ */
 	}
 
 	private void initRegistry() {

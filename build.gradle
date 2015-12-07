@@ -42,6 +42,7 @@ configure(subprojects -
 
 	configurations {
 		vfs
+		postbop
 		bnd
 		ajtools
 	}
@@ -51,8 +52,10 @@ configure(subprojects -
 
 	defaultTasks "copyToRepo"
 
-//	sourceCompatibility = '1.6'
-//	targetCompatibility = '1.6'
+	if(project.hasProperty("java17")) {
+		sourceCompatibility = 1.7
+		targetCompatibility = 1.7
+	}
 
 	jar.enabled=false
 	test.enabled=false
@@ -62,6 +65,7 @@ configure(subprojects -
 		vfs files("${rootDir}/repository/commons-vfs-1.0.jar")
 		vfs files("${rootDir}/repository/commons-logging-1.1.1.jar")
 		bnd files("${rootDir}/repository/biz.aQute.bnd-3.0.0.jar")
+		postbop files("${rootDir}/repository/postbop-0.0.1.jar")
 		compile files("${rootDir}/repository/biz.aQute.bnd-3.0.0.jar")
 		compile files("${rootDir}/repository/groovy-all-2.4.4-indy.jar");
 		compile files("${rootDir}/repository/aspectjrt-1.8.5.jar")
@@ -70,8 +74,8 @@ configure(subprojects -
 		aspectpath files("../../repository/shiro-aspectj-1.2.0.jar")
 	}
 	gradle.projectsEvaluated {
-		tasks.withType(JavaCompile) {
-			options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+		tasks.withType(GroovyCompile) {
+			//options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 		}
 	}
 
@@ -81,6 +85,7 @@ configure(subprojects -
 
 	ant.taskdef( resource: 'aQute/bnd/ant/taskdef.properties', classpath: configurations.bnd.asPath)
 	ant.taskdef( resource: 'org/apache/commons/vfs/tasks/tasks.properties',classpath:configurations.vfs.asPath)
+	ant.taskdef( name: 'postbop',classname:'org.jasonnet.postbop.ant.PreprocessorTask', classpath:configurations.postbop.asPath)
 
 	sourceSets {
 		main {
@@ -141,9 +146,18 @@ configure(subprojects -
 			}
 		}
 	}
+	task preProcess (type:Task) {
+		dependsOn projectClean
+		doLast{
+			ant.postbop( indir:'src', outdir:'src',out:'merge'){
+				var(name:"version",value:"${sourceCompatibility}")
+				filetype(commentend:'*/',commentbegin:'/*',extensions:'tpl', outextensions:'java')
+			}
+		}
+	}
 	compileGroovy.dependsOn.remove("compileJava")
 	compileJava.dependsOn(compileGroovy)
-	compileGroovy.dependsOn projectClean
+	compileGroovy.dependsOn projectClean,preProcess
 }
 
 
@@ -274,7 +288,7 @@ def getShortName(name){
 def compileQooxdoo(what) {
 	def cache = "${rootDir}/build/${currentBranch}/.qooxdooCache";
 	if( os == "unix" || os == "mac" ){
-		println( "commandLine \"python  ${qoodooSDK}/tool/bin/generator.py -I -m CACHE:${cache} --macro=QOOXDOO_PATH:${qoodooSDK}  --config=${clientDir}/${what}/config.json build\".tokenize()")
+		//println( "commandLine \"python  ${qoodooSDK}/tool/bin/generator.py -I -m CACHE:${cache} --macro=QOOXDOO_PATH:${qoodooSDK}  --config=${clientDir}/${what}/config.json build\".tokenize()")
 		exec {
 			commandLine "python  ${qoodooSDK}/tool/bin/generator.py -I -m CACHE:${cache} --macro=QOOXDOO_PATH:${qoodooSDK}  --config=${clientDir}/${what}/config.json build".tokenize()
 		}

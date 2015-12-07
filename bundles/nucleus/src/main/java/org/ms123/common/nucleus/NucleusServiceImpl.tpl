@@ -221,7 +221,18 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 				e.printStackTrace();
 			}
 		}
+		/* $if version >= 1.8 $ */
 		m_loaders.keySet().removeIf(k-> m_loaders.get(k) == null );
+
+		/* $else$ */
+		Iterator itl = m_loaders.keySet().iterator();
+		while(itl.hasNext()){
+			Object key = itl.next();
+			if( m_loaders.get(key) == null){
+				itl.remove();
+			}
+		}
+		/* $endif$ */
 		System.out.println("Loaders2:"+m_loaders);
 	}
 

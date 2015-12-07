@@ -247,7 +247,12 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
 				}
 			}
 		}
-		factoryCandidates.add("jdk.nashorn.api.scripting.NashornScriptEngineFactory");
+
+		Double version = Double.parseDouble(System.getProperty("java.specification.version"));
+		System.out.println("JavaVersion:"+version);
+		if( version >= 1.8){
+			factoryCandidates.add("jdk.nashorn.api.scripting.NashornScriptEngineFactory");
+		}
 		return factoryCandidates;
 	}
 }
