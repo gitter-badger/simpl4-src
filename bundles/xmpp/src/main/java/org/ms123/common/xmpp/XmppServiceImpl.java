@@ -90,7 +90,7 @@ import static org.ms123.common.xmpp.camel.XmppConstants.PARTICIPANT;
 
 /** XmppService implementation
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=xmpp" })
 public class XmppServiceImpl extends BaseXmppServiceImpl implements XmppService {
 

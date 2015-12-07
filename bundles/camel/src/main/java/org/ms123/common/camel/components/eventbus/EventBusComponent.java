@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class EventBusComponent extends UriEndpointComponent implements EndpointCompleter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EventBusComponent.class);

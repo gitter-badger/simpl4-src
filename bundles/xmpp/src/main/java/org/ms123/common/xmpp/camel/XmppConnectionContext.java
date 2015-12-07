@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class XmppConnectionContext {
 
 	private XMPPTCPConnection m_connection;

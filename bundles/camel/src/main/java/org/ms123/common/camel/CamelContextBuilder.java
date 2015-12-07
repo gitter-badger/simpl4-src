@@ -75,6 +75,7 @@ import javax.naming.Context;
 /**
  *
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class CamelContextBuilder {
 
 	private static final Logger m_logger = LoggerFactory.getLogger(CamelContextBuilder.class);

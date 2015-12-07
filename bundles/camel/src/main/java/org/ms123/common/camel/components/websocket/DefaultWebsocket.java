@@ -34,6 +34,7 @@ import flexjson.*;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class DefaultWebsocket implements WebSocketListener {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocket.class);

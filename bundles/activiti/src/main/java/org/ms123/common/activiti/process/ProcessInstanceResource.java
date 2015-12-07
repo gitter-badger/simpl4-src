@@ -34,7 +34,7 @@ import org.ms123.common.activiti.Util;
 
 /**
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 public class ProcessInstanceResource extends BaseResource {
 
 	private String m_processInstanceId;

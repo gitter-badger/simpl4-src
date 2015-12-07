@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 /**
  */
+@SuppressWarnings("unchecked")
 public class DataSourceWrapper implements DataSource {
 	private DataSource dataSource;
 

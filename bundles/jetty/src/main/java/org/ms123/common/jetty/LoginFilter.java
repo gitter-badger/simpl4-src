@@ -36,6 +36,7 @@ import flexjson.*;
 import org.springframework.util.AntPathMatcher;
 import static org.apache.commons.io.FileUtils.readFileToString;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class LoginFilter implements Filter {
 
 

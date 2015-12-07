@@ -36,6 +36,7 @@ import java.util.Hashtable;
 import org.slf4j.helpers.MessageFormatter;
 import java.util.Map;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class EventBusConsumer extends DefaultConsumer implements EventHandler {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EventBusConsumer.class);

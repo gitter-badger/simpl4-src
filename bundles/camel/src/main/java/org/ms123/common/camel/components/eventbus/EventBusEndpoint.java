@@ -31,6 +31,7 @@ import org.osgi.service.event.EventAdmin;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 @UriEndpoint(scheme = "eventbus", title = "Eventbus", syntax = "eventbus:topic", consumerClass = EventBusConsumer.class)
 public class EventBusEndpoint extends DefaultEndpoint {
 

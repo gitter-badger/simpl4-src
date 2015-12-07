@@ -52,6 +52,7 @@ import java.util.Map;
 /**
  * @version 
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class XmppProducer extends DefaultProducer implements XmppConstants {
 
 	private static final Logger LOG = LoggerFactory.getLogger(XmppProducer.class);

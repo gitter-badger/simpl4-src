@@ -32,6 +32,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.bpmn.model.BpmnModel;
 
+@SuppressWarnings("unchecked")
 public class ProcessInstanceDiagramResource extends BaseResource {
 
 	String m_processInstanceId;

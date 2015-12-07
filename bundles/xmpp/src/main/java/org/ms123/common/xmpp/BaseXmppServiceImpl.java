@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
+@SuppressWarnings({"unchecked","deprecation"})
 class BaseXmppServiceImpl {
 
 	protected PermissionService m_permissionService;

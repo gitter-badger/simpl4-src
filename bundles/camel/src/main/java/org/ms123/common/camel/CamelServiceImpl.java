@@ -79,6 +79,7 @@ import org.osgi.service.jndi.JNDIContextManager;
 
 /** CamelService implementation
  */
+@SuppressWarnings({"unchecked","deprecation"})
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=camel" })
 public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.common.camel.api.CamelService{
 

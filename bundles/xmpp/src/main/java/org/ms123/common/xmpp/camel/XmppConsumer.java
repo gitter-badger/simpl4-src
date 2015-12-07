@@ -60,6 +60,7 @@ import java.util.ArrayList;
  *
  * @version 
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class XmppConsumer extends DefaultConsumer implements PresenceListener, RosterListener, PacketListener, MessageListener, ChatMessageListener, ChatManagerListener {
 
 	private static final Logger LOG = LoggerFactory.getLogger(XmppConsumer.class);

@@ -40,6 +40,7 @@ import org.ms123.common.auth.api.AuthService;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class Simpl4UserProvider implements UserProvider {
 
 	private static final String SEARCH_FIELD_USERID = "userid";

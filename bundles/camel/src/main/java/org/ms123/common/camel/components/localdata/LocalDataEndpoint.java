@@ -29,6 +29,7 @@ import org.ms123.common.data.api.DataLayer;
 /**
  * Represents a LocalData endpoint.
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class LocalDataEndpoint extends DefaultEndpoint {
 
 	private LocalDataComponent m_component = null;

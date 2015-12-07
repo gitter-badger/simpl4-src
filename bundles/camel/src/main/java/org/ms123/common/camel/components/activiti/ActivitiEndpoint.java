@@ -31,6 +31,7 @@ import flexjson.*;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	private JSONDeserializer ds = new JSONDeserializer();

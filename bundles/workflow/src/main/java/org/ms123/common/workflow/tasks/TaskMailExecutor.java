@@ -41,6 +41,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.apache.commons.mail.SimpleEmail;
 import org.apache.commons.mail.EmailAttachment;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class TaskMailExecutor extends TaskBaseExecutor implements JavaDelegate {
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected JSONSerializer m_js = new JSONSerializer();

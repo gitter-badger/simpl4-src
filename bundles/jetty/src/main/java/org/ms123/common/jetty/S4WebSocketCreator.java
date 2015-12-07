@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  *
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class S4WebSocketCreator implements WebSocketCreator {
 
 	protected Inflector m_inflector = Inflector.getInstance();

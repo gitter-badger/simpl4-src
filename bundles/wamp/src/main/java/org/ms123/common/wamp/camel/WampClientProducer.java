@@ -38,6 +38,7 @@ import java.util.List;
 import org.ms123.common.wamp.camel.WampClientConstants.*;
 import org.ms123.common.wamp.WampClientSession;
 
+@SuppressWarnings("unchecked")
 public class WampClientProducer extends DefaultAsyncProducer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WampClientProducer.class);

@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class EventBusProducer extends DefaultAsyncProducer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EventBusProducer.class);

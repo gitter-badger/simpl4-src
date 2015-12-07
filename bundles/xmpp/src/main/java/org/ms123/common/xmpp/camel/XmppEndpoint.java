@@ -54,6 +54,7 @@ import org.slf4j.helpers.MessageFormatter;
  *
  * @version 
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrategyAware {
 
 	private static final Logger LOG = LoggerFactory.getLogger(XmppEndpoint.class);

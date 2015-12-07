@@ -29,6 +29,7 @@ import org.apache.camel.impl.DefaultEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class RepoEndpoint extends DefaultEndpoint {
 
 	private static final transient Logger LOG = LoggerFactory.getLogger(RepoEndpoint.class);

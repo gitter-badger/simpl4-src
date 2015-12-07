@@ -26,6 +26,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import flexjson.*;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class WebsocketConsumer extends DefaultConsumer {
 
 	private final WebsocketEndpoint endpoint;

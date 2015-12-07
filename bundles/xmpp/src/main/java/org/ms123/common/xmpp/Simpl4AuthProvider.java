@@ -34,6 +34,7 @@ import org.ms123.common.auth.api.AuthService;
 /**
  * Auth provider for Atlassian Crowd
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class Simpl4AuthProvider implements AuthProvider {
 
 	private static final Logger m_log = LoggerFactory.getLogger(Simpl4AuthProvider.class);

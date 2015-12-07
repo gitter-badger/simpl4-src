@@ -31,6 +31,7 @@ import org.jivesoftware.openfire.user.User;
 import org.jivesoftware.openfire.group.Group;
 import org.osgi.framework.ServiceReference;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class Simpl4Manager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Simpl4Manager.class);

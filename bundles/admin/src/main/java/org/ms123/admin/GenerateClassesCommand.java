@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class GenerateClassesCommand extends AbstractCommand {
 	@Parameter(names = "-storeId", required = true, description = "StoreId($appname_data)")
 	private String storeId;

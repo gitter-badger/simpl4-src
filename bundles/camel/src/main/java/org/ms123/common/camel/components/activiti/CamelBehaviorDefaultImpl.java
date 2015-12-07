@@ -33,6 +33,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.CamelContext;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehaviorDefaultImpl {
 
 	String m_tenant, m_processDefinitionKey;

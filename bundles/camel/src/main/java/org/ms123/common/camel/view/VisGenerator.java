@@ -42,7 +42,7 @@ import com.Ostermiller.util.CGIParser;
 /**
  * @version 
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 public class VisGenerator {
 
 	private boolean addUrl = true;

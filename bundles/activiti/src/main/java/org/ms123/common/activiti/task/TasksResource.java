@@ -29,7 +29,7 @@ import org.ms123.common.activiti.Util;
 
 /**
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 public class TasksResource extends BaseResource {
 
 	Map<String, QueryProperty> properties = new HashMap<String, QueryProperty>();

@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class GroovyRegistry implements Registry {
 
 	private ClassLoader m_fsClassLoader;
