@@ -63,7 +63,12 @@ cd $SRCTOPDIR
 CURRENTBRANCH=`git rev-parse --abbrev-ref HEAD`
 
 cd $DESTTOPDIR
-git checkout $CURRENTBRANCH >/dev/null 2>&1
+echo "DEPLOYBRANCH:$DEPLOYBRANCH"
+if [ -n "$DEPLOYBRANCH" ] ; then
+	git checkout $DEPLOYBRANCH >/dev/null 2>&1
+else
+	git checkout $CURRENTBRANCH >/dev/null 2>&1
+fi
 
 export BUNDLESBUILD="$SRCTOPDIR/build/${CURRENTBRANCH}/bundlesBuild"
 
