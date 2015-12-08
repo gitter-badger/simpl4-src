@@ -129,6 +129,7 @@ public class OsgiStarter implements ServletContextListener {
 	}
 
 	public void contextDestroyed(ServletContextEvent sce) {
+		info("contextDestroyed" );
 		terminate();
 		jettyPort = -1;
 	}
