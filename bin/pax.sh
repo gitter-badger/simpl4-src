@@ -196,6 +196,12 @@ do
 	springbundles=${springbundles}"scan-bundle:file:$i "
 done
 
+vfsbundles=""
+for i in $REPOSITORY/vfs/*jar
+do
+	vfsbundles=${vfsbundles}"scan-bundle:file:$i "
+done
+
 activemqbundles=""
 for i in $REPOSITORY/activemq/*ar
 do
@@ -238,6 +244,7 @@ ${localbundles} \
 ${ariesbundles} \
 ${karafbundles} \
 ${springbundles} \
+${vfsbundles} \
 ${activemqbundles} \
 ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/pax-web-jetty-bundle-4.1.1.jar@3 \
