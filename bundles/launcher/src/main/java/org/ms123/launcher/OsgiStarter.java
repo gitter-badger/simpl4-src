@@ -48,6 +48,9 @@ import org.unix4j.unix.Ls;
 import org.unix4j.unix.Sort;
 import org.unix4j.unix.grep.GrepOption;
 import org.unix4j.variable.Arg;
+import org.eclipse.jgit.api.*;
+import org.eclipse.jgit.util.*;
+import org.eclipse.jgit.lib.*;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class OsgiStarter implements ServletContextListener {
@@ -95,7 +98,7 @@ public class OsgiStarter implements ServletContextListener {
 		@Override
 		public String call() throws Exception {
 			try {
-				Thread.sleep(15000);
+				Thread.sleep(5500);
 			} catch (InterruptedException ex) {
 				ex.printStackTrace();
 			}
@@ -180,6 +183,44 @@ public class OsgiStarter implements ServletContextListener {
 		File logConfigTpl = new File(simpl4Dir, "etc/config/org/ops4j/pax/logging.config.tpl");
 		File logConfig = new File(simpl4Dir,"etc/config/org/ops4j/pax/logging.config");
 		Unix4j.cat(logConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").toFile(logConfig);
+
+		
+		File bundledRepos = new File(simpl4Dir, "bundledrepos");
+		File gitRepos = new File(simpl4Dir, "gitrepos");
+		if( bundledRepos.exists()){
+			List<File> dataRepos = new ArrayList();
+			List<String> files = Unix4j.cd(bundledRepos).ls().toStringList();
+			info("files:"+files);
+			for( String file : files){
+				String arch = "file:"+bundledRepos.toString()+"/"+file;
+				URI zipUri=null;
+				try{
+					zipUri = new URI(arch.replaceAll("\\\\", "/"));;
+					info("zipUri:"+zipUri);
+					ZipfileUnpacker zfu = new ZipfileUnpacker( zipUri);
+					zfu.unpack( gitRepos);
+					Filename fn = new Filename(arch, '/', '.' );
+					File repoData = new File(gitRepos, fn.filename()+"_data");
+					if( !repoData.exists()){
+						dataRepos.add( repoData);	
+					}
+				}catch(Exception e){
+					info("unpack:"+zipUri+":"+e);
+					e.printStackTrace();
+				}
+			}
+			for( File dr : dataRepos){
+				InitCommand ic = Git.init();
+				info("jgit.init:"+dr);
+				ic.setDirectory(dr);
+				try{
+					ic.call();
+				}catch(Exception e){
+					info("data_repo_create("+dr+"):"+e);
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	private static void setProperties() {
@@ -310,6 +351,7 @@ public class OsgiStarter implements ServletContextListener {
 				info("waitForStop2:"+eventObj);
 			} while ((int) on(eventObj).call("getType").get() == FrameworkEvent.STOPPED_UPDATE);
 			osgiFrameworkObj = null;
+			info("osgiFrameworkObj:null");
 		} catch (Exception ex) {
 			info("Could not create osgi-framework: " + ex);
 			ex.printStackTrace();
@@ -318,6 +360,6 @@ public class OsgiStarter implements ServletContextListener {
 
 	private static void info(String msg) {
 		System.out.println("OsgiStarter:" + msg);
-		System.err.println("OsgiStarter:" + msg);
+//		System.err.println("OsgiStarter:" + msg);
 	}
 }
