@@ -110,13 +110,15 @@ abstract class BaseCompileServiceImpl {
 	}
 
 	private String _compileGroovy(String namespace, String path, String code) {
-		String jooqDir = System.getProperty("workspace") + "/" + "jooq/build";
+		List<String> classpath = new ArrayList<String>();
+		classpath.add(System.getProperty("workspace") + "/" + "jooq/build");
+		classpath.add(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
 		String destDir = System.getProperty("workspace") + "/" + "groovy" + "/" + namespace;
 		String srcDir = System.getProperty("git.repos") + "/" + namespace;
 		CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", false);
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.getOptimizationOptions().put("indy", false);
-		config.setClasspath( jooqDir );
+		config.setClasspathList( classpath );
 		config.setTargetDirectory(destDir);
 		FileSystemCompiler fsc = new FileSystemCompiler(config);
 
@@ -180,7 +182,7 @@ abstract class BaseCompileServiceImpl {
 		String srcDir = System.getProperty("git.repos") + "/" + namespace;
 
 		try{
-			JavaCompiler.compile(m_bundleContext.getBundle(), FilenameUtils.getBaseName(path), code,new File(destDir));
+			JavaCompiler.compile(namespace, m_bundleContext.getBundle(), FilenameUtils.getBaseName(path), code,new File(destDir));
 		}catch(Exception e){
 			return e.getMessage();
 		}

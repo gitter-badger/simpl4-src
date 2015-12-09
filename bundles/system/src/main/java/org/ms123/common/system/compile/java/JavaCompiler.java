@@ -21,11 +21,11 @@ public class JavaCompiler {
 
 
 	private static String workspace   = System.getProperty("workspace");
-	private static File[] locations = {
-		new File(workspace, "jooq/build"),
-		new File("locatation2")
-	};
-	public static Class<?> compile(Bundle bundle, String className, String sourceCodeInText) throws Exception {
+	private static String gitRepos   = System.getProperty("git.repos");
+	public static Class<?> compile(String namespace, Bundle bundle, String className, String sourceCodeInText) throws Exception {
+		File[] locations = new File[2];
+		locations[0] = new File(workspace, "jooq/build");
+		locations[1] = new File(gitRepos, ".etc/jooq/build");
 		SourceCode sourceCode = new SourceCode(className, sourceCodeInText);
 		CompiledCode compiledCode = new CompiledCode(className);
 		Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
@@ -51,11 +51,14 @@ public class JavaCompiler {
 		}
 	}
 
-	public static void compile(Bundle bundle, String className, File sourceFile, File destinationDirectory) throws Exception {
-		compile(bundle, className, readFileToString(sourceFile), destinationDirectory);
+	public static void compile(String namespace, Bundle bundle, String className, File sourceFile, File destinationDirectory) throws Exception {
+		compile(namespace, bundle, className, readFileToString(sourceFile), destinationDirectory);
 	}
 
-	public static void compile(Bundle bundle, String className, String sourceCodeInText, File destinationDirectory) throws Exception {
+	public static void compile(String namespace, Bundle bundle, String className, String sourceCodeInText, File destinationDirectory) throws Exception {
+		File[] locations = new File[2];
+		locations[0] = new File(workspace, "jooq/build");
+		locations[1] = new File(gitRepos, ".etc/jooq/build");
 		SourceCode sourceCode = new SourceCode(className, sourceCodeInText);
 		CompiledCode compiledCode = new CompiledCode(className);
 		Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
