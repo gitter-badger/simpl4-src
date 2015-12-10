@@ -905,8 +905,10 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 					response.setContentType( contentType );
 					response.setContentLength( (int)asset.length() );
 					OutputStream os = response.getOutputStream();
-					IOUtils.copy( new FileInputStream(asset), os );
+					InputStream in = new FileInputStream(asset);
+					IOUtils.copy( in, os );
 					os.close();
+					in.close();
 				}
 			}
 		}else{
