@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceRegistration;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.annotation.component.*;
 import org.osgi.service.event.Event;
@@ -60,6 +61,7 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 public class LogServiceImpl extends BaseLogServiceImpl implements LogService, EventHandler {
 
 	private static final Logger m_logger = LoggerFactory.getLogger(LogServiceImpl.class);
+	private  ServiceRegistration m_serviceRegistration;
 
 	private EventAdmin m_eventAdmin;
 
@@ -75,7 +77,7 @@ public class LogServiceImpl extends BaseLogServiceImpl implements LogService, Ev
 			m_bundleContext = bundleContext;
 			Dictionary d = new Hashtable();
 			d.put(EventConstants.EVENT_TOPIC, topics);
-			b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
+			m_serviceRegistration = b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -111,6 +113,7 @@ public class LogServiceImpl extends BaseLogServiceImpl implements LogService, Ev
 
 	protected void deactivate() throws Exception {
 		info("LogServiceImpl.deactivate");
+		m_serviceRegistration.unregister();
 	}
 
 	public Map<String, List<Map>> getLogKeyList(

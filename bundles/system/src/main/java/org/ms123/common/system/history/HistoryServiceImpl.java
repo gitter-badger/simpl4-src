@@ -41,6 +41,7 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.osgi.framework.ServiceRegistration;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
@@ -53,6 +54,8 @@ import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 public class HistoryServiceImpl extends BaseHistoryServiceImpl implements HistoryService, EventHandler {
 
 	private EventAdmin m_eventAdmin;
+	private BundleContext m_bundleContext;
+	private  ServiceRegistration m_serviceRegistration;
 	private static final String[] topics = new String[] { HISTORY_TOPIC };
 
 
@@ -61,11 +64,12 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		System.out.println("HistoryEventHandlerService.activate.props:" + props);
+		m_bundleContext=bundleContext;
 		try {
 			Bundle b = bundleContext.getBundle();
 			Dictionary d = new Hashtable();
 			d.put(EventConstants.EVENT_TOPIC, topics);
-			b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
+			m_serviceRegistration = b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -77,6 +81,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 
 	protected void deactivate() throws Exception {
 		info("HistoryServiceImpl.deactivate");
+		m_serviceRegistration.unregister();
 	}
 
 	public void handleEvent(Event event) {

@@ -60,6 +60,7 @@ import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.annotation.component.*;
 import org.ms123.common.utils.ScriptEngineService;
@@ -119,6 +120,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected ProcessEngineFactory m_processEngineFactory;
+	private  ServiceRegistration m_serviceRegistration;
 	private DataSource m_dataSource;
 
 	private String m_namespace;
@@ -174,7 +176,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		m_bundleContext = bundleContext;
 		Dictionary d = new Hashtable();
 		d.put(EventConstants.EVENT_TOPIC, topics);
-		m_bundleContext.registerService(EventHandler.class.getName(), this, d);
+		m_serviceRegistration = m_bundleContext.registerService(EventHandler.class.getName(), this, d);
 	}
 
 	protected void deactivate() {
@@ -186,6 +188,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		((DataSourceWrapper)m_dataSource).destroy();
 		h2Close(m_dataSource);
 		m_dataSource = null;
+		m_serviceRegistration.unregister();
 	}
 
 	private ClassLoader createFsClassLoader1(){

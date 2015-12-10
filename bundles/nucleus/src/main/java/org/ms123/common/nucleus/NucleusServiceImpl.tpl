@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceRegistration;
 import org.ms123.common.nucleus.PostgresqlPersistenceManagerLoader;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.JDOEnhancer;
@@ -75,6 +76,7 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 	private BundleContext m_bc;
 	private TransactionService m_transactionService;
 	private ClassLoader m_aidClassLoader;
+	private  ServiceRegistration m_serviceRegistration;
 
 	private List<AbstractPersistenceManagerLoader> m_openList = new ArrayList();
 
@@ -95,7 +97,7 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 			debug("NucleusServiceImpl.activate:" + bundleContext);
 			Dictionary d = new Hashtable();
 			d.put(EventConstants.EVENT_TOPIC, topics);
-			m_bc.registerService(EventHandler.class.getName(), this, d);
+			m_serviceRegistration = m_bc.registerService(EventHandler.class.getName(), this, d);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -104,6 +106,7 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 	protected void deactivate() throws Exception {
 		System.out.println("NucleusServiceImpl.deactivate");
 		closeAll();
+		m_serviceRegistration.unregister();
 	}
 	public void handleEvent(Event event) {
 		debug("NucleusServiceImpl.Event: " + event);

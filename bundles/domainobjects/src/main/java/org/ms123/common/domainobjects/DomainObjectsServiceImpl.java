@@ -46,6 +46,7 @@ import org.ms123.common.libhelper.Inflector;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ManagedService;
@@ -75,6 +76,7 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 public class DomainObjectsServiceImpl implements DomainObjectsService, EventHandler {
 
 	private static final Logger m_logger = LoggerFactory.getLogger(DomainObjectsServiceImpl.class);
+	private  ServiceRegistration m_serviceRegistration;
 
 	protected BundleContext m_bc;
 
@@ -124,7 +126,7 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 			Bundle b = bundleContext.getBundle();
 			Dictionary d = new Hashtable();
 			d.put(EventConstants.EVENT_TOPIC, topics);
-			b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
+			m_serviceRegistration = b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -152,6 +154,7 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 
 	protected void deactivate() throws Exception {
 		System.out.println("DomainObjectsServiceImpl.deactivate");
+		m_serviceRegistration.unregister();
 	}
 
 	//Old Stuff(SourceGen and Compile)

@@ -46,6 +46,7 @@ import org.ms123.common.system.compile.java.JavaCompiler;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceRegistration;
 
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
@@ -114,6 +115,7 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 	private static final Logger m_logger = LoggerFactory.getLogger(BaseCamelServiceImpl.class);
 
 	protected Inflector m_inflector = Inflector.getInstance();
+	protected  ServiceRegistration m_serviceRegistration;
 
 	protected DataLayer m_dataLayer;
 
@@ -155,7 +157,7 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 			Bundle b = bundleContext.getBundle();
 			Dictionary d = new Hashtable();
 			d.put(EventConstants.EVENT_TOPIC, topics);
-			b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
+			m_serviceRegistration = b.getBundleContext().registerService(EventHandler.class.getName(), this, d);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -531,13 +533,15 @@ info("lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 	}
 
 	protected void	_compileGroovyScripts(String namespace,String path,String code){
-		String jooqDir = System.getProperty("workspace") + "/" + "jooq/build";
+		List<String> classpath = new ArrayList<String>();
+		classpath.add(System.getProperty("workspace") + "/" + "jooq/build");
+		classpath.add(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
 		String destDir = System.getProperty("workspace")+"/"+ "groovy"+"/"+namespace;
 		String srcDir = System.getProperty("git.repos")+"/"+namespace;
 		CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", false);
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.getOptimizationOptions().put("indy", false);
-		config.setClasspath( jooqDir );
+		config.setClasspathList( classpath );
 		config.setTargetDirectory( destDir);
 		FileSystemCompiler fsc = new FileSystemCompiler(config);
 
@@ -556,7 +560,7 @@ info("lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 		String destDir = System.getProperty("workspace")+"/"+ "java"+"/"+namespace;
 		String srcDir = System.getProperty("git.repos")+"/"+namespace;
 		try{
-			JavaCompiler.compile(m_bundleContext.getBundle(), FilenameUtils.getBaseName(path), code,new File(destDir));
+			JavaCompiler.compile(namespace, m_bundleContext.getBundle(), FilenameUtils.getBaseName(path), code,new File(destDir));
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());

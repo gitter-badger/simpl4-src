@@ -31,6 +31,7 @@ import java.util.Set;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
 
 import org.ms123.common.data.api.DataLayer;
@@ -100,6 +101,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 
 	protected void deactivate() throws Exception {
 		info("CamelServiceImpl deactivate");
+		m_serviceRegistration.unregister();
 	}
 
 
