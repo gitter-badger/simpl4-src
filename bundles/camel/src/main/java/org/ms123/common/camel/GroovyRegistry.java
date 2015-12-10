@@ -45,10 +45,12 @@ public class GroovyRegistry implements Registry {
 		String basedir = System.getProperty("workspace") + "/" + "groovy" + "/" + namespace;
 		String basedir2 = System.getProperty("workspace") + "/" + "java" + "/" + namespace;
 		String basedir3 = System.getProperty("workspace") + "/" + "jooq/build";
-		m_locations = new File[3];
+		String basedir4 = System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build";
+		m_locations = new File[4];
 		m_locations[0] = new File(basedir);
 		m_locations[1] = new File(basedir2);
 		m_locations[2] = new File(basedir3);
+		m_locations[3] = new File(basedir4);
 		m_fsClassLoader = new FileSystemClassLoader(parent, m_locations);
 		m_bundleContect=bc;
 	}
