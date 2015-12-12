@@ -82,6 +82,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	protected void deactivate() throws Exception {
 		info("HistoryServiceImpl.deactivate");
 		m_serviceRegistration.unregister();
+		cassandraAccess.close();
 	}
 
 	public void handleEvent(Event event) {

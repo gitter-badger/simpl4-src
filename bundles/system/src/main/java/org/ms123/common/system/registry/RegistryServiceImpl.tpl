@@ -76,6 +76,9 @@ public class RegistryServiceImpl extends BaseRegistryServiceImpl implements Regi
 
 	protected void deactivate() throws Exception {
 		info("RegistryServiceImpl.deactivate");
+		if( m_session != null){
+			m_session.close();
+		}
 	}
 
 	@RequiresRoles("admin")

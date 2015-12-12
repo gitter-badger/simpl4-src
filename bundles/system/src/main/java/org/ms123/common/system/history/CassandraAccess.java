@@ -35,6 +35,7 @@ public interface CassandraAccess {
 	public final String ENDTIME = "endTime";
 	public final String STATUS = "status";
 
+	public void close();
 	public void upsertHistory(String key, Date time, String type, String hint, String msg);
 
 	public void upsertAcc(String activitiId, String routeInstanceId);

@@ -73,6 +73,12 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 		m_cassandraService = cs;
 		initSession();
 	}
+	public void close(){
+		info("CassandraAccessImpl.close");
+		if (m_session != null && !m_session.isClosed()) {
+			m_session.close();
+		}
+	}
 	public void upsertHistory(String key, Date date, String type, String hint, String msg) {
 		String key1 = null;
 		String key2 = null;

@@ -11,6 +11,7 @@ dependencies {
 	compile files("${repository}/slf4j-api-1.6.1.jar")
   compile files("${repository}/pax-web-jetty-bundle-4.1.1.jar")
   compile files("${repository}/flexjson-2.1.bar")
+  compile files("${repository}/guava-18.0.jar")
 	compile files("${repository}/commons/commons-lang3-3.3.2.jar")
 	compile files("${repository}/cassandra/apache-cassandra-2.1.5ms.jar")
 	compile files("${repository}/cassandra/cassandra-driver-core-2.1.6.jar")
