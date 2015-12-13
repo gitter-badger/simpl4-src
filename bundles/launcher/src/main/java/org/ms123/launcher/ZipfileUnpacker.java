@@ -23,6 +23,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.provider.AbstractFileSystem;
 import java.net.URI;
 import java.io.File;
 import java.io.IOException;
@@ -46,11 +47,11 @@ public class ZipfileUnpacker {
 			try {
 				fileSystemManager.toFileObject(outputDir).copyFrom(zipFileSystem, new AllFileSelector());
 			} finally {
-System.out.println("Close.zipFileSystem");
+				AbstractFileSystem fs = (AbstractFileSystem)zipFileSystem.getFileSystem();
 				zipFileSystem.close();
+				fs.close();
 			}
 		} finally {
-System.out.println("Close.packFileObject");
 			packFileObject.close();
 		}
 	}

@@ -51,6 +51,8 @@ import org.unix4j.variable.Arg;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.util.*;
 import org.eclipse.jgit.lib.*;
+import org.apache.commons.io.FileUtils;
+
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class OsgiStarter implements ServletContextListener {
@@ -82,7 +84,7 @@ public class OsgiStarter implements ServletContextListener {
 			jettyHost = "127.0.0.1";
 		}
 		simpl4BaseUrl = "http://" + loopBack.getHostAddress() + ":" + jettyPort;
-		System.out.println("contextInitialized:" + jettyPort + "|" + loopBack + "|" + simpl4BaseUrl);
+		info("contextInitialized:" + jettyPort + "|" + loopBack + "|" + simpl4BaseUrl);
 		ExecutorService executor = getExecutorService();
 		executor.submit(new MyCallable(sce));
 	}
@@ -157,88 +159,28 @@ public class OsgiStarter implements ServletContextListener {
 		}
 	}
 
-	private static void doSetup(){
-		File loggingConfig = new File(simpl4Dir, "etc/logging.config");
-		if( loggingConfig.exists()){
-			info("no setup needed");
-			return;
-		}
-		String loggingConfigTpl = new File(simpl4Dir, "etc/logging.config.tpl").toString();
-		info("doSetup.loggingConfigTpl:"+loggingConfigTpl);
-		String basedir = simpl4Dir.replaceAll("\\\\", "/");
-		info("doSetup.basedir:"+basedir);
-		File logDir = new File(simpl4Dir,"log");
-		if( !logDir.exists()){
-			logDir.mkdir();
-		}
-		info("doSetup.logDir:"+logDir);
-		Unix4j.cat(loggingConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").
-		sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(loggingConfig);
-
-		File logBackTpl = new File(simpl4Dir, "etc/logback.xml.tpl");
-		File logBack = new File(simpl4Dir,"etc/logback.xml");
-		Unix4j.cat(logBackTpl).sed("s!_BASEDIR_!"+basedir+"!g").
-		sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(logBack);
-
-		File logConfigTpl = new File(simpl4Dir, "etc/config/org/ops4j/pax/logging.config.tpl");
-		File logConfig = new File(simpl4Dir,"etc/config/org/ops4j/pax/logging.config");
-		Unix4j.cat(logConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").toFile(logConfig);
-
-		
-		File bundledRepos = new File(simpl4Dir, "bundledrepos");
-		File gitRepos = new File(simpl4Dir, "gitrepos");
-		if( bundledRepos.exists()){
-			List<File> dataRepos = new ArrayList();
-			List<String> files = Unix4j.cd(bundledRepos).ls().toStringList();
-			info("files:"+files);
-			for( String file : files){
-				String arch = "file:"+bundledRepos.toString()+"/"+file;
-				URI zipUri=null;
-				try{
-					zipUri = new URI(arch.replaceAll("\\\\", "/"));;
-					info("zipUri:"+zipUri);
-					ZipfileUnpacker zfu = new ZipfileUnpacker( zipUri);
-					zfu.unpack( gitRepos);
-					Filename fn = new Filename(arch, '/', '.' );
-					File repoData = new File(gitRepos, fn.filename()+"_data");
-					if( !repoData.exists()){
-						dataRepos.add( repoData);	
-					}
-				}catch(Exception e){
-					info("unpack:"+zipUri+":"+e);
-					e.printStackTrace();
-				}
-			}
-			for( File dr : dataRepos){
-				InitCommand ic = Git.init();
-				info("jgit.init:"+dr);
-				ic.setDirectory(dr);
-				try{
-					ic.call();
-				}catch(Exception e){
-					info("data_repo_create("+dr+"):"+e);
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
 	private static void setProperties() {
 		String af = new File(".").getAbsolutePath();
-		info("currentDir:" + af);
-		info("simpl4Dir:" + simpl4Dir);
+		String vardir = (String) System.getProperty("tpso.web.vardir");
+		String varSimpl4Dir = null;
+		if( vardir != null){
+			varSimpl4Dir = new File(vardir, "simpl4").toString();
+		}
+		info("setProperties.currentDir:" + af);
+		info("setProperties.simpl4Dir:" + simpl4Dir);
+		info("setProperties.varSimpl4Dir:" + varSimpl4Dir);
 		setUserDir(simpl4Dir + "/server");
 		System.setProperty("activemq.data", simpl4Dir + "/etc/activemq/data");
 		System.setProperty("cassandra.boot_without_jna", "true");
-		System.setProperty("cassandra.storagedir", simpl4Dir + "/gitrepos/global_data/store/cassandra");
+		System.setProperty("cassandra.storagedir", ((vardir!=null) ? varSimpl4Dir : simpl4Dir) + "/gitrepos/global_data/store/cassandra");
 		System.setProperty("disableCheckForReferencesInContentException", "true");
 		System.setProperty("drools.dialect.java.compiler", "JANINO");
 		System.setProperty("etc.dir", simpl4Dir + "/etc");
 		System.setProperty("felix.cm.dir", simpl4Dir + "/etc/config");
 		System.setProperty("felix.config.properties", "file:" + simpl4Dir + "/server/felix/config.ini");
-		System.setProperty("felix.fileinstall.dir", simpl4Dir + "/gitrepos/.bundles");
+		System.setProperty("felix.fileinstall.dir", ((vardir!=null) ? varSimpl4Dir : simpl4Dir) + "/gitrepos/.bundles");
 		System.setProperty("file.encoding", "UTF-8");
-		System.setProperty("git.repos", simpl4Dir + "/gitrepos");
+		System.setProperty("git.repos", ((vardir!=null) ? varSimpl4Dir : simpl4Dir) + "/gitrepos");
 		System.setProperty("groovy.target.indy", "false");
 		System.setProperty("jetty.host", jettyHost);
 //		System.setProperty("org.eclipse.jetty.LEVEL", "DEBUG");
@@ -252,7 +194,11 @@ public class OsgiStarter implements ServletContextListener {
 		System.setProperty("karaf.systemBundlesStartLevel", "0");
 		System.setProperty("openfireHome", simpl4Dir + "/etc/openfire");
 		System.setProperty("org.ops4j.pax.logging.DefaultServiceLog.level", "ERROR");
-		System.setProperty("org.osgi.framework.storage", simpl4Dir + "/server/felix/cache/runner");
+		if( vardir != null){
+			System.setProperty("org.osgi.framework.storage", varSimpl4Dir + "/server/felix/cache");
+		}else{
+			System.setProperty("org.osgi.framework.storage", simpl4Dir + "/server/felix/cache/runner");
+		}
 		System.setProperty("org.osgi.service.http.port", "7170");
 		System.setProperty("server.root", simpl4Dir + "/server");
 		System.setProperty("simpl4.dir", simpl4Dir);
@@ -263,9 +209,14 @@ public class OsgiStarter implements ServletContextListener {
 		System.setProperty("webconsole.jmx.url", "service:jmx:rmi:///jndi/rmi://localhost:1098/jmxrmi");
 		System.setProperty("webconsole.jmx.user", "admin");
 		System.setProperty("webconsole.type", "properties");
-		System.setProperty("workspace", simpl4Dir + "/workspace");
-		System.setProperty("bitronix.tm.journal.disk.logPart1Filename", simpl4Dir + "/server/btm1.tlog");
-		System.setProperty("bitronix.tm.journal.disk.logPart2Filename", simpl4Dir + "/server/btm2.tlog");
+		System.setProperty("workspace", ((vardir!=null) ? varSimpl4Dir : simpl4Dir) + "/workspace");
+		if( vardir != null){
+			System.setProperty("bitronix.tm.journal.disk.logPart1Filename", varSimpl4Dir + "/server/btm1.tlog");
+			System.setProperty("bitronix.tm.journal.disk.logPart2Filename", varSimpl4Dir + "/server/btm2.tlog");
+		}else{
+			System.setProperty("bitronix.tm.journal.disk.logPart1Filename", simpl4Dir + "/server/btm1.tlog");
+			System.setProperty("bitronix.tm.journal.disk.logPart2Filename", simpl4Dir + "/server/btm2.tlog");
+		}
 		Double version = Double.parseDouble(System.getProperty("java.specification.version"));
 		System.out.println("JavaVersion:"+version);
 		if( version < 1.8){
@@ -277,6 +228,7 @@ public class OsgiStarter implements ServletContextListener {
 			System.setProperty("simpl4.activemq.disabled", "true");
 			System.setProperty("simpl4.openfire.disabled", "true");
 		}
+		System.setProperty("simpl4.in_servlet", "true");
 		
 	}
 
@@ -299,7 +251,6 @@ public class OsgiStarter implements ServletContextListener {
 
 	private static void startFramework() {
 		URL felixURL = null;
-		doSetup();
 		setProperties();
 		Main.loadSystemProperties();
 		Map<String, String> configProps = Main.loadConfigProperties();
@@ -357,7 +308,6 @@ public class OsgiStarter implements ServletContextListener {
 			ex.printStackTrace();
 		}
 	}
-
 	private static void info(String msg) {
 		System.out.println("OsgiStarter:" + msg);
 //		System.err.println("OsgiStarter:" + msg);

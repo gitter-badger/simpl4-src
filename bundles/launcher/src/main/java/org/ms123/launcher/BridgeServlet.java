@@ -52,7 +52,12 @@ public class BridgeServlet extends ProxyServlet {
 	public void init() throws ServletException {
 		super.init();
 		ServletConfig config = getServletConfig();
-		info("INITEND");
+		info("BridgeServlet.init");
+	}
+
+	@Override
+	public void destroy() {
+		info("BridgeServlet.destroy");
 	}
 
 	@Override
