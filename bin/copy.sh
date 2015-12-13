@@ -97,12 +97,13 @@ cp $REPOSITORY/jetty-proxy-9.2.9.v20150224.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/pax-web-jetty-bundle-4.1.1.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/flexjson-2.1.bar ${WEBDIRECTORY}/lib/flexjson-2.1.jar
 cp $REPOSITORY/jsoup-1.8.3.jar ${WEBDIRECTORY}/lib
-cp $REPOSITORY/joor-0.9.5.jar ${WEBDIRECTORY}/lib
+cp $REPOSITORY/joor-0.9.6.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/unix4j-0.3.1.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/org.eclipse.jgit-4.1.1.201511131810-r.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/vfs/commons-vfs2-2.1.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/slf4j-api-1.7.5.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/slf4j-simple-1.7.5.jar ${WEBDIRECTORY}/lib
+cp $REPOSITORY/commons/commons-io-2.5.jar ${WEBDIRECTORY}/lib
 cp $SRCTOPDIR/etc/webinf/web.xml ${WEBDIRECTORY}
 zip -d ${WEBDIRECTORY}/lib/pax-web-jetty-bundle-4.1.1.jar "javax/*" >/dev/null 
 
