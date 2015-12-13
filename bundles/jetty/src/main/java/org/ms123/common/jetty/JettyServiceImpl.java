@@ -226,8 +226,8 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 			}
 		}
 
-		String sh = System.getProperty("workspace");
-		m_basedir = new File(sh).getCanonicalFile().getParent();
+		String sh = System.getProperty("simpl4.dir");
+		m_basedir = new File(sh).getCanonicalFile().toString();
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 
 		boolean isOpenfireDisabled = System.getProperty("simpl4.openfire.disabled") != null && "true".equals(System.getProperty("simpl4.openfire.disabled"));
