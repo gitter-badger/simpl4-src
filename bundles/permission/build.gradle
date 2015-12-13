@@ -19,5 +19,5 @@ dependencies {
   compile files("${repository}/pax-web-jetty-bundle-4.1.1.jar")
 	compile files("${repository}/slf4j-api-1.6.1.jar")
   compile files("${repository}/spring/spring-core-3.2.5.RELEASE.jar")
-  compile files("${repository}/commons/commons-io-2.4.jar")
+  compile files("${repository}/commons/commons-io-2.5.jar")
 }

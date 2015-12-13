@@ -10,7 +10,7 @@ dependencies {
 	compile files("${repository}/h2-1.3.170.jar")
 	compile files("${repository}/hsqldb.jar")
 	compile files("${repository}/jta-1.1.jar")
-	compile files("${repository}/commons/commons-io-2.4.jar")
+	compile files("${repository}/commons/commons-io-2.5.jar")
 	compile files("${repository}/org.eclipse.jgit-4.1.1.201511131810-r.jar")
 	compile files("${bundlesBuild}/org.ms123.common.rpc-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.utils-1.0.0.jar")

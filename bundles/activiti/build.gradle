@@ -27,6 +27,6 @@ dependencies {
 	compile files("${repository}/object-traverser.bar")
 	compile files("${repository}/antlr.bar")
 	compile files("${repository}/commons/commons-lang3-3.3.2.jar")
-  compile files("${repository}/commons/commons-io-2.4.jar")
+  compile files("${repository}/commons/commons-io-2.5.jar")
 }
 
