@@ -41,47 +41,47 @@ import org.osgi.service.cm.ManagedService;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.data.api.DataLayer;
+import org.ms123.common.workflow.api.WorkflowService;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.camel.api.CamelService;
+import org.ms123.common.domainobjects.DomainObjectsService;
+import org.ms123.common.system.compile.CompileService;
+import org.ms123.common.git.GitService;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
-import org.apache.commons.mail.Email;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
-import org.apache.commons.mail.SimpleEmail;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 
 /** ManagementService implementation
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=management" })
-public class ManagementServiceImpl implements ManagementService {
+public class ManagementServiceImpl extends BaseManagementServiceImpl implements ManagementService {
 
 	private static final Logger m_logger = LoggerFactory.getLogger(ManagementServiceImpl.class);
 
 	private DataLayer m_dataLayer;
 
-	public static String CUSTOMER_ENTITY = "customer";
-	public static String UNIT_ENTITY = "unit";
-
-	public static String MANAGEMENT_NS = "management";
-
 	public ManagementServiceImpl() {
-		m_logger.info("ManagementServiceImpl construct");
+		info("ManagementServiceImpl construct");
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		System.out.println("ManagementServiceImpl.activate.props:" + props);
 		try {
-			m_logger.info("ManagementServiceImpl.activate -->");
-			Bundle b = bundleContext.getBundle();
+			info("ManagementServiceImpl.activate");
+			m_bundleContext = bundleContext;
+			registerEventHandler();
+			m_bundleContext.addFrameworkListener(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -92,29 +92,8 @@ public class ManagementServiceImpl implements ManagementService {
 	}
 
 	protected void deactivate() throws Exception {
-		m_logger.info("deactivate");
-		System.out.println("ManagementServiceImpl deactivate");
-	}
-
-	protected void sendEmail(String to, String from, String subject, String text) throws Exception {
-		System.out.println("sendEmail:" + to);
-		SimpleEmail email = new SimpleEmail();
-		email.setMsg(text);
-		email.addTo(to);
-		email.setFrom(from);
-		email.setSubject(subject);
-		email.setHostName("127.0.0.1");
-		email.send();
-	}
-
-	private int exec(String line, ByteArrayOutputStream outputStream, ByteArrayOutputStream outputErr, int[] exitValues) throws Exception {
-		CommandLine cmdLine = CommandLine.parse(line);
-		DefaultExecutor executor = new DefaultExecutor();
-		executor.setExitValues(exitValues);
-		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, outputErr);
-		executor.setStreamHandler(streamHandler);
-		int exitValue = executor.execute(cmdLine);
-		return exitValue;
+		info("ManagementServiceImpl.deactivate");
+		m_serviceRegistration.unregister();
 	}
 
 	/* BEGIN JSON-RPC-API*/
@@ -123,106 +102,9 @@ public class ManagementServiceImpl implements ManagementService {
 			@PName("host")             String host, 
 			@PName("cmd")              String cmd) throws RpcException {
 		try {
-			String line = "ssh -o StrictHostKeyChecking=no " + host + " virsh -c qemu:///system " + cmd;
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			ByteArrayOutputStream outputError = new ByteArrayOutputStream();
-			int exitValue = exec(line, outputStream, outputError, new int[] { 0, 1 });
-			String stderr = outputError.toString();
-			String stdout = outputStream.toString();
-			System.out.println("startVM.management.exetValue:" + exitValue);
-			System.out.println("startVM.management.stdout:" + stdout);
-			System.out.println("startVM.management.stderr:" + stderr);
-			Map ret = new HashMap();
-			ret.put("exitValue", exitValue);
-			ret.put("stdout", stdout);
-			ret.put("stderr", stderr);
-			return ret;
+			return null;
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ManagementService.managementCmd:", e);
-		} finally {
-		}
-	}
-
-	public String destroyUnit(
-			@PName("customerId")       String customerId, 
-			@PName("unitId")       String unitId, 
-			@PName("name")             String name) throws RpcException {
-		try {
-			if (customerId == null) {
-				throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ManagementService.destroyUnit:missing_customer");
-			}
-			System.out.println("customerId:" + customerId);
-			StoreDesc sdesc = StoreDesc.getNamespaceData(MANAGEMENT_NS);
-			SessionContext sc = m_dataLayer.getSessionContext(sdesc);
-			Object c = sc.getObjectById(sc.getClass(CUSTOMER_ENTITY), customerId);
-			System.out.println("customer:" + c);
-			int network = (Integer) PropertyUtils.getProperty(c, "netnumber");
-			String host = (String) PropertyUtils.getProperty(c, "hostsystem");
-			System.out.println("host:" + host);
-			Map ret = new HashMap();
-			String line = "ssh -p2122 -o StrictHostKeyChecking=no " + host + " /opt/projects/vm-admin/destroy-vm.sh -n " + name + " -f";
-			System.out.println("line:" + line);
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			ByteArrayOutputStream outputError = new ByteArrayOutputStream();
-			int exitValue = exec(line, outputStream, outputError, new int[] { 0, 1 });
-			String demoname = outputError.toString();
-			String stdout = outputStream.toString();
-			System.out.println("createUnit.create-vm.exetValue:" + exitValue);
-			System.out.println("createUnit.create-vm.stdout:" + stdout);
-			m_dataLayer.deleteObject(null, sdesc, "unit", unitId);
-			return "SWunit destroyed:" + name;
-		} catch (Exception e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ManagementService.destroyUnit:", e);
-		} finally {
-		}
-	}
-
-	private boolean checkName(SessionContext sc, String name){
-			Object c = sc.getObjectByAttr(sc.getClass(UNIT_ENTITY), "name", name);
-			if( c != null){
-				return false;
-			}
-			return true;
-	}
-
-	public String createUnit(
-			@PName("customerId")       String customerId, 
-			@PName("data")             Map data) throws RpcException {
-		try {
-			if (customerId == null) {
-				throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ManagementService.createUnit:missing_customer");
-			}
-			String name = (String) data.get("name");
-			System.out.println("customerId:" + customerId);
-			StoreDesc sdesc = StoreDesc.getNamespaceData(MANAGEMENT_NS);
-			SessionContext sc = m_dataLayer.getSessionContext(sdesc);
-			
-			if( !checkName(sc, name) ){
-				throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ManagementService.createUnit:name_exists:"+name);
-			}
-
-			Object c = sc.getObjectById(sc.getClass(CUSTOMER_ENTITY), customerId);
-			System.out.println("customer:" + c);
-			int network = (Integer) PropertyUtils.getProperty(c, "netnumber");
-			String host = (String) PropertyUtils.getProperty(c, "hostsystem");
-			System.out.println("host:" + host);
-			Map ret = new HashMap();
-			String githost = (String) data.get("githost");
-			String swusage = (String) data.get("usage");
-			String line = "ssh -p2122 -o StrictHostKeyChecking=no " + host + " /opt/projects/vm-admin/create-vm.sh -u "+ swusage+" -g " + githost + " -n " + name + " -w 2 -b sw-base-debian -t qemu -o linux -y";
-			System.out.println("line:" + line);
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			ByteArrayOutputStream outputError = new ByteArrayOutputStream();
-			int exitValue = exec(line, outputStream, outputError, new int[] { 0, 1 });
-			String demoname = outputError.toString();
-			String stdout = outputStream.toString();
-			System.out.println("createUnit.create-vm.exetValue:" + exitValue);
-			System.out.println("createUnit.create-vm.stdout:" + stdout);
-
-			m_dataLayer.insertObject(data, sdesc, "unit_list", "customer", customerId);
-			return "http://" + name + ".osshosting.org/sw/start.html";
-		} catch (Exception e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ManagementService.createUnit:", e);
 		} finally {
 		}
 	}
@@ -231,5 +113,35 @@ public class ManagementServiceImpl implements ManagementService {
 	public void setDataLayer(DataLayer dataLayer) {
 		System.out.println("ManagementServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
+	}
+	@Reference(dynamic = true, optional=true)
+	public void setDomainObjectsService(DomainObjectsService paramService) {
+		this.m_domainobjectsService = paramService;
+		info("ManagementServiceImpl.setDomainObjectsService:" + paramService);
+	}
+	@Reference(dynamic = true, optional=true)
+	public void setCompileService(CompileService paramService) {
+		this.m_compileService = paramService;
+		info("ManagementServiceImpl.setCompileService:" + paramService);
+	}
+	@Reference(dynamic = true, optional=true)
+	public void setWorkflowService(WorkflowService paramService) {
+		this.m_workflowService = paramService;
+		info("ManagementServiceImpl.setWorkflowService:" + paramService);
+	}
+	@Reference(dynamic = true, optional=true)
+	public void setCamelService(CamelService paramService) {
+		this.m_camelService = paramService;
+		info("ManagementServiceImpl.setCamelService:" + paramService);
+	}
+	@Reference(dynamic = true, optional = true)
+	public void setGitService(GitService gitService) {
+		info("ManagementServiceImpl.setGitService:" + gitService);
+		m_gitService = gitService;
+	}
+	@Reference(dynamic = true, optional = true)
+	public void setPermissionService(PermissionService paramService) {
+		System.out.println("ManagementServiceImpl:" + paramService);
+		this.m_permissionService = paramService;
 	}
 }
