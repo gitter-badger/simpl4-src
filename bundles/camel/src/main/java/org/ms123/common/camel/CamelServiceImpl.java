@@ -93,7 +93,6 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 		try {
 			m_bundleContext = bundleContext;
 			registerEventHandler(bundleContext);
-			_createRoutesFromJson();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -103,7 +102,6 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 		info("CamelServiceImpl deactivate");
 		m_serviceRegistration.unregister();
 	}
-
 
 	/*BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")

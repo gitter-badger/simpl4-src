@@ -582,7 +582,7 @@ info("lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 		m_logger.debug(msg);
 	}
 	protected static void info(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.info(msg);
 	}
 

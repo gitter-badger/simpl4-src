@@ -21,6 +21,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
+import org.ms123.common.rpc.RpcException;
 import java.util.*;
 
 public interface CamelService {
@@ -43,4 +44,5 @@ public interface CamelService {
 	public Object camelSend(String ns, Endpoint endpoint, final Object body, final Map<String, Object> headers, final Map<String, Object> properties, String returnSpec,List<String> returnHeaderList);
 	public Object camelSend(String ns, String routeName,Map<String, Object> properties);
 	public Object camelSend(String ns, String routeName,Object body, Map<String, Object> headers, Map<String, Object> properties);
+	public void  createRoutesFromJson( String namespace ) throws RpcException;
 }
