@@ -113,6 +113,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 		}
 		info("BaseManagementServiceImpl.camelBundle:"+m_camelBundle);
 		List<String> createdNamespaces = new ArrayList<String>();
+		info("BaseManagementServiceImpl.createdNamespaces:"+createdNamespaces);
 		Setup.doSetup(createdNamespaces);
 		if( isFirstRun()){
 			createdNamespaces = getAllNamespaces();
