@@ -92,7 +92,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 		info("CamelServiceImpl.activate.props:" + props);
 		try {
 			m_bundleContext = bundleContext;
-			registerEventHandler(bundleContext);
+			//registerEventHandler(bundleContext);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
