@@ -92,7 +92,7 @@ import org.apache.tika.Tika;
 
 /** GitService implementation
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=git" })
 public class GitServiceImpl implements GitService {
 
@@ -192,6 +192,7 @@ public class GitServiceImpl implements GitService {
 	@RequiresRoles("admin")
 	public void createRepository(
 			@PName("name")             String name) throws RpcException {
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace, name);
@@ -200,7 +201,7 @@ public class GitServiceImpl implements GitService {
 			}
 			InitCommand ic = Git.init();
 			ic.setDirectory(dir);
-			ic.call();
+			git = ic.call();
 			FS fs = FS.detect();
 			FileBasedConfig fbc = new FileBasedConfig(new File(gitSpace + "/" + name + "/.git/config"), fs);
 			fbc.load();
@@ -216,6 +217,7 @@ public class GitServiceImpl implements GitService {
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.createRepository:", e);
 		} finally {
+			if(git != null) git.close();
 		}
 	}
 
@@ -242,6 +244,7 @@ public class GitServiceImpl implements GitService {
 			@PName("fromUri")             String fromUri
 			) throws RpcException {
 		File dir = null;
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			dir = new File(gitSpace, name);
@@ -251,7 +254,7 @@ public class GitServiceImpl implements GitService {
 			CloneCommand ic = Git.cloneRepository();
 			ic.setDirectory(dir);
 			ic.setURI(fromUri);
-			ic.call();
+			git = ic.call();
 			FS fs = FS.detect();
 			FileBasedConfig fbc = new FileBasedConfig(new File(gitSpace + "/" + name + "/.git/config"), fs);
 			fbc.load();
@@ -274,6 +277,7 @@ public class GitServiceImpl implements GitService {
 			}
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.createRepository:", e);
 		} finally {
+			if(git != null) git.close();
 		}
 	}
 
@@ -318,10 +322,12 @@ public class GitServiceImpl implements GitService {
 				if (flags!=null && flags.contains("updateAvailable")) {
 					Git gitObject = Git.open(new File(gitSpace, fileName));
 					map.put("updateAvailable", updateAvailable(gitObject));
+					gitObject.close();
 				}
 				if (flags!=null && flags.contains("isModified")) {
 					Git gitObject = Git.open(new File(gitSpace, fileName));
 					map.put("isModified", isModified(gitObject));
+					gitObject.close();
 				}
 				debug(fileName);
 				FileBasedConfig fbc = new FileBasedConfig(new File(gitSpace + "/" + fileName + "/.git/config"), fs);
@@ -353,6 +359,7 @@ public class GitServiceImpl implements GitService {
 			@PName("includePathList")  @POptional List<String> includePathList, 
 			@PName("excludePathList")  @POptional List<String> excludePathList, 
 			@PName("mapping")          @POptional Map mapping) throws RpcException {
+		Git gitObject = null;
 		try {
 			if (depth == null)
 				depth = 100;
@@ -362,7 +369,7 @@ public class GitServiceImpl implements GitService {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.getWorkingTree:Repo(" + repoName + ") not exists");
 			}
 			File repoDir = new File(gitSpace, repoName);
-			Git gitObject = Git.open(new File(gitSpace, repoName));
+			gitObject = Git.open(new File(gitSpace, repoName));
 			TreeWalk treeWalk = new TreeWalk(gitObject.getRepository());
 			FileTreeIterator newTree = null;
 			String rootPath = "root";
@@ -431,6 +438,7 @@ public class GitServiceImpl implements GitService {
 			if( e instanceof RpcException) throw (RpcException)e;
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.getWorkingTree:", e);
 		} finally {
+			if( gitObject != null) gitObject.close();
 		}
 	}
 
@@ -770,6 +778,7 @@ public class GitServiceImpl implements GitService {
 			@PName("name")             String name, 
 			@PName("type")             String type, 
 			@PName("onlyFirst")        @POptional @PDefaultBool(false) Boolean onlyFirst) throws RpcException {
+		Git gitObject = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File gitDir = new File(gitSpace, repoName);
@@ -779,7 +788,7 @@ public class GitServiceImpl implements GitService {
 			List<String> typeList = new ArrayList();
 			List<String> hitList = new ArrayList();
 			typeList.add(type);
-			Git gitObject = Git.open(new File(gitSpace, repoName));
+			gitObject = Git.open(new File(gitSpace, repoName));
 			TreeWalk treeWalk = new TreeWalk(gitObject.getRepository());
 			FileTreeIterator newTree = new FileTreeIterator(gitObject.getRepository());
 			treeWalk.addTree(newTree);
@@ -810,19 +819,21 @@ public class GitServiceImpl implements GitService {
 			if( e instanceof RpcException) throw (RpcException)e;
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.assetList:", e);
 		} finally {
+			if( gitObject != null) gitObject.close();
 		}
 	}
 
 	public void commitAll(
 			@PName("name")             String name, 
 			@PName("message")          String message) throws RpcException {
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace, name);
 			if (!dir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.CommitAll:Repo(" + name + ") not exists");
 			}
-			Git git = Git.open(dir);
+			git = Git.open(dir);
 			CommitCommand ic = git.commit();
 			ic.setAll(true);
 			ic.setMessage(message);
@@ -832,18 +843,20 @@ public class GitServiceImpl implements GitService {
 			if( e instanceof RpcException) throw (RpcException)e;
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.commitAll:", e);
 		} finally {
+			if( git != null) git.close();
 		}
 	}
 
 	public void push(
 			@PName("name")             String name) throws RpcException {
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace, name);
 			if (!dir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.push:Repo(" + name + ") not exists");
 			}
-			Git git = Git.open(dir);
+			git = Git.open(dir);
 			PushCommand push = git.push();
 			push.setRefSpecs(new RefSpec(REF_PREFIX + "master")).setRemote("origin");
 			//ic.setPushAll(true);
@@ -867,18 +880,20 @@ public class GitServiceImpl implements GitService {
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.push:", e);
 		} finally {
+			if(git != null) git.close();
 		}
 	}
 
 	public void pull(
 			@PName("name")             String name) throws RpcException {
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace, name);
 			if (!dir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.pull:Repo(" + name + ") not exists");
 			}
-			Git git = Git.open(dir);
+			git = Git.open(dir);
 			PullCommand pull = git.pull();
 			PullResult result = pull.call();
 			debug(result.toString());
@@ -886,19 +901,21 @@ public class GitServiceImpl implements GitService {
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.pull:", e);
 		} finally {
+			if(git != null) git.close();
 		}
 	}
 
 	public void add(
 			@PName("name")             String name, 
 			@PName("pattern")          String pattern) throws RpcException {
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace, name);
 			if (!dir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.add:Repo(" + name + ") not exists");
 			}
-			Git git = Git.open(dir);
+			git = Git.open(dir);
 			AddCommand add = git.add();
 			add.addFilepattern(pattern);
 			add.call();
@@ -906,19 +923,21 @@ public class GitServiceImpl implements GitService {
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.add:", e);
 		} finally {
+			if(git != null) git.close();
 		}
 	}
 
 	public void rm(
 			@PName("name")             String name, 
 			@PName("pattern")          String pattern) throws RpcException {
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace, name);
 			if (!dir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.rm:Repo(" + name + ") not exists");
 			}
-			Git git = Git.open(dir);
+			git = Git.open(dir);
 			RmCommand rm = git.rm();
 			rm.addFilepattern(pattern);
 			rm.call();
@@ -926,6 +945,7 @@ public class GitServiceImpl implements GitService {
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.rm:", e);
 		} finally {
+			if(git != null) git.close();
 		}
 	}
 
@@ -933,19 +953,21 @@ public class GitServiceImpl implements GitService {
 	public void addRemoteOrigin(
 			@PName("name") 		String name, 
 			@PName("url") 		String url){
+		Git git = null;
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace, name);
 			if (!dir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.setAddRemoteOrigin:Repo(" + name + ") not exists");
 			}
-			Git git = Git.open(dir);
+			git = Git.open(dir);
 			StoredConfig config = git.getRepository().getConfig();
 			config.setString("remote", "origin", "url", url);
 			config.save();
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.addRemoteOrigin:", e);
 		} finally {
+			if(git != null) git.close();
 		}
 	}
 	/* END JSON-RPC-API*/

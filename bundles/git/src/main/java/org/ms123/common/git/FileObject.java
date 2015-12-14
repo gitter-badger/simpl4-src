@@ -46,6 +46,7 @@ import java.nio.file.*;
 import java.nio.charset.*;
 import java.nio.file.attribute.*;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class FileObject {
 
 	private Path m_path = null;
