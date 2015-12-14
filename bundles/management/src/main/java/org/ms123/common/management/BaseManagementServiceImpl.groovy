@@ -38,6 +38,7 @@ import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.git.GitService;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.osgi.service.event.Event;
@@ -65,47 +66,11 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	protected  ServiceRegistration m_serviceRegistration;
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected JSONSerializer m_js = new JSONSerializer();
-
-	public void frameworkEvent(FrameworkEvent event) {
-		info("BaseManagementServiceImpl.frameworkEvent:"+event);
-		if( event.getType() != FrameworkEvent.STARTED){
-			 return; 
-		}
-		List<String> createdNamespaces = new ArrayList<String>();
-		Setup.doSetup(createdNamespaces);
-		if( isFirstRun()){
-			createdNamespaces = new ArrayList<String>();
-			List<Map> repos = m_gitService.getRepositories(new ArrayList(),false);
-			for(Map<String,String> repo : repos){
-				createdNamespaces.add(repo.get("name"));
-			}
-		}
-
-		for( String ns : createdNamespaces){
-			try{
-				m_compileService.compileGroovyNamespace( ns );
-				m_compileService.compileJavaNamespace( ns );
-				StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
-				m_permissionService.loginInternal(ns);
-				ThreadContext.loadThreadContext(ns, "admin");
-				m_domainobjectsService.createClasses(sdesc);
-				ThreadContext.getThreadContext().finalize(null);
-				m_camelService.createRoutesFromJson(ns);
-			}catch(Exception e){
-				error("FrameworkEvent.start.error:"+e);
-				e.printStackTrace();
-			}
-		}
-	}
+	private Bundle m_camelBundle=null;
 
 	final static String[] topics = [
 		"namespace/installed",
-		"namespace/created",
-		"namespace/preCommit",
-		"namespace/preUpdate",
 		"namespace/postUpdate",
-		"namespace/preGet",
-		"namespace/pull",
 		"namespace/deleted"
 	];
 
@@ -120,18 +85,87 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	}
 
 	public void handleEvent(Event event) {
-		debug("BaseCamelServiceImpl.Event: " + event);
-		try{
-			if( "namespace/installed".equals(event.getTopic())){
-				String namespace= (String)event.getProperty("namespace")
-				info("BaseCamelServiceImpl.handleEvent:"+namespace);
-				//_createRoutesFromJson( namespace);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally{
+		info("BaseManagementServiceImpl.Event: " + event.getProperty("namespace")+":"+event.getTopic());
+		if( "namespace/installed".equals(event.getTopic())){
+			String namespace= (String)event.getProperty("namespace");
+			doAllInNamespace(namespace);
+		}
+		if( "namespace/postUpdate".equals(event.getTopic())){
+			String namespace= (String)event.getProperty("namespace");
+			doAllInNamespace(namespace);
 		}
 	}
+
+	public void frameworkEvent(FrameworkEvent event) {
+		info("BaseManagementServiceImpl.frameworkEvent:"+event);
+		if( event.getType() != FrameworkEvent.STARTED){
+			 return; 
+		}
+		for( Bundle b : event.getBundle().getBundleContext().getBundles()){
+			if( b.getSymbolicName().equals("org.ms123.common.camel")){
+				m_camelBundle = b;
+				break;
+			}
+		}
+		info("BaseManagementServiceImpl.camelBundle:"+m_camelBundle);
+		List<String> createdNamespaces = new ArrayList<String>();
+		Setup.doSetup(createdNamespaces);
+		if( isFirstRun()){
+			createdNamespaces = new ArrayList<String>();
+			List<Map> repos = m_gitService.getRepositories(new ArrayList(),false);
+			for(Map<String,String> repo : repos){
+				createdNamespaces.add(repo.get("name"));
+			}
+		}
+
+		for( String ns : createdNamespaces){
+			doAllInNamespace(ns);
+		}
+	}
+
+	private void doAllInNamespace(String ns){
+		try{
+			List<Map> result = m_compileService.compileGroovyNamespace( ns );
+			info("compileGroovyNamespace:"+ns+"/result:"+result);
+		}catch(Exception e){
+			error("compileGroovyNamespace.error:"+e);
+			e.printStackTrace();
+		}
+		try{
+			List<Map> result = m_compileService.compileJavaNamespace( ns,m_camelBundle );
+			info("compileJavaNamespace:"+ns+"/result:"+result);
+		}catch(Exception e){
+			error("compileJavaNamespace.error:"+e);
+			e.printStackTrace();
+		}
+
+		try{
+			StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
+			m_permissionService.loginInternal(ns);
+			ThreadContext.loadThreadContext(ns, "admin");
+			m_domainobjectsService.createClasses(sdesc);
+			ThreadContext.getThreadContext().finalize(null);
+		}catch(Exception e){
+			error("createDomainClasses.error:"+e);
+			e.printStackTrace();
+		}
+
+		try{
+			info("createRoutesFromJson:"+ns);
+			m_camelService.createRoutesFromJson(ns);
+		}catch(Exception e){
+			error("createRoutesFromJson.error:"+e);
+			e.printStackTrace();
+		}
+		try{
+			info("deployWorkflows:"+ns);
+			m_workflowService.deployNamespace(ns);
+		}catch(Exception e){
+			error("deployWorkflows.error:"+e);
+			e.printStackTrace();
+		}
+	}
+
 	private boolean isFirstRun(){
 		String simpl4Dir = (String) System.getProperty("simpl4.dir");
 		File loggingConfig = new File(simpl4Dir, "etc/logging.config");
