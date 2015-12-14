@@ -38,6 +38,8 @@ import org.unix4j.unix.Ls;
 import org.unix4j.unix.Sort;
 import org.unix4j.unix.grep.GrepOption;
 import org.unix4j.variable.Arg;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 /**
  *
@@ -56,14 +58,14 @@ class Setup{
 		if( !loggingConfig.exists()){
 			firstRun = true;
 			String loggingConfigTpl = new File(simpl4Dir, "etc/logging.config.tpl").toString();
-			info("doSetup.loggingConfigTpl:"+loggingConfigTpl);
+			info(Setup.class, "doSetup.loggingConfigTpl:"+loggingConfigTpl);
 			String basedir = simpl4Dir.replaceAll("\\\\", "/");
-			info("doSetup.basedir:"+basedir);
+			info(Setup.class, "doSetup.basedir:"+basedir);
 			File logDir = new File(simpl4Dir,"log");
 			if( !logDir.exists()){
 				logDir.mkdir();
 			}
-			info("doSetup.logDir:"+logDir);
+			info(Setup.class, "doSetup.logDir:"+logDir);
 			Unix4j.cat(loggingConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").
 				sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(loggingConfig);
 
@@ -83,8 +85,8 @@ class Setup{
 		}
 
 		File varSimpl4Dir = new File(vardir, "simpl4");
-		info("doSetup.varSimpl4Dir.exists:"+varSimpl4Dir.exists());
-		info("doSetup.firstRun:"+firstRun);
+		info(Setup.class, "doSetup.varSimpl4Dir.exists:"+varSimpl4Dir.exists());
+		info(Setup.class, "doSetup.firstRun:"+firstRun);
 		if( firstRun ){
 			if( vardir != null){
 				varSimpl4Dir.mkdirs();
@@ -99,26 +101,26 @@ class Setup{
 		}
 
 		File bundledRepos = new File(simpl4Dir, "bundledrepos");
-		info("bundledrepos.exists:"+bundledRepos.exists());
+		info(Setup.class, "bundledrepos.exists:"+bundledRepos.exists());
 		if( bundledRepos.exists()){
 			File gitRepos = new File(varSimpl4Dir, "gitrepos");
 			File tempDir  = new File(varSimpl4Dir, "tmp");
 			if( bundledRepos.exists()){
 				try{
 					List<String> files = Unix4j.cd(bundledRepos).ls().toStringList();
-					info("files:"+files);
+					info(Setup.class, "files:"+files);
 					for( String file : files){
 						String arch = "file:"+bundledRepos.toString()+"/"+file;
 						URI zipUri=null;
 						try{
 							zipUri = new URI(arch.replaceAll("\\\\", "/"));;
-							info("zipUri:"+zipUri);
+							info(Setup.class, "zipUri:"+zipUri);
 							ZipfileUnpacker zfu = new ZipfileUnpacker( zipUri);
 							zfu.unpack( tempDir);
 							Filename fn = new Filename(arch, (char)'/', (char)'.' );
-							createdNamespaces.add(fn.filename());	
+							createdNamespaces.add(fn.filename());
 						}catch(Exception e){
-							info("unpack:"+zipUri+":"+e);
+							error(Setup.class, "unpack:"+zipUri+":",e);
 							e.printStackTrace();
 						}
 					}
@@ -126,10 +128,10 @@ class Setup{
 						File tmpRepo = new File(tempDir, name);
 						File destRepo = new File(gitRepos, name);
 						if( destRepo.exists()){
-							info("deleteDirectory:"+destRepo);
+							error(Setup.class, "deleteDirectory:"+destRepo);
 							FileUtils.deleteDirectory(destRepo);
 						}
-						info("moveDirectory:"+tmpRepo+" -> "+ new File(gitRepos,name));
+						info(Setup.class, "moveDirectory:"+tmpRepo+" -> "+ new File(gitRepos,name));
 						FileUtils.moveDirectory(tmpRepo, new File(gitRepos, name));
 					}
 					for( String name : createdNamespaces){
@@ -138,21 +140,21 @@ class Setup{
 							continue;
 						}
 						InitCommand ic = Git.init();
-						info("jgit.init:"+dataRepo);
+						info(Setup.class, "jgit.init:"+dataRepo);
 						ic.setDirectory(dataRepo);
 						try{
 							ic.call();
 						}catch(Exception e){
-							info("data_repo_create("+dataRepo+"):"+e);
+							error(Setup.class, "data_repo_create("+dataRepo+"):",e);
 							e.printStackTrace();
 						}
 					}
-					info("deleteDirectory:"+bundledRepos);
+					info(Setup.class, "deleteDirectory:"+bundledRepos);
 					FileUtils.deleteDirectory(bundledRepos);
-					info("deleteDirectory:"+tempDir);
+					info(Setup.class, "deleteDirectory:"+tempDir);
 					FileUtils.deleteDirectory(tempDir);
 				}catch(Exception e){
-					info("error.copyBundledRepos:"+e);
+					error(Setup.class, "error.copyBundledRepos:",e);
 					e.printStackTrace();
 					throw new RuntimeException("OsgiStarter.createGitRepos:",e);
 				}finally{
@@ -160,13 +162,5 @@ class Setup{
 			}
 		}
 	}
-	protected static void info(String msg) {
-		System.err.println(msg);
-		m_logger.info(msg);
-	}
-	protected static void debug(String msg) {
-		m_logger.debug(msg);
-	}
-
-	private static final Logger m_logger = LoggerFactory.getLogger(Setup.class);
 }
+

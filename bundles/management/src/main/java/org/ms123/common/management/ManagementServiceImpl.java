@@ -60,6 +60,8 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 /** ManagementService implementation
  */
@@ -72,13 +74,13 @@ public class ManagementServiceImpl extends BaseManagementServiceImpl implements 
 	private DataLayer m_dataLayer;
 
 	public ManagementServiceImpl() {
-		info("ManagementServiceImpl construct");
+		info(this,"ManagementServiceImpl construct");
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("ManagementServiceImpl.activate.props:" + props);
+		info(this,"ManagementServiceImpl.activate.props:" + props);
 		try {
-			info("ManagementServiceImpl.activate");
+			info(this,"ManagementServiceImpl.activate");
 			m_bundleContext = bundleContext;
 			registerEventHandler();
 			m_bundleContext.addFrameworkListener(this);
@@ -88,11 +90,11 @@ public class ManagementServiceImpl extends BaseManagementServiceImpl implements 
 	}
 
 	public void update(Map<String, Object> props) {
-		System.out.println("ManagementServiceImpl.updated:" + props);
+		info(this,"ManagementServiceImpl.updated:" + props);
 	}
 
 	protected void deactivate() throws Exception {
-		info("ManagementServiceImpl.deactivate");
+		info(this,"ManagementServiceImpl.deactivate");
 		m_serviceRegistration.unregister();
 	}
 
@@ -111,37 +113,37 @@ public class ManagementServiceImpl extends BaseManagementServiceImpl implements 
 
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
 	public void setDataLayer(DataLayer dataLayer) {
-		System.out.println("ManagementServiceImpl.setDataLayer:" + dataLayer);
+		info(this,"ManagementServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
 	}
 	@Reference(dynamic = true, optional=true)
 	public void setDomainObjectsService(DomainObjectsService paramService) {
 		this.m_domainobjectsService = paramService;
-		info("ManagementServiceImpl.setDomainObjectsService:" + paramService);
+		info(this,"ManagementServiceImpl.setDomainObjectsService:" + paramService);
 	}
 	@Reference(dynamic = true, optional=true)
 	public void setCompileService(CompileService paramService) {
 		this.m_compileService = paramService;
-		info("ManagementServiceImpl.setCompileService:" + paramService);
+		info(this,"ManagementServiceImpl.setCompileService:" + paramService);
 	}
 	@Reference(dynamic = true, optional=true)
 	public void setWorkflowService(WorkflowService paramService) {
 		this.m_workflowService = paramService;
-		info("ManagementServiceImpl.setWorkflowService:" + paramService);
+		info(this,"ManagementServiceImpl.setWorkflowService:" + paramService);
 	}
 	@Reference(dynamic = true, optional=true)
 	public void setCamelService(CamelService paramService) {
 		this.m_camelService = paramService;
-		info("ManagementServiceImpl.setCamelService:" + paramService);
+		info(this,"ManagementServiceImpl.setCamelService:" + paramService);
 	}
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
-		info("ManagementServiceImpl.setGitService:" + gitService);
+		info(this,"ManagementServiceImpl.setGitService:" + gitService);
 		m_gitService = gitService;
 	}
 	@Reference(dynamic = true, optional = true)
 	public void setPermissionService(PermissionService paramService) {
-		System.out.println("ManagementServiceImpl:" + paramService);
+		info(this, "ManagementServiceImpl:" + paramService);
 		this.m_permissionService = paramService;
 	}
 }

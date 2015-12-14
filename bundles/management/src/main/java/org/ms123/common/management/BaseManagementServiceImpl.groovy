@@ -48,6 +48,8 @@ import org.osgi.service.event.EventHandler;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.ServiceRegistration;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 /**
  *
@@ -68,11 +70,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	protected JSONSerializer m_js = new JSONSerializer();
 	private Bundle m_camelBundle=null;
 
-	final static String[] topics = [
-		"namespace/installed",
-		"namespace/postUpdate",
-		"namespace/deleted"
-	];
+	final static String[] topics = ["namespace/installed", "namespace/postUpdate", "namespace/deleted"];
 
 	protected void registerEventHandler() {
 		try {
@@ -85,7 +83,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	}
 
 	public void handleEvent(Event event) {
-		info("BaseManagementServiceImpl.Event: " + event.getProperty("namespace")+":"+event.getTopic());
+		info(this, "BaseManagementServiceImpl.Event: " + event.getProperty("namespace")+":"+event.getTopic());
 		if( "namespace/installed".equals(event.getTopic())){
 			String namespace= (String)event.getProperty("namespace");
 			doAllInNamespace(namespace);
@@ -97,9 +95,9 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	}
 
 	public void frameworkEvent(FrameworkEvent event) {
-		info("BaseManagementServiceImpl.frameworkEvent:"+event);
+		info(this, "BaseManagementServiceImpl.frameworkEvent:"+event);
 		if( event.getType() != FrameworkEvent.STARTED){
-			 return; 
+			return;
 		}
 		String _ns = "global";
 		StoreDesc sdesc = StoreDesc.getNamespaceData(_ns);
@@ -111,9 +109,9 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 				break;
 			}
 		}
-		info("BaseManagementServiceImpl.camelBundle:"+m_camelBundle);
+		info(this, "BaseManagementServiceImpl.camelBundle:"+m_camelBundle);
 		List<String> createdNamespaces = new ArrayList<String>();
-		info("BaseManagementServiceImpl.createdNamespaces:"+createdNamespaces);
+		info(this, "BaseManagementServiceImpl.createdNamespaces:"+createdNamespaces);
 		Setup.doSetup(createdNamespaces);
 		if( isFirstRun()){
 			createdNamespaces = getAllNamespaces();
@@ -145,9 +143,9 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	private void compileGroovy(String ns){
 		try{
 			List<Map> result = m_compileService.compileGroovyNamespace( ns );
-			info("compileGroovyNamespace:"+ns+"/result:"+result);
+			info(this, "compileGroovyNamespace:"+ns+"/result:"+result);
 		}catch(Exception e){
-			error("compileGroovyNamespace.error:"+e);
+			error(this, "compileGroovyNamespace.error:",e);
 			e.printStackTrace();
 		}
 	}
@@ -155,9 +153,9 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	private void compileJava(String ns){
 		try{
 			List<Map> result = m_compileService.compileJavaNamespace( ns,m_camelBundle );
-			info("compileJavaNamespace:"+ns+"/result:"+result);
+			info(this, "compileJavaNamespace:"+ns+"/result:"+result);
 		}catch(Exception e){
-			error("compileJavaNamespace.error:"+e);
+			error(this, "compileJavaNamespace.error:",e);
 			e.printStackTrace();
 		}
 	}
@@ -167,26 +165,26 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
 			m_domainobjectsService.createClasses(sdesc);
 		}catch(Exception e){
-			error("createDomainClasses.error:"+e);
+			error(this, "createDomainClasses.error:",e);
 			e.printStackTrace();
 		}
 	}
 
 	private void createRoutesFromJson(String ns){
 		try{
-			info("createRoutesFromJson:"+ns);
+			info(this, "createRoutesFromJson:"+ns);
 			m_camelService.createRoutesFromJson(ns);
 		}catch(Exception e){
-			error("createRoutesFromJson.error:"+e);
+			error(this, "createRoutesFromJson.error:",e);
 			e.printStackTrace();
 		}
 	}
 	private void deployWorkflows(String ns){
 		try{
-			info("deployWorkflows:"+ns);
+			info(this, "deployWorkflows:"+ns);
 			m_workflowService.deployNamespace(ns);
 		}catch(Exception e){
-			error("deployWorkflows.error:"+e);
+			error(this, "deployWorkflows.error:",e);
 			e.printStackTrace();
 		}
 	}
@@ -208,19 +206,5 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 		}
 		return firstRun;
 	}
-
-	protected static void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-	protected static void debug(String msg) {
-		System.out.println(msg);
-		m_logger.debug(msg);
-	}
-
-	protected static void error(String msg) {
-		System.out.println(msg);
-		m_logger.error(msg);
-	}
-	private static final Logger m_logger = LoggerFactory.getLogger(ManagementService.class);
 }
+
