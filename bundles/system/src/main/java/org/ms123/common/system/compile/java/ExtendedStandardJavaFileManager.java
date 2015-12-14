@@ -52,7 +52,7 @@ public class ExtendedStandardJavaFileManager extends ForwardingJavaFileManager<J
 	public String inferBinaryName(Location location, JavaFileObject file) {
 		if ((location == StandardLocation.CLASS_PATH) && (file instanceof FileSystemJavaFileObject)) {
 			FileSystemJavaFileObject fileSystemJavaFileObject = (FileSystemJavaFileObject) file;
-			System.err.println("Infering binary name from " + fileSystemJavaFileObject);
+			System.out.println("Infering binary name from " + fileSystemJavaFileObject);
 			return fileSystemJavaFileObject.inferBinaryName();
 		}
 		return this.fileManager.inferBinaryName(location, file);
@@ -67,14 +67,14 @@ public class ExtendedStandardJavaFileManager extends ForwardingJavaFileManager<J
 		for (File loc : this.locations) {
 			File dir = new File(loc, packageName);
 			if (dir.exists()) {
-				System.err.println("filemanager.location exists:" + packageName);
+				System.out.println("filemanager.location exists:" + packageName);
 				for (File f : getClassFileList(dir)) {
 					classFileObjects.add(new FileSystemJavaFileObject(f.toURI(), FilenameUtils.getBaseName(f.toString())));
 				}
 			}
 		}
 		if (classFileObjects.size() > 0) {
-			System.err.println("filemanager.classFileObjects:" + classFileObjects);
+			System.out.println("filemanager.classFileObjects:" + classFileObjects);
 			return classFileObjects;
 		}
 		return super.list(location, packageName, kinds, recurse);

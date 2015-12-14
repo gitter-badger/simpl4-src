@@ -19,6 +19,7 @@
 package org.ms123.common.system.compile;
 import java.util.List;
 import java.util.Map;
+import org.osgi.framework.Bundle;
 import org.ms123.common.rpc.RpcException;
 
 public interface CompileService {
@@ -27,6 +28,8 @@ public interface CompileService {
 	public List<Map> compileGroovyNamespace(String namespace);
 
 	public  void	compileJava(String namespace,String path,String code);
+	public  void	compileJava(String namespace,String path,String code,Bundle bundle);
 	public void compileJavaAll();
 	public List<Map> compileJavaNamespace(String namespace);
+	public List<Map> compileJavaNamespace(String namespace, Bundle bundle);
 }

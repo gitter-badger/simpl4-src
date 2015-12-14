@@ -146,13 +146,20 @@ abstract class BaseCompileServiceImpl {
 	}
 
 	public void compileJava(String namespace, String path, String code) {
-		String msg = _compileJava(namespace, path, code);
+		compileJava( namespace, path, code, m_bundleContext.getBundle());
+	}
+	public void compileJava(String namespace, String path, String code, Bundle bundle) {
+		String msg = _compileJava(namespace, path, code,bundle);
 		if (msg != null) {
 			throw new RuntimeException(msg);
 		}
 	}
 
 	public List<Map> compileJavaNamespace(String namespace) {
+		return compileJavaNamespace(namespace,m_bundleContext.getBundle());
+	}
+
+	public List<Map> compileJavaNamespace(String namespace, Bundle bundle) {
 		List<String> types = new ArrayList();
 		types.add(JAVA_TYPE);
 		types.add(DIRECTORY_TYPE);
@@ -167,7 +174,7 @@ abstract class BaseCompileServiceImpl {
 		for (Map pathMap : pathList) {
 			String path = (String) pathMap.get(PATH);
 			String code = m_gitService.getContent(namespace, path);
-			String msg = _compileJava(namespace, path, code);
+			String msg = _compileJava(namespace, path, code,bundle);
 			Map<String, String> result = new HashMap();
 			result.put(PATH, path);
 			result.put(MSG, msg);
@@ -177,12 +184,12 @@ abstract class BaseCompileServiceImpl {
 	}
 
 
-	private String _compileJava(String namespace, String path, String code) {
+	private String _compileJava(String namespace, String path, String code, Bundle bundle) {
 		String destDir = System.getProperty("workspace") + "/" + "java" + "/" + namespace;
 		String srcDir = System.getProperty("git.repos") + "/" + namespace;
 
 		try{
-			JavaCompiler.compile(namespace, m_bundleContext.getBundle(), FilenameUtils.getBaseName(path), code,new File(destDir));
+			JavaCompiler.compile(namespace, bundle, FilenameUtils.getBaseName(path), code,new File(destDir));
 		}catch(Exception e){
 			return e.getMessage();
 		}

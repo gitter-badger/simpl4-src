@@ -16,6 +16,7 @@ import org.osgi.framework.wiring.BundleWiring;
 /**
  * Created by trung on 5/3/15.
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class JavaCompiler {
 	static javax.tools.JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
 
