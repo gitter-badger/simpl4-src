@@ -101,6 +101,10 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 		if( event.getType() != FrameworkEvent.STARTED){
 			 return; 
 		}
+		String _ns = "global";
+		StoreDesc sdesc = StoreDesc.getNamespaceData(_ns);
+		m_permissionService.loginInternal(_ns);
+		ThreadContext.loadThreadContext(_ns, "admin");
 		for( Bundle b : event.getBundle().getBundleContext().getBundles()){
 			if( b.getSymbolicName().equals("org.ms123.common.camel")){
 				m_camelBundle = b;
@@ -111,19 +115,33 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 		List<String> createdNamespaces = new ArrayList<String>();
 		Setup.doSetup(createdNamespaces);
 		if( isFirstRun()){
-			createdNamespaces = new ArrayList<String>();
-			List<Map> repos = m_gitService.getRepositories(new ArrayList(),false);
-			for(Map<String,String> repo : repos){
-				createdNamespaces.add(repo.get("name"));
+			createdNamespaces = getAllNamespaces();
+			for( String ns : createdNamespaces){
+				doAllInNamespace(ns);
+			}
+		}else{
+			for( String ns : createdNamespaces){
+				doAllInNamespace(ns);
+			}
+			List<String> allNamespaces = getAllNamespaces();
+			for( String ns : allNamespaces){
+				if( createdNamespaces.indexOf(ns) < 0){
+					createRoutesFromJson(ns);
+				}
 			}
 		}
-
-		for( String ns : createdNamespaces){
-			doAllInNamespace(ns);
-		}
+		ThreadContext.getThreadContext().finalize(null);
 	}
 
 	private void doAllInNamespace(String ns){
+		compileGroovy(ns);
+		compileJava(ns);
+		createClasses(ns);
+		createRoutesFromJson(ns);
+		deployWorkflows(ns);
+	}
+
+	private void compileGroovy(String ns){
 		try{
 			List<Map> result = m_compileService.compileGroovyNamespace( ns );
 			info("compileGroovyNamespace:"+ns+"/result:"+result);
@@ -131,6 +149,9 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			error("compileGroovyNamespace.error:"+e);
 			e.printStackTrace();
 		}
+	}
+
+	private void compileJava(String ns){
 		try{
 			List<Map> result = m_compileService.compileJavaNamespace( ns,m_camelBundle );
 			info("compileJavaNamespace:"+ns+"/result:"+result);
@@ -138,18 +159,19 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			error("compileJavaNamespace.error:"+e);
 			e.printStackTrace();
 		}
+	}
 
+	private void createClasses(String ns){
 		try{
 			StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
-			m_permissionService.loginInternal(ns);
-			ThreadContext.loadThreadContext(ns, "admin");
 			m_domainobjectsService.createClasses(sdesc);
-			ThreadContext.getThreadContext().finalize(null);
 		}catch(Exception e){
 			error("createDomainClasses.error:"+e);
 			e.printStackTrace();
 		}
+	}
 
+	private void createRoutesFromJson(String ns){
 		try{
 			info("createRoutesFromJson:"+ns);
 			m_camelService.createRoutesFromJson(ns);
@@ -157,6 +179,8 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			error("createRoutesFromJson.error:"+e);
 			e.printStackTrace();
 		}
+	}
+	private void deployWorkflows(String ns){
 		try{
 			info("deployWorkflows:"+ns);
 			m_workflowService.deployNamespace(ns);
@@ -164,6 +188,14 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			error("deployWorkflows.error:"+e);
 			e.printStackTrace();
 		}
+	}
+	private List<String> getAllNamespaces(){
+		List<String> allNamespaces = new ArrayList<String>();
+		List<Map> repos = m_gitService.getRepositories(new ArrayList(),false);
+		for(Map<String,String> repo : repos){
+			allNamespaces.add(repo.get("name"));
+		}
+		return allNamespaces;
 	}
 
 	private boolean isFirstRun(){
