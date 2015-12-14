@@ -26,6 +26,8 @@ import org.activiti.engine.delegate.VariableScope;
 public interface WorkflowService {
 	public static final String WORKFLOW_SERVICE = "workflowService";
 	public static final String PROCESS_ENGINE = "processEngine";
+	public static final String PROCESS_TYPE = "sw.process";
+	public static final String DIRECTORY_TYPE = "sw.directory";
 
 	public static final String WORKFLOW_ACTIVITY_ID = "WorkflowActivityId";
 	public static final String WORKFLOW_ACTIVITY_NAME = "WorkflowActivityName";
@@ -39,4 +41,6 @@ public interface WorkflowService {
 	public CamelContext getCamelContextForProcess(String namespace, String name);
 	public void executeScriptTask( String executionId, String category, String processDefinitionKey, String pid, String script, Map newVariables, String taskName );
 	public Object  lookupServiceByName( String name);
+	public void deployAll();
+	public void deployNamespace(String namespace);
 }

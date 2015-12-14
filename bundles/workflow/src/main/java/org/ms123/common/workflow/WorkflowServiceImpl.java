@@ -154,10 +154,10 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		"task/classes_generated"
 	};
 	public void handleEvent(Event event) {
-		System.out.println("WorkflowServiceImpl1.Event: " + event);
+		info("WorkflowServiceImpl1.Event: " + event);
 		try{
 			if( "task/classes_generated".equals(event.getTopic())){
-				System.out.println("WorkflowServiceImpl2.Event: " + event);
+				info("WorkflowServiceImpl2.Event: " + event);
 				m_processEngineFactory.setFsClassLoader(createFsClassLoader2());
 			}
 		}catch(Exception e){
@@ -171,7 +171,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("WorkflowServiceImpl.activate");
+		info("WorkflowServiceImpl.activate");
 		//initProcessEngine(bundleContext);
 		m_bundleContext = bundleContext;
 		Dictionary d = new Hashtable();
@@ -180,7 +180,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	}
 
 	protected void deactivate() {
-		System.out.println("WorkflowServiceImpl.deactivate");
+		info("WorkflowServiceImpl.deactivate");
 		m_shiroJobExecutor.shutdown();
 		if( m_processEngine != null){
 			m_processEngine.close();
@@ -343,13 +343,13 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 			process.getExecutionListeners().add(createListener("start", "org.ms123.common.workflow.ProcessStartExecutionListener"));
 			process.getExecutionListeners().add(createListener("end", "org.ms123.common.workflow.ProcessEndExecutionListener"));
 			//Collection<FlowElement> flowElements = process.getFlowElements();
-			//System.out.println("flowElements:"+flowElements);
+			//info("flowElements:"+flowElements);
 			//for( FlowElement fe : flowElements){
 				//fe.getExecutionListeners().add(createListener("end", "org.ms123.common.workflow.ProcessEndExecutionListener"));
 			//}
 		}
 		BpmnXMLConverter xmlConverter = new BpmnXMLConverter();
-		//System.out.println("WorkflowServiceImpl.bpmnModel:"+m_js.deepSerialize(bpmnModel));
+		//info("WorkflowServiceImpl.bpmnModel:"+m_js.deepSerialize(bpmnModel));
 		byte[] bpmnBytes = xmlConverter.convertToXML(bpmnModel);
 		return bpmnBytes;
 	}
@@ -393,6 +393,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 
 	@RequiresRoles("admin")
 	private Object deployProcess(String namespace, String path, boolean deploy, boolean all) throws Exception {
+		info("deployProcess:"+namespace+"/path:"+path);
 		String processJson = m_gitService.getFileContent(namespace, path);
 		String deploymentId = null;
 		String basename = getBasename(path);
@@ -403,10 +404,10 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		} else {
 			dl = rs.createDeploymentQuery().deploymentName(basename).deploymentTenantId(namespace).list();
 		}
-		System.out.println("Deployment:" + dl);
+		info("Deployment:" + dl);
 	/*	if (dl != null && dl.size() > 0) {
 			for (Deployment dm : dl) {
-				System.out.println("Deployment:" + dm.getName() + "/" + dm.getId());
+				info("Deployment:" + dm.getName() + "/" + dm.getId());
 				rs.deleteDeployment(dm.getId(), true);
 			}
 		}*/
@@ -430,11 +431,11 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 			deployment.tenantId(namespace);
 			deployment.addString("initialParameter", initialParameter);
 			deploymentId = deployment.addInputStream(basename + ".bpmn20.xml", bais).deploy().getId();
-			System.out.println("deploymentId:" + deploymentId);
+			info("deploymentId:" + deploymentId);
 			Map pdefs = m_activitiService.getProcessDefinitions(namespace, basename, null, -1, null, null, null);
 			List<ProcessDefinitionResponse> pList = (List) pdefs.get("data");
 			m_js.prettyPrint(true);
-			System.out.println("PList:" + m_js.deepSerialize(pList));
+			info("PList:" + m_js.deepSerialize(pList));
 			if (pList.size() != 1) {
 				throw new RuntimeException("WorkflowService.deployProcess(" + namespace + "," + basename + "):not " + (pList.size() == 0 ? "found" : "uniqe"));
 			}
@@ -449,7 +450,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 			if (users != null && users.trim().length() > 0) {
 				userList = new ArrayList<String>(Arrays.asList(users.split(",")));
 			}
-			System.out.println("userList:" + userList + "/grList:" + groupList);
+			info("userList:" + userList + "/grList:" + groupList);
 			m_activitiService.setProcessDefinitionCandidates(processdefinitionId, userList, groupList);
 		} else {
 			deploymentId = null;
@@ -457,6 +458,30 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		Map map = new HashMap();
 		map.put("deploymentId", deploymentId);
 		return map;
+	}
+	public synchronized void deployAll(){
+		List<Map> repos = m_gitService.getRepositories(new ArrayList(),false);
+		for(Map<String,String> repo : repos){
+			String namespace = repo.get("name");
+			deployNamespace(namespace);
+		}
+	}
+	private final String PATH = "path";
+	public synchronized void deployNamespace(String namespace){
+		List<String> types = new ArrayList();
+		types.add(PROCESS_TYPE);
+		types.add(DIRECTORY_TYPE);
+		List<String> typesProcess = new ArrayList();
+		typesProcess.add(PROCESS_TYPE);
+
+		Map map= m_gitService.getWorkingTree(namespace, null, 100, types, null, null,null);
+		List<Map> pathList = new ArrayList();
+		toFlatList(map,typesProcess,pathList);
+
+		for( Map pathMap : pathList){
+			String path = (String)pathMap.get(PATH);
+			deployProcess(namespace,path);
+		}
 	}
 
 	private String getBasename(String path) {
@@ -471,8 +496,19 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		return o;
 	}
 
+	private void toFlatList(Map<String,Object> fileMap,List<String> types,List<Map> result){
+		String type = (String)fileMap.get("type");
+		if( types.indexOf(type) != -1){
+			result.add(fileMap);
+		}
+		List<Map> childList = (List)fileMap.get("children");
+		for( Map child : childList){
+			toFlatList(child,types,result);
+		}
+	}
+
 	public synchronized void h2Close(DataSource ds) {
-		System.out.println("h2Close.jta:"+m_transactionService.getJtaLocator());
+		info("h2Close.jta:"+m_transactionService.getJtaLocator());
 		if( m_transactionService.getJtaLocator().equals("bitronix")){
 			((PoolingDataSource)((DataSourceWrapper)m_dataSource).getDataSource()).close();
 		}else{
@@ -533,6 +569,15 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	}
 
 	/* END JSON-RPC-API*/
+	private static void debug(String msg) {
+		System.out.println(msg);
+		m_logger.debug(msg);
+	}
+	private static void info(String msg) {
+		System.out.println(msg);
+		m_logger.info(msg);
+	}
+
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
 		this.m_gitService = gitService;
