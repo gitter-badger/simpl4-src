@@ -85,12 +85,14 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NameClassPair;
 import java.util.concurrent.ExecutorService;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.FrameworkEvent;
 
 /** JettyService implementation
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true)
-public class JettyServiceImpl implements JettyService, ServiceListener {
+public class JettyServiceImpl implements JettyService, ServiceListener,FrameworkListener {
 
 	private final String NAMESPACE = "namespace";
 
@@ -181,11 +183,6 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 					String[] objectClass = (String[]) sr[i].getProperty("objectClass");
 					m_rpcServlet.putServiceMapping(rpc_prefix, objectClass[0]);
 					System.out.println("Jetty.ServiceName:" + objectClass[0] + "/rpc_prefix:" + rpc_prefix);
-					if( m_notStarted && rpc_prefix.equals("wamp")){
-						info("initJetty3.ok");
-						m_notStarted=false;
-		   			m_server.start();
-					}
 				}
 			}
 		} catch (Exception e) {
@@ -196,9 +193,27 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		System.out.println("JettyServiceImpl.activate2");
 		m_bundleContext = bundleContext;
+		m_bundleContext.addFrameworkListener(this);
 		__activate();
 	}
 
+	public void frameworkEvent(FrameworkEvent event) {
+		info("JettyServiceImpl.frameworkEvent:"+event);
+		if( event.getType() != FrameworkEvent.STARTED){
+			 return; 
+		}
+		ClassLoader save = Thread.currentThread().getContextClassLoader();
+		try{
+			ClassLoaderWrapper clw = new ClassLoaderWrapper(this.getClass().getClassLoader());
+			Thread.currentThread().setContextClassLoader(clw);
+			m_server.start();
+			info("JettyServer.startet");
+		}catch(Exception e){
+			error("JettyServer.start.error",e);
+		}finally{
+			Thread.currentThread().setContextClassLoader(save);
+		}
+	}
 	private void initJetty() throws Exception {
 		ExecutorService es = getExecutorService();
 		info("Jetty.ExecutorService:"+es);
@@ -341,11 +356,6 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 			contexts.setHandlers(new Handler[] { context0 });
 		}
 		m_server.setHandler(contexts);
-		if( isWAMPDisabled && m_notStarted){
-			m_notStarted = false;
-			m_server.start();
-			info("initJetty.ok");
-		}
 	}
 
 	private void unknownRequest(HttpServletRequest request, HttpServletResponse response) {
@@ -724,15 +734,6 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 		}
 		if (event.getType() == ServiceEvent.REGISTERED) {
 			debug("Ex1: Service of type " + objectClass[0] + " registered.rpc_prefix:" + rpc_prefix);
-			if( m_notStarted && rpc_prefix.equals("wamp")){
-				m_notStarted=false;
-				try{
-					m_server.start();
-					info("initJetty2.ok");
-				}catch( Exception e){
-					e.printStackTrace();
-				}
-			}
 			m_rpcServlet.putServiceMapping(rpc_prefix, objectClass[0]);
 		} else if (event.getType() == ServiceEvent.UNREGISTERING) {
 			m_rpcServlet.putServiceMapping(rpc_prefix, null);
@@ -945,6 +946,11 @@ public class JettyServiceImpl implements JettyService, ServiceListener {
 	protected void info(String msg) {
 		System.out.println(msg);
 		m_logger.info(msg);
+	}
+	protected void error(String msg,Throwable t) {
+		System.out.println(msg);
+		t.printStackTrace();
+		m_logger.error(msg,t);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(JettyServiceImpl.class);
 }
