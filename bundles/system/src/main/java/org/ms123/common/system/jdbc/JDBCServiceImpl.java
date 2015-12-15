@@ -81,7 +81,11 @@ public class JDBCServiceImpl implements JDBCService {
 		}
 		for (String name : jndiNames) {
 			info("JDBCServiceImpl.jndiLookup.name:" + name);
-			DataSource datasource = (DataSource) ctx.lookup(name);
+			DataSource datasource = null;
+			try{
+				datasource = (DataSource) ctx.lookup(name);
+			}catch( javax.naming.NameNotFoundException e){
+			}
 			if (datasource != null) {
 				info("JDBCServiceImpl.DataSource:" + datasource);
 				Dictionary<String, String> props = new Hashtable<String, String>();
