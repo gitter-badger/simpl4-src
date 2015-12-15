@@ -120,7 +120,7 @@ class Setup{
 							Filename fn = new Filename(arch, (char)'/', (char)'.' );
 							createdNamespaces.add(fn.filename());
 						}catch(Exception e){
-							error(Setup.class, "unpack:"+zipUri+":",e);
+							error(Setup.class, "unpack:"+zipUri+":%[exception]s",e);
 							e.printStackTrace();
 						}
 					}
@@ -145,7 +145,7 @@ class Setup{
 						try{
 							ic.call();
 						}catch(Exception e){
-							error(Setup.class, "data_repo_create("+dataRepo+"):",e);
+							error(Setup.class, "data_repo_create("+dataRepo+"):%[exception]s",e);
 							e.printStackTrace();
 						}
 					}
@@ -154,7 +154,7 @@ class Setup{
 					info(Setup.class, "deleteDirectory:"+tempDir);
 					FileUtils.deleteDirectory(tempDir);
 				}catch(Exception e){
-					error(Setup.class, "error.copyBundledRepos:",e);
+					error(Setup.class, "error.copyBundledRepos:%[exception]s",e);
 					e.printStackTrace();
 					throw new RuntimeException("OsgiStarter.createGitRepos:",e);
 				}finally{

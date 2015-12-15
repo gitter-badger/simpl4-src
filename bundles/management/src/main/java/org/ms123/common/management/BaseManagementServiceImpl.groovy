@@ -145,7 +145,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			List<Map> result = m_compileService.compileGroovyNamespace( ns );
 			info(this, "compileGroovyNamespace:"+ns+"/result:"+result);
 		}catch(Exception e){
-			error(this, "compileGroovyNamespace.error:",e);
+			error(this, "compileGroovyNamespace.error:%[exception]s",e);
 			e.printStackTrace();
 		}
 	}
@@ -155,7 +155,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			List<Map> result = m_compileService.compileJavaNamespace( ns,m_camelBundle );
 			info(this, "compileJavaNamespace:"+ns+"/result:"+result);
 		}catch(Exception e){
-			error(this, "compileJavaNamespace.error:",e);
+			error(this, "compileJavaNamespace.error:%[exception]s",e);
 			e.printStackTrace();
 		}
 	}
@@ -165,7 +165,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
 			m_domainobjectsService.createClasses(sdesc);
 		}catch(Exception e){
-			error(this, "createDomainClasses.error:",e);
+			error(this, "createDomainClasses.error:%[exception]s",e);
 			e.printStackTrace();
 		}
 	}
@@ -175,7 +175,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			info(this, "createRoutesFromJson:"+ns);
 			m_camelService.createRoutesFromJson(ns);
 		}catch(Exception e){
-			error(this, "createRoutesFromJson.error:",e);
+			error(this, "createRoutesFromJson.error:%[exception]s",e);
 			e.printStackTrace();
 		}
 	}
@@ -184,7 +184,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			info(this, "deployWorkflows:"+ns);
 			m_workflowService.deployNamespace(ns);
 		}catch(Exception e){
-			error(this, "deployWorkflows.error:",e);
+			error(this, "deployWorkflows.error:%[exception]s",e);
 			e.printStackTrace();
 		}
 	}
