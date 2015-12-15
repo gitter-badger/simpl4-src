@@ -51,35 +51,9 @@ class Setup{
 	private Setup(){
 	}
 
-	static void doSetup(List<String> createdNamespaces){
+	static void doSetup(List<String> createdNamespaces,boolean firstRun){
 		String simpl4Dir = (String) System.getProperty("simpl4.dir");
-		File loggingConfig = new File(simpl4Dir, "etc/logging.config");
-		boolean firstRun = false;
-		if( !loggingConfig.exists()){
-			firstRun = true;
-			String loggingConfigTpl = new File(simpl4Dir, "etc/logging.config.tpl").toString();
-			info(Setup.class, "doSetup.loggingConfigTpl:"+loggingConfigTpl);
-			String basedir = simpl4Dir.replaceAll("\\\\", "/");
-			info(Setup.class, "doSetup.basedir:"+basedir);
-			File logDir = new File(simpl4Dir,"log");
-			if( !logDir.exists()){
-				logDir.mkdir();
-			}
-			info(Setup.class, "doSetup.logDir:"+logDir);
-			Unix4j.cat(loggingConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").
-				sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(loggingConfig);
-
-			File logBackTpl = new File(simpl4Dir, "etc/logback.xml.tpl");
-			File logBack = new File(simpl4Dir,"etc/logback.xml");
-			Unix4j.cat(logBackTpl).sed("s!_BASEDIR_!"+basedir+"!g").
-				sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(logBack);
-
-			File logConfigTpl = new File(simpl4Dir, "etc/config/org/ops4j/pax/logging.config.tpl");
-			File logConfig = new File(simpl4Dir,"etc/config/org/ops4j/pax/logging.config");
-			Unix4j.cat(logConfigTpl).sed("s!_BASEDIR_!"+basedir+"!g").toFile(logConfig);
-		}
-
-		String vardir = (String) System.getProperty("tpso.web.vardir");
+		String vardir = getVarDir();
 		if( vardir == null){
 			vardir = simpl4Dir;
 		}
@@ -161,6 +135,13 @@ class Setup{
 				}
 			}
 		}
+	}
+	private static String getVarDir(){
+		String varDir = (String) System.getProperty("tpso.web.vardir");
+		if( varDir == null){
+			return (String) System.getProperty("simpl4.vardir");
+		}
+		return varDir;
 	}
 }
 

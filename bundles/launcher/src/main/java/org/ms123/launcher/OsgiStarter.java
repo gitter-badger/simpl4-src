@@ -159,9 +159,55 @@ public class OsgiStarter implements ServletContextListener {
 		}
 	}
 
+	private static void initLogger(){
+		if( !isFirstRun() ){
+			return;
+		}
+		String simpl4Dir = (String) System.getProperty("simpl4.dir");
+		String loggingConfigTpl = new File(simpl4Dir, "etc/logging.config.tpl").toString();
+		info("doSetup.loggingConfigTpl:"+loggingConfigTpl);
+		String basedir = getBaseDir().replaceAll("\\\\", "/");
+		String basedir2 = simpl4Dir.replaceAll("\\\\", "/");
+		info("doSetup.basedir:"+basedir);
+		File logDir = new File(getBaseDir(),"log");
+		if( !logDir.exists()){
+			logDir.mkdir();
+		}
+		info("doSetup.logDir:"+logDir);
+		File loggingConfig = new File(simpl4Dir, "etc/logging.config");
+		Unix4j.cat(loggingConfigTpl).sed("s!_BASEDIR_!"+basedir2+"!g").sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(loggingConfig);
+
+		File logBackTpl = new File(simpl4Dir, "etc/logback.xml.tpl");
+		File logBack = new File(simpl4Dir,"etc/logback.xml");
+		Unix4j.cat(logBackTpl).sed("s!_BASEDIR_!"+basedir+"!g").sed("s!_LOGDIR_!"+logDir.toString().replaceAll("\\\\", "/")+"!g").toFile(logBack);
+
+		File logConfigTpl = new File(simpl4Dir, "etc/config/org/ops4j/pax/logging.config.tpl");
+		File logConfig = new File(simpl4Dir,"etc/config/org/ops4j/pax/logging.config");
+		Unix4j.cat(logConfigTpl).sed("s!_BASEDIR_!"+basedir2+"!g").toFile(logConfig);
+	}
+
+	private static boolean isFirstRun(){
+		String simpl4Dir = (String) System.getProperty("simpl4.dir");
+		File initFile = new File(simpl4Dir, "etc/initialized");
+		return !initFile.exists();
+	}
+	private static String getBaseDir(){
+		String baseDir = getVarDir();
+		if( baseDir == null){
+			return (String) System.getProperty("simpl4.dir");
+		}
+		return baseDir;
+	}
+	private static String getVarDir(){
+		String varDir = (String) System.getProperty("tpso.web.vardir");
+		if( varDir == null){
+			return (String) System.getProperty("simpl4.vardir");
+		}
+		return varDir;
+	}
 	private static void setProperties() {
 		String af = new File(".").getAbsolutePath();
-		String vardir = (String) System.getProperty("tpso.web.vardir");
+		String vardir = getVarDir();
 		String varSimpl4Dir = null;
 		if( vardir != null){
 			varSimpl4Dir = new File(vardir, "simpl4").toString();
@@ -276,6 +322,7 @@ public class OsgiStarter implements ServletContextListener {
 			});
 		}
 		try {
+			initLogger();
 			List<URL> classLoaderUrls = new ArrayList<URL>();
 			classLoaderUrls.add(new URL("file:" + simpl4Dir + "/WEB-INF/lib/org.apache.felix.main-"+FELIX_VERSION+".jar"));
 			classLoaderUrls.add(new URL("file:" + simpl4Dir + "/WEB-INF/lib/xml-w3c.jar"));

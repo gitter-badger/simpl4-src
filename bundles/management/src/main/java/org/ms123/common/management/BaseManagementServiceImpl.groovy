@@ -112,8 +112,9 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 		info(this, "BaseManagementServiceImpl.camelBundle:"+m_camelBundle);
 		List<String> createdNamespaces = new ArrayList<String>();
 		info(this, "BaseManagementServiceImpl.createdNamespaces:"+createdNamespaces);
-		Setup.doSetup(createdNamespaces);
-		if( isFirstRun()){
+		boolean firstRun = isFirstRun();
+		Setup.doSetup(createdNamespaces,firstRun);
+		if( firstRun){
 			createdNamespaces = getAllNamespaces();
 			for( String ns : createdNamespaces){
 				doAllInNamespace(ns);
@@ -163,6 +164,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	private void createClasses(String ns){
 		try{
 			StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
+			info(this, "createClasses:"+ns+"/sdesc:"+sdesc);
 			m_domainobjectsService.createClasses(sdesc);
 		}catch(Exception e){
 			error(this, "createDomainClasses.error:%[exception]s",e);
@@ -199,10 +201,11 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 
 	private boolean isFirstRun(){
 		String simpl4Dir = (String) System.getProperty("simpl4.dir");
-		File loggingConfig = new File(simpl4Dir, "etc/logging.config");
+		File initFile = new File(simpl4Dir, "etc/initialized");
 		boolean firstRun = false;
-		if( !loggingConfig.exists()){
+		if( !initFile.exists()){
 			firstRun = true;
+			initFile.createNewFile();
 		}
 		return firstRun;
 	}
