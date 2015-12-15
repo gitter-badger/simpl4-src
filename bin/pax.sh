@@ -13,8 +13,8 @@ usage() {
 #########################################################
 # parameter
 #########################################################
-shortoptions='s:d:w'
-longoptions='srcdir:destdir:war'
+shortoptions='s:d:wa'
+longoptions='srcdir:,destdir:,war,appserver'
 getopt=$(getopt -o $shortoptions --longoptions  $longoptions -- "$@")
 if [ $? != 0 ]; then
    usage
@@ -33,6 +33,10 @@ while true; do
       -s|--srcdir)
          shift
          SRCTOPDIR=$1
+         shift
+      ;;
+      -a|--appserver)
+         WAR=true
          shift
       ;;
       -w|--war)
@@ -78,11 +82,12 @@ export BUNDLESBUILD="$SRCTOPDIR/build/${CURRENTBRANCH}/bundlesBuild"
 echo "================="
 echo "Create osgi-env ->"
 echo "================="
-echo -e "\t:SRCTOPDIR=$SRCTOPDIR"
-echo -e "\t:DESTTOPDIR=$DESTTOPDIR"
-echo -e "\t:REPOSITORY=$REPOSITORY"
-echo -e "\t:CURRENTBRANCH=$CURRENTBRANCH"
-echo -e "\t:BUNDLESBUILD=$BUNDLESBUILD"
+echo  "\t:SRCTOPDIR=$SRCTOPDIR"
+echo  "\t:DESTTOPDIR=$DESTTOPDIR"
+echo  "\t:BUNDLEREPOSITORY=$REPOSITORY"
+echo  "\t:PAX.DEPLOYBRANCH=$DEPLOYBRANCH"
+echo  "\t:PAX.SOURCEBRANCH=$CURRENTBRANCH"
+echo  "\t:BUNDLESBUILD=$BUNDLESBUILD"
 #########################################################
 # main
 #########################################################
@@ -420,14 +425,14 @@ ${cassandrabundles} \
 
 
 rm -f $SRCTOPDIR/etc/felix.xml 
-if [ -z "$WAR" ] ; then
-	sed -i "s/javax.transaction.xa/dummy/g" $SERVERDIR/felix/config.ini
-	sed -i "s/javax.transaction/dummy/g" $SERVERDIR/felix/config.ini
-	sed -i "s/,javax.sql,/,dummy,/g" $SERVERDIR/felix/config.ini
-else
+if [ -n "$APPSERVER" ] ; then
 	sed -i "s/javax.transaction.xa,/javax.transaction.xa;version=1.1.0,/g" $SERVERDIR/felix/config.ini
 	sed -i "s/javax.transaction,/javax.transaction;version=1.1.0,/g" $SERVERDIR/felix/config.ini
 	sed -i "/org.apache.geronimo.specs.geronimo-jta/d" $SERVERDIR/felix/config.ini
+else
+	sed -i "s/javax.transaction.xa/dummy/g" $SERVERDIR/felix/config.ini
+	sed -i "s/javax.transaction/dummy/g" $SERVERDIR/felix/config.ini
+	sed -i "s/,javax.sql,/,dummy,/g" $SERVERDIR/felix/config.ini
 fi
 chmod +x $SERVERDIR/run.sh
 

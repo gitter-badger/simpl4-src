@@ -48,8 +48,8 @@ fi
 echo "================="
 echo "Copy files ->"
 echo "================="
-echo -e "\t:SRCTOPDIR=$SRCTOPDIR"
-echo -e "\t:DESTTOPDIR=$DESTTOPDIR"
+echo  "\t:SRCTOPDIR=$SRCTOPDIR"
+echo  "\t:DESTTOPDIR=$DESTTOPDIR"
 #########################################################
 # branch
 #########################################################
@@ -57,8 +57,13 @@ cd $SRCTOPDIR
 CURRENTBRANCH=`git rev-parse --abbrev-ref HEAD`
 
 cd $DESTTOPDIR
-git checkout $CURRENTBRANCH >/dev/null 2>&1
-echo -e "\t:CURRENTBRANCH=$CURRENTBRANCH"
+echo "\t:COPY.DEPLOYBRANCH:$DEPLOYBRANCH"
+if [ -n "$DEPLOYBRANCH" ] ; then
+	git checkout $DEPLOYBRANCH >/dev/null 2>&1
+else
+	git checkout $CURRENTBRANCH >/dev/null 2>&1
+fi
+echo  "\t:COPY.SOURCEBRANCH=$CURRENTBRANCH"
 #########################################################
 # copy
 #########################################################
@@ -100,7 +105,6 @@ cp $REPOSITORY/jsoup-1.8.3.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/joor-0.9.6.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/unix4j-0.3.1.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/org.eclipse.jgit-4.1.1.201511131810-r.jar ${WEBDIRECTORY}/lib
-cp $REPOSITORY/vfs/commons-vfs2-2.1.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/slf4j-api-1.7.5.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/slf4j-simple-1.7.5.jar ${WEBDIRECTORY}/lib
 cp $REPOSITORY/commons/commons-io-2.5.jar ${WEBDIRECTORY}/lib
