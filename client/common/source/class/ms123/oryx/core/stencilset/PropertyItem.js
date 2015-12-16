@@ -46,6 +46,9 @@ qx.Class.define("ms123.oryx.core.stencilset.PropertyItem", {
 		if (!jsonItem.value) {
 			throw "ms123.oryx.core.stencilset.PropertyItem(construct): Value is not defined.";
 		}
+		if (this._jsonItem.enabled==null) {
+			this._jsonItem.enabled="true";
+		}
 
 		if (this._jsonItem.refToView) {
 			if (!(this._jsonItem.refToView instanceof Array)) {
@@ -88,6 +91,10 @@ qx.Class.define("ms123.oryx.core.stencilset.PropertyItem", {
 
 		value: function () {
 			return this._jsonItem.value;
+		},
+
+		enabled: function () {
+			return this._jsonItem.enabled;
 		},
 
 		title: function () {

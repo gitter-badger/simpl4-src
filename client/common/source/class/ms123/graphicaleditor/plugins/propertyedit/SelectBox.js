@@ -18,7 +18,7 @@
  */
 qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.SelectBox", {
 	extend: qx.ui.form.SelectBox,
-	implement: [qx.ui.form.IStringForm],
+	implement: [qx.ui.form.IStringForm,ms123.graphicaleditor.plugins.propertyedit.IUpdate],
 
 
 	/**
@@ -27,8 +27,9 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.SelectBox", {
 	 *****************************************************************************
 	 */
 
-	construct: function () {
+	construct: function (items) {
 		this.base(arguments);
+		this.items = items;
 	},
 	/******************************************************************************
 	 EVENTS
@@ -44,7 +45,30 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.SelectBox", {
 	 */
 
 	members: {
+		__maskedEval: function (scr, env) {
+			if( scr === false) return false;
+			if( scr === true) return true;
+			return (new Function("with(this) { return " + scr + "}")).call(env);
+		},
+		_getItem:function(model){
+			for( var i=0; i < this.items.length;i++){
+				var value = this.items[i].value();
+				if( value == model){
+					return this.items[i];
+				}
+			}
+		},
 		// interface implementation
+		envChanged: function (env) {
+			var selectables = this.getSelectables(true);
+			for( var i=0; i < selectables.length;i++){
+				var model = selectables[i].getModel();
+				var item = this._getItem(model);
+				var enabled = item.enabled();
+				var b = this.__maskedEval(enabled,env);
+				selectables[i].setEnabled( b );
+			}
+		},
 		resetValue: function () {},
 		setValue: function (value) {
 			console.log("SelectBox.setValue:" + value);

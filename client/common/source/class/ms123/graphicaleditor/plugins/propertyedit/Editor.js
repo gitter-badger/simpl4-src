@@ -311,6 +311,9 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 						formElement.setReadOnly(b);
 					}
 					formElement.setEnabled(!b);
+					if( qx.Class.hasInterface(formElement.constructor, ms123.graphicaleditor.plugins.propertyedit.IUpdate)){
+						formElement.envChanged( env );
+					}
 				}
 			}).bind(this));
 		},
@@ -582,7 +585,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 						case ms123.oryx.Config.TYPE_CHOICE:
 							var items = pair.items();
 							var options = [];
-							formElement = new ms123.graphicaleditor.plugins.propertyedit.SelectBox();
+							formElement = new ms123.graphicaleditor.plugins.propertyedit.SelectBox(items);
 							if( !jQuery.isEmptyObject(config) ){
 								items.each((function (value) {
 									if (value.refToView()[0]) refToViewFlag = true;
@@ -672,6 +675,10 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 						}).bind(this));
 
 						this.keyFormElementMap[key] = formElement;
+
+						if( qx.Class.hasInterface(formElement.constructor, ms123.graphicaleditor.plugins.propertyedit.IUpdate)){
+							formElement.envChanged( this._getEnvFromFormElements() );
+						}
 
 						var name = pair.title();
 						var icons = [];

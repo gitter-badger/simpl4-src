@@ -102,6 +102,7 @@ public class CamelContextBuilder {
 		sr.put("wamp", new org.ms123.common.wamp.camel.WampClientComponent());
 		sr.put("eventbus", new org.ms123.common.camel.components.eventbus.EventBusComponent());
 		sr.put("websocket", new org.ms123.common.camel.components.websocket.WebsocketComponent());
+		sr.put("vfs", new org.ms123.common.camel.components.vfs.VfsComponent());
 		sr.put("direct", new DirectComponent());
 		sr.put("xdocreport", new XDocReportComponent());
 		sr.put("template", new TemplateComponent());
