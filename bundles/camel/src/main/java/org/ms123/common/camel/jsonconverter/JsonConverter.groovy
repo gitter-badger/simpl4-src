@@ -235,6 +235,26 @@ abstract class JsonConverterImpl implements JsonConverter{
 			throw new RuntimeException(e.getMessage());
 		}
 	}
+	def getEnrich() {
+		if( "enrich".equals(shapeProperties.get("enrich"))){
+			return "enrich";
+		}
+		if( "pollEnrich".equals(shapeProperties.get("enrich"))){
+			return "pollEnrich";
+		}
+		return null;
+	}
+	int getEnrichTimeout() {
+		def t = shapeProperties.get("enrich_timeout");
+		if( t == null){
+			t =0;
+		}
+		try{
+			return Integer.parseInt(t);	
+		}catch(Exception e){
+		}
+		return 0;
+	}
 
 	def getSharedLinkRef() {
 		if( "link".equals(shapeProperties.get("shared"))){
@@ -373,6 +393,7 @@ class EndpointJsonConverter extends JsonConverterImpl{
 			sharedEndpoint = ctx.sharedEndpoints[link];
 			if( sharedEndpoint == null) throw new RuntimeException("EndpointJsonConverter:sharedEnpoint("+link+") not found.");
 		}
+		def enrich = getEnrich();
 		if( ctx.routesDefinition == null){
 			ctx.routesDefinition = new RoutesDefinition();
 			ctx.routesDefinition.setCamelContext( ctx.modelCamelContext);
@@ -386,7 +407,13 @@ class EndpointJsonConverter extends JsonConverterImpl{
 			ctx.current = ctx.routesDefinition.from(sharedEndpoint ? sharedEndpoint : constructUri(ctx));
 			//ctx.current.getInputs().get(0).id(resourceId);
 		}else{
-			ctx.current = ctx.current.to(sharedEndpoint ? sharedEndpoint : constructUri(ctx));
+			if( enrich =="pollEnrich"){
+				ctx.current = ctx.current.pollEnrich(sharedEndpoint ? sharedEndpoint : constructUri(ctx), getEnrichTimeout());
+			}else if( enrich == "enrich"){
+				ctx.current = ctx.current.enrich(sharedEndpoint ? sharedEndpoint : constructUri(ctx));
+			}else{
+				ctx.current = ctx.current.to(sharedEndpoint ? sharedEndpoint : constructUri(ctx));
+			}
 			ctx.current.id(resourceId);
 		}
 	}
