@@ -463,6 +463,11 @@ class VMEndpointJsonConverter extends EndpointJsonConverter{
 
 class FtpEndpointJsonConverter extends EndpointJsonConverter{
 	void convertToCamel(ctx){
+		System.out.println("FTP:"+shapeProperties);
+		if( shapeProperties.uriparam_protocol != "ftp"){
+			shapeProperties.remove("uriparam_ftpClient.defaultTimeout");
+		}
+		System.out.println("FTP2:"+shapeProperties);
 		super.convertToCamel(ctx);
 	}
 }
