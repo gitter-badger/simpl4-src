@@ -54,6 +54,7 @@ qx.Class.define("ms123.graphicaleditor.GraphicalEditor", {
 				this.zoomLevel=jsonObject.zoomLevel;
 			}
 			this.context.editorType = editorType;
+			this.context.diagramName = diagramName;
 			this._diagramName = diagramName;
 			this._projectRoot = projectRoot;
 			this._initOryxEditor();
@@ -78,6 +79,7 @@ qx.Class.define("ms123.graphicaleditor.GraphicalEditor", {
 
 			new ms123.graphicaleditor.plugins.DragDropResize(this._facade);
 			this._facade.editorType = this.context.editorType;
+			this._facade.diagramName = this.context.diagramName;
 			if( 
 					this.context.editorType == "sw.form" || 
 					this.context.editorType == "sw.website" || 

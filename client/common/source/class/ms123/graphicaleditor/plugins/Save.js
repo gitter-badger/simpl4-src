@@ -238,6 +238,11 @@ qx.Class.define("ms123.graphicaleditor.plugins.Save", {
 			});
 
 			var json = this.facade.getJSON();
+			if( this.facade.editorType == "sw.camel"){
+				if(json.properties.overrideid == ""){
+					json.properties.overrideid=this.facade.diagramName;
+				}
+			}
 			var zoomLevel = this.facade.view.getZoomLevel();
 			json.zoomLevel= zoomLevel;
 			var jsonProcessModel = qx.lang.Json.stringify(json,null,2);
