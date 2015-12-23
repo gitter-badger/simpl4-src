@@ -130,31 +130,31 @@ vmOptions="\
 "
 
 activitibundles=""
-for i in $REPOSITORY/activiti-5.18/*ar
+for i in $REPOSITORY/activiti-5.18/*[bj]ar
 do
 	activitibundles=${activitibundles}"scan-bundle:file:$i "
 done
 
 nucleusbundles=""
-for i in $REPOSITORY/datanucleus/*ar
+for i in $REPOSITORY/datanucleus/*[bj]ar
 do
 	nucleusbundles=${nucleusbundles}"scan-bundle:file:$i "
 done
 
 camelbundles=""
-for i in $REPOSITORY/camel/*jar
+for i in $REPOSITORY/camel/*[bj]ar
 do
 	camelbundles=${camelbundles}"scan-bundle:file:$i "
 done
 
 commonsbundles=""
-for i in $REPOSITORY/commons/*jar
+for i in $REPOSITORY/commons/*[bj]ar
 do
 	commonsbundles=${commonsbundles}"scan-bundle:file:$i "
 done
 
 xbeanbundles=""
-for i in $REPOSITORY/xbean/*jar
+for i in $REPOSITORY/xbean/*[bj]ar
 do
 	xbeanbundles=${xbeanbundles}"scan-bundle:file:$i "
 done
@@ -172,49 +172,49 @@ do
 done
 
 openfirebundles=""
-for i in $REPOSITORY/openfire/*ar
+for i in $REPOSITORY/openfire/*[bj]ar
 do
 	openfirebundles=${openfirebundles}"scan-bundle:file:$i "
 done
 
 jooqbundles=""
-for i in $REPOSITORY/jooq/*ar
+for i in $REPOSITORY/jooq/*[bj]ar
 do
 	jooqbundles=${jooqbundles}"scan-bundle:file:$i "
 done
 
 ariesbundles=""
-for i in $REPOSITORY/aries/*jar
+for i in $REPOSITORY/aries/*[bj]ar
 do
 	ariesbundles=${ariesbundles}"scan-bundle:file:$i "
 done
 
 karafbundles=""
-for i in $REPOSITORY/karaf/*ar
+for i in $REPOSITORY/karaf/*[bj]ar
 do
 	karafbundles=${karafbundles}"scan-bundle:file:$i "
 done
 
 springbundles=""
-for i in $REPOSITORY/spring/*ar
+for i in $REPOSITORY/spring/*[bj]ar
 do
 	springbundles=${springbundles}"scan-bundle:file:$i "
 done
 
 vfsbundles=""
-for i in $REPOSITORY/vfs/*jar
+for i in $REPOSITORY/vfs/*[bj]ar
 do
 	vfsbundles=${vfsbundles}"scan-bundle:file:$i "
 done
 
 activemqbundles=""
-for i in $REPOSITORY/activemq/*ar
+for i in $REPOSITORY/activemq/*[bj]ar
 do
 	activemqbundles=${activemqbundles}"scan-bundle:file:$i "
 done
 
 cassandrabundles=""
-for i in $REPOSITORY/cassandra/*ar
+for i in $REPOSITORY/cassandra/*[bj]ar
 do
 	cassandrabundles=${cassandrabundles}"scan-bundle:file:$i "
 done

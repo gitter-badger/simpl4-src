@@ -84,7 +84,8 @@ public class JDBCServiceImpl implements JDBCService {
 			DataSource datasource = null;
 			try{
 				datasource = (DataSource) ctx.lookup(name);
-			}catch( javax.naming.NameNotFoundException e){
+			}catch( javax.naming.NotContextException nce){
+			}catch( javax.naming.NameNotFoundException nne){
 			}
 			if (datasource != null) {
 				info("JDBCServiceImpl.DataSource:" + datasource);

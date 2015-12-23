@@ -59,10 +59,11 @@ class Setup{
 		}
 
 		File varSimpl4Dir = new File(vardir, "simpl4");
+		info(Setup.class, "doSetup.vardir:"+vardir);
 		info(Setup.class, "doSetup.varSimpl4Dir.exists:"+varSimpl4Dir.exists());
 		info(Setup.class, "doSetup.firstRun:"+firstRun);
 		if( firstRun ){
-			if( vardir != null){
+			if( !vardir.equals(simpl4Dir) ){
 				varSimpl4Dir.mkdirs();
 				try{
 					FileUtils.copyDirectory(new File(simpl4Dir,"workspace"), new File(varSimpl4Dir,"workspace"));
