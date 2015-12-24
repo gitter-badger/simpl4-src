@@ -562,18 +562,41 @@
 		:host #input {
 			font-size: 12px;
 		}
-
+		.error {
+			color: #d34336;
+		}
+		.error-text {
+			font-size: 0.75em;
+			padding: 0.5em 0;
+		}
+		[invisible] {
+			visibility: hidden;
+		}
+		label.label-text {
+			top:10px !important;
+			font-size:14px !important;
+			display: inline-block;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow: hidden;
+		}
 	</style>
 	<template>
 		<paper-input-container id="decorator" no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" disabled$="[[disabled]]" invalid="[[invalid]]">
-
-			<label hidden$="[[!label]]">[[label]]</label>
+			<div hidden$="[[!label]]">
+				<label class="label-text">{{label}}</label>
+			</div>
 
 			<simpl-upload id="input" class="paper-input-input" drop-text="[[tr('import.drop_file2')]]" droppable="true" raised="true">[[tr('import.select_file')]]</simpl-upload>
 			<template is="dom-if" if="[[errorMessage]]">
 				<paper-input-error>[[errorMessage]]</paper-input-error>
 			</template>
 
+			<div class="error layout horizontal center" hidden$="[[!isInvalid]]">
+				<div class="error-text flex auto" role="alert" aria-hidden$="[[!isInvalid]]"></div>
+				<div class="error-text" role="alert" aria-hidden$="[[!isInvalid]]">{{error}}<span>&nbsp;&nbsp;</span></div>
+				<iron-icon class="error-icon" icon="warning"></iron-icon>
+			</div>
 		</paper-input-container>
 	</template>
 	<script>
@@ -592,7 +615,15 @@
 			observers: [
 				'editValueChanged(editValue)'
 			],
-			properties: {},
+			properties: {
+				required: {
+					value:false,
+					type: String
+				}
+			},
+			ready: function() {
+				this.isInvalid = false;
+			},
 			editValueChanged: function() {
 				this.value = this.editValue;
 				this.fire( 'value-changed', this );
@@ -603,6 +634,7 @@
 					f.setValue( e.detail.target.file.name );
 				}
 				this.editValue = e.detail.target.result;
+				this.checkConstraints();
 			},
 			setValue: function( v ) {
 				this.editValue = v;
@@ -613,6 +645,26 @@
 					this.editValue = "ignore";
 				}
 				this.$.input.clear();
+			},
+			checkConstraints: function() {
+				this.setInvalid( false );
+				if ( !this.isRequired() ) return;
+				if ( this.editValue ) {
+					return;
+				}
+				this.setInvalid( true );
+				this.setErrorMessage( tr( "This field is required" ) );
+			},
+			setErrorMessage: function( message ) {
+				this.error = message;
+			},
+			setInvalid: function( b ) {
+				this.isInvalid = b;
+			},
+			isRequired: function() {
+				var data = this.form.getData();
+				var req = this.form._maskedEval( this.required, data, false );
+				return req;
 			},
 			isEmpty: function( s ) {
 				if ( s == null || s == '' ) return true;

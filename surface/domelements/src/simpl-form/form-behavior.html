@@ -115,7 +115,7 @@
 					} );
 				} );
 			}
-			var elements = this.filterToArray( this.$.formdiv.querySelectorAll( "tableselect-field" ), true );
+			var elements = this.filterToArray( this.$.formdiv.querySelectorAll( "tableselect-field,upload-field" ), true );
 			for ( var i = 0; i < elements.length; i++ ) {
 				elements[ i ].checkConstraints();
 				if ( elements[ i ].isInvalid ) {
@@ -312,6 +312,7 @@
 			if ( shape.stencil.id.toLowerCase() == "input" ||
 				shape.stencil.id.toLowerCase() == 'textarea' ||
 				shape.stencil.id.toLowerCase() == 'relatedto' ||
+				shape.stencil.id.toLowerCase() == 'upload' ||
 				shape.stencil.id.toLowerCase() == 'moduleselector' ||
 				shape.stencil.id.toLowerCase() == 'enumselect' ||
 				shape.stencil.id.toLowerCase() == 'tableselect' ||
@@ -389,7 +390,7 @@
 					}
 					if ( props.items == null ) props.items = [];
 					var columns = props.xf_columns;
-					var fields = columns.items;
+					var fields = columns ? columns.items : [];
 					props.meta = [];
 					fields.forEach( function( field, i ) {
 						var title = field.display;

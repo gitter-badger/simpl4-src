@@ -34,7 +34,7 @@
 			padding: 10px;
 			min-width: 150px;
 			text-transform: uppercase;
-			font-weight: 400;
+			font-weight: 500;
 			max-height: 300px;
 			overflow-y: auto;
 			border-radius: 3px;
@@ -82,11 +82,11 @@
 
 	<template>
 		<div>
-			<paper-button id="button" icon="file-upload" class="blue" on-click="_fileClick">
+			<paper-button id="button" icon="file-upload" class="button button_secondary" on-click="_fileClick">
 				<iron-icon icon="file-upload"></iron-icon>
 				<content></content>
 			</paper-button>
-			<paper-material class="button button_secondary" elevation="2" id='UploadBorder'>
+			<paper-material class="button button_secondary" elevation="1" id='UploadBorder'>
 				<div id="dropArea" hidden$="{{!_shownDropText}}">{{dropText}}</div>
 				<template is="dom-repeat" items="{{files}}">
 					<div class="file">
