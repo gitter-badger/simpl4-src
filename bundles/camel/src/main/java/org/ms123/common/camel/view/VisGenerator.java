@@ -214,6 +214,9 @@ public class VisGenerator {
 				tooltip+="<tr><th>Name</th><th>Value</th></tr>";
 				for( String name : cp.getParameterNameList()){
 					String value=cp.getParameter(name);
+					if( value != null && value.startsWith("RAW(")){
+						value = value.substring(4, value.length()-1);
+					}
 					tooltip+="<tr><td>"+name+"</td><td>"+value+"</td></tr>";
 				}
 				tooltip+="</table>";
