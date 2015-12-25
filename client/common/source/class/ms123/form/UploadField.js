@@ -142,6 +142,7 @@ qx.Class.define("ms123.form.UploadField", {
 				ms123.form.Dialog.alert(this.tr("data.document.no_filename"));
 				return;
 			}
+			this._id = context.id;
 			f = this._baseName(f);
 			this._buttonDownload.setEnabled(true);
 			this._buttonDownload.setLabel(this.tr("upload.download_file") + ":" + f);
