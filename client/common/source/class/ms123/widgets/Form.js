@@ -374,7 +374,7 @@ qx.Class.define('ms123.widgets.Form', {
 				fieldData.type = "UploadField";
 				fieldData.value = null;
 				fieldData.validation = {};
-				fieldData.validation.required = true;
+//				fieldData.validation.required = true;
 			} else if (col.edittype && col.edittype == 'checkbox') {
 				fieldData.type = "CheckBox";
 				fieldData.value = null;
@@ -465,6 +465,9 @@ qx.Class.define('ms123.widgets.Form', {
 			return this.form.validate();
 		},
 		_saveForm: function (data) {
+			 if(this._documentAdd){
+				 this.beforeSave({ data: data });
+			}
 			var self = this;
 			var sep = (this.current_url.indexOf("?") == -1) ? "?" : "&";
 			var url = this.current_url + sep + "module=" + this.name;
@@ -482,7 +485,11 @@ qx.Class.define('ms123.widgets.Form', {
 					this.setErrors(cv);
 					return;
 				}
-				ms123.form.Dialog.alert(self.tr("data.form.saved"));
+				if(this._documentAdd){
+					 this.afterSave({ id: content.id, map: data, service: "data", rpcParams: {id:content.id,entity:"document",storeId:self.__storeDesc.getStoreId()} });
+				}else{
+					 ms123.form.Dialog.alert(self.tr("data.form.saved"));
+				}
 				this.setAllValid();
 				this._mode = "edit";
 			};
@@ -1148,9 +1155,16 @@ console.log("setName2:"+name);
 			if( this._mode != "select" ){
 				if (map.id === undefined) {
 					this._mode = "add";
+					if( this._context.config == "document"){
+						this.beforeAdd({storeDesc:sdesc, data:map})
+						this._documentAdd = true;
+					}
 				} else {
 					if (this._context.configMaster !== this._context.config) {
 						this._rpcParams.idChild = map.id;
+					}
+					if( this._context.config == "document"){
+						this.beforeEdit({storeDesc:sdesc, data:map})
 					}
 					this._mode = "edit";
 				}
