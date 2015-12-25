@@ -465,7 +465,7 @@ qx.Class.define('ms123.widgets.Form', {
 			return this.form.validate();
 		},
 		_saveForm: function (data) {
-			 if(this._documentAdd){
+			 if(this._documentForm){
 				 this.beforeSave({ data: data });
 			}
 			var self = this;
@@ -485,8 +485,9 @@ qx.Class.define('ms123.widgets.Form', {
 					this.setErrors(cv);
 					return;
 				}
-				if(this._documentAdd){
-					 this.afterSave({ id: content.id, map: data, service: "data", rpcParams: {id:content.id,entity:"document",storeId:self.__storeDesc.getStoreId()} });
+				if(this._documentForm){
+					 var id = this._mode=="add" ? content.id : self._rpcParams.idChild;
+					 this.afterSave({ id: id, map: data, service: "data", rpcParams: {id:content.id,entity:"document",storeId:self.__storeDesc.getStoreId()} });
 				}else{
 					 ms123.form.Dialog.alert(self.tr("data.form.saved"));
 				}
@@ -1157,7 +1158,7 @@ console.log("setName2:"+name);
 					this._mode = "add";
 					if( this._context.config == "document"){
 						this.beforeAdd({storeDesc:sdesc, data:map})
-						this._documentAdd = true;
+						this._documentForm = true;
 					}
 				} else {
 					if (this._context.configMaster !== this._context.config) {
@@ -1165,6 +1166,7 @@ console.log("setName2:"+name);
 					}
 					if( this._context.config == "document"){
 						this.beforeEdit({storeDesc:sdesc, data:map})
+						this._documentForm = true;
 					}
 					this._mode = "edit";
 				}

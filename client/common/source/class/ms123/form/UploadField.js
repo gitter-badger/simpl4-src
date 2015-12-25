@@ -122,26 +122,29 @@ qx.Class.define("ms123.form.UploadField", {
 			if( !this.getContentDrag()){
 				this._filename = null;
 			}
-			this.getChildControl("textfield").setSelection([this._upload]);
+			this._buttonDownload.setLabel("");
+			this._buttonDownload.setEnabled(false);
 			this._setEnabled();
 		},
 		beforeEdit: function (context) {
 			this.__isEdit = true;
-			this.getChildControl("textfield").setSelection([this._download]);
 			this._filename = context.data["filename"];
 			this._id = context.data["id"];
 			this._storeId = context.storeDesc.getStoreId();
 			this._buttonDownload.setLabel(this.tr("upload.download_file") + ":" + this._filename);
+			this._buttonDownload.setEnabled(true);
 			this._setEnabled();
 		},
 		afterSave: function (context) {
 			if(this.getContentDrag()) return;
-			if (context.method == "update") return;
 			var f = this._uploadField.getFileName();
 			if (f == null || f == '') {
 				ms123.form.Dialog.alert(this.tr("data.document.no_filename"));
 				return;
 			}
+			f = this._baseName(f);
+			this._buttonDownload.setEnabled(true);
+			this._buttonDownload.setLabel(this.tr("upload.download_file") + ":" + f);
 			console.log("afterSave:" + context.id);
 			this._setUploadUrl("/rpc/xyz", context.id);
 			var name = this.getUserData("key");
@@ -260,7 +263,8 @@ qx.Class.define("ms123.form.UploadField", {
 			var control;
 			switch (id) {
 			case "textfield":
-				var control = new qx.ui.container.Stack();
+				var control = new qx.ui.container.Composite();
+				control.setLayout(new qx.ui.layout.VBox());
 				this._download = this._createDownloadForm();
 				this._upload = this._createUploadForm();
 				control.add(this._download);
