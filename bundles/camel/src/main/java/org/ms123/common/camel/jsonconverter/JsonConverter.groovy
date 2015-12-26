@@ -76,6 +76,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 	def children = []
 	def engine = new SimpleTemplateEngine();
 	def serializer = new JSONSerializer();
+	def deSerializer = new JSONDeserializer();
 	void finishToCamel(ctx){}
 	def constructUri(ctx){
 		def uriValueMap = createMap(ctx,"urivalue_");
@@ -154,9 +155,15 @@ abstract class JsonConverterImpl implements JsonConverter{
 		def map = createMap(ctx,format+"_");
 		println("ParameterMap:"+map);
 		def dataFormatDef = null;
-		if( shapeProperties.json_library == "flexjson"){
+		if( format == "univocity-fixed" ){
+			univocityFixedParameterConvert( map );
+		}
+		if( map.json_library == "flexjson"){
 			def ff = new org.ms123.common.camel.components.FlexJsonDataFormat();
 			ff.setPrettyPrinting(shapeProperties.json_prettyPrint);
+			dataFormatDef = new DataFormatDefinition(ff);	
+		} else if( format  == "zip"){
+			def ff = new org.ms123.common.camel.components.ZipFileDataFormat();
 			dataFormatDef = new DataFormatDefinition(ff);	
 		}else{
 			dataFormatDef = new DataFormatDefinition(getFormatName());	
@@ -177,6 +184,15 @@ abstract class JsonConverterImpl implements JsonConverter{
 
 	def createMap(ctx,prefix){
 		def map=[:];
+		def extraOptions = shapeProperties.extraOptions;
+		if( extraOptions != null && extraOptions.totalCount>0){
+			def items = extraOptions.items;
+			items.each(){item->
+				if( isNotEmpty(item.name)  && isNotEmpty(item.value)){
+					map[item.name] = item.value;
+				}
+			}
+		}
 		shapeProperties.each(){key,value->
 			if(key.startsWith(prefix)){
 				if( value instanceof Map || value instanceof Collection){
@@ -195,6 +211,45 @@ abstract class JsonConverterImpl implements JsonConverter{
 			}
 		}	
 		return map;
+	}
+
+	def univocityFixedParameterConvert( map ){
+		try{
+			if( map.fieldLengths){
+				def value = deSerializer.deserialize(map.fieldLengths);
+				map.fieldLengths = itemsToIntArray( value.items, "length");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("getDataformat.fieldLengths:", e);
+		}
+		try{
+			if( map.headers){
+				def value = deSerializer.deserialize(map.headers);
+				map.headers = itemsToStringArray( value.items,"name");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("getDataformat.headers:", e);
+		}
+	}
+
+	def itemsToIntArray(items,key){
+		if( items == null || items.size()==0) return null;
+		int[] a = new int[items.size()];
+		items.eachWithIndex(){item,i->
+			a[i] = Integer.parseInt(item[key]);
+		}
+		return a;
+	}
+
+	def itemsToStringArray(items,key){
+		if( items == null || items.size()==0) return null;
+		String[] a = new String[items.size()];
+		items.eachWithIndex(){item,i->
+			a[i] = item[key]+"";
+		}
+		return a;
 	}
 	
 	def createOptionMap(){
@@ -272,7 +327,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 	def prettyPrint(msg, obj){
 		def js = new JSONSerializer();
 		js.prettyPrint(true);
-		println(msg+js.serialize(obj));
+		println(msg+js.deepSerialize(obj));
 	}
 
 	def buildImport(addImport) {
