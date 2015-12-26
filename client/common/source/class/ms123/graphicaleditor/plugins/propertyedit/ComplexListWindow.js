@@ -188,6 +188,8 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 
 			var tcm = table.getTableColumnModel();
 			table.setStatusBarVisible(false);
+			var numberCellRendererFactory = new qx.ui.table.cellrenderer.Dynamic(this.numberCellRendererFactoryFunc);
+			var numberCellEditorFactory = new qx.ui.table.celleditor.Dynamic(this.numberCellEditorFactoryFunc);
 			var booleanCellRendererFactory = new qx.ui.table.cellrenderer.Dynamic(this.booleanCellRendererFactoryFunc);
 			var booleanCellEditorFactory = new qx.ui.table.celleditor.Dynamic(this.booleanCellEditorFactoryFunc);
 			for (var i = 0; i < this.items.length; i++) {
@@ -231,6 +233,10 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 				} else if (type == ms123.oryx.Config.TYPE_BOOLEAN) {
 					tcm.setDataCellRenderer(i, booleanCellRendererFactory);
 					tcm.setCellEditorFactory(i, booleanCellEditorFactory);
+					table.getTableModel().setColumnEditable(i, true);
+				} else if (type == ms123.oryx.Config.TYPE_INTEGER) {
+					tcm.setDataCellRenderer(i, numberCellRendererFactory);
+					tcm.setCellEditorFactory(i, numberCellEditorFactory);
 					table.getTableModel().setColumnEditable(i, true);
 				} else if (type == ms123.oryx.Config.TYPE_CONSTRAINTS) {
 					tcm.setDataCellRenderer(i, new ms123.graphicaleditor.plugins.propertyedit.ImageRenderer());
@@ -316,6 +322,13 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 		},
 		booleanCellEditorFactoryFunc: function (cellInfo) {
 			return new qx.ui.table.celleditor.CheckBox;
+		},
+		numberCellRendererFactoryFunc: function (cellInfo) {
+			return new qx.ui.table.cellrenderer.Number;
+		},
+		numberCellEditorFactoryFunc: function (cellInfo) {
+			var tf = new ms123.util.NumberField;
+			return tf;
 		},
 		createToolbar: function (buttonList) {
 			var toolbar = new qx.ui.toolbar.ToolBar();
