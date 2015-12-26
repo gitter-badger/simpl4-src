@@ -583,11 +583,12 @@
 	</style>
 	<template>
 		<paper-input-container id="decorator" no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" disabled$="[[disabled]]" invalid="[[invalid]]">
-			<div hidden$="[[!label]]">
-				<label class="label-text">{{label}}</label>
+			<div class="layout horizontal">
+				<div hidden$="[[!label]]" style="width:3%;">
+					<label class="label-text">{{label}}</label>
+				</div>
+				<simpl-upload id="input" class="paper-input-input" drop-text="[[tr('import.drop_file2')]]" droppable="true" raised="true">[[tr('import.select_file')]]</simpl-upload>
 			</div>
-
-			<simpl-upload id="input" class="paper-input-input" drop-text="[[tr('import.drop_file2')]]" droppable="true" raised="true">[[tr('import.select_file')]]</simpl-upload>
 			<template is="dom-if" if="[[errorMessage]]">
 				<paper-input-error>[[errorMessage]]</paper-input-error>
 			</template>
