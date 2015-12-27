@@ -455,7 +455,7 @@ public class GitServiceImpl implements GitService {
 			}
 			List<String> pathList = null;
 			File f = new File(gitDir,name);
-			info("searchFile.name:"+name+"|wantedType:"+type);
+			info("searchFile.name:"+name+"\twantedType:"+type+"\tfile:"+f);
 			if( f.exists() && (isEmpty(type) || getFileType(f).equals(type))){
 				info("searchFile.found:"+f);
 				return f;
@@ -1171,7 +1171,7 @@ public class GitServiceImpl implements GitService {
 		}else if( file.toString().endsWith(".txt")){
 			return "text/plain";
 		}else if( file.toString().endsWith(".jpeg") || file.toString().endsWith(".jpg")){
-			return "image/jpeg";
+			return "image/jpg";
 		}else if( file.toString().endsWith(".png")){
 			return "image/png";
 		}else if( file.toString().endsWith(".svg")){
