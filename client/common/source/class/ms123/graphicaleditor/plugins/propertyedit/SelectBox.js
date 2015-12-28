@@ -30,6 +30,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.SelectBox", {
 	construct: function (items) {
 		this.base(arguments);
 		this.items = items;
+console.log("items:",this.items);
 	},
 	/******************************************************************************
 	 EVENTS
@@ -63,10 +64,13 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.SelectBox", {
 			var selectables = this.getSelectables(true);
 			for( var i=0; i < selectables.length;i++){
 				var model = selectables[i].getModel();
+				console.log("model:",model);
 				var item = this._getItem(model);
-				var enabled = item.enabled();
-				var b = this.__maskedEval(enabled,env);
-				selectables[i].setEnabled( b );
+				if( item != null){
+					var enabled = item.enabled();
+					var b = this.__maskedEval(enabled,env);
+					selectables[i].setEnabled( b );
+				}
 			}
 		},
 		resetValue: function () {},
