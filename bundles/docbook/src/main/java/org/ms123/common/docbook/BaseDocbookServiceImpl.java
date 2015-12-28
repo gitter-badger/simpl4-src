@@ -63,6 +63,7 @@ import org.ms123.common.utils.UtilsService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.AttributesBuilder.attributes;
 import static org.asciidoctor.OptionsBuilder.options;
@@ -115,7 +116,12 @@ class BaseDocbookServiceImpl {
 			json = m_gitService.searchContent(namespace, jsonName, "sw.document");
 		}
 		DocbookBuilder db = new DocbookBuilder(m_dataLayer, m_bc, getAsciidoctor());
-		db.toDocbook(namespace, json, out, paramsIn, paramsOut);
+		InputStream is = toInputStream(json, "UTF-8");
+		db.toDocbook(namespace, is, out, paramsIn, paramsOut);
+	}
+	public void jsonToDocbook(String namespace, InputStream is, Map<String, Object> paramsIn, Map<String, String> paramsOut, OutputStream out)  throws Exception{
+		DocbookBuilder db = new DocbookBuilder(m_dataLayer, m_bc, getAsciidoctor());
+		db.toDocbook(namespace, is, out, paramsIn, paramsOut);
 	}
 
 	public void jsonToPdf(String namespace, String jsonName, Map<String, Object> paramsIn, OutputStream os) throws Exception {
@@ -131,6 +137,13 @@ class BaseDocbookServiceImpl {
 		out.close();
 		InputStream is = new ByteArrayInputStream(out.toByteArray());
 		docbookToPdf(namespace,is, paramsOut,os);
+	}
+	public void jsonToPdf(String namespace, InputStream is, Map<String, Object> paramsIn, OutputStream os) throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		Map paramsOut = new HashMap();
+		jsonToDocbook(namespace, is, paramsIn, paramsOut, out);
+		out.close();
+		docbookToPdf(namespace,new ByteArrayInputStream(out.toByteArray()), paramsOut,os);
 	}
 
 
