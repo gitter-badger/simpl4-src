@@ -171,6 +171,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 		def routeContext = new DefaultRouteContext(ctx.modelCamelContext);
 		def dataFormat = dataFormatDef.getDataFormat(routeContext);
 		println("FormatName:"+getFormatName()+"="+dataFormat);
+		println("ClearedMap:"+map);
 		IntrospectionSupport.setProperties(dataFormat,map);
 		prettyPrint("dataFormatType",dataFormat);
 		return dataFormat;
@@ -218,19 +219,11 @@ abstract class JsonConverterImpl implements JsonConverter{
 			if( map.fieldLengths){
 				def value = deSerializer.deserialize(map.fieldLengths);
 				map.fieldLengths = itemsToIntArray( value.items, "length");
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-			throw new RuntimeException("getDataformat.fieldLengths:", e);
-		}
-		try{
-			if( map.headers){
-				def value = deSerializer.deserialize(map.headers);
 				map.headers = itemsToStringArray( value.items,"name");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			throw new RuntimeException("getDataformat.headers:", e);
+			throw new RuntimeException("getDataformat.fieldLengths:", e);
 		}
 	}
 
@@ -245,6 +238,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 
 	def itemsToStringArray(items,key){
 		if( items == null || items.size()==0) return null;
+		if( isEmpty(items[0][key])) return null;
 		String[] a = new String[items.size()];
 		items.eachWithIndex(){item,i->
 			a[i] = item[key]+"";
