@@ -169,6 +169,40 @@ abstract class BaseRenderer<T extends BaseRenderer<T>> implements Renderer<T> {
 		//@@@MS needs maybe more investigations
 		transformer.setParameter("callouts.extension", "1");
 		System.out.println("createTransformer:" + params);
+
+		if( params.size() == 0){
+			params.put("body.margin.top.odd","20mm");
+			params.put("table.frame.border.style","solid");
+			params.put("page.margin.bottom","5mm");
+			params.put("page.margin.top.odd","5mm");
+			params.put("page.margin.top","5mm");
+			params.put("table.cell.border.style","solid");
+			params.put("page.margin.bottom.odd","5mm");
+			params.put("region.before.extent.even","0mm");
+			params.put("body.margin.bottom","20mm");
+			params.put("table.cell.border.thickness","0.4pt");
+			params.put("body.font.master","8");
+			params.put("page.margin.top.even","5mm");
+			params.put("page.margin.inner","20mm");
+			params.put("region.before.extent","0mm");
+			params.put("region.after.extent","20mm");
+			params.put("table.frame.border.color","#777777");
+			params.put("table.frame.border.thickness","0.4pt");
+			params.put("page.orientation","portrait");
+			params.put("region.before.extent.odd","0mm");
+			params.put("body.margin.top","20mm");
+			params.put("paper.type","A4");
+			params.put("body.margin.bottom.odd","20mm");
+			params.put("body.margin.top.even","20mm");
+			params.put("page.margin.outer","20mm");
+			params.put("region.after.extent.even","20mm");
+			params.put("table.cell.border.color","#777777");
+			params.put("region.after.extent.odd","20mm");
+			params.put("page.margin.bottom.even","5mm");
+			params.put("body.margin.bottom.even","20mm");
+		}
+
+
 		for (Map.Entry<String, String> entry : this.params.entrySet()) {
 			transformer.setParameter(entry.getKey(), entry.getValue());
 		}

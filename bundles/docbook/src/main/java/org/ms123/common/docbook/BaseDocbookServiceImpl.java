@@ -19,52 +19,53 @@
 package org.ms123.common.docbook;
 
 import flexjson.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Enumeration;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.Writer;
-import java.io.Reader;
-import java.io.FileReader;
-import java.io.InputStreamReader;
-import java.io.File;
-import java.io.OutputStreamWriter;
-import java.io.FileInputStream;
-import java.io.DataOutputStream;
-import org.ms123.common.utils.IOUtils;
-import org.ms123.common.data.api.DataLayer;
-import org.ms123.common.utils.UtilsService;
-import org.ms123.common.data.api.SessionContext;
-import org.ms123.common.store.StoreDesc;
-import org.ms123.common.permission.api.PermissionService;
-import org.ms123.common.libhelper.Inflector;
-import org.ms123.common.git.GitService;
-import org.osgi.framework.BundleContext;
-import static org.apache.commons.io.IOUtils.copy;
-import org.ms123.common.docbook.xom.db.*;
-import org.ms123.common.docbook.rendering.*;
-import java.io.StringWriter;
 import javax.servlet.http.*;
 import nu.xom.*;
-import org.dbdoclet.trafo.html.docbook.*;
-
-import org.osgi.framework.Bundle;
-import static org.asciidoctor.Asciidoctor.Factory.create;
 import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.groovydsl.GroovyExtensionRegistry;
+import org.dbdoclet.trafo.html.docbook.*;
 import org.jruby.embed.osgi.OSGiScriptingContainer;
+import org.ms123.common.data.api.DataLayer;
+import org.ms123.common.data.api.SessionContext;
+import org.ms123.common.docbook.rendering.*;
+import org.ms123.common.docbook.xom.db.*;
+import org.ms123.common.git.GitService;
+import org.ms123.common.libhelper.Inflector;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.store.StoreDesc;
+import org.ms123.common.utils.IOUtils;
+import org.ms123.common.utils.UtilsService;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import static org.apache.commons.io.IOUtils.copy;
+import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.AttributesBuilder.attributes;
 import static org.asciidoctor.OptionsBuilder.options;
-import org.asciidoctor.groovydsl.GroovyExtensionRegistry;
 
 /**
  *
@@ -100,11 +101,38 @@ class BaseDocbookServiceImpl {
 
 	protected JSONSerializer m_js = new JSONSerializer();
 
-	protected void renderToPdf(String namespace, InputStream is, OutputStream os, Map<String, String> params) throws Exception {
+	public void docbookToPdf(String namespace, InputStream is, Map<String, String> params, OutputStream os) throws Exception {
 		PDFRenderer pdfRenderer = PDFRenderer.create(m_bc, m_gitService, namespace, is);
 		pdfRenderer.parameters(params);
 		pdfRenderer.render(os);
 	}
+
+	public void jsonToDocbook(String namespace, String jsonName, Map<String, Object> paramsIn, Map<String, String> paramsOut, OutputStream out)  throws Exception{
+		String json = null;
+		if( jsonName.startsWith("{")){
+			json = jsonName;
+		}else{
+			json = m_gitService.searchContent(namespace, jsonName, "sw.document");
+		}
+		DocbookBuilder db = new DocbookBuilder(m_dataLayer, m_bc, getAsciidoctor());
+		db.toDocbook(namespace, json, out, paramsIn, paramsOut);
+	}
+
+	public void jsonToPdf(String namespace, String jsonName, Map<String, Object> paramsIn, OutputStream os) throws Exception {
+		String json = null;
+		if( jsonName.startsWith("{")){
+			json = jsonName;
+		}else{
+			json = m_gitService.searchContent(namespace, jsonName, "sw.document");
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		Map paramsOut = new HashMap();
+		jsonToDocbook(namespace, json, paramsIn, paramsOut, out);
+		out.close();
+		InputStream is = new ByteArrayInputStream(out.toByteArray());
+		docbookToPdf(namespace,is, paramsOut,os);
+	}
+
 
 	protected void markdownToDocbookOld(String markdown, OutputStream out) {
 		WikiParser mp = new WikiParser(m_bc.getBundle());
@@ -133,10 +161,6 @@ class BaseDocbookServiceImpl {
 		mp.parseToHtml(markdown, out);
 	}
 
-	protected void oryxToDocbook(String namespace, String json, OutputStream out, Map<String, Object> paramsIn, Map<String, String> paramsOut)  throws Exception{
-		DocbookBuilder db = new DocbookBuilder(m_dataLayer, m_bc, getAsciidoctor());
-		db.toDocbook(namespace, json, out, paramsIn, paramsOut);
-	}
 
 	protected void websiteStart(String serverName, String namespace, String name, OutputStream out,String uri) throws Exception {
 		String json = m_gitService.searchContent(namespace, name, "sw.website");
@@ -268,6 +292,27 @@ class BaseDocbookServiceImpl {
 		attributes.put("icons", org.asciidoctor.Attributes.FONT_ICONS);
 		options.put("attributes", attributes);
 		options.put("safe", 0);
+		return getAsciidoctor().convert( adoc, options);
+	}
+
+	public void adocToDocbook( File adocFile, Writer w) throws Exception {
+		Reader in = new InputStreamReader(new FileInputStream(adocFile), "UTF-8");
+		Map<String, Object> options = new HashMap();
+		Map<String, Object> attributes = new HashMap();
+		attributes.put("icons", org.asciidoctor.Attributes.FONT_ICONS);
+		options.put("attributes", attributes);
+		options.put("safe", 0);
+		options.put("backend", "docbook");
+		getAsciidoctor().convert( in, w, options);
+	}
+
+	public String adocToDocbook( String adoc) throws Exception {
+		Map<String, Object> options = new HashMap();
+		Map<String, Object> attributes = new HashMap();
+		attributes.put("icons", org.asciidoctor.Attributes.FONT_ICONS);
+		options.put("attributes", attributes);
+		options.put("safe", 0);
+		options.put("backend", "docbook");
 		return getAsciidoctor().convert( adoc, options);
 	}
 

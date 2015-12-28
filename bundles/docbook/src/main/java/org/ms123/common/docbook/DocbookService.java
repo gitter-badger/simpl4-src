@@ -18,17 +18,25 @@
  */
 package org.ms123.common.docbook;
 
+import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.util.Map;
 import javax.servlet.http.*;
 import org.ms123.common.rpc.RpcException;
-import java.io.File;
-import java.io.Writer;
 
 public interface DocbookService {
-	public void jsonToDocbookPdf(String namespace,String json, Map<String,Object> params, OutputStream os) throws Exception;
+	public void jsonToPdf(String namespace,String json, Map<String,Object> params, OutputStream os) throws Exception;
+
+	public void jsonToDocbook( String namespace, String jsonName, Map<String, Object> params,Map<String,String> paramsOut, OutputStream os ) throws Exception;
+	public void docbookToPdf(String namespace, InputStream is, Map<String, String> params, OutputStream os) throws Exception;
+
 	public void website( String namespace, String name, HttpServletRequest request, HttpServletResponse response) throws RpcException;
 	public void getAsset( String namespace, String name, String type, HttpServletRequest request, HttpServletResponse response) throws RpcException;
 	public void adocToHtml( File adocFile, Writer w) throws Exception;
-	public String adocToHtml( String adoc ) throws Exception;
+	public String adocToHtml( String adoc) throws Exception;
+
+	public void adocToDocbook( File adocFile, Writer w) throws Exception;
+	public String adocToDocbook( String adoc ) throws Exception;
 }

@@ -18,18 +18,26 @@
  */
 package org.ms123.common.docbook;
 
-import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.ConfigurationPolicy;
+import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.*;
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.servlet.http.*;
 import javax.servlet.ServletOutputStream;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.asciidoctor.Asciidoctor;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.git.GitService;
+import org.ms123.common.permission.api.PermissionException;
+import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PDefaultFloat;
 import org.ms123.common.rpc.PDefaultInt;
@@ -39,13 +47,10 @@ import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
-import org.ms123.common.permission.api.PermissionException;
-import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.utils.UtilsService;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.asciidoctor.Asciidoctor;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
@@ -74,14 +79,6 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 		System.out.println("DocbookServiceImpl deactivate");
 	}
 
-	public void jsonToDocbookPdf(String namespace, String json, Map<String, Object> paramsIn, OutputStream os) throws Exception {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		Map paramsOut = new HashMap();
-		oryxToDocbook(namespace, json, out, paramsIn, paramsOut);
-		out.close();
-		InputStream is = new ByteArrayInputStream(out.toByteArray());
-		renderToPdf(namespace,is, os, paramsOut);
-	}
 
 	/* BEGIN JSON-RPC-API*/
 	public void markdownToHtml(
@@ -263,7 +260,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 			markdownToDocbook(markdown, out);
 			out.close();
 			InputStream is = new ByteArrayInputStream(out.toByteArray());
-			renderToPdf(null,is, response.getOutputStream(), new HashMap());
+			docbookToPdf(null,is, new HashMap(), response.getOutputStream());
 			response.setContentType("application/pdf;charset=UTF-8");
 			response.addHeader("Content-Disposition", "attachment;filename=\"docbook.pdf\"");
 			response.setStatus(HttpServletResponse.SC_OK);
@@ -285,7 +282,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 				json = readFileToString(new File((String) map.get("storeLocation")));
 			}
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			oryxToDocbook(namespace, json, out, params, new HashMap());
+			jsonToDocbook(namespace, json, params, new HashMap(), out);
 			System.out.println("oryxToDocbook:" + new String(out.toByteArray()));
 			return new String(out.toByteArray());
 		} catch (Throwable e) {
@@ -303,7 +300,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 				Map map = (Map) fileMap.get("importfile");
 				json = readFileToString(new File((String) map.get("storeLocation")));
 			}
-			jsonToDocbookPdf(namespace, json, params, response.getOutputStream());
+			jsonToPdf(namespace, json, params, response.getOutputStream());
 			response.setContentType("application/pdf;charset=UTF-8");
 			response.addHeader("Content-Disposition", "attachment;filename=\"docbook.pdf\"");
 			response.setStatus(HttpServletResponse.SC_OK);
