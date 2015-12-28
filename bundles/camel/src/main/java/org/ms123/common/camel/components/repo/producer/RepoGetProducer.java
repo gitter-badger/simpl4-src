@@ -55,12 +55,22 @@ public class RepoGetProducer extends RepoProducer {
 		String target = getString(exchange, "target", configuration.getTarget());
 		String header = getString(exchange, "header", configuration.getHeader());
 		GitService gitService = getGitService();
-		info("producer --> get:repo: " + repo + ",path:" + path + ",type:" + type + "/target:" + target);
 		File file = gitService.searchFile(repo, path, type);
-		if ("body".equals(target)) {
-			exchange.getIn().setBody(file);
-		} else {
-			exchange.getIn().setHeader(header, file);
+		String fileType = gitService.getFileType(file);
+		info("producer --> get:repo: " + repo + ",path:" + path + ",type:" + type + "/target:" + target+"/realtype:"+fileType);
+		if( fileType.startsWith("sw.")){
+			 String content = gitService.getFileContent(file);
+			if ("body".equals(target)) {
+				exchange.getIn().setBody(content);
+			} else {
+				exchange.getIn().setHeader(header, content);
+			}
+		}else{
+			if ("body".equals(target)) {
+				exchange.getIn().setBody(file);
+			} else {
+				exchange.getIn().setHeader(header, file);
+			}
 		}
 	}
 
