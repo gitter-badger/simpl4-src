@@ -322,12 +322,16 @@ System.out.println("handleRowGroup");
 					for (Object o : ol) {
 						content.add(o);
 					}
-				}else if( "asciidoctor".equals(syntax)){
+				}else if( "asciidoctor_html".equals(syntax)){
 					String html = adocToHtml(markdown);
 					System.out.println("AfterAdoc:"+html);
 					DocBookTransformer tf = new DocBookTransformer();
 					String db = tf.transformFragment(html);
 					System.out.println("AfterDB:"+db);
+					addDBChunkToContent2(content, db );
+				}else if( "asciidoctor".equals(syntax)){
+					String db = adocToDocbook(markdown);
+					System.out.println("AfterAdoc:"+db);
 					addDBChunkToContent(content, db );
 				}else{
 					Context ctx = new Context(null, null, false, new HashMap(), new HashMap());
@@ -361,7 +365,37 @@ System.out.println("handleRowGroup");
 		options.put("safe", 0);
 		return m_asciidoctor.convert( adoc, options);
 	}
+	private String adocToDocbook( String adoc) throws Exception {
+		Map<String, Object> options = new HashMap();
+		Map<String, Object> attributes = new HashMap();
+		attributes.put("icons", org.asciidoctor.Attributes.FONT_ICONS);
+		options.put("attributes", attributes);
+		options.put("safe", 0);
+		options.put("backend", "docbook");
+		return m_asciidoctor.convert( adoc, options);
+	}
+
 	private void addDBChunkToContent(List content, String db) throws Exception{
+		if( db == null || db.trim().equals("")) return;
+		Document doc = new Builder().build( "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>", null);
+		printXom(doc);
+		Element rootElement = (Element) doc.getRootElement().getChild(0);
+		System.out.println("childs:"+rootElement.getChildElements().size());
+		int childSize = rootElement.getChildElements().size();
+		List<Element> childs = new ArrayList();
+		for( int i=0; i< childSize; i++){
+			Element e = rootElement.getChildElements().get(i);	
+			Utils.setNamespace(e,"http://docbook.org/ns/docbook");
+			content.add(e);
+			childs.add(e);
+		}
+		for( Element child : childs){
+			child.detach();
+		}
+		rootElement.detach();
+	}
+
+	private void addDBChunkToContent2(List content, String db) throws Exception{
 		if( db == null || db.trim().equals("")) return;
 		Document doc = new Builder().build( "<div xmlns:xl=\"http://www.w3.org/1999/xlink\">"+db+"</div>", null);
 		printXom(doc);
