@@ -23,6 +23,7 @@ import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FopFactoryBuilder;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.XMLReader;
 import nu.xom.*;
@@ -123,18 +124,15 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 	@Override
 	protected synchronized void postProcess(final InputStream xmlSource, final InputStream xsltResult, OutputStream fopResult) throws Docbook4JException {
 		try {
-			final FopFactory fopFactory = FopFactory.newInstance();
-			fopFactory.setURIResolver(new FOURIResolver(m_gitService, m_namespace));
+			FopFactoryBuilder builder = new FopFactoryBuilder(new File(".").toURI(), new FOURIResolver(m_gitService, m_namespace));
+			FopFactory fopFactory = builder.build();
+
 			final FOUserAgent userAgent = fopFactory.newFOUserAgent();
 			enhanceFOUserAgent(userAgent);
 			Fop fop = fopFactory.newFop(getMimeType(), userAgent, fopResult);
 			TransformerFactory factory = TransformerFactory.newInstance();
 			Transformer transformer = factory.newTransformer();
-			//ImageImplRegistry reg = ImageImplRegistry.getDefaultInstance();
-			//reg.registerPreloader( new org.apache.fop.image.loader.batik.PreloaderSVG() );
-			// identity
-			// transformer
-			//This are all docbook parameter???
+
 			transformer.setParameter("use.extensions", "1");
 			transformer.setParameter("fop.extensions", "0");
 			transformer.setParameter("fop1.extensions", "1");

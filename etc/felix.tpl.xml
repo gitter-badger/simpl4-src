@@ -22,6 +22,7 @@
 		javax.time.calendar,
 	  sun.rmi.registry,
 		com.sun.org.apache.xerces.internal.jaxp.validation,
+		com.sun.org.apache.xerces.internal.jaxp,
 		com.sun.org.apache.xerces.internal.parsers,
 		com.sun.org.apache.xpath.internal.jaxp,
     sun.rmi.server,

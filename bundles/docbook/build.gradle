@@ -13,7 +13,7 @@ dependencies {
 	compile files("${bundlesBuild}/org.ms123.common.utils-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.workflow.api-1.0.0.jar")
   compile files("${repository}/flexjson-2.1.bar")
-	compile files("${repository}/fop-all.1.1.bar")
+	compile files("${repository}/fop-all.2.0ms.bar")
 	compile files("${repository}/herold-6.1.0.bar")
 	compile files("${repository}/mvel2-2.1.RC1.jar")
 	compile files("${repository}/commons/org.apache.commons.lang_2.5.jar")

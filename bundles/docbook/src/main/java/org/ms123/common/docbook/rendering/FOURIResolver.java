@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.*;
 import java.util.*;
+import java.net.URI;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
@@ -34,8 +35,10 @@ import javax.xml.parsers.SAXParserFactory;
 import com.ctc.wstx.sax.*;
 import com.ctc.wstx.api.ReaderConfig;
 import org.ms123.common.git.GitService;
+import org.apache.xmlgraphics.io.ResourceResolver;
+import org.apache.xmlgraphics.io.Resource;
 
-public class FOURIResolver implements URIResolver {
+public class FOURIResolver implements ResourceResolver {
 
 	protected GitService m_gitService;
 
@@ -50,11 +53,11 @@ public class FOURIResolver implements URIResolver {
 
 	private String docbookXslBase;
 
-	public Source resolve(String href, String base) throws TransformerException {
-		System.out.println("[FOURIResolver.resolve: href=" + href + " for base=" + base + "]");
-		String tmp = href.toLowerCase();
+	public Resource getResource(URI href) throws IOException {
+		System.out.println("[FOURIResolver.resolve: href=" + href + "]");
+		String tmp = href.toString().toLowerCase().substring("file:/opt/simpl4/server/".length());
 		if (true)/*tmp.startsWith("repo:"))*/ {
-			String file = tmp.startsWith("repo:") ? href.substring(5) : href;
+			String file = tmp.startsWith("repo:") ? tmp.substring(5) : tmp;
 			String type = null;
 			if (tmp.endsWith(".svg")) {
 				type = "image/svg+xml";
@@ -76,11 +79,14 @@ public class FOURIResolver implements URIResolver {
 			}
 			try {
 				File _file = m_gitService.searchFile(m_namespace, file, type);
-				return new StreamSource(new FileInputStream(_file));
+				return new Resource(type, new FileInputStream(_file));
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println("FOURIResolver.getResource:("+href+"):"+e);
 			}
 		}
 		return null;
+	}
+	public OutputStream getOutputStream(URI uri) throws IOException{
+		throw new RuntimeException("ResourceResolver.getOutputStream:not implemented");
 	}
 }

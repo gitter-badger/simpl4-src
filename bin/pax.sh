@@ -379,7 +379,7 @@ ${cassandrabundles} \
   scan-bundle:file:$REPOSITORY/xom-1.2.7.jar \
 	scan-bundle:file:$REPOSITORY/parboiled-all-1.1.4.bar \
 	scan-bundle:file:$REPOSITORY/pegdown-1.2.1.bar \
-	scan-bundle:file:$REPOSITORY/fop-all.1.1.bar \
+	scan-bundle:file:$REPOSITORY/fop-all.2.0ms.bar \
 	scan-bundle:file:$REPOSITORY/saxon94.jar \
 	scan-bundle:file:$REPOSITORY/woodstox-core-asl-4.1.5.jar \
 	scan-bundle:file:$REPOSITORY/stax2-api-3.1.1.jar \
