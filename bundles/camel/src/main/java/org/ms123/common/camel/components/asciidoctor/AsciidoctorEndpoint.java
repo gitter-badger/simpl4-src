@@ -37,6 +37,7 @@ import org.ms123.common.docbook.DocbookService;
 @SuppressWarnings("unchecked")
 public class AsciidoctorEndpoint extends ResourceEndpoint {
 
+	private String output = "html";
 
 	public AsciidoctorEndpoint() {
 	}
@@ -44,6 +45,14 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 	public AsciidoctorEndpoint(String endpointUri, Component component, String resourceUri) {
 		super(endpointUri, component, resourceUri);
 		info("AsciidoctorEndpoint:endpointUri:" + endpointUri + "/resourceUri:" + resourceUri);
+	}
+
+	public void setOutput(String type){
+		 this.output = type;
+	}
+
+	public String getOutput(){
+		 return this.output;
 	}
 
 	@Override
@@ -67,9 +76,16 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 		}
 
 		DocbookService ds = getDocbookService();
-		String html = ds.adocToHtml( text);
+
 		Message mout = exchange.getOut();
-		mout.setBody(html);
+		if( "html".equals(this.output)){
+			String html = ds.adocToHtml( text);
+			mout.setBody(html);
+		}else{
+			String docbook = ds.adocToDocbook( text);
+			mout.setBody(docbook);
+		}
+
 		mout.setHeaders(exchange.getIn().getHeaders());
 		mout.setAttachments(exchange.getIn().getAttachments());
 	}
