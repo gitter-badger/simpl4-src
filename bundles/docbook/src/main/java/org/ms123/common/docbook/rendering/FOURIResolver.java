@@ -43,10 +43,12 @@ public class FOURIResolver implements ResourceResolver {
 	protected GitService m_gitService;
 
 	protected String m_namespace;
+	protected String simpl4Dir;
 
 	public FOURIResolver(GitService gs, String namespace) {
 		m_gitService = gs;
 		m_namespace = namespace;
+		simpl4Dir = (String) System.getProperty("simpl4.dir");
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(FOURIResolver.class);
@@ -55,34 +57,43 @@ public class FOURIResolver implements ResourceResolver {
 
 	public Resource getResource(URI href) throws IOException {
 		System.out.println("[FOURIResolver.resolve: href=" + href + "]");
-		String tmp = href.toString().toLowerCase().substring("file:/opt/simpl4/server/".length());
-		if (true)/*tmp.startsWith("repo:"))*/ {
-			String file = tmp.startsWith("repo:") ? tmp.substring(5) : tmp;
-			String type = null;
-			if (tmp.endsWith(".svg")) {
-				type = "image/svg+xml";
-			}
-			if (tmp.endsWith(".png")) {
-				type = "image/png";
-			}
-			if (tmp.endsWith(".jpg")) {
-				type = "image/jpg";
-			}
-			if (tmp.endsWith(".jepg")) {
-				type = "image/jpg";
-			}
-			if (tmp.endsWith(".swf")) {
-				type = "image/swf";
-			}
-			if (tmp.endsWith(".pdf")) {
-				type = "image/pdf";
-			}
-			try {
-				File _file = m_gitService.searchFile(m_namespace, file, type);
-				return new Resource(type, new FileInputStream(_file));
-			} catch (Exception e) {
-				System.out.println("FOURIResolver.getResource:("+href+"):"+e);
-			}
+		String path = href.toString();
+		if( path.startsWith("file:/")){
+			
+			path = href.toString().toLowerCase().substring(("file:"+this.simpl4Dir+"/server/").length());
+		}
+		String namespace = m_namespace;
+		int delim = path.indexOf("!");
+		if( delim > 0){
+			namespace = path.substring(0,delim);
+			path = path.substring(delim+1);
+		}
+		String file = path.startsWith("repo:") ? path.substring(5) : path;
+		String type = null;
+		if (path.endsWith(".svg")) {
+			type = "image/svg+xml";
+		}
+		if (path.endsWith(".png")) {
+			type = "image/png";
+		}
+		if (path.endsWith(".jpg")) {
+			type = "image/jpg";
+		}
+		if (path.endsWith(".jepg")) {
+			type = "image/jpg";
+		}
+		if (path.endsWith(".swf")) {
+			type = "image/swf";
+		}
+		if (path.endsWith(".pdf")) {
+			type = "image/pdf";
+		}
+		try {
+			System.out.println("FOURIResolver.searchFile:"+namespace+"|"+file );
+			File _file = m_gitService.searchFile(namespace, file, type);
+			return new Resource(type, new FileInputStream(_file));
+		} catch (Exception e) {
+			System.out.println("FOURIResolver.getResource:("+href+"):"+e);
 		}
 		return null;
 	}
