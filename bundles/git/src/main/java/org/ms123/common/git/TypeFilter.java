@@ -69,7 +69,7 @@ public class TypeFilter extends TreeFilter {
 		File file = new File(m_basedir,path);
 		FileHolder fr = new FileHolder( new File(m_basedir,path) );
 		try{
-			String type = GitServiceImpl.getFileType(file);
+			String type = GitServiceImpl._getFileType(file);
 			boolean b = m_typeList.contains(type);
 			return b;
 		}catch(Exception e){

@@ -168,6 +168,14 @@ public class GitServiceImpl implements GitService {
 		return fr.getContent();
 	}
 
+	public String getFileContent(File file) throws Exception {
+		if (!file.exists()) {
+			throw new RuntimeException("GitService.getContent:File(" + file + ") not exists");
+		}
+		FileHolder fr = new FileHolder(file);
+		return fr.getContent();
+	}
+
 	public FileHolderApi getFileHolder( String repoName, String path) {
 		try {
 			String gitSpace = System.getProperty("git.repos");
@@ -1165,7 +1173,11 @@ public class GitServiceImpl implements GitService {
 		}
 	}
 
-	protected static String getFileType(File file) {
+	public String getFileType(File file) {
+		return _getFileType(file);
+	}
+
+	protected static String _getFileType(File file) {
 		if (file.isDirectory()){
 			return "sw.directory";
 		}else if( file.toString().endsWith(".txt")){

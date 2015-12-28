@@ -42,6 +42,7 @@ public interface GitService {
 	public void add(String name, String pattern) throws RpcException;
 
 	public String getFileContent(String repoName, String path) throws Exception;
+	public String getFileContent(File file) throws Exception;
 
 	public boolean exists( String repoName, String path) throws RpcException;
 	public String getContent(String repoName, String path) throws RpcException;
@@ -64,4 +65,5 @@ public interface GitService {
 	public void createObjectInternal( String repoName, String path, Boolean overwrite, String content, String type);
 	public void putContentInternal(String repoName, String path, String type, String content);
 	public void deleteObjectInternal( String repoName, String path);
+	public String getFileType(File file);
 }
