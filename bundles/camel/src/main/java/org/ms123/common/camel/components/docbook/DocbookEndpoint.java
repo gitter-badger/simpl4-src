@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import org.apache.camel.Component;
 import org.apache.camel.Exchange;
@@ -41,6 +42,9 @@ public class DocbookEndpoint extends ResourceEndpoint {
 
 	private String namespace = null ;
 	private String output = null ;
+	private String input = "docbook" ;
+	private Map<String,String> parameters;
+	private String headerFields;
 
 	public DocbookEndpoint() {
 	}
@@ -58,12 +62,28 @@ public class DocbookEndpoint extends ResourceEndpoint {
 		 return this.namespace;
 	}
 
-	public void setOutput(String ns){
-		 this.output = ns;
+	public void setOutput(String o){
+		 this.output = o;
 	}
 
 	public String getOutput(){
 		 return this.output;
+	}
+
+	public void setInput(String in){
+		 this.input = in;
+	}
+
+	public String getInput(){
+		 return this.input;
+	}
+
+	public void setHeaderfields(String t) {
+		this.headerFields = t;
+	}
+
+	public String getHeaderfields() {
+		return this.headerFields;
 	}
 
 	@Override
@@ -72,8 +92,19 @@ public class DocbookEndpoint extends ResourceEndpoint {
 	}
 
 	@Override
+	public boolean isLenientProperties() {
+		return true;
+	}
+
+	@Override
 	public ExchangePattern getExchangePattern() {
 		return ExchangePattern.InOut;
+	}
+
+	protected void setParameter(Map<String,Object> p){
+		this.parameters = new HashMap<String, String>();
+		Map<String, Object> intermediate = (Map)Collections.checkedMap(this.parameters, String.class, String.class);
+		intermediate.putAll(p);
 	}
 
 	@Override
@@ -86,22 +117,52 @@ public class DocbookEndpoint extends ResourceEndpoint {
 			text = exchange.getIn().getBody(String.class);
 		}
 
-		text = "<article xmlns=\"http://docbook.org/ns/docbook\" xmlns:xl=\"http://www.w3.org/1999/xlink\">"+ text + "</article>";
-		Map params = new HashMap();
 		DocbookService ds = getDocbookService();
 		Message mout = exchange.getOut();
 		ByteArrayOutputStream  bos = new ByteArrayOutputStream();
-		InputStream is = IOUtils.toInputStream(text, "UTF-8");
+		InputStream is = null;
 		try{
-			ds.docbookToPdf( getNamespace(), is, params, bos );
+			if("docbook".equals(this.input)){
+				text = "<article xmlns=\"http://docbook.org/ns/docbook\" xmlns:xl=\"http://www.w3.org/1999/xlink\">"+ text + "</article>";
+				is = IOUtils.toInputStream(text, "UTF-8");
+				ds.docbookToPdf( getNamespace(), is, this.parameters, bos );
+			}else{
+				is = IOUtils.toInputStream(text, "UTF-8");
+				ds.jsonToPdf( getNamespace(), is, getVariablenMap(exchange), bos );
+			}
 		}finally{
 			bos.close();
-			is.close();
+			if( is != null){
+				is.close();
+			}
 		}
 		mout.setBody(bos.toByteArray());
 
 		mout.setHeaders(exchange.getIn().getHeaders());
 		mout.setAttachments(exchange.getIn().getAttachments());
+	}
+	private Map<String,Object> getVariablenMap(Exchange exchange){
+		List<String> headerList=null;
+		if( this.headerFields!=null){
+			headerList = Arrays.asList(this.headerFields.split(","));
+		}else{
+			headerList = new ArrayList();
+		}
+		Map<String, Object> variableMap = exchange.getIn().getHeader(DocbookConstants.DOCBOOK_DATA, Map.class);
+		if (variableMap == null) {
+			variableMap = new HashMap();
+			for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
+				if( headerList.size()==0 || headerList.contains( header.getKey())){
+					if( header.getValue() instanceof Map){
+						variableMap.putAll((Map)header.getValue());
+					}else{
+						variableMap.put(header.getKey(), header.getValue());
+					}
+				}
+			}
+		}
+		System.out.println("variableMap:"+variableMap);
+		return variableMap;
 	}
 
 	public DocbookService getDocbookService() {

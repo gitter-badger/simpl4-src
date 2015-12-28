@@ -30,7 +30,8 @@ public class DocbookComponent extends DefaultComponent {
 
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
 		DocbookEndpoint endpoint = new DocbookEndpoint(uri, this, remaining);
-		setProperties(endpoint, parameters);
+//		setProperties(endpoint, parameters);
+		endpoint.setParameter(parameters);
 		return endpoint;
 	}
 }

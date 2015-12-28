@@ -24,6 +24,7 @@ package org.ms123.common.camel.components.docbook;
 public final class DocbookConstants {
 
 	public static final String DOCBOOK_SRC = "docbookSrc";
+	public static final String DOCBOOK_DATA = "docbookData";
 
 	private DocbookConstants() {
 	}
