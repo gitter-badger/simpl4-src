@@ -221,6 +221,9 @@ abstract class JsonConverterImpl implements JsonConverter{
 				map.fieldLengths = itemsToIntArray( value.items, "length");
 				map.headers = itemsToStringArray( value.items,"name");
 			}
+			if( map.padding && map.padding.length()>0){
+				map.padding = map.padding.charAt(0);
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new RuntimeException("getDataformat.fieldLengths:", e);
