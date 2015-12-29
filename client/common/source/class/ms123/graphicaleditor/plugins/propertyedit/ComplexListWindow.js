@@ -422,7 +422,14 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 			}
 		},
 		addRecord: function (map) {
-			this.tableModel.addRowsAsMapArray([map], null, true);
+			this.table.stopEditing();
+			var selModel = this.table.getSelectionModel();
+			var index = selModel.getLeadSelectionIndex();
+			if (index > -1) {
+				this.tableModel.addRowsAsMapArray([map], index+1, true);
+			}else{
+				this.tableModel.addRowsAsMapArray([map], null, true);
+			}
 		},
 
 		onCellClick: function (e) {
