@@ -32,6 +32,7 @@ import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
 import org.apache.camel.processor.aggregate.GroupedExchangeAggregationStrategy;
 import groovy.text.SimpleTemplateEngine;
 import java.net.URLEncoder;
+import java.net.URL;
 import org.apache.camel.model.language.*;
 import org.apache.camel.util.IntrospectionSupport;
 import static org.apache.camel.util.ObjectHelper.isEmpty;
@@ -264,11 +265,16 @@ abstract class JsonConverterImpl implements JsonConverter{
 		return optionsMap;
 	}
 
-	def createProcessorGroovy(processMethodStr,importStr) {
+	def createProcessorGroovy(processMethodStr,importStr,namespace) {
 		def code = buildScript(processMethodStr,importStr,true);
-		System.out.println("Processor.Code.groovy:" + code);
 		try {
-			def gs = new GroovyShell();
+			URL url1 = 	new URL( "file:"+System.getProperty("workspace") + "/java/" + namespace+"/");
+			URL url2 = 	new URL( "file:"+System.getProperty("workspace") + "/groovy/" + namespace+"/");
+			URL[] urls = new URL[2];
+			urls[0] = url1;
+			urls[1] = url2;
+			URLClassLoader classLoader = new URLClassLoader( urls, getClass().getClassLoader() )
+			def gs = new GroovyShell(classLoader);
 			def clazz  = (Class) gs.evaluate(code);
 			return clazz.newInstance();
 		} catch (Throwable e) {
@@ -780,11 +786,12 @@ class ProcessorJsonConverter extends JsonConverterImpl{
 			if( addImport != null && addImport.size()> 0){
 				codeImport = buildImport(addImport);	
 			}
+			def namespace = ctx.modelCamelContext.getRegistry().lookup("namespace");
 			def processor=null;
 			if( "java".equals(codeLanguage)){
 				processor = createProcessorJava(code,codeImport);
 			}else{
-				processor = createProcessorGroovy(code,codeImport);
+				processor = createProcessorGroovy(code,codeImport,namespace);
 			}
 			println("processor:"+processor);
 			ctx.current = ctx.current.process(processor);

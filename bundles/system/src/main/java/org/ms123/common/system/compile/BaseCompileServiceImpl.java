@@ -113,6 +113,8 @@ abstract class BaseCompileServiceImpl {
 		List<String> classpath = new ArrayList<String>();
 		classpath.add(System.getProperty("workspace") + "/" + "jooq/build");
 		classpath.add(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
+		classpath.add(System.getProperty("workspace") + "/groovy/" + namespace);
+		classpath.add(System.getProperty("workspace") + "/java/" + namespace);
 		String destDir = System.getProperty("workspace") + "/" + "groovy" + "/" + namespace;
 		String srcDir = System.getProperty("git.repos") + "/" + namespace;
 		CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", false);
