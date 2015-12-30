@@ -73,6 +73,10 @@ public class TemplateEndpoint extends ResourceEndpoint {
 				m_engine = new GroovyEngine();
 				m_engineCache.put("groovy", m_engine);
 			}
+			if( "groovymarkup".equals(et)){
+				m_engine = new GroovyMarkupEngine();
+				m_engineCache.put("groovymarkup", m_engine);
+			}
 			if( "freemarker".equals(et)){
 				m_engine = new FreemarkerEngine(getCamelContext());
 				m_engineCache.put("freemarker", m_engine);
