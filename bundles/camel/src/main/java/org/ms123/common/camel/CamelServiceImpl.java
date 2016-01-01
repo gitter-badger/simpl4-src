@@ -100,7 +100,9 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 
 	protected void deactivate() throws Exception {
 		info("CamelServiceImpl deactivate");
-		m_serviceRegistration.unregister();
+		if( m_serviceRegistration!=null){
+			m_serviceRegistration.unregister();
+		}
 	}
 
 	/*BEGIN JSON-RPC-API*/
