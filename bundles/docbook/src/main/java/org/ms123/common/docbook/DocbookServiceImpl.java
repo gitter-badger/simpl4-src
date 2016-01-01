@@ -270,7 +270,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 		}
 	}
 
-	public String jsonToDocbookXml(
+	public void jsonToDocbookXml(
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName("json")             String json, 
 			@PName("params")           @POptional Map<String, Object> params, 
@@ -281,10 +281,11 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 				Map map = (Map) fileMap.get("importfile");
 				json = readFileToString(new File((String) map.get("storeLocation")));
 			}
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			jsonToDocbook(namespace, json, params, new HashMap(), out);
-			System.out.println("oryxToDocbook:" + new String(out.toByteArray()));
-			return new String(out.toByteArray());
+			jsonToDocbook(namespace, json, params, new HashMap(), response.getOutputStream());
+			response.setContentType("application/xml;charset=UTF-8");
+			response.addHeader("Content-Disposition", "attachment;filename=\"docbook.xml\"");
+			response.setStatus(HttpServletResponse.SC_OK);
+			response.getOutputStream().close();
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.jsonToDocbookXml:", e);
 		}
