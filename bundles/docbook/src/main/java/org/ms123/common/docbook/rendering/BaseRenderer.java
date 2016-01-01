@@ -200,6 +200,31 @@ abstract class BaseRenderer<T extends BaseRenderer<T>> implements Renderer<T> {
 			params.put("table.frame.border.color","#777777");
 			params.put("table.frame.border.style","solid");
 			params.put("table.frame.border.thickness","0.4pt");
+		}else{
+			if( params.get("page.margin.bottom.even")==null){
+				params.put("page.margin.bottom.even", params.get("page.margin.bottom") );
+				params.put("page.margin.bottom.odd", params.get("page.margin.bottom") );
+			}
+			if( params.get("page.margin.bottom.even")==null){
+				params.put("page.margin.top.even", params.get("page.margin.top") );
+				params.put("page.margin.top.odd", params.get("page.margin.top") );
+			}
+			if( params.get("body.margin.bottom.even")==null){
+				params.put("body.margin.bottom.even", params.get("body.margin.bottom") );
+				params.put("body.margin.bottom.odd", params.get("body.margin.bottom") );
+			}
+			if( params.get("body.margin.top.even")==null){
+				params.put("body.margin.top.even", params.get("body.margin.top") );
+				params.put("body.margin.top.odd", params.get("body.margin.top") );
+			}
+			if( params.get("region.before.extent.even")==null){
+				params.put("region.before.extent.even", params.get("region.before.extent") );
+				params.put("region.before.extent.odd", params.get("region.before.extent") );
+			}
+			if( params.get("region.after.extent.even")==null){
+				params.put("region.after.extent.even", params.get("region.after.extent") );
+				params.put("region.after.extent.odd", params.get("region.after.extent") );
+			}
 		}
 
 
