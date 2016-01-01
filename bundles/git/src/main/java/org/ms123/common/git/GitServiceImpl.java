@@ -106,33 +106,18 @@ public class GitServiceImpl implements GitService {
 
 	private String m_datePattern = "dd.MM.yyyy HH:mm";
 
-	Map<String, String> m_typeMap = new HashMap<String, String>() {
-
+	List<String> m_s4List = new ArrayList<String>() {
 		{
-			put("wf", "sw.workflow");
-			put("form", "sw.form");
-			put("rule", "sw.rule");
-			put("fil", "sw.filter");
-			put("camel", "sw.camel");
-			put("doc", "sw.document");
-			put("ws", "sw.website");
-			put("wp", "sw.webpage");
-		}
-	};
-
-	List<String> m_rawList = new ArrayList<String>() {
-		{
-			add("sw.groovy");
-			add("sw.java");
-			add("image/svg+xml");
-			add("text/html");
-			add("text/xml");
-			add("text/css");
-			add("text/x-asciidoc");
-			add("text/x-yaml");
-			add("text/javascript");
-			add("application/json");
-			add("application/vnd.oasis.opendocument.text");
+			add("sw.rule");
+			add("sw.process");
+			add("sw.filter");
+			add("sw.form");
+			add("sw.website");
+			add("sw.webpage");
+			add("sw.camel");
+			add("sw.stencil");
+			add("sw.datamapper");
+			add("sw.document");
 		}
 	};
 
@@ -997,11 +982,11 @@ public class GitServiceImpl implements GitService {
 					throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.putContent:File(" + repoName + "/" + path + ") not exists");
 				}
 			}else{
-				if( type != null && m_rawList.contains(type) ){
-					write(file, content, "UTF-8");
-				}else{
+				if( m_s4List.contains(type) ){
 					FileHolder fr = new FileHolder(file);
 					fr.putContent(content);
+				}else{
+					write(file, content, "UTF-8");
 				}
 			}
 		} catch (Exception e) {
@@ -1028,15 +1013,14 @@ public class GitServiceImpl implements GitService {
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdirs();
 				}
-				if( m_rawList.contains(type) ){
-					file = addExtentions(file,type);	
+				if( m_s4List.contains(type) ){
+					FileHolder fr = new FileHolder(file);
+					fr.putContent(type, content);
+				}else{
 					file.createNewFile();
 					if( content != null){
 						write(file, content, "UTF-8");
 					}
-				}else{
-					FileHolder fr = new FileHolder(file);
-					fr.putContent(type, content);
 				}
 			}
 			add(repoName, ".");
@@ -1256,6 +1240,7 @@ public class GitServiceImpl implements GitService {
 			String ftype = null;
 			try{
 				ftype = tika.detect(bis);
+System.out.println("File:"+file+"="+ftype);
 			}catch(Throwable t){
 				return "sw.unknown";
 			}

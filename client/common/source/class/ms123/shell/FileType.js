@@ -89,10 +89,10 @@ qx.Class.define("ms123.shell.FileType", {
 		},
 
 		getAllTextEditables:function(){
-				return  ["image/svg+xml", "text/html","text/x-asciidoc","text/x-yaml","text/css", "text/javascript", "application/json"];
+				return  ["image/svg+xml", "text/html","text/x-asciidoc","text/plain", "text/x-yaml","text/css", "text/javascript", "application/json"];
 		},
 		getAllForeigns:function(){
-				return  ["image/png","image/jpg","image/jpg", "application/vnd.oasis.opendocument.text", "image/svg+xml", "text/html", "text/x-asciidoc","text/x-yaml","text/javascript", "text/css", "application/json"];
+				return  ["image/png","image/jpg","image/jpg", "application/vnd.oasis.opendocument.text", "image/svg+xml", "text/html", "text/x-asciidoc","text/plain", "text/x-yaml","text/javascript", "text/css", "application/json"];
 		},
 		_getIconUrl: function (name) {
 			var am = qx.util.AliasManager.getInstance(name);
@@ -142,7 +142,8 @@ qx.Class.define("ms123.shell.FileType", {
 				{ label: qx.locale.Manager.tr("shell.nt_datamapper"),   value: ms123.shell.Config.DATAMAPPER_FT},
 				{ label: qx.locale.Manager.tr("shell.nt_website"),   value: ms123.shell.Config.WEBSITE_FT},
 				{ label: qx.locale.Manager.tr("shell.nt_webpage"),   value: ms123.shell.Config.WEBPAGE_FT},
-				{ label: qx.locale.Manager.tr("shell.nt_filter"),   value: ms123.shell.Config.FILTER_FT}
+				{ label: qx.locale.Manager.tr("shell.nt_filter"),   value: ms123.shell.Config.FILTER_FT},
+				{ label: "Text",   value: "text/plain"}
 			]
 		}
 	}
