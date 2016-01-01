@@ -95,8 +95,9 @@ qx.Class.define("ms123.shell.views.SimpleTextEditor", {
 				var value =  this.msgArea.getValue();
 				this._saveContent(model, model.getType(), {json: value});
 			}, this);
-			toolbar.addSpacer();
 			toolbar._add(buttonSave)
+			toolbar.addSpacer();
+			toolbar.addSpacer();
 			return toolbar;
 		},
 		_saveContent: function (model, type, content) {

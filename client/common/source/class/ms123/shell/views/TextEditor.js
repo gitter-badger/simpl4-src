@@ -70,7 +70,7 @@ qx.Class.define("ms123.shell.views.TextEditor", {
 			var toolbar = new qx.ui.toolbar.ToolBar();
 			toolbar.setSpacing(5);
 
-			var buttonSave = new qx.ui.toolbar.Button(this.tr("Save"), "icon/16/actions/dialog-apply.png");
+			var buttonSave = new qx.ui.toolbar.Button(this.tr("shell.save"), "icon/22/actions/dialog-ok.png");
 			buttonSave.addListener("execute", function () {
 				var data = this._textArea.getValue();
 				this.fireDataEvent("save", data);
