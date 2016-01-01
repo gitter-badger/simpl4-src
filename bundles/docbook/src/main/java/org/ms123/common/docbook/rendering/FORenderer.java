@@ -53,6 +53,8 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 		Builder builder = new Builder(reader);
 		Document doc = builder.build(inputStream);
 		Serializer ser = new Serializer(result);
+			ser.setIndent(2);
+			ser.setLineSeparator("\n");
 		XPathContext pc = new XPathContext();
 		pc.addNamespace("fo", "http://www.w3.org/1999/XSL/Format");
 		Nodes nodes = doc.query("//fo:block[starts-with(@id,'hf_')]", pc);
@@ -73,9 +75,14 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 				n.appendChild(ne);
 			}
 		}
-		System.out.println("FOX2:\n" + doc.toXML());
 		ser.write(doc);
 		long endTime = new Date().getTime();
+
+		ser = new Serializer(System.out);
+		ser.setLineSeparator("\n");
+		ser.setIndent(2);
+		System.out.println("FOP:");
+		ser.write(doc);
 		System.out.println("headerFooterProcess.time:" + (endTime - startTime));
 	}
 
