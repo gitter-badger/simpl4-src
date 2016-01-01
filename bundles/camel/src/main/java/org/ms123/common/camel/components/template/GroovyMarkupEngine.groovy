@@ -52,6 +52,7 @@ public class GroovyMarkupEngine extends Engine{
 
 
 	public String convert( String text, Map<String,Object> variableMap){
+		info("GroovyMarkupEngine.convert:"+text);
 		String key = getMD5OfUTF8(text);
 		Template template = m_templateCache.get(key);
 		if (template == null) {
@@ -62,6 +63,7 @@ public class GroovyMarkupEngine extends Engine{
 		binding.putAll( variableMap);
 		info("Template is writing using attributes:" + binding);
 		String answer = template.make(binding).toString();
+		info("GroovyMarkupEngine.answer:"+answer);
 		return answer;
 	}
 

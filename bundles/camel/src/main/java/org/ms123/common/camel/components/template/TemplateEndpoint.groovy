@@ -119,10 +119,8 @@ public class TemplateEndpoint extends ResourceEndpoint {
 
 		String answer = m_engine.convert(text,variableMap);
 
-		Message out = exchange.getOut();
+		Message out = exchange.getIn();
 		out.setBody(answer);
-		out.setHeaders(exchange.getIn().getHeaders());
-		out.setAttachments(exchange.getIn().getAttachments());
 	}
 
 	private void debug(String msg) {

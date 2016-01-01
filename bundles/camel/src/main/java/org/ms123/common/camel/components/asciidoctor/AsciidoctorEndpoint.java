@@ -77,17 +77,15 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 
 		DocbookService ds = getDocbookService();
 
-		Message mout = exchange.getOut();
+		Message out = exchange.getIn();
 		if( "html".equals(this.output)){
 			String html = ds.adocToHtml( text);
-			mout.setBody(html);
+			out.setBody(html);
 		}else{
 			String docbook = ds.adocToDocbook( text);
-			mout.setBody(docbook);
+			out.setBody(docbook);
 		}
 
-		mout.setHeaders(exchange.getIn().getHeaders());
-		mout.setAttachments(exchange.getIn().getAttachments());
 	}
 
 	public DocbookService getDocbookService() {

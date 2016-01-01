@@ -118,12 +118,14 @@ public class DocbookEndpoint extends ResourceEndpoint {
 		}
 
 		DocbookService ds = getDocbookService();
-		Message mout = exchange.getOut();
+		Message out = exchange.getIn();
 		ByteArrayOutputStream  bos = new ByteArrayOutputStream();
 		InputStream is = null;
 		try{
 			if("docbook".equals(this.input)){
-				text = "<article xmlns=\"http://docbook.org/ns/docbook\" xmlns:xl=\"http://www.w3.org/1999/xlink\">"+ text + "</article>";
+				if( !text.startsWith( "<?xml")  && !text.startsWith("<article")){
+					text = "<article xmlns=\"http://docbook.org/ns/docbook\" xmlns:xl=\"http://www.w3.org/1999/xlink\">"+ text + "</article>";
+				}
 				is = IOUtils.toInputStream(text, "UTF-8");
 				ds.docbookToPdf( getNamespace(), is, this.parameters, bos );
 			}else{
@@ -136,10 +138,7 @@ public class DocbookEndpoint extends ResourceEndpoint {
 				is.close();
 			}
 		}
-		mout.setBody(bos.toByteArray());
-
-		mout.setHeaders(exchange.getIn().getHeaders());
-		mout.setAttachments(exchange.getIn().getAttachments());
+		out.setBody(bos.toByteArray());
 	}
 	private Map<String,Object> getVariablenMap(Exchange exchange){
 		List<String> headerList=null;
