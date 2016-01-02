@@ -58,13 +58,11 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 		XPathContext pc = new XPathContext();
 		pc.addNamespace("fo", "http://www.w3.org/1999/XSL/Format");
 		Nodes nodes = doc.query("//fo:block[starts-with(@id,'hf_')]", pc);
-		System.out.println("Nodel:" + nodes.size());
 		int idc = 1;
 		for (int i = 0; i < nodes.size(); i++) {
 			Element newHeaderElement = (Element) nodes.get(i);
 			newHeaderElement.getParent().removeChild(newHeaderElement);
 			String id = newHeaderElement.getAttribute("id").getValue();
-			System.out.println("Id:" + id);
 			boolean isHeader = getIsHeader(id);
 			String pages = getPages(id);
 			List<Element> regionNodes = getRegionsNodes(isHeader, pages, doc, pc);
@@ -83,7 +81,6 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 		ser.setIndent(2);
 		System.out.println("FOP:");
 		ser.write(doc);
-		System.out.println("headerFooterProcess.time:" + (endTime - startTime));
 	}
 
 	private List<Element> getRegionsNodes(boolean isHeader, String pages, Document doc, XPathContext pc) {
@@ -101,17 +98,14 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 			Nodes nodes = doc.query("//fo:static-content[@flow-name='xsl-region-" + where + "-even']", pc);
 			nodeList.add((Element) nodes.get(0));
 		}
-		System.out.println("getRegionsNodes(" + isHeader + "," + pages + "):" + nodeList);
 		return nodeList;
 	}
 
 	private void uniqueIds(Element e, int gId, XPathContext pc) {
 		e.getAttribute("id").setValue("SW" + gId + "_" + 0);
 		Nodes nodes = e.query("//*[@id]", pc);
-		System.out.println("uniqueIds:" + nodes.size());
 		for (int i = 0; i < nodes.size(); i++) {
 			Node n = nodes.get(i);
-			System.out.println("n:" + n);
 			if (n instanceof Element) {
 				((Element) n).getAttribute("id").setValue("SW" + gId + "_" + (i + 1));
 			}

@@ -56,7 +56,6 @@ public class XslURIResolver implements URIResolver, javax.xml.stream.XMLResolver
 	private String docbookXslBase;
 
 	public Source resolve(String href, String base) throws TransformerException {
-		System.out.println("[resolve: href=" + href + " for base=" + base + "]");
 		if (href == null || href.trim().length() == 0) {
 			throw new TransformerException("href is null");
 		}
@@ -71,7 +70,6 @@ public class XslURIResolver implements URIResolver, javax.xml.stream.XMLResolver
 			if (m_bundleContect.getBundle().getEntry(aname) == null) {
 				aname = defaultXslStylesheetBase3 + href;
 			}
-			System.out.println("\tresolved:" + (aname) + "|" + m_bundleContect.getBundle().getEntry(aname));
 			SAXSource ss = new SAXSource(new InputSource(m_bundleContect.getBundle().getEntry(aname).openStream()));
 			XMLReader reader = m_saxParserFactory.newSAXParser().getXMLReader();
 			ReaderConfig rc = ((WstxSAXParser) reader).getStaxConfig();
@@ -84,7 +82,6 @@ public class XslURIResolver implements URIResolver, javax.xml.stream.XMLResolver
 	}
 
 	public Object resolveEntity(String publicID, String systemID, String baseURI, String namespace) {
-		System.err.println("[resolveEntity: pub->'" + publicID + "', sys->'" + systemID + "', base '" + baseURI + "', ns '" + namespace + "']");
 		try {
 			String aname = defaultXslStylesheetBase + systemID;
 			if (aname.indexOf("..") != -1) {
@@ -96,7 +93,6 @@ public class XslURIResolver implements URIResolver, javax.xml.stream.XMLResolver
 			if (m_bundleContect.getBundle().getEntry(aname) == null) {
 				aname = defaultXslStylesheetBase3 + systemID;
 			}
-			System.out.println("\tresolved:" + (aname) + "|" + m_bundleContect.getBundle().getEntry(aname));
 			StreamSource ss = new StreamSource(m_bundleContect.getBundle().getEntry(aname).openStream());
 			return ss;
 		} catch (Exception e) {

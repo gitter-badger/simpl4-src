@@ -70,7 +70,6 @@ public class Utils {
 		for (int i = 0; i < nodes.size(); i++) {
 			Node n = nodes.get(i);
 			if (n instanceof Element) {
-				System.out.println("setNamespace:" + n);
 				((Element) n).setNamespaceURI(namespace);
 			}
 		}
