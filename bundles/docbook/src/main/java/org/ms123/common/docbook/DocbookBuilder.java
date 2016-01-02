@@ -55,7 +55,7 @@ import org.asciidoctor.Asciidoctor;
 /**
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 class DocbookBuilder extends BaseBuilder {
 	List<String> m_pageMasterParam = new ArrayList<String>() {{
 		add("page.margin.top");
@@ -104,7 +104,6 @@ class DocbookBuilder extends BaseBuilder {
 
 
 	private void handleLine(String namespace, List parent, List<Map> line, String frame, String colsep, String keepTogether, Map<String, Object> paramsIn, Map<String, String> paramsOut) throws Exception {
-System.out.println("handleLine:"+line.size());
 		if (line.size() == 0) {
 			return;
 		}
@@ -170,7 +169,6 @@ System.out.println("handleLine:"+line.size());
 	}
 
 	private void handleRowGroup(String namespace, Article article, Map rowGroup, Map<String, Object> paramsIn, Map<String, String> paramsOut)  throws Exception{
-System.out.println("handleRowGroup");
 		boolean isBodyRowGroup = isBodyRowGroup(rowGroup);
 		List<Map> childShapes = (List) rowGroup.get("childShapes");
 		sortListByX(childShapes);
@@ -332,10 +330,12 @@ System.out.println("handleRowGroup");
 					DocBookTransformer tf = new DocBookTransformer();
 					String db = tf.transformFragment(html);
 					System.out.println("AfterDB:"+db);
-					addDBChunkToContent2(content, db );
+					db =  "<div xmlns:xl=\"http://www.w3.org/1999/xlink\">"+db+"</div>";
+					addDBChunkToContent(content, db );
 				}else if( "asciidoctor".equals(syntax)){
 					String db = adocToDocbook(markdown);
 					System.out.println("AfterAdoc:"+db);
+					db = "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>";
 					addDBChunkToContent(content, db );
 				}else{
 					Context ctx = new Context(null, null, false, new HashMap(), new HashMap());
@@ -344,10 +344,17 @@ System.out.println("handleRowGroup");
 					DocBookTransformer tf = new DocBookTransformer();
 					String db = tf.transformFragment(html);
 					System.out.println("DB:"+html);
+					db = "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>";
 					addDBChunkToContent(content, db );
 				}
-			}
-			if( "html".equals(xf_type)){
+			}else if( "groovymarkup".equals(xf_type)){
+				String source = (String) properties.get("xf_groovymarkup");
+				String filter = (String) properties.get("xf_filter");
+				String db = applyGroovyMarkup(namespace, source, filter, paramsIn, true);
+				System.out.println("groovymarkup.db:"+db);
+				db = "<section><section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section></section>";
+				addDBChunkToContent(content, db );
+			}else if( "html".equals(xf_type)){
 				String html = (String) properties.get("xf_html");
 				System.out.println("htmlPreGroovy:" + html);
 				html = applyGroovy(namespace, html, null, paramsIn, true);
@@ -355,6 +362,7 @@ System.out.println("handleRowGroup");
 				DocBookTransformer tf = new DocBookTransformer();
 				String db = tf.transformFragment(html);
 				System.out.println("dbAfter:" + db);
+				db = "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>";
 				addDBChunkToContent(content, db );
 			}
 			long endTime = new Date().getTime();
@@ -381,7 +389,7 @@ System.out.println("handleRowGroup");
 
 	private void addDBChunkToContent(List content, String db) throws Exception{
 		if( db == null || db.trim().equals("")) return;
-		Document doc = new Builder().build( "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>", null);
+		Document doc = new Builder().build( db, null);
 		printXom(doc);
 		Element rootElement = (Element) doc.getRootElement().getChild(0);
 		System.out.println("childs:"+rootElement.getChildElements().size());

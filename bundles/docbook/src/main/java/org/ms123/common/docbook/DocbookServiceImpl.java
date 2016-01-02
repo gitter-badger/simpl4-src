@@ -59,7 +59,7 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 
 /** DocbookService implementation
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=docbook" })
 public class DocbookServiceImpl extends BaseDocbookServiceImpl implements DocbookService {
 

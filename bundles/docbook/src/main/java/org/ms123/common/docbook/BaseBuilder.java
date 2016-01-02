@@ -77,22 +77,12 @@ public class BaseBuilder {
 		m_bc = bc;
 	}
 
-	protected String applyGroovy(String namespace, String markdown, String filter, Map<String, Object> paramsIn, boolean throwException) {
-		if (markdown == null || markdown.trim().length() == 0)
+	protected String applyGroovy(String namespace, String source, String filter, Map<String, Object> paramsIn, boolean throwException) {
+		if (source == null || source.trim().length() == 0){
 			return "";
-		Map binding = paramsIn != null ? new HashMap(paramsIn) : new HashMap();
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
-		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
-		if (filter != null && filter.trim().length() > 0) {
-			Map retMap = sc.executeNamedFilter(filter, new HashMap());
-			List<Map> result = null;
-			if (retMap == null) {
-				result = new ArrayList();
-			} else {
-				result = (List) retMap.get("rows");
-			}
-			binding.put("list", result);
 		}
+		Map binding = paramsIn != null ? new HashMap(paramsIn) : new HashMap();
+		SessionContext sc = executeFilter(namespace,filter, binding);
 		try {
 			Map<String, Object> vars = new HashMap();
 			CompilerConfiguration config = new CompilerConfiguration();
@@ -105,49 +95,82 @@ public class BaseBuilder {
 			Binding xbinding = new Binding(vars);
 			GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), xbinding, config);
 			TemplateEvaluator te = new TemplateEvaluator(shell);
-			return te.render(markdown, binding);
+			return te.render(source, binding);
 		} catch (Throwable e) {
-			String msg = e.getMessage();
+			return handleGroovyException(e, source, throwException);
+		}
+	}
 
-			int hit = -1;
-			int index = msg.indexOf("org.codehaus.groovy.syntax.SyntaxException");
-			String lineNumber = null;
-			if (index != -1) {
-				msg = msg.substring(0, index-1 );
-				Object[] res  = getLineNumberFromMsg(msg);
-				if( res != null){
-					lineNumber = (String)res[0];
-					msg = (String)res[1];
-				}
+	protected String applyGroovyMarkup(String namespace, String source, String filter, Map<String, Object> paramsIn, boolean throwException) {
+		if (source == null || source.trim().length() == 0){
+			return "";
+		}
+		Map binding = paramsIn != null ? new HashMap(paramsIn) : new HashMap();
+		executeFilter(namespace,filter, binding);
+		try {
+			TemplateEvaluator te = new GroovyMarkupTemplate();
+			return te.render(source, binding);
+		} catch (Throwable e) {
+			return handleGroovyException(e, source, throwException);
+		}
+	}
+
+
+	private SessionContext executeFilter(String namespace, String filter, Map binding){
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
+		if (filter != null && filter.trim().length() > 0) {
+			Map retMap = sc.executeNamedFilter(filter, new HashMap());
+			List<Map> result = null;
+			if (retMap == null) {
+				result = new ArrayList();
 			} else {
-				if( e instanceof groovy.lang.MissingPropertyException){
-					hit = searchProperty(markdown,((groovy.lang.MissingPropertyException)e).getProperty());
-				}
+				result = (List) retMap.get("rows");
+			}
+			binding.put("list", result);
+		}
+		return sc;
+	}
+	private String handleGroovyException(Throwable e, String source, boolean throwException){
+		String msg = e.getMessage();
+		int hit = -1;
+		int index = msg.indexOf("org.codehaus.groovy.syntax.SyntaxException");
+		String lineNumber = null;
+		if (index != -1) {
+			msg = msg.substring(0, index-1 );
+			Object[] res  = getLineNumberFromMsg(msg);
+			if( res != null){
+				lineNumber = (String)res[0];
+				msg = (String)res[1];
+			}
+		} else {
+			if( e instanceof groovy.lang.MissingPropertyException){
+				hit = searchProperty(source,((groovy.lang.MissingPropertyException)e).getProperty());
+			}
 
-				if( hit == -1){
-					StackTrace st = new StackTrace(e);
-					Iterator it = st.iterator();
-						
-					while (it.hasNext()) {
-						StackTrace.Entry en = (StackTrace.Entry) it.next();
-						if (en.getSourceFileName().startsWith("SimpleTemplateScript")) {
-							lineNumber = en.getLineNumber();
-							break;
-						}
+			if( hit == -1){
+				StackTrace st = new StackTrace(e);
+				Iterator it = st.iterator();
+
+				while (it.hasNext()) {
+					StackTrace.Entry en = (StackTrace.Entry) it.next();
+					if (en.getSourceFileName().startsWith("SimpleTemplateScript")) {
+						lineNumber = en.getLineNumber();
+						break;
 					}
 				}
 			}
-			Object[] ret = insertLineNumbers(markdown,lineNumber,hit);
-			if( lineNumber != null){
-				msg = "Line:" + ret[0] + ": " + msg;
-			}else if( hit != -1){
-				msg = "Line:" + hit + ": " + msg;
-			}
-			if( throwException){
-				throw new RuntimeException(msg+"\n"+ret[1]);
-			}else{
-				return "{{{"+msg + "\n"+ret[1]+"}}}";
-			}
+		}
+		Object[] ret = insertLineNumbers(source,lineNumber,hit);
+		if( lineNumber != null){
+			msg = "Line:" + ret[0] + ": " + msg;
+		}else if( hit != -1){
+			msg = "Line:" + hit + ": " + msg;
+		}
+		if( throwException){
+			throw new RuntimeException(msg+"\n"+ret[1]);
+		}else{
+			return "{{{"+msg + "\n"+ret[1]+"}}}";
 		}
 	}
 

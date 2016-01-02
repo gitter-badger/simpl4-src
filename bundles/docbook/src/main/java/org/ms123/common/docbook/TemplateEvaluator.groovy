@@ -30,10 +30,13 @@ import java.security.MessageDigest;
 public class TemplateEvaluator{
 	private static Map<String, Template> m_cache = Collections.synchronizedMap(new TemplateCache());
 	private GroovyShell m_shell;
+	public TemplateEvaluator(){
+		m_shell = null;
+	}
 	public TemplateEvaluator(GroovyShell shell){
 		m_shell = shell;
 	}
-	public String render(String text,Map params){
+	public String render(String text,Map<String,Object> params){
 		long starttime= new java.util.Date().getTime();
 		String key = getMD5OfUTF8(text);
 		Template temp = m_cache.get(key);
@@ -49,7 +52,7 @@ public class TemplateEvaluator{
 
 		return ret;
 	}
-	private static String getMD5OfUTF8(String text) {
+	protected static String getMD5OfUTF8(String text) {
 		try {
 			MessageDigest msgDigest = MessageDigest.getInstance("MD5");
 			byte[] mdbytes = msgDigest.digest(text.getBytes("UTF-8"));
@@ -64,6 +67,22 @@ public class TemplateEvaluator{
 			return hexString.toString();
 		} catch (Exception ex) {
 			throw new RuntimeException("TemplateEvaluator.getMD5OfUTF8");
+		}
+	}
+	protected static class DefaultBinding   {
+		private String value
+
+		public DefaultBinding(x) {
+			value = String.valueOf(x);
+		}
+
+		def propertyMissing(x) {
+			value += '.' + String.valueOf(x);
+			return this;
+		}
+
+		String toString() {
+			'${' + value + '}'
 		}
 	}
 }
