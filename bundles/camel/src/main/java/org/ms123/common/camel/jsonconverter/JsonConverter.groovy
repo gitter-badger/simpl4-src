@@ -356,6 +356,11 @@ abstract class JsonConverterImpl implements JsonConverter{
 		script += "import org.ms123.common.system.thread.ThreadContext;\n";
 		script += "import org.ms123.common.permission.api.PermissionException;\n";
 		script += "import org.ms123.common.libhelper.Inflector;\n";
+		script += "import static org.apache.commons.io.FileUtils.*;\n";
+		script += "import static org.apache.commons.lang3.StringUtils.*;\n";
+		script += "import static org.apache.commons.io.FilenameUtils.*;\n";
+		script += "import static org.apache.commons.io.IOUtils.*;\n";
+		script += "import static org.apache.commons.beanutils.PropertyUtils.*;\n";
 		script += "import java.util.*;\n";
 		script += "import flexjson.JSONSerializer;\n";
 		script += "import flexjson.JSONDeserializer;\n";
