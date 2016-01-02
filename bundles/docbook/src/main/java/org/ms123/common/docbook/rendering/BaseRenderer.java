@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.osgi.framework.BundleContext;
 import org.ms123.common.git.GitService;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 abstract class BaseRenderer<T extends BaseRenderer<T>> implements Renderer<T> {
 
@@ -168,7 +170,7 @@ abstract class BaseRenderer<T extends BaseRenderer<T>> implements Renderer<T> {
 		transformer.setParameter("fop1.extensions", "1");
 		//@@@MS needs maybe more investigations
 		transformer.setParameter("callouts.extension", "1");
-		System.out.println("createTransformer:" + params);
+		info(this,"createTransformer:" + params);
 
 		if( params.size() == 0){
 			params.put("body.font.master","8");

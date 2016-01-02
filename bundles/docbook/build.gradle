@@ -34,5 +34,6 @@ dependencies {
 	compile files("${repository}/jruby-complete-1.7.16.1.jar")
 	compile files("${repository}/asciidoctorj-groovy-dsl.bar")
 	compile files("${repository}/vfs/commons-vfs2-2.1.jar")
+ 	compile files("${repository}/jcabi-1.0.jar")
   compile files('build/classes/main')
 }

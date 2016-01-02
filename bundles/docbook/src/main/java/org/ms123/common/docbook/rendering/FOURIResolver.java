@@ -35,8 +35,8 @@ import org.apache.commons.vfs2.impl.StandardFileSystemManager;
 import org.apache.xmlgraphics.io.Resource;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.ms123.common.git.GitService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 public class FOURIResolver implements ResourceResolver {
 	protected GitService m_gitService;
@@ -49,12 +49,8 @@ public class FOURIResolver implements ResourceResolver {
 		initFileSystemManager();
 	}
 
-	private static final Logger log = LoggerFactory.getLogger(FOURIResolver.class);
-
-	private String docbookXslBase;
-
 	public Resource getResource(URI href) throws IOException {
-		System.out.println("[FOURIResolver.resolve: href=" + href + "]");
+		info(this,"[FOURIResolver.resolve: href=" + href + "]");
 		String path = href.toString();
 		String type = null;
 		if (path.endsWith(".svg")) {
@@ -87,18 +83,17 @@ public class FOURIResolver implements ResourceResolver {
 					namespace = path.substring(0, delim);
 					path = path.substring(delim + 1);
 				}
-				System.out.println("FOURIResolver.searchFile:" + namespace + "|" + path);
+				info(this,"FOURIResolver.searchFile:" + namespace + "|" + path);
 				File _file = m_gitService.searchFile(namespace, path, type);
 				return new Resource(type, new FileInputStream(_file));
 			} else {
 				FileObject fo = this.fileSystemManager.resolveFile(path, getFileSystemOptions(href));
-				System.out.println("FileObject("+href+").exists:" + fo.exists());
+				info(this,"FileObject("+href+").exists:" + fo.exists());
 				return new Resource(type, fo.getContent().getInputStream());
 			}
 		} catch (Exception e) {
-			System.out.println("FOURIResolver.getResource:(" + href + "):" + e);
 			if (path.indexOf("en.hyp") < 0) {
-				e.printStackTrace();
+				error(this,"FOURIResolver.getResource:(" + href + "):%[exception]s" , e);
 			}
 		}
 		return null;
@@ -116,8 +111,6 @@ public class FOURIResolver implements ResourceResolver {
 		}
 		String us = StringUtils.substringBefore(au, ":");
 		String pw = StringUtils.substringBetween(au, ":", "@");
-		System.out.println("User:" + us);
-		System.out.println("PW:" + pw);
 		StaticUserAuthenticator auth = new StaticUserAuthenticator(null, us, pw);
 		DefaultFileSystemConfigBuilder.getInstance().setUserAuthenticator(opts, auth);
 		return opts;

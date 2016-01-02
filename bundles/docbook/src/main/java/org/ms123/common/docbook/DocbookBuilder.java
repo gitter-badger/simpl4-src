@@ -51,6 +51,10 @@ import org.ms123.common.store.StoreDesc;
 import org.osgi.framework.BundleContext;
 import org.dbdoclet.trafo.html.docbook.*;
 import org.asciidoctor.Asciidoctor;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.isDebugEnabled;
 
 /**
  *
@@ -223,7 +227,6 @@ class DocbookBuilder extends BaseBuilder {
 				return "0";
 			if (o instanceof Boolean) {
 				Boolean b = (Boolean) o;
-				System.out.println("getColsep:" + b);
 				return b ? "1" : "0";
 			}
 			return "1".equals(o.toString()) ? "1" : "0";
@@ -270,7 +273,6 @@ class DocbookBuilder extends BaseBuilder {
 				}
 			}
 		}
-		System.out.println("getParamsOut.paramsOut:" + paramsOut);
 	}
 
 	private void getTripleValues(Map<String, String> paramsOut, String key, String val){
@@ -309,15 +311,15 @@ class DocbookBuilder extends BaseBuilder {
 		} else if ("textarea".equals(id)) {
 			String xf_type = getString(properties, "xf_type", null);
 			String xf_des = getString(properties, "description", null);
-			System.out.println("handleElement.textarea:"+xf_type+"/"+xf_des);
+			debug(this,"handleElement.textarea:"+xf_type+"/"+xf_des);
 			long startTime = new Date().getTime();
 			if( "markdown".equals(xf_type)){
 				String markdown = (String) properties.get("xf_markdown");
 				String filter = (String) properties.get("xf_filter");
 				String syntax = (String) properties.get("xf_syntax");
-				System.out.println("markdownPreroovy:" + markdown);
+				debug(this,"markdownPreroovy:" + markdown);
 				markdown = applyGroovy(namespace, markdown, filter, paramsIn, true);
-				System.out.println("markdownAfterGroovy:" + markdown);
+				debug(this,"markdownAfterGroovy:" + markdown);
 				if( "mediawiki".equals(syntax)){
 					WikiParser mp = new WikiParser(m_bc.getBundle());
 					List<Object> ol = mp.parse(markdown);
@@ -326,24 +328,24 @@ class DocbookBuilder extends BaseBuilder {
 					}
 				}else if( "asciidoctor_html".equals(syntax)){
 					String html = adocToHtml(markdown);
-					System.out.println("AfterAdoc:"+html);
+					debug(this,"AfterAdoc:"+html);
 					DocBookTransformer tf = new DocBookTransformer();
 					String db = tf.transformFragment(html);
-					System.out.println("AfterDB:"+db);
+					debug(this,"AfterDB:"+db);
 					db =  "<div xmlns:xl=\"http://www.w3.org/1999/xlink\">"+db+"</div>";
 					addDBChunkToContent(content, db );
 				}else if( "asciidoctor".equals(syntax)){
 					String db = adocToDocbook(markdown);
-					System.out.println("AfterAdoc:"+db);
+					debug(this,"AfterAdoc:"+db);
 					db = "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>";
 					addDBChunkToContent(content, db );
 				}else{
 					Context ctx = new Context(null, null, false, new HashMap(), new HashMap());
 					String html = xwikiToHtml(ctx, markdown);
-					System.out.println("Html:"+html);
+					debug(this,"Html:"+html);
 					DocBookTransformer tf = new DocBookTransformer();
 					String db = tf.transformFragment(html);
-					System.out.println("DB:"+html);
+					debug(this,"DB:"+html);
 					db = "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>";
 					addDBChunkToContent(content, db );
 				}
@@ -351,22 +353,22 @@ class DocbookBuilder extends BaseBuilder {
 				String source = (String) properties.get("xf_groovymarkup");
 				String filter = (String) properties.get("xf_filter");
 				String db = applyGroovyMarkup(namespace, source, filter, paramsIn, true);
-				System.out.println("groovymarkup.db:"+db);
+				debug(this,"groovymarkup.db:"+db);
 				db = "<section><section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section></section>";
 				addDBChunkToContent(content, db );
 			}else if( "html".equals(xf_type)){
 				String html = (String) properties.get("xf_html");
-				System.out.println("htmlPreGroovy:" + html);
+				debug(this,"htmlPreGroovy:" + html);
 				html = applyGroovy(namespace, html, null, paramsIn, true);
-				System.out.println("htmlAfterGroovy:" + html);
+				debug(this,"htmlAfterGroovy:" + html);
 				DocBookTransformer tf = new DocBookTransformer();
 				String db = tf.transformFragment(html);
-				System.out.println("dbAfter:" + db);
+				debug(this,"dbAfter:" + db);
 				db = "<section><section xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+db+"</section></section>";
 				addDBChunkToContent(content, db );
 			}
 			long endTime = new Date().getTime();
-			System.out.println("WikiParser.etime:" + (endTime - startTime) );
+			debug(this,"WikiParser.etime:" + (endTime - startTime) );
 		}
 	}
 	private String adocToHtml( String adoc) throws Exception {
@@ -392,7 +394,7 @@ class DocbookBuilder extends BaseBuilder {
 		Document doc = new Builder().build( db, null);
 		printXom(doc);
 		Element rootElement = (Element) doc.getRootElement().getChild(0);
-		System.out.println("childs:"+rootElement.getChildElements().size());
+		debug(this,"childs:"+rootElement.getChildElements().size());
 		int childSize = rootElement.getChildElements().size();
 		List<Element> childs = new ArrayList();
 		for( int i=0; i< childSize; i++){
@@ -412,7 +414,7 @@ class DocbookBuilder extends BaseBuilder {
 		Document doc = new Builder().build( "<div xmlns:xl=\"http://www.w3.org/1999/xlink\">"+db+"</div>", null);
 		printXom(doc);
 		Element rootElement = (Element) doc.getRootElement().getChild(0);
-		System.out.println("childs:"+rootElement.getChildElements().size());
+		debug(this,"childs:"+rootElement.getChildElements().size());
 		int childSize = rootElement.getChildElements().size();
 		List<Element> childs = new ArrayList();
 		for( int i=0; i< childSize; i++){
@@ -531,35 +533,36 @@ class DocbookBuilder extends BaseBuilder {
 	private boolean isHeaderFooterGroup(Map element) {
 		Map properties = (Map) element.get("properties");
 		String position = (String) properties.get("xf_position");
-		System.out.println("isHeaderFooterGroup:" + position);
 		return "header".equals(position) || "footer".equals(position);
 	}
-	protected static void printXom(Document doc) {
+	protected void printXom(Document doc) {
 		try {
-			Serializer ser = new Serializer(System.out);
-			ser.setIndent(2);
-			ser.setLineSeparator("\n");
-			System.out.println("Docbook.toXML:\n");
-			ser.write(doc);
+			if( isDebugEnabled(this)){
+				Serializer ser = new Serializer(System.out);
+				ser.setIndent(2);
+				ser.setLineSeparator("\n");
+				System.out.println("Docbook.toXML:\n");
+				ser.write(doc);
+			}
 		} catch (Exception e) {
 			throw new RuntimeException("DocbookServiceImpl.marshallObjectXom:", e);
-		} finally {
 		}
 	}
 
-	protected static void marshallObjectXom(Article article, OutputStream outputStream) {
+	protected void marshallObjectXom(Article article, OutputStream outputStream) {
 		try {
 			Document doc = new Document(article.toXom());
 			Serializer ser = new Serializer(System.out);
-			ser.setIndent(2);
-			ser.setLineSeparator("\n");
-			System.out.println("Docbook.toXML:\n");
-			ser.write(doc);
+			if( isDebugEnabled(this)){
+				ser.setIndent(2);
+				ser.setLineSeparator("\n");
+				System.out.println("Docbook.toXML:\n");
+				ser.write(doc);
+			}
 			ser = new Serializer(outputStream);
 			ser.write(doc);
 		} catch (Exception e) {
 			throw new RuntimeException("DocbookServiceImpl.marshallObjectXom:", e);
-		} finally {
 		}
 	}
 

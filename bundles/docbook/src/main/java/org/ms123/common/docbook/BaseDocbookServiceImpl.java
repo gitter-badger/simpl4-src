@@ -62,6 +62,9 @@ import org.ms123.common.utils.IOUtils;
 import org.ms123.common.utils.UtilsService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.debug;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.asciidoctor.Asciidoctor.Factory.create;
@@ -147,23 +150,13 @@ class BaseDocbookServiceImpl {
 	}
 
 
-	protected void markdownToDocbookOld(String markdown, OutputStream out) {
-		WikiParser mp = new WikiParser(m_bc.getBundle());
-		Article article = new Article();
-		List<Object> ol = mp.parse(markdown);
-		for (Object o : ol) {
-			article.getContent().add(o);
-		}
-		DocbookBuilder.marshallObjectXom(article, out);
-	}
-
 	protected void markdownToDocbook(String markdown, OutputStream out) throws Exception{
 		Context ctx = new Context(null, null, false, new HashMap(), new HashMap());
 		String html = BaseBuilder.xwikiToHtml(ctx,markdown);
 		DocBookTransformer tf = new DocBookTransformer();
-		System.out.println("html:" + html);
+		debug(this,"html:" + html);
 		String db = tf.transformFragment(html);
-		System.out.println("db:" + db);
+		debug(this,"db:" + db);
 		DataOutputStream dout = new DataOutputStream(out);
 		dout.writeUTF(db);
 		dout.close();
@@ -181,7 +174,7 @@ class BaseDocbookServiceImpl {
 		
 		String userAgent = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserAgent().toString().toLowerCase();
 		String sua = org.ms123.common.system.thread.ThreadContext.getThreadContext().getStringUserAgent().toLowerCase();
-		System.out.println("userAgent:"+userAgent+"/sua:"+sua+"/uri:"+uri);
+		info(this,"userAgent:"+userAgent+"/sua:"+sua+"/uri:"+uri);
 		if( userAgent.indexOf("bot") != -1 
 				|| userAgent.indexOf("crawler") != -1
 				|| sua.indexOf("google-site-verification") != -1
@@ -193,7 +186,7 @@ class BaseDocbookServiceImpl {
 			if( uri.length() > 1 && uri.startsWith("/sw/website/mainpage-en")){ //@@@Bullshit
 				indexFileName = "index_en.html";
 			}
-			System.out.println("DeliverGooglePage:"+sua+"/page:"+indexFileName);
+			info(this,"DeliverGooglePage:"+sua+"/page:"+indexFileName);
 			File indexFile = new File(System.getProperty("workspace"),indexFileName); 
 			if( indexFile.exists()){
 				copy(new FileInputStream(indexFile), out);
@@ -286,7 +279,7 @@ class BaseDocbookServiceImpl {
 				}
 			}
 		}
-		System.out.println("retList:"+retList);
+		debug(this,"retList:"+retList);
 		return retList;
 	}
 	public void adocToHtml( File adocFile, Writer w) throws Exception {
@@ -348,7 +341,7 @@ class BaseDocbookServiceImpl {
 			String gemPath = ((java.net.URL)gemPaths.nextElement()).getFile();
 			loadPaths.add(gemPath.substring(1, gemPath.length()-1));
 		}
-		System.out.println("loadPaths:"+loadPaths);
+		debug(this,"loadPaths:"+loadPaths);
 		sc.setLoadPaths(loadPaths);
 		m_asciidoctor = create(sc.getProvider().getRuntime());
 		new AsciidoctorX().register();

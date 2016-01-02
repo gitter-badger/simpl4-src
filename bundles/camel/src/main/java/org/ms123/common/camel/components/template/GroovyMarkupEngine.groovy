@@ -31,6 +31,9 @@ import groovy.text.Template;
 import groovy.text.TemplateEngine;
 import groovy.text.markup.MarkupTemplateEngine;
 import groovy.text.markup.TemplateConfiguration;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.debug;
 
 
 @SuppressWarnings("unchecked")
@@ -52,7 +55,7 @@ public class GroovyMarkupEngine extends Engine{
 
 
 	public String convert( String text, Map<String,Object> variableMap){
-		info("GroovyMarkupEngine.convert:"+text);
+		info(this,"GroovyMarkupEngine.convert:"+text);
 		String key = getMD5OfUTF8(text);
 		Template template = m_templateCache.get(key);
 		if (template == null) {
@@ -61,22 +64,10 @@ public class GroovyMarkupEngine extends Engine{
 		}
 		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
 		binding.putAll( variableMap);
-		info("Template is writing using attributes:" + binding);
+		info(this, "Template is writing using attributes:" + binding);
 		String answer = template.make(binding).toString();
-		info("GroovyMarkupEngine.answer:"+answer);
+		debug(this, "GroovyMarkupEngine.answer:"+answer);
 		return answer;
 	}
-
-	private void debug(String msg) {
-		System.out.println(msg);
-		m_logger.debug(msg);
-	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(GroovyMarkupEngine.class);
 }
 

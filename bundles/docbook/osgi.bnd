@@ -1,6 +1,6 @@
 version=1.0.0
-Export-Package org.ms123.common.docbook
-Private-Package org.zkoss.zuss*,org.wikimodel.wem*,org.ms123.common.docbook.xom*,org.ms123.common.docbook.rendering*,org.ms123.common.docbook.wikimodel*
+Export-Package org.ms123.common.docbook, org.ms123.common.docbook.xom.db
+Private-Package org.zkoss.zuss*,org.wikimodel.wem*,org.ms123.common.docbook.xom.html5,org.ms123.common.docbook.rendering*,org.ms123.common.docbook.wikimodel*
 Import-Package *
 Bundle-Version:${version}
 Bundle-Vendor: MS123, Org.

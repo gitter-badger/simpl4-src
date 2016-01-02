@@ -36,6 +36,9 @@ import org.apache.camel.component.ResourceEndpoint;
 import org.apache.camel.util.ExchangeHelper;
 import org.apache.commons.io.IOUtils;
 import org.ms123.common.docbook.DocbookService;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings("unchecked")
 public class DocbookEndpoint extends ResourceEndpoint {
@@ -51,7 +54,7 @@ public class DocbookEndpoint extends ResourceEndpoint {
 
 	public DocbookEndpoint(String endpointUri, Component component, String resourceUri) {
 		super(endpointUri, component, resourceUri);
-		info("DocbookEndpoint:endpointUri:" + endpointUri + "/resourceUri:" + resourceUri);
+		info(this,"DocbookEndpoint:endpointUri:" + endpointUri + "/resourceUri:" + resourceUri);
 	}
 
 	public void setNamespace(String ns){
@@ -160,7 +163,7 @@ public class DocbookEndpoint extends ResourceEndpoint {
 				}
 			}
 		}
-		System.out.println("variableMap:"+variableMap);
+		debug(this,"variableMap:"+variableMap);
 		return variableMap;
 	}
 
@@ -171,16 +174,4 @@ public class DocbookEndpoint extends ResourceEndpoint {
 	private <T> T getByType(Class<T> kls) {
 		return kls.cast(getCamelContext().getRegistry().lookupByName(kls.getName()));
 	}
-
-	private void debug(String msg) {
-		System.out.println(msg);
-		m_logger.debug(msg);
-	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(DocbookEndpoint.class);
 }

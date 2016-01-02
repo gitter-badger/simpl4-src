@@ -49,8 +49,9 @@ import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.utils.UtilsService;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.debug;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
@@ -63,20 +64,18 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=docbook" })
 public class DocbookServiceImpl extends BaseDocbookServiceImpl implements DocbookService {
 
-	private static final Logger m_logger = LoggerFactory.getLogger(DocbookServiceImpl.class);
-
 //	protected MetaData m_gitMetaData;
 
 	public DocbookServiceImpl() {
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("DocbookServiceImpl.activate.props:" + props);
+		info(this,"DocbookServiceImpl.activate.props:" + props);
 		m_bc = bundleContext;
 	}
 
 	protected void deactivate() throws Exception {
-		System.out.println("DocbookServiceImpl deactivate");
+		info(this,"DocbookServiceImpl deactivate");
 	}
 
 
@@ -110,7 +109,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 				adoc = readFileToString(new File((String) map.get("storeLocation")));
 			}
 			String html = getAsciidoctor().convert( adoc, new HashMap<String, Object>());
-			System.out.println(html);
+			debug(this,html);
 			//adocToHtml(adoc, response.getWriter());
 			if( asString){
 				return html;
@@ -144,7 +143,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 			websiteStart(serverName,namespace, name, response.getOutputStream(), request.getRequestURI());
 			response.setStatus(HttpServletResponse.SC_OK);
 			response.getOutputStream().close();
-			System.out.println("website.dauer:"+( new java.util.Date().getTime()-starttime));
+			debug(this,"website.dauer:"+( new java.util.Date().getTime()-starttime));
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.website:", e);
 		}
@@ -156,7 +155,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 		try {
 			long starttime= new java.util.Date().getTime();
 			Map ret = _websiteMain(namespace, name);
-			System.out.println("websiteMain.dauer:"+( new java.util.Date().getTime()-starttime));
+			debug(this,"websiteMain.dauer:"+( new java.util.Date().getTime()-starttime));
 			return ret;
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.website:", e);
@@ -171,7 +170,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 		try {
 			long starttime= new java.util.Date().getTime();
 			Map ret = _websiteFragment(namespace, name, shapeId, resourceId);
-			System.out.println("websiteFragment:"+( new java.util.Date().getTime()-starttime));
+			debug(this,"websiteFragment:"+( new java.util.Date().getTime()-starttime));
 			return ret;
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.website:", e);
@@ -210,23 +209,6 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 			_getAsset(namespace, name, type, request, response);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.getAsset:", e);
-		}
-	}
-	public void markdownToDocbookXmlOld(
-			@PName("markdown")         String markdown, 
-			@PName("fileMap")          @POptional Map fileMap, HttpServletResponse response) throws RpcException {
-		try {
-			if (fileMap != null) {
-				Map map = (Map) fileMap.get("importfile");
-				markdown = readFileToString(new File((String) map.get("storeLocation")));
-			}
-			markdownToDocbookOld(markdown, response.getOutputStream());
-			response.setContentType("application/xml;charset=UTF-8");
-			response.addHeader("Content-Disposition", "attachment;filename=\"docbook.xml\"");
-			response.setStatus(HttpServletResponse.SC_OK);
-			response.getOutputStream().close();
-		} catch (Throwable e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.markdownToDocbookXml:", e);
 		}
 	}
 
@@ -277,7 +259,7 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 			@PName("fileMap")          @POptional Map fileMap, HttpServletResponse response) throws RpcException {
 		try {
 			if (fileMap != null) {
-				System.out.println("fileMap:" + fileMap);
+				debug(this,"fileMap:" + fileMap);
 				Map map = (Map) fileMap.get("importfile");
 				json = readFileToString(new File((String) map.get("storeLocation")));
 			}
@@ -325,25 +307,25 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 	/* END JSON-RPC-API*/
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
 	public void setDataLayer(DataLayer dataLayer) {
-		System.out.println("EntityServiceImpl.setDataLayer:" + dataLayer);
+		info(this,"EntityServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
-		System.out.println("DocbookServiceImpl.setGitService:" + gitService);
+		info(this,"DocbookServiceImpl.setGitService:" + gitService);
 		m_gitService = gitService;
 	}
 
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
-		System.out.println("DocbookServiceImpl.setPermissionService:" + paramPermissionService);
+		info(this,"DocbookServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 
 	@Reference(dynamic = true)
 	public void setUtilsService(UtilsService paramUtilsService) {
 		this.m_utilsService = paramUtilsService;
-		System.out.println("DocbookServiceImpl.setUtilsService:" + paramUtilsService);
+		info(this,"DocbookServiceImpl.setUtilsService:" + paramUtilsService);
 	}
 }

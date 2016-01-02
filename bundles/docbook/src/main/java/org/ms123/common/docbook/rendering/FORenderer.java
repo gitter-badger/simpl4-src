@@ -32,6 +32,8 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.util.*;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 //import org.apache.xmlgraphics.image.loader.spi.*;
 @SuppressWarnings("unchecked")
@@ -79,8 +81,8 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 		ser = new Serializer(System.out);
 		ser.setLineSeparator("\n");
 		ser.setIndent(2);
-		System.out.println("FOP:");
-		ser.write(doc);
+//		System.out.println("FOP:");
+//		ser.write(doc);
 	}
 
 	private List<Element> getRegionsNodes(boolean isHeader, String pages, Document doc, XPathContext pc) {
