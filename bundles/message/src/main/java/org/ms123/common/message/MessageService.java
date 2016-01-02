@@ -17,6 +17,10 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ms123.common.message;
+import java.util.Map;
+import java.util.List;
 
 public interface MessageService {
+	public Map<String, String> getMessage(String namespace, String lang, String id) throws Exception;
+	public List<Map> getMessages(String namespace, String lang, Map filter) throws Exception;
 }
