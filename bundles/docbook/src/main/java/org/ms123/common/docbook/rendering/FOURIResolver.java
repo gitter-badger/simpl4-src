@@ -18,37 +18,35 @@
  */
 package org.ms123.common.docbook.rendering;
 
+import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.FileInputStream;
+import java.net.URI;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.vfs2.auth.StaticUserAuthenticator;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.impl.DefaultFileSystemConfigBuilder;
+import org.apache.commons.vfs2.impl.StandardFileSystemManager;
+import org.apache.xmlgraphics.io.Resource;
+import org.apache.xmlgraphics.io.ResourceResolver;
+import org.ms123.common.git.GitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
-import java.io.*;
-import java.util.*;
-import java.net.URI;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.sax.SAXSource;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-import javax.xml.parsers.SAXParserFactory;
-import com.ctc.wstx.sax.*;
-import com.ctc.wstx.api.ReaderConfig;
-import org.ms123.common.git.GitService;
-import org.apache.xmlgraphics.io.ResourceResolver;
-import org.apache.xmlgraphics.io.Resource;
 
 public class FOURIResolver implements ResourceResolver {
-
 	protected GitService m_gitService;
-
 	protected String m_namespace;
-	protected String simpl4Dir;
+	protected StandardFileSystemManager fileSystemManager;
 
 	public FOURIResolver(GitService gs, String namespace) {
 		m_gitService = gs;
 		m_namespace = namespace;
-		simpl4Dir = (String) System.getProperty("simpl4.dir");
+		initFileSystemManager();
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(FOURIResolver.class);
@@ -58,17 +56,6 @@ public class FOURIResolver implements ResourceResolver {
 	public Resource getResource(URI href) throws IOException {
 		System.out.println("[FOURIResolver.resolve: href=" + href + "]");
 		String path = href.toString();
-		if( path.startsWith("file:/")){
-			
-			path = href.toString().toLowerCase().substring(("file:"+this.simpl4Dir+"/server/").length());
-		}
-		String namespace = m_namespace;
-		int delim = path.indexOf("!");
-		if( delim > 0){
-			namespace = path.substring(0,delim);
-			path = path.substring(delim+1);
-		}
-		String file = path.startsWith("repo:") ? path.substring(5) : path;
 		String type = null;
 		if (path.endsWith(".svg")) {
 			type = "image/svg+xml";
@@ -89,15 +76,61 @@ public class FOURIResolver implements ResourceResolver {
 			type = "image/pdf";
 		}
 		try {
-			System.out.println("FOURIResolver.searchFile:"+namespace+"|"+file );
-			File _file = m_gitService.searchFile(namespace, file, type);
-			return new Resource(type, new FileInputStream(_file));
+			if (path.startsWith("repo:")) {
+				path = path.substring(5);
+				String namespace = m_namespace;
+				int delim = path.indexOf("!");
+				if( delim == -1){
+					delim = path.indexOf(":");
+				}
+				if (delim > 0) {
+					namespace = path.substring(0, delim);
+					path = path.substring(delim + 1);
+				}
+				System.out.println("FOURIResolver.searchFile:" + namespace + "|" + path);
+				File _file = m_gitService.searchFile(namespace, path, type);
+				return new Resource(type, new FileInputStream(_file));
+			} else {
+				FileObject fo = this.fileSystemManager.resolveFile(path, getFileSystemOptions(href));
+				System.out.println("FileObject("+href+").exists:" + fo.exists());
+				return new Resource(type, fo.getContent().getInputStream());
+			}
 		} catch (Exception e) {
-			System.out.println("FOURIResolver.getResource:("+href+"):"+e);
+			System.out.println("FOURIResolver.getResource:(" + href + "):" + e);
+			if (path.indexOf("en.hyp") < 0) {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}
-	public OutputStream getOutputStream(URI uri) throws IOException{
+
+	public OutputStream getOutputStream(URI uri) throws IOException {
 		throw new RuntimeException("ResourceResolver.getOutputStream:not implemented");
+	}
+
+	protected FileSystemOptions getFileSystemOptions(URI href) throws Exception {
+		FileSystemOptions opts = new FileSystemOptions();
+		String au = href.getAuthority();
+		if (au == null) {
+			return opts;
+		}
+		String us = StringUtils.substringBefore(au, ":");
+		String pw = StringUtils.substringBetween(au, ":", "@");
+		System.out.println("User:" + us);
+		System.out.println("PW:" + pw);
+		StaticUserAuthenticator auth = new StaticUserAuthenticator(null, us, pw);
+		DefaultFileSystemConfigBuilder.getInstance().setUserAuthenticator(opts, auth);
+		return opts;
+	}
+
+	protected void initFileSystemManager() {
+		if (this.fileSystemManager == null) {
+			try {
+				this.fileSystemManager = new StandardFileSystemManager();
+				this.fileSystemManager.init();
+			} catch (FileSystemException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
