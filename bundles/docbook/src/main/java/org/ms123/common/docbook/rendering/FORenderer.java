@@ -34,6 +34,7 @@ import java.io.*;
 import java.util.*;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.isDebugEnabled;
 
 //import org.apache.xmlgraphics.image.loader.spi.*;
 @SuppressWarnings("unchecked")
@@ -55,8 +56,8 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 		Builder builder = new Builder(reader);
 		Document doc = builder.build(inputStream);
 		Serializer ser = new Serializer(result);
-			ser.setIndent(2);
-			ser.setLineSeparator("\n");
+		ser.setIndent(2);
+		ser.setLineSeparator("\n");
 		XPathContext pc = new XPathContext();
 		pc.addNamespace("fo", "http://www.w3.org/1999/XSL/Format");
 		Nodes nodes = doc.query("//fo:block[starts-with(@id,'hf_')]", pc);
@@ -78,11 +79,13 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 		ser.write(doc);
 		long endTime = new Date().getTime();
 
-		ser = new Serializer(System.out);
-		ser.setLineSeparator("\n");
-		ser.setIndent(2);
-//		System.out.println("FOP:");
-//		ser.write(doc);
+		if(isDebugEnabled(this)){
+			ser = new Serializer(System.out);
+			ser.setLineSeparator("\n");
+			ser.setIndent(2);
+			System.out.println("FOP:");
+			ser.write(doc);
+		}
 	}
 
 	private List<Element> getRegionsNodes(boolean isHeader, String pages, Document doc, XPathContext pc) {
@@ -128,6 +131,7 @@ abstract class FORenderer<T extends FORenderer<T>> extends BaseRenderer<T> {
 	protected synchronized void postProcess(final InputStream xmlSource, final InputStream xsltResult, OutputStream fopResult) throws Docbook4JException {
 		try {
 			FopFactoryBuilder builder = new FopFactoryBuilder(new File(".").toURI(), new FOURIResolver(m_gitService, m_namespace));
+			builder.setStrictFOValidation(false);
 			FopFactory fopFactory = builder.build();
 
 			final FOUserAgent userAgent = fopFactory.newFOUserAgent();
