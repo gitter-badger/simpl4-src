@@ -118,6 +118,7 @@ public class GitServiceImpl implements GitService {
 			add("sw.stencil");
 			add("sw.datamapper");
 			add("sw.document");
+			add("sw.messageslang");
 		}
 	};
 
