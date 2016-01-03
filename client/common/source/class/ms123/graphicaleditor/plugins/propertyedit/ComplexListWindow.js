@@ -159,6 +159,9 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 				if (type == ms123.oryx.Config.TYPE_CHOICE) {
 					type = ms123.oryx.Config.TYPE_STRING;
 				}
+				if (type == ms123.oryx.Config.TYPE_COMBO) {
+					type = ms123.oryx.Config.TYPE_STRING;
+				}
 				recordType[i] = {
 					name: id,
 					config:config,
@@ -226,6 +229,31 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 					r.addReversedReplaceMap();
 
 					var f = new qx.ui.table.celleditor.SelectBox();
+					f.setListData(listData);
+					tcm.setCellEditorFactory(i, f);
+					table.getTableModel().setColumnEditable(i, true);
+
+				} else if (type == ms123.oryx.Config.TYPE_COMBO) {
+					var r = new qx.ui.table.cellrenderer.Replace();
+					tcm.setDataCellRenderer(i, r);
+
+					var listData = [];
+					var items = this.items[i].items();
+					items.each(function (value) {
+						var option = [value.title(), null, value.value()];
+						listData.push(option);
+					});
+
+					var replaceMap = {};
+					listData.each(function (row) {
+						if (row instanceof Array) {
+							replaceMap[row[0]] = row[2];
+						}
+					});
+					r.setReplaceMap(replaceMap);
+					r.addReversedReplaceMap();
+
+					var f = new qx.ui.table.celleditor.ComboBox();
 					f.setListData(listData);
 					tcm.setCellEditorFactory(i, f);
 					table.getTableModel().setColumnEditable(i, true);

@@ -58,7 +58,7 @@ qx.Class.define("ms123.oryx.core.stencilset.ComplexPropertyItem", {
 			jsonItem.type = jsonItem.type.toLowerCase();
 		}
 
-		if (jsonItem.type === ms123.oryx.Config.TYPE_CHOICE) {
+		if (jsonItem.type === ms123.oryx.Config.TYPE_CHOICE || jsonItem.type === ms123.oryx.Config.TYPE_COMBO) {
 			if (jsonItem.items && jsonItem.items instanceof Array) {
 				jsonItem.items.each((function (item) {
 					this._items[item.value] = new ms123.oryx.core.stencilset.PropertyItem(item, namespace, this);
