@@ -264,12 +264,23 @@ class DocbookBuilder extends BaseBuilder {
 		Map<String, Object> properties = (Map) element.get("properties");
 		for (String prop : properties.keySet()) {
 			if (prop.startsWith("db_")) {
-				String val = (String) properties.get(prop);
-				String key = prop.substring(3).replace("_", ".");
-				if( m_pageMasterParam.indexOf( key) >=0){
-					getTripleValues( paramsOut, key, val);
+				if( properties.get(prop) instanceof Map){
+					List<Map<String,String>> items = (List)((Map)properties.get(prop)).get("items");
+					System.out.println("Items:"+items);
+					for(Map<String,String> map : items){
+						String name = map.get("name");
+						String val = map.get("value");
+						paramsOut.put(name, val);
+					}
+					
 				}else{
-					paramsOut.put(key, val);
+					String val = (String) properties.get(prop);
+					String key = prop.substring(3).replace("_", ".");
+					if( m_pageMasterParam.indexOf( key) >=0){
+						getTripleValues( paramsOut, key, val);
+					}else{
+						paramsOut.put(key, val);
+					}
 				}
 			}
 		}
