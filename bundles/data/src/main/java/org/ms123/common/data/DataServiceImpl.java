@@ -70,7 +70,7 @@ import aQute.bnd.annotation.component.*;
 
 /** DataService implementation
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=data" })
 public class DataServiceImpl implements DataService, JavaDelegate {
 
