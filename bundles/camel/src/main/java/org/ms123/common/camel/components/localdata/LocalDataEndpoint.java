@@ -51,8 +51,6 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	private String m_lookupRelationObjectExpr;
 	private String m_lookupUpdateObjectExpr;
 
-	private boolean m_writeResultAsHeader;
-
 	private Map m_options;
 
 	public LocalDataEndpoint() {
@@ -137,7 +135,6 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 		return m_lookupUpdateObjectExpr;
 	}
 	public void setLookupUpdateObjectExpr(String update) {
-System.out.println("setLookupUpdateObjectExpr:"+update);
 		m_lookupUpdateObjectExpr=update;
 	}
 
@@ -155,14 +152,6 @@ System.out.println("setLookupUpdateObjectExpr:"+update);
 
 	public String getNamespace() {
 		return m_namespace;
-	}
-
-	public boolean isWriteResultAsHeader() {
-		return m_writeResultAsHeader;
-	}
-
-	public void setWriteResultAsHeader(boolean writeResultAsHeader) {
-		m_writeResultAsHeader = writeResultAsHeader;
 	}
 
 	public LocalDataEndpoint(String endpointUri) {

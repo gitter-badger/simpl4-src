@@ -325,28 +325,21 @@ public class LocalDataProducer extends DefaultProducer {
 
 	private void processAndTransferResult(Object result, Exchange exchange, Exception ex) {
 		if (ex != null) {
-			exchange.getOut().setHeader(LocalDataConstants.LAST_ERROR, ex.getMessage());
+			exchange.getIn().setHeader(LocalDataConstants.LAST_ERROR, ex.getMessage());
 			exchange.setException(ex);
 		}
-		if (m_endpoint.isWriteResultAsHeader()) {
-			exchange.getOut().setHeader(LocalDataConstants.WRITE_RESULT, result);
-		} else {
-			exchange.getOut().setBody(result);
-		}
+		exchange.getIn().setHeader(LocalDataConstants.WRITE_RESULT, result);
 	}
 
 	private Message prepareResponseMessage(Exchange exchange, LocalDataOperation operation) {
-		Message answer = exchange.getOut();
-		MessageHelper.copyHeaders(exchange.getIn(), answer, false);
-		if (isWriteOperation(operation) && m_endpoint.isWriteResultAsHeader()) {
-			answer.setBody(exchange.getIn().getBody());
-		}
+		Message answer = exchange.getIn();
+		//MessageHelper.copyHeaders(exchange.getIn(), answer, false);
+		//if (isWriteOperation(operation) && m_endpoint.isWriteResultAsHeader()) {
+		//	answer.setBody(exchange.getIn().getBody());
+		//}
 		return answer;
 	}
 
-	private boolean isWriteOperation(LocalDataOperation operation) {
-		return LocalDataComponent.WRITE_OPERATIONS.contains(operation);
-	}
 	private void info(String msg) {
 		System.out.println(msg);
 		m_logger.info(msg);
