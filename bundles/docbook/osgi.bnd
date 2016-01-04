@@ -10,6 +10,6 @@ Bundle-Name: DocbookService Bundle
 Bundle-SymbolicName:org.ms123.common.docbook
 Bundle-ClassPath: .
 DynamicImport-Package: *
-Include-Resource: xml=docbookUnzipped/xml,xsl=docbookUnzipped/xsl
+Include-Resource: xml=docbookUnzipped/xml,xsl=docbookUnzipped/xsl,xsl=src/main/resources/docbook
 Service-Component: *
 -metatype: *
