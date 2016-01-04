@@ -81,7 +81,19 @@
 </xsl:template>
 
 <xsl:template match="d:para[@role = 'narrow']">
-  <fo:block font-size="{@size}" font-weight="bold" xsl:use-attribute-sets="small.para.spacing">
+  <fo:block font-size="{@size}" font-weight="normal" xsl:use-attribute-sets="small.para.spacing">
+    <xsl:apply-templates/>
+  </fo:block>
+</xsl:template>
+
+<xsl:template match="d:para[@role = 'wideBold']">
+  <fo:block font-size="{@size}" font-weight="bold" xsl:use-attribute-sets="normal.para.spacing">
+    <xsl:apply-templates/>
+  </fo:block>
+</xsl:template>
+
+<xsl:template match="d:para[@role = 'wide']">
+  <fo:block font-size="{@size}" font-weight="normal" xsl:use-attribute-sets="normal.para.spacing">
     <xsl:apply-templates/>
   </fo:block>
 </xsl:template>
