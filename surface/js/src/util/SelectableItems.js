@@ -232,7 +232,7 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 				var ret = simpl4.util.Rpc.rpcSync( "data:executeFilterByName", {
 					name: name,
 					params: this._varMap,
-					checkParams: true,
+					checkParams: false,
 					storeId: storeId,
 					mapping: mapping
 				} );
