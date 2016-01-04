@@ -424,7 +424,7 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		List moduleList = new ArrayList();
 		String clazzName = m_inflector.getClassName(entityName);
 		moduleList.add(clazzName);
-		Map<String, Object> params = new HashMap(options);
+		Map<String, Object> params = options != null ? new HashMap(options) : new HashMap();
 		params.put("fields", m_js.serialize(moduleList));
 		Map filter = (Map)filterDesc.get("filter");
 		filter = addExclusionFilter(filter,(List)filterDesc.get("exclusion"));
