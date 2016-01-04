@@ -41,7 +41,9 @@ import net.sf.sojo.core.reflect.*;
 import net.sf.sojo.navigation.*;
 import net.sf.sojo.core.filter.ClassPropertyFilterHandler;
 import net.sf.sojo.core.filter.ClassPropertyFilter;
+import java.io.ByteArrayInputStream;
 import flexjson.*;
+import org.ms123.common.libhelper.Base64;
 import javax.jdo.annotations.Persistent;
 import org.ms123.common.data.api.SessionContext;
 import org.apache.commons.beanutils.BeanMap;
@@ -68,6 +70,7 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 	private Stack<String> m_moduleNameStack = new Stack();
 
 	private String m_currentModuleName = "ROOT";
+	private Map m_currentFieldMap = new HashMap();
 
 	private boolean m_isAdmin=false;
 
@@ -100,9 +103,11 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 		return interceptor.getResult();
 	}
 
+
 	public boolean visitElement(Object pvKey, int pvIndex, Object pvValue, int pvType, String pvPath, int pvNumberOfRecursion) {
 		pvPath = cleanPath(pvPath);
-		if (pvType == Constants.TYPE_SIMPLE) {
+		boolean isBinary = isBinaryDatatype(pvKey);
+		if (isBinary || pvType == Constants.TYPE_SIMPLE) {
 			if (m_fieldMap.get(pvPath) == null) {
 				return false;
 			}
@@ -113,6 +118,11 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 					String alias = m_aliasList.get(index);
 					if (alias != null && alias.length() > 0 && !(alias.startsWith("@")||alias.startsWith("%"))) {
 						fieldName = alias;
+					}
+					if( isBinary ){
+						pvValue = toBase64(pvValue);
+						((Map) m_current).put(fieldName, pvValue);
+						return true;
 					}
 					if( pvValue instanceof java.util.Date){
 						pvValue = ((java.util.Date)pvValue).getTime();
@@ -166,6 +176,7 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 			} else if (pvType == Constants.TYPE_MAP) {
 				m_moduleNameStack.push(m_currentModuleName);
 				m_currentModuleName = getEntityName(((Map) pvValue).get("class"));
+				m_currentFieldMap = getCurrentFieldMap();
 				Map newMap = m_current != null ? new HashMap() : m_result;
 				if (m_current instanceof List) {
 					((List) m_current).add(newMap);
@@ -180,6 +191,7 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 			if (pvType == Constants.TYPE_ITERATEABLE) {
 			} else if (pvType == Constants.TYPE_MAP) {
 				m_currentModuleName = m_moduleNameStack.pop();
+				m_currentFieldMap = getCurrentFieldMap();
 			}
 		}
 	}
@@ -188,6 +200,30 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 	}
 
 	public void endWalk() {
+	}
+
+	private Map getCurrentFieldMap(){
+		try{
+				return m_sessionContext.getPermittedFields(m_currentModuleName);
+		}catch(Exception e){
+			return new HashMap();
+		}
+	}
+
+	private boolean isBinaryDatatype(Object pvKey){
+		if (pvKey != null && pvKey.getClass().equals(String.class)) {
+			Map fm = (Map)m_currentFieldMap.get(pvKey);
+			if( fm != null){
+				String dt = (String)fm.get("datatype");
+				if( "binary".equals(dt)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	private String toBase64(Object pvValue){
+		return Base64.encode( new ByteArrayInputStream((byte[])pvValue));
 	}
 
 	private void setFields(List<String> fieldList, List<String> aliasList) {
