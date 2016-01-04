@@ -74,6 +74,18 @@
   </fo:block>
 </xsl:template>
 
+<xsl:template match="d:para[@role = 'narrowBold']">
+  <fo:block font-size="{@size}" font-weight="bold" xsl:use-attribute-sets="small.para.spacing">
+    <xsl:apply-templates/>
+  </fo:block>
+</xsl:template>
+
+<xsl:template match="d:para[@role = 'narrow']">
+  <fo:block font-size="{@size}" font-weight="bold" xsl:use-attribute-sets="small.para.spacing">
+    <xsl:apply-templates/>
+  </fo:block>
+</xsl:template>
+
 <xsl:template match="d:para[@role = 'small']">
   <fo:block font-size="75%" xsl:use-attribute-sets="normal.para.spacing">
     <xsl:call-template name="anchor"/>
