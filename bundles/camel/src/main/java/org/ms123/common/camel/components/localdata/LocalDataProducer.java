@@ -333,10 +333,6 @@ public class LocalDataProducer extends DefaultProducer {
 
 	private Message prepareResponseMessage(Exchange exchange, LocalDataOperation operation) {
 		Message answer = exchange.getIn();
-		//MessageHelper.copyHeaders(exchange.getIn(), answer, false);
-		//if (isWriteOperation(operation) && m_endpoint.isWriteResultAsHeader()) {
-		//	answer.setBody(exchange.getIn().getBody());
-		//}
 		return answer;
 	}
 
