@@ -166,6 +166,10 @@ class DocbookBuilder extends BaseBuilder {
 				continue;
 			}
 			Entry entry = new Entry();
+			boolean padding = (Boolean)properties.get("xf_padding");
+			if( !padding){
+				entry.setRole("nopadding");
+			}
 			entry.setValign(getValign(properties.get("xf_valign")));
 			row.getEntries().add(entry);
 			handleElement(namespace, entry.getContent(), m, paramsIn, paramsOut);
@@ -176,7 +180,7 @@ class DocbookBuilder extends BaseBuilder {
 		boolean isBodyRowGroup = isBodyRowGroup(rowGroup);
 		List<Map> childShapes = (List) rowGroup.get("childShapes");
 		sortListByX(childShapes);
-		Para p = new Para();
+		Nullpara p = new Nullpara();
 		Map properties = (Map) rowGroup.get("properties");
 		String xf_frame = (String) properties.get("xf_frame");
 		String xf_colsep = getColsep(properties.get("xf_colsep"));
