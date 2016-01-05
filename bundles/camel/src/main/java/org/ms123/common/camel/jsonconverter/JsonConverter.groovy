@@ -484,6 +484,15 @@ class EndpointJsonConverter extends JsonConverterImpl{
 
 class FileEndpointJsonConverter extends EndpointJsonConverter{
 	void convertToCamel(ctx){
+		def path = shapeProperties.urivalue_path;
+		if( path.startsWith("workspace:")){
+			String dir = System.getProperty("workspace")
+			shapeProperties.urivalue_path = new File(dir, path.substring("workspace:".length())).toString();
+		}
+		if( path.startsWith("git.repos:")){
+			String dir = System.getProperty("git.repos")
+			shapeProperties.urivalue_path = new File(dir, path.substring("git.repos:".length())).toString();
+		}
 		super.convertToCamel(ctx);
 	}
 }
