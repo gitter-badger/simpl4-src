@@ -46,6 +46,7 @@ public class LocalDataProducer extends DefaultProducer {
 
 	private String m_filterName = null;
 	private String m_resultHeader = null;
+	private String m_paramHeaders = null;
 
 	private String m_namespace = null;
 
@@ -78,6 +79,7 @@ public class LocalDataProducer extends DefaultProducer {
 		m_namespace = endpoint.getNamespace();
 		m_filterName = endpoint.getFilterName();
 		m_resultHeader = endpoint.getResultHeader();
+		m_paramHeaders = endpoint.getParamHeaders();
 		m_objectId = endpoint.getObjectId();
 		m_entityType = endpoint.getEntityType();
 		m_lookupRelationObjectExpr = endpoint.getLookupRelationObjectExpr();
@@ -267,6 +269,7 @@ public class LocalDataProducer extends DefaultProducer {
 	private void doFindByFilter(Exchange exchange) {
 		String filterName = getStringCheck(exchange, LocalDataConstants.FILTER_NAME, m_filterName);
 		String resultHeader = getString(exchange, LocalDataConstants.RESULT_HEADER, m_resultHeader);
+		String paramHeaders = getString(exchange, LocalDataConstants.PARAM_HEADERS, m_paramHeaders);
 		Boolean disableStateSelect = getBoolean(exchange, LocalDataConstants.DISABLE_STATESELECT, m_disableStateSelect);
 		Map options = m_options != null ? new HashMap(m_options) : new HashMap();
 		if( disableStateSelect){
@@ -274,7 +277,7 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 		SessionContext sc = getSessionContext(exchange);
 		List result = null;
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true,false,false);
+		Map exVars = ExchangeUtils.prepareVariables(exchange, true,paramHeaders,false,null,false);
 		Map retMap = sc.executeNamedFilter(filterName, exVars,options);
 		if (retMap == null) {
 			result = new ArrayList();
@@ -293,9 +296,10 @@ public class LocalDataProducer extends DefaultProducer {
 	private void doFindOneByFilter(Exchange exchange) {
 		String filterName = getStringCheck(exchange, LocalDataConstants.FILTER_NAME, m_filterName);
 		String resultHeader = getString(exchange, LocalDataConstants.RESULT_HEADER, m_resultHeader);
+		String paramHeaders = getString(exchange, LocalDataConstants.PARAM_HEADERS, m_paramHeaders);
 		SessionContext sc = getSessionContext(exchange);
 		Map result = null;
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true,false,false);
+		Map exVars = ExchangeUtils.prepareVariables(exchange, true,paramHeaders,false,null,false);
 		Map retMap = sc.executeNamedFilter(filterName, exVars,m_options);
 		if (retMap == null) {
 		} else {

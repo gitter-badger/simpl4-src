@@ -40,6 +40,7 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 
 	private String m_filterName;
 	private String m_resultHeader;
+	private String m_paramHeaders;
 
 	private String m_objectId;
 
@@ -98,6 +99,14 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 
 	public String getResultHeader() {
 		return m_resultHeader;
+	}
+
+	public void setParamHeaders(String data) {
+		this.m_paramHeaders = data;
+	}
+
+	public String getParamHeaders() {
+		return m_paramHeaders;
 	}
 
 	public void setEntityType(String data) {

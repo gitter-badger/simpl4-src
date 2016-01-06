@@ -22,6 +22,7 @@ public final class LocalDataConstants {
 
 	public static final String FILTER_NAME = "filterName";
 	public static final String RESULT_HEADER = "resultHeader";
+	public static final String PARAM_HEADERS = "paramHeaders";
 
 	public static final String OBJECT_ID = "objectId";
 
