@@ -20,6 +20,9 @@ package org.ms123.common.camel.components;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 import org.apache.camel.Exchange;
 import flexjson.*;
 
@@ -34,13 +37,30 @@ public class ExchangeUtils {
 	/**
 	 */
 	public static Map<String, Object> prepareVariables(Exchange exchange, boolean shouldCopyVariablesFromHeader, boolean shouldCopyVariablesFromProperties, boolean shouldCopyCamelBodyToBodyAsString) {
+		return prepareVariables(exchange,shouldCopyVariablesFromHeader,(List<String>)null, shouldCopyVariablesFromProperties , (List<String>)null, shouldCopyCamelBodyToBodyAsString);
+	}
+	public static Map<String, Object> prepareVariables(Exchange exchange, boolean shouldCopyVariablesFromHeader, String headerNames, boolean shouldCopyVariablesFromProperties, String propertyNames, boolean shouldCopyCamelBodyToBodyAsString) {
+		List<String> headerList=null;
+		if( headerNames != null){
+			headerList = Arrays.asList(headerNames.split("\\s*,\\s*"));
+		}
+		List<String> propertyList=null;
+		if( propertyNames != null){
+			propertyList = Arrays.asList(propertyNames.split("\\s*,\\s*"));
+		}
+		return prepareVariables(exchange,shouldCopyVariablesFromHeader, headerList, shouldCopyVariablesFromProperties, propertyList, shouldCopyCamelBodyToBodyAsString);
+	}
+
+	public static Map<String, Object> prepareVariables(Exchange exchange, boolean shouldCopyVariablesFromHeader, List<String> headerList, boolean shouldCopyVariablesFromProperties, List<String> propertyList, boolean shouldCopyCamelBodyToBodyAsString) {
 		Map<String, Object> camelVarMap = null;
 		if (shouldCopyVariablesFromProperties) {
 			camelVarMap = exchange.getProperties();
 			Map<String, Object> newCamelVarMap = new HashMap<String, Object>();
 			for (String s : camelVarMap.keySet()) {
 				if (IGNORE_MESSAGE_PROPERTY.equalsIgnoreCase(s) == false) {
-					newCamelVarMap.put(s, camelVarMap.get(s));
+					if( propertyList==null || propertyList.indexOf(s)>-1){
+						newCamelVarMap.put(s, camelVarMap.get(s));
+					}
 				}
 			}
 			camelVarMap = newCamelVarMap;
@@ -66,7 +86,10 @@ public class ExchangeUtils {
 			}
 			if (shouldCopyVariablesFromHeader) {
 				for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
-					camelVarMap.put(header.getKey(), header.getValue());
+					String key = header.getKey();
+					if( headerList==null || headerList.indexOf(key)>-1){
+						camelVarMap.put(header.getKey(), header.getValue());
+					}
 				}
 			}
 		}
