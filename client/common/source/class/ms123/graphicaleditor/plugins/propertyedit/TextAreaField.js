@@ -22,6 +22,7 @@
 qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 	extend: qx.ui.core.Widget,
 	implement: [
+	ms123.graphicaleditor.plugins.propertyedit.IUpdate,
 	qx.ui.form.IStringForm, qx.ui.form.IForm],
 	include: [
 	qx.ui.form.MForm],
@@ -64,6 +65,11 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 	 MEMBERS
 	 ******************************************************************************/
 	members: {
+		// interface implementation
+		envChanged: function (env) {
+			console.log("env:",env);
+			this._env = env;
+		},
 		/**
 		 * Returns the field key.
 		 */
@@ -127,28 +133,69 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 				});
 				control.setFocusable(false);
 				control.addListener("execute", function (e) {
+					if( false){
+						var context = {}
+						context.insertBar = this.scriptField;
+						context.facade = this.facade;
+						context.helper = this.config.helper;
+						context.toolbarAddon = this.config.toolbarAddon;
+						context.mode = (this.config && this.config.mode) ? this.config.mode : "text/x-groovy";
+						this.textArea = this.createTextArea(context);
+						if( !this.data ) this.data = "";
+						this.textArea.setValue( this.data);
+						var buttons = this.createButtons();
+						this._editContainer = new qx.ui.container.Composite();
+						this._editContainer.setLayout(new qx.ui.layout.Dock);
+						this._editContainer.add(this.textArea, {
+							edge: "center"
+						});
+						this._editContainer.add(buttons, {
+							edge: "south"
+						});
+						var stack = this.facade.mainStack;
+						stack.add(this._editContainer);
+						stack.setSelection([this._editContainer]);
+					}else{
+						if( this._open ){
+							return;
+						}
+						this._open = true;
+						var app = qx.core.Init.getApplication();
+						var win = this.createWindow(app, this._getName(this._env.caption));
+						var ns = this.facade.storeDesc.getNamespace();
+						var tb = app.getTaskbar(ns);
+						var dt = app.getDesktop(ns);
+						dt.add(win);
+						tb.addWindow(win);
 
-					var context = {}
-					context.insertBar = this.scriptField;
-					context.facade = this.facade;
-					context.helper = this.config.helper;
-					context.toolbarAddon = this.config.toolbarAddon;
-					context.mode = (this.config && this.config.mode) ? this.config.mode : "text/x-groovy";
-					this.textArea = this.createTextArea(context);
-					if( !this.data ) this.data = "";
-					this.textArea.setValue( this.data);
-					var buttons = this.createButtons();
-					this._editContainer = new qx.ui.container.Composite();
-					this._editContainer.setLayout(new qx.ui.layout.Dock);
-					this._editContainer.add(this.textArea, {
-						edge: "center"
-					});
-					this._editContainer.add(buttons, {
-						edge: "south"
-					});
-					var stack = this.facade.mainStack;
-					stack.add(this._editContainer);
-					stack.setSelection([this._editContainer]);
+						win.addListener("close", function (e) {
+							this._open = false;
+							this._height = win.getHeight();
+							this._width = win.getWidth();
+							this._lp = win.getLayoutProperties();
+						}, this);
+						var context = {}
+						context.insertBar = this.scriptField;
+						context.facade = this.facade;
+						context.helper = this.config.helper;
+						context.toolbarAddon = this.config.toolbarAddon;
+						context.mode = (this.config && this.config.mode) ? this.config.mode : "text/x-groovy";
+						this.textArea = this.createTextArea(context);
+						if( !this.data ) this.data = "";
+						this.textArea.setValue( this.data);
+						var buttons = this.createButtons();
+						win.add(this.textArea, {
+							edge: "center"
+						});
+						win.add(buttons, {
+							edge: "south"
+						});
+						win.open();
+						if( this._lp){ 
+							win.moveTo( this._lp.left, this._lp.top);
+						}
+						this.win = win;
+					}
 				}, this);
 				this._add(control);
 				break;
@@ -225,22 +272,82 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 				var oldVal = this.data;
 				this.data = data;
 				this.fireDataEvent("changeValue", data, oldVal);
-				var stack = this.facade.mainStack;
-				stack.setSelection([stack.getChildren()[0]]);
-				stack.remove(this._editContainer);
+				if( this.win){
+					this._open = false;
+					this._height = this.win.getHeight();
+					this._width = this.win.getWidth();
+					this._lp = this.win.getLayoutProperties();
+			 		this.win.close();
+				}else{
+					var stack = this.facade.mainStack;
+					stack.setSelection([stack.getChildren()[0]]);
+					stack.remove(this._editContainer);
+				}
 				this.getChildControl("textfield").setValue(data);
 			}, this);
 			toolbar._add(buttonOk)
 
 			var buttonCancel = new qx.ui.toolbar.Button(this.tr("Cancel"), "icon/16/actions/dialog-close.png");
 			buttonCancel.addListener("execute", function () {
-				var stack = this.facade.mainStack;
-				stack.setSelection([stack.getChildren()[0]]);
-				stack.remove(this._editContainer);
+				if( this.win){
+					this._open = false;
+					this._height = this.win.getHeight();
+					this._width = this.win.getWidth();
+					this._lp = this.win.getLayoutProperties();
+					this.win.close();
+				}else{
+					var stack = this.facade.mainStack;
+					stack.setSelection([stack.getChildren()[0]]);
+					stack.remove(this._editContainer);
+				}
 			}, this);
 			toolbar._add(buttonCancel)
 
 			return toolbar;
+		},
+		createWindow: function (app,name) {
+			var win = new ms123.desktop.Window(app, name).set({
+				resizable: true,
+				useMoveFrame: true,
+				useResizeFrame: true
+			});
+			var root = qx.core.Init.getApplication().getRoot();
+			var w = root.getInnerSize().width;
+			var h = root.getInnerSize().height;
+		
+			win.setLayout(new qx.ui.layout.Dock);
+			if( this.config && this.config.width){
+				win.setWidth(this.config.width);
+			}else if(this.config && this.config.helper){
+				win.setWidth(w*.8);
+			}else {
+				win.setWidth(w*.7);
+			}
+			if( this.config && this.config.height){
+				win.setHeight(this.config.height);
+			}else if(this.config && this.config.helper){
+				win.setHeight(h*.7);
+			}else {
+				win.setHeight(h*.6);
+			}
+			win.setAllowMaximize(true);
+			win.setAllowMinimize(true);
+			win.setModal(false);
+			win.setActive(false);
+			if( this._height){
+				win.setHeight(this._height);
+				win.setWidth(this._width);
+			}else{
+				win.center();
+			}
+			win.minimize();
+			return win;
+		},
+		_getName:function(n){
+			if( n == null || n.length==0){
+				n = "Editor";
+			}
+			return n;
 		},
 		__getResourceUrl: function (name) {
 			var am = qx.util.AliasManager.getInstance();
