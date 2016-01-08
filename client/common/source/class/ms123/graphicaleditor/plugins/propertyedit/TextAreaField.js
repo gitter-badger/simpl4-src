@@ -156,20 +156,10 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 						stack.add(this._editContainer);
 						stack.setSelection([this._editContainer]);
 					}else{
-						if( this._open ){
-							return;
-						}
-						this._open = true;
 						var app = qx.core.Init.getApplication();
-						var win = this.createWindow(app, this._getName(this._env.caption));
-						var ns = this.facade.storeDesc.getNamespace();
-						var tb = app.getTaskbar(ns);
-						var dt = app.getDesktop(ns);
-						dt.add(win);
-						tb.addWindow(win);
-
+						var win = this.createWindow(this._getWinName());
 						win.addListener("close", function (e) {
-							this._open = false;
+							win.destroy();
 							this._height = win.getHeight();
 							this._width = win.getWidth();
 							this._lp = win.getLayoutProperties();
@@ -190,6 +180,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 						win.add(buttons, {
 							edge: "south"
 						});
+						app.getRoot().add(win);
 						win.open();
 						if( this._lp){ 
 							win.moveTo( this._lp.left, this._lp.top);
@@ -273,7 +264,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 				this.data = data;
 				this.fireDataEvent("changeValue", data, oldVal);
 				if( this.win){
-					this._open = false;
 					this._height = this.win.getHeight();
 					this._width = this.win.getWidth();
 					this._lp = this.win.getLayoutProperties();
@@ -290,7 +280,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 			var buttonCancel = new qx.ui.toolbar.Button(this.tr("Cancel"), "icon/16/actions/dialog-close.png");
 			buttonCancel.addListener("execute", function () {
 				if( this.win){
-					this._open = false;
 					this._height = this.win.getHeight();
 					this._width = this.win.getWidth();
 					this._lp = this.win.getLayoutProperties();
@@ -305,8 +294,8 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 
 			return toolbar;
 		},
-		createWindow: function (app,name) {
-			var win = new ms123.desktop.Window(app, name).set({
+		createWindow: function (name) {
+			var win = new qx.ui.window.Window(name).set({
 				resizable: true,
 				useMoveFrame: true,
 				useResizeFrame: true
@@ -343,7 +332,8 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 			win.minimize();
 			return win;
 		},
-		_getName:function(n){
+		_getWinName:function(n){
+			var n = this._env.caption;
 			if( n == null || n.length==0){
 				n = "Editor";
 			}
