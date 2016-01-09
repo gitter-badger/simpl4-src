@@ -367,7 +367,7 @@
 				if ( this._type == 'datetime' && this.hasDate) {
 					this.input.setAttribute( 'type', "datetime-local" );
 				} else {
-					this.input.setAttribute( 'type', this._type );
+					this.input.setAttribute( 'type', this.type );
 				}
 			},
 			committedValueChanged: function() { //@@@MS ???
