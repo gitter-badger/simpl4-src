@@ -264,7 +264,7 @@
 					type: String
 				}
 			},
-			hasDate: Modernizr.inputtypes.date,
+			hasDate: Modernizr.inputtypes.date && Modernizr.desktop !== true,
 			observers: [
 				'editValueChanged(editValue)',
 				'valueChanged(value)',
@@ -285,16 +285,20 @@
 				} );
 			},
 			attached: function() {
+				this._type = this.type;
+				if( this.type.match(/^date/) && !this.hasDate){
+					this.type = "text";
+				}
 				if ( this.label == null || this.label == '' ) this.label = this.name;
 				this.validateAttributes();
 				this.decorator = this.$.decorator;
 				this.input = this.$.input;
 				this.validateAttributes();
-				if ( this.type == "number" ) {
+				if ( this._type == "number" ) {
 					this.preventInvalidInput = true;
 				}
-				var showTime = this.type.match( /^datetime/ ) != null;
-				if ( this.type.match( /^date/ ) != null && !this.hasDate ) {
+				var showTime = this._type.match( /^datetime/ ) != null;
+				if ( this._type.match( /^date/ ) != null && !this.hasDate ) {
 					this.picker = new Pikaday( {
 						field: this.$.input,
 						trigger: this.$.input,
@@ -314,7 +318,7 @@
 						this.picker.gotoDate( this._date );
 					}
 				}
-				if ( this.type.match( /^date.*/ ) && this.hasDate ) {
+				if ( this._type.match( /^date.*/ ) && this.hasDate ) {
 					this.async( function() {
 						this.decorator._inputHasContent = true;
 						this.alwaysFloatLabel=true;
@@ -324,7 +328,7 @@
 					console.log( "Add compact" );
 					jQuery( this.decorator ).addClass( "compact" );
 					jQuery( this.$.input ).addClass( "compact" );
-					if ( is_chromium && this.type != "date" ) {
+					if ( is_chromium && this._type != "date" ) {
 						jQuery( this.$.input ).css( "margin-top", "0px" );
 					}
 				}
@@ -347,7 +351,7 @@
 			},
 			isAuthorizedType: function() {
 				var okTypes = [ 'checkbox', 'color', 'date', 'datetime', 'datetime-local', 'email', 'file', 'month', 'number', 'password', 'radio', 'range', 'tel', 'text', 'time', 'url', 'week' ];
-				return ( okTypes.indexOf( this.type ) != -1 );
+				return ( okTypes.indexOf( this._type ) != -1 );
 			},
 			lpad: function pad( value, length ) {
 				length = length || 2;
@@ -357,21 +361,21 @@
 				if ( !this.input ) {
 					return;
 				}
-				if ( this.type != 'text' && !this.isAuthorizedType() ) {
-					this.type = 'text'
+				if ( this._type != 'text' && !this.isAuthorizedType() ) {
+					this._type = 'text'
 				}
-				if ( this.type == 'datetime' ) {
+				if ( this._type == 'datetime' && this.hasDate) {
 					this.input.setAttribute( 'type', "datetime-local" );
 				} else {
-					this.input.setAttribute( 'type', this.type );
+					this.input.setAttribute( 'type', this._type );
 				}
 			},
 			committedValueChanged: function() { //@@@MS ???
 			},
 			editValueChanged: function() {
 				//this.$.input.focus();
-				if ( this.type == null ) return;
-				if ( this.type.match( /^date/ ) && !this.hasDate ) {
+				if ( this._type == null ) return;
+				if ( this._type.match( /^date/ ) && !this.hasDate ) {
 					this.value = this._i18nToIso( this.editValue );
 				} else {
 					this.value = this.editValue;
@@ -392,7 +396,7 @@
 				this.checkConstraints();
 			},
 			setValue: function( v ) {
-				if ( this.type.match( /^date/ ) ) {
+				if ( this._type.match( /^date/ ) ) {
 					if ( !this.hasDate ) {
 						v = this._convertDate( v );
 					} else {
@@ -402,7 +406,7 @@
 				this.editValue = v;
 			},
 			getValue: function() {
-				if ( this.type.match( /^date/ ) ) {
+				if ( this._type.match( /^date/ ) ) {
 					if ( typeof this.value === "string" && !this._isIsoDate(this.value) ) {
 						return null;
 					}
@@ -431,14 +435,14 @@
 				var isString = ( typeof v ) === "string";
 				var isNumber = ( typeof v ) === "number";
 				if ( isNumber || isString && !v.match( /[-]/ ) ) {
-					var showTime = this.type.match( /^datetime/ ) != null;
+					var showTime = this._type.match( /^datetime/ ) != null;
 					iso = moment( parseInt( v ) ).format( showTime ? "YYYY-MM-DDTHH:mm" : "YYYY-MM-DD" );
 				}
 				return iso;
 			},
 			_isoToI18n: function( iso ) {
 				var mdate = moment( iso );
-				var showTime = this.type.match( /^datetime/ ) != null;
+				var showTime = this._type.match( /^datetime/ ) != null;
 				var format = simpl4.util.BaseManager.getDateFormat() + ( showTime ? " HH:mm" : "" );
 
 				var i18n = mdate.format( format );
@@ -450,7 +454,7 @@
 			},
 			_i18nToIso: function( i18n ) {
 				var iso;
-				if ( this.type.match( /^datetime/ ) != null ) {
+				if ( this._type.match( /^datetime/ ) != null ) {
 					var mdate = moment( i18n, simpl4.util.BaseManager.getDateFormat() + " HH:mm" );
 					iso = mdate.year() + "-" + this.lpad( ( mdate.month() + 1 ) ) + "-" + this.lpad( mdate.date() ) + "T" + this.lpad( mdate.hour() ) + ":" + this.lpad( mdate.minute() );
 				} else {
@@ -460,7 +464,7 @@
 				return iso;
 			},
 			_isIsoDate:function(s){
-				var hasTime = this.type.match( /^datetime/ ) != null;
+				var hasTime = this._type.match( /^datetime/ ) != null;
 				if( hasTime){
  					return s.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
 				}else{
