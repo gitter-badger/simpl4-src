@@ -84,5 +84,12 @@ public class ClassLoaderWrapper extends ClassLoader {
 		}
 		return Collections.enumeration(resources);
 	}
+	public String toString(){
+		String ret = "ClassLoaderWrapper:";
+		for( ClassLoader cl : this.parents){
+			ret += "\t"+cl;
+		}
+		return ret;
+	}
 
 }
