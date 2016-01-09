@@ -36,6 +36,8 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 /** CompileService implementation
  */
@@ -57,11 +59,11 @@ public class CompileServiceImpl extends BaseCompileServiceImpl implements Compil
 	}
 
 	public void update(Map<String, Object> props) {
-		info("CompileServiceImpl.updated:" + props);
+		info(this,"CompileServiceImpl.updated:" + props);
 	}
 
 	protected void deactivate() throws Exception {
-		info("CompileServiceImpl.deactivate");
+		info(this,"CompileServiceImpl.deactivate");
 	}
 
 

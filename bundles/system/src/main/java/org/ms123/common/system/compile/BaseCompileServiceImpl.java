@@ -36,14 +36,14 @@ import org.ms123.common.git.GitService;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.store.StoreDesc;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.tools.FileSystemCompiler;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.ms123.common.libhelper.Utils;
 import org.ms123.common.system.compile.java.JavaCompiler;
 import org.osgi.framework.Bundle;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 /**
  *
@@ -70,10 +70,10 @@ abstract class BaseCompileServiceImpl {
 		List<Map> repos = m_gitService.getRepositories(new ArrayList(), false);
 		for (Map<String, String> repo : repos) {
 			String namespace = repo.get("name");
-			info("Compile in " + namespace + ":");
+			info(this,"Compile in " + namespace + ":");
 			List<Map> resultList = compileGroovyNamespace(namespace);
 			for (Map<String, String> result : resultList) {
-				info("CompileGroovy:" + result.get(PATH) + " -> " + result.get(MSG));
+				info(this,"CompileGroovy:" + result.get(PATH) + " -> " + result.get(MSG));
 			}
 		}
 	}
@@ -110,6 +110,9 @@ abstract class BaseCompileServiceImpl {
 	}
 
 	private String _compileGroovy(String namespace, String path, String code) {
+		info(this,"_compileGroovy:"+namespace+":"+path);
+		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
 		List<String> classpath = new ArrayList<String>();
 		classpath.add(System.getProperty("workspace") + "/" + "jooq/build");
 		classpath.add(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
@@ -129,6 +132,7 @@ abstract class BaseCompileServiceImpl {
 		try {
 			fsc.compile(files);
 		} catch (Throwable e) {
+			error(this, "_compileGroovy.error:%[exception]s",e);
 			return Utils.formatGroovyException(e, code);
 		}
 		return null;
@@ -139,10 +143,10 @@ abstract class BaseCompileServiceImpl {
 		List<Map> repos = m_gitService.getRepositories(new ArrayList(), false);
 		for (Map<String, String> repo : repos) {
 			String namespace = repo.get("name");
-			info("Compile in " + namespace + ":");
+			info(this,"Compile in " + namespace + ":");
 			List<Map> resultList = compileJavaNamespace(namespace);
 			for (Map<String, String> result : resultList) {
-				info("CompileJava:" + result.get(PATH) + " -> " + result.get(MSG));
+				info(this,"CompileJava:" + result.get(PATH) + " -> " + result.get(MSG));
 			}
 		}
 	}
@@ -209,16 +213,5 @@ abstract class BaseCompileServiceImpl {
 			toFlatList(child, types, result);
 		}
 	}
-
-	protected static void info(String msg) {
-		System.err.println(msg);
-		m_logger.info(msg);
-	}
-
-	protected static void debug(String msg) {
-		m_logger.debug(msg);
-	}
-
-	private static final Logger m_logger = LoggerFactory.getLogger(CompileServiceImpl.class);
 }
 

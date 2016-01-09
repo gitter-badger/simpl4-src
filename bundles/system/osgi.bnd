@@ -7,5 +7,6 @@ Bundle-Description: System Service
 Bundle-ManifestVersion: 2
 Bundle-Name: SystemService Bundle
 Bundle-SymbolicName:org.ms123.common.system
+DynamicImport-Package: *
 Service-Component: *
 -metatype: *
