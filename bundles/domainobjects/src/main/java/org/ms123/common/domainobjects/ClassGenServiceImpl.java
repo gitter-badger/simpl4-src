@@ -615,7 +615,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 		AnnotationsAttribute fieldAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
 		f.getFieldInfo().addAttribute(fieldAttr);
 		if (withAnnotation) {
-			boolean isH2_FT = sdesc.getVendor().equals(StoreDesc.VENDOR_H2) && "fulltext".equals(datatype);
+			boolean isH2_FT = StoreDesc.VENDOR_H2.equals(sdesc.getVendor()) && "fulltext".equals(datatype);
 
 			boolean isGraphical = (edittype != null && edittype.startsWith("graphical"));
 			if ("textarea".equals(edittype) || isH2_FT || isGraphical || datatype.equals("text") || datatype.equals("array/string")) {
