@@ -26,6 +26,9 @@
 		#eventList li {
 			list-style: none;
 		}
+		:host /deep/ .fc-state-highlight {
+			background: red;
+		}
 
 	</style>
 	<template>
@@ -35,14 +38,10 @@
 				<ul id="eventList">
 					<template is="dom-repeat" as="event" items="[[eventList]]">
 						<li id="listevt2">
-							<div class="l">
-								<div class="icon"></div>
-							</div>
-							<div class="m">
-								<div class="label">[[event.start]]</div>
-							</div>
-							<div class="r">
-								<div class="icon"></div>
+							<div class="layout horizontal">
+								<paper-icon-button on-tap="selectEvent" data-eid$="[[event._id]]" icon="create"></paper-icon-button>
+								<div style="padding-top:10px;" class="label">[[event.start]]</div>
+								<paper-icon-button on-tap="removeEvent" data-eid$="[[event._id]]" icon="delete"></paper-icon-button>
 							</div>
 						</li>
 					</template>
@@ -70,23 +69,38 @@
 					type: Array
 				}
 			},
-			observers: [
-			],
+			observers: [],
 			behaviors: [
 				ModernizrBehavior,
 				CalendarBehavior
 			],
 			attached: function() {
 				this.async( function() {
-					this._attached();
+					this.createCalendar();
 				}, 100 );
 			},
 			arrayClear: function( name, a ) {
 				if ( !a || a.length == 0 ) return;
 				this.splice( name, 0, a.length );
 			},
-			_attached: function() {
-				console.error( "_attached" );
+			selectEvent: function( e ) {
+				var eid = e.target.dataset.eid;
+				var el = this.eventList;
+				var element = null;
+				for ( var i = 0; i < el.length; i++ ) {
+					if ( el[ i ]._id == eid ) {
+						element = el[ i ].element;
+					}
+				}
+				$( ".fc-state-highlight" ).removeClass( "fc-state-highlight" );
+				$( element ).addClass( "fc-state-highlight" );
+			},
+			removeEvent: function( e ) {
+				var eid = e.target.dataset.eid;
+				var fullcalendar = this.querySelector( "#fullcalendar" );
+				$( fullcalendar ).fullCalendar( 'removeEvents', eid );
+			},
+			createCalendar: function() {
 				var fullcalendar = this.querySelector( "#fullcalendar" );
 				var picker = this.querySelector( "#picker" );
 
@@ -94,10 +108,6 @@
 					format: 'd.m.Y H:i',
 					inline: true,
 					lang: 'de',
-					onSelectDate: function( ct, $i ) {
-						console.debug( "date:", ct );
-						console.debug( "date:", $i );
-					},
 					onChangeDateTime: function( ct, $i ) {
 						var m = moment( ct.getTime() );
 						$( fullcalendar ).fullCalendar( 'gotoDate', m );
@@ -112,27 +122,25 @@
 					lang: "de",
 					//					theme: true,
 					header: {
-						//left: 'prev,next today',
 						left: '',
 						center: 'title',
 						right: ''
 					},
-					eventRender: function( event, element, view ) {
-						//console.log( "event:", event );
+					eventClick: function( event, jsEvent, view ) {
+						$( jsEvent.currentTarget ).addClass( "fc-state-highlight" );
 					},
 					eventAfterRender: function( event, element, view ) {
 						console.log( "eventAfter:", event );
+						event.element = element;
 						self.arrayClear( "eventList", self.eventList );
 						var evList = $( fullcalendar ).fullCalendar( 'clientEvents' );
 						evList.forEach( function( entry ) {
 							self.push( 'eventList', entry );
 						} );
-						console.log( "eventList:", self.eventList );
 					},
 
 					viewRender: function( view, element ) {
 						console.log( "view:", view );
-						console.log( "view.intervalStart:", view.intervalStart );
 						var currentdate = view.intervalStart;
 					},
 					defaultView: 'agendaWeek',
@@ -157,27 +165,6 @@
 						}
 						$( fullcalendar ).fullCalendar( 'unselect' );
 					} ).bind( this ),
-					eventsx: [ {
-							id: 'availableForMeeting',
-							start: '2016-01-13T10:00:00',
-							end: '2016-01-13T16:00:00',
-							rendering: 'background'
-						},
-						// red areas where no events can be dropped
-						{
-							start: '2016-01-24',
-							end: '2016-01-28',
-							overlap: false,
-							rendering: 'background',
-							color: '#ff9f89'
-						}, {
-							start: '2016-01-06',
-							end: '2016-01-08',
-							overlap: false,
-							rendering: 'background',
-							color: '#ff9f89'
-						}
-					],
 					drop: function() {
 						// is the "remove after drop" checkbox checked?
 						if ( $( '#drop-remove' ).is( ':checked' ) ) {
