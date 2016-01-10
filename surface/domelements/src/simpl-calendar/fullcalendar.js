@@ -8554,7 +8554,9 @@ var Calendar = FC.Calendar = Class.extend({
 
 	// Given a view name for a custom view or a standard view, creates a ready-to-go View object
 	instantiateView: function(viewType) {
+console.log("viewType:",viewType);
 		var spec = this.getViewSpec(viewType);
+console.log("spec:",viewType);
 
 		return new spec['class'](this, viewType, spec.options, spec.duration);
 	},

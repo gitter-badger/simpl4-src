@@ -27,7 +27,10 @@
 			list-style: none;
 		}
 		:host /deep/ .fc-state-highlight {
-			background: red;
+			background: beige;
+		}
+		:host paper-icon-button {
+			padding: 2px;
 		}
 
 	</style>
@@ -36,12 +39,12 @@
 		<div class="layout horizontal">
 			<div class="flex">
 				<ul id="eventList">
-					<template is="dom-repeat" as="event" items="[[eventList]]">
+					<template id="listTemplateId" is="dom-repeat" as="event" items="[[eventList]]" restamp>
 						<li id="listevt2">
 							<div class="layout horizontal">
-								<paper-icon-button on-tap="selectEvent" data-eid$="[[event._id]]" icon="create"></paper-icon-button>
-								<div style="padding-top:10px;" class="label">[[event.start]]</div>
-								<paper-icon-button on-tap="removeEvent" data-eid$="[[event._id]]" icon="delete"></paper-icon-button>
+								<div style="padding-top:6px;" class="label">[[formatEvent(event)]]</div>
+								<paper-icon-button on-tap="selectEventInCalendar" data-eid$="[[event._id]]" icon="create"></paper-icon-button>
+								<paper-icon-button on-tap="removeEventFromCalendar" data-eid$="[[event._id]]" icon="delete"></paper-icon-button>
 							</div>
 						</li>
 					</template>
@@ -78,27 +81,85 @@
 				this.async( function() {
 					this.createCalendar();
 				}, 100 );
+				this.lang = simpl4.util.BaseManager.getLanguage();
 			},
-			arrayClear: function( name, a ) {
+
+			formatEvent: function(event) {
+console.log("formatEvent:",event);
+console.log("formatEvent2:",event.startFormated);
+				return event.startFormated;
+			},
+			clearEventList: function() {
+				var a = this.eventList;
 				if ( !a || a.length == 0 ) return;
-				this.splice( name, 0, a.length );
+				this.splice( "eventList", 0, a.length );
 			},
-			selectEvent: function( e ) {
-				var eid = e.target.dataset.eid;
-				var el = this.eventList;
-				var element = null;
-				for ( var i = 0; i < el.length; i++ ) {
-					if ( el[ i ]._id == eid ) {
-						element = el[ i ].element;
+			addToEventList: function( ev ) {
+				this.push( 'eventList', ev );
+			},
+			removeFromEventList: function( eid ) {
+				for ( var i = 0; i < this.eventList.length; i++ ) {
+					if ( eid === this.eventList[ i ]._id ) {
+						this.splice( "eventList", i, 1 );
+						break;
 					}
 				}
+			},
+			getEventById: function( eid ) {
+				var el = this.eventList;
+				for ( var i = 0; i < el.length; i++ ) {
+					if ( el[ i ]._id == eid ) {
+						return el[ i ];
+					}
+				}
+				return null;
+			},
+			getElementById: function( eid ) {
+				var el = this.eventList;
+				for ( var i = 0; i < el.length; i++ ) {
+					if ( el[ i ]._id == eid ) {
+						return el[ i ].element;
+					}
+				}
+				return null;
+			},
+			selectEventInCalendar: function( e ) {
+				var eid = e.target.dataset.eid;
+				var ev = this.getEventById( eid );
+				console.log( "selectEvent.eid:", eid );
+
+				$( fullcalendar ).fullCalendar( 'gotoDate', ev.start );
+				var element = this.getElementById( eid );
+				console.log( "selectEvent.element:", element );
 				$( ".fc-state-highlight" ).removeClass( "fc-state-highlight" );
 				$( element ).addClass( "fc-state-highlight" );
 			},
-			removeEvent: function( e ) {
-				var eid = e.target.dataset.eid;
+			removeEventFromCalendar: function( e ) {
 				var fullcalendar = this.querySelector( "#fullcalendar" );
+				var eid = e.target.dataset.eid;
+				console.log( "removeEvent.eid:", eid );
+				var current = $( fullcalendar ).fullCalendar( 'getDate' );
+				var ev = this.getEventById( eid );
+				$( fullcalendar ).fullCalendar( 'gotoDate', ev.start );
 				$( fullcalendar ).fullCalendar( 'removeEvents', eid );
+				$( fullcalendar ).fullCalendar( 'gotoDate', current );
+				this.updateEventList();
+			},
+
+			updateEventList: function() {
+				var fullcalendar = this.querySelector( "#fullcalendar" );
+				this.clearEventList();
+				console.log( "updateEventList" );
+				var evList = $( fullcalendar ).fullCalendar( 'clientEvents' );
+				console.log( "eventListSize:" + evList.length );
+				evList.forEach( ( function( entry, index ) {
+					console.log( "\teventList(" + index + "):", entry );
+					this.addToEventList( entry );
+				} ).bind( this ) );
+//					this.$.listTemplateId._render();
+				this.async( function() {
+					this.$.listTemplateId.render();
+				}, 100 );
 			},
 			createCalendar: function() {
 				var fullcalendar = this.querySelector( "#fullcalendar" );
@@ -107,7 +168,7 @@
 				$( picker ).datetimepicker( {
 					format: 'd.m.Y H:i',
 					inline: true,
-					lang: 'de',
+					lang: this.lang,
 					onChangeDateTime: function( ct, $i ) {
 						var m = moment( ct.getTime() );
 						$( fullcalendar ).fullCalendar( 'gotoDate', m );
@@ -119,8 +180,7 @@
 				} );
 				var self = this;
 				$( fullcalendar ).fullCalendar( {
-					lang: "de",
-					//					theme: true,
+					lang: this.lang,
 					header: {
 						left: '',
 						center: 'title',
@@ -129,16 +189,22 @@
 					eventClick: function( event, jsEvent, view ) {
 						$( jsEvent.currentTarget ).addClass( "fc-state-highlight" );
 					},
-					eventAfterRender: function( event, element, view ) {
-						console.log( "eventAfter:", event );
-						event.element = element;
-						self.arrayClear( "eventList", self.eventList );
-						var evList = $( fullcalendar ).fullCalendar( 'clientEvents' );
-						evList.forEach( function( entry ) {
-							self.push( 'eventList', entry );
-						} );
+					eventDestroy: function( event, element, view ) {
+						console.log( "eventDestroy:", event );
+						//self.removeFromEventList( event._id );
+						//self.updateEventList();
 					},
-
+					eventRender: function( event, element, view ) {
+						console.log( "eventRender:", event._id );
+					},
+					eventAfterRender: function( event, element, view ) {
+						console.log( "eventAfter:", event._id );
+						event.element = element;
+						event.view = view;
+						event.startFormated = event.start.format( 'LLL' );
+						//self.addToEventList( event );
+						self.updateEventList();
+					},
 					viewRender: function( view, element ) {
 						console.log( "view:", view );
 						var currentdate = view.intervalStart;
