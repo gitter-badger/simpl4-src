@@ -1,0 +1,193 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<script src="fullcalendar.js"></script>
+<link rel="import" href="calendar-behavior.html">
+<link rel="import" type="css" href="fullcalendar.css">
+<dom-module id="simpl-calendar">
+	<style>
+		#eventList li {
+			list-style: none;
+		}
+
+	</style>
+	<template>
+		<style is="custom-style" include="simpl-calendar-shared-styles"></style>
+		<div class="layout horizontal">
+			<div class="flex">
+				<ul id="eventList">
+					<template is="dom-repeat" as="event" items="[[eventList]]">
+						<li id="listevt2">
+							<div class="l">
+								<div class="icon"></div>
+							</div>
+							<div class="m">
+								<div class="label">[[event.start]]</div>
+							</div>
+							<div class="r">
+								<div class="icon"></div>
+							</div>
+						</li>
+					</template>
+				</ul>
+			</div>
+			<div class="flex">
+				<div id="picker"></div>
+			</div>
+		</div>
+
+		<div class="layout horizontal">
+			<div id="fullcalendar"></div>
+		</div>
+		<content>
+		</content>
+	</template>
+	<script>
+		Polymer( {
+			is: 'simpl-calendar',
+			properties: {
+				eventList: {
+					value: function() {
+						return [];
+					},
+					type: Array
+				}
+			},
+			observers: [
+			],
+			behaviors: [
+				ModernizrBehavior,
+				CalendarBehavior
+			],
+			attached: function() {
+				this.async( function() {
+					this._attached();
+				}, 100 );
+			},
+			arrayClear: function( name, a ) {
+				if ( !a || a.length == 0 ) return;
+				this.splice( name, 0, a.length );
+			},
+			_attached: function() {
+				console.error( "_attached" );
+				var fullcalendar = this.querySelector( "#fullcalendar" );
+				var picker = this.querySelector( "#picker" );
+
+				$( picker ).datetimepicker( {
+					format: 'd.m.Y H:i',
+					inline: true,
+					lang: 'de',
+					onSelectDate: function( ct, $i ) {
+						console.debug( "date:", ct );
+						console.debug( "date:", $i );
+					},
+					onChangeDateTime: function( ct, $i ) {
+						var m = moment( ct.getTime() );
+						$( fullcalendar ).fullCalendar( 'gotoDate', m );
+					},
+					onChangeMonth: function( ct, $i ) {
+						var m = moment( ct.getTime() );
+						$( fullcalendar ).fullCalendar( 'gotoDate', m );
+					}
+				} );
+				var self = this;
+				$( fullcalendar ).fullCalendar( {
+					lang: "de",
+					//					theme: true,
+					header: {
+						//left: 'prev,next today',
+						left: '',
+						center: 'title',
+						right: ''
+					},
+					eventRender: function( event, element, view ) {
+						//console.log( "event:", event );
+					},
+					eventAfterRender: function( event, element, view ) {
+						console.log( "eventAfter:", event );
+						self.arrayClear( "eventList", self.eventList );
+						var evList = $( fullcalendar ).fullCalendar( 'clientEvents' );
+						evList.forEach( function( entry ) {
+							self.push( 'eventList', entry );
+						} );
+						console.log( "eventList:", self.eventList );
+					},
+
+					viewRender: function( view, element ) {
+						console.log( "view:", view );
+						console.log( "view.intervalStart:", view.intervalStart );
+						var currentdate = view.intervalStart;
+					},
+					defaultView: 'agendaWeek',
+					editable: true,
+					height: 500,
+					disableResizing: false,
+					eventStartEditable: true,
+					eventDurationEditable: true,
+					//				droppable: true, // this allows things to be dropped onto the calendar
+					selectable: true,
+					selectHelper: true,
+					select: ( function( start, end ) {
+						var title = ""; //prompt( 'Event Title:' );
+						var eventData;
+						if ( title == "" ) {
+							eventData = {
+								title: title,
+								start: start,
+								end: end
+							};
+							$( fullcalendar ).fullCalendar( 'renderEvent', eventData, true ); // stick? = true
+						}
+						$( fullcalendar ).fullCalendar( 'unselect' );
+					} ).bind( this ),
+					eventsx: [ {
+							id: 'availableForMeeting',
+							start: '2016-01-13T10:00:00',
+							end: '2016-01-13T16:00:00',
+							rendering: 'background'
+						},
+						// red areas where no events can be dropped
+						{
+							start: '2016-01-24',
+							end: '2016-01-28',
+							overlap: false,
+							rendering: 'background',
+							color: '#ff9f89'
+						}, {
+							start: '2016-01-06',
+							end: '2016-01-08',
+							overlap: false,
+							rendering: 'background',
+							color: '#ff9f89'
+						}
+					],
+					drop: function() {
+						// is the "remove after drop" checkbox checked?
+						if ( $( '#drop-remove' ).is( ':checked' ) ) {
+							// if so, remove the element from the "Draggable Events" list
+							$( this ).remove();
+						}
+					}
+				} );
+			}
+		} );
+
+	</script>
+</dom-module>
