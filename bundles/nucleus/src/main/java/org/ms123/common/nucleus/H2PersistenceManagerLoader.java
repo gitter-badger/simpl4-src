@@ -188,6 +188,7 @@ public class H2PersistenceManagerLoader extends AbstractPersistenceManagerLoader
 			try {
 				conn.close();
 			} catch (Exception e) {
+				info("Error.closing h2 connection1:"+e);
 			}
 		}
 	}
@@ -206,6 +207,7 @@ public class H2PersistenceManagerLoader extends AbstractPersistenceManagerLoader
 			try {
 				conn.close();
 			} catch (Exception e) {
+				info("Error.closing h2 connection2:"+e);
 			}
 		}
 	}

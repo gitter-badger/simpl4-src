@@ -1,0 +1,85 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<dom-module id="event-list">
+	<style>
+		:host {
+			display: inline;
+		}
+		#eventListId li {
+			list-style: none;
+		}
+		ul#eventListId {
+			padding: 0px;
+		}
+		:host paper-icon-button {
+			padding: 2px;
+		}
+
+	</style>
+	<template>
+		<ul id="eventListId">
+			<template sort="eventListSort" is="dom-repeat" as="event" items="[[list]]">
+				<li>
+					<div class="grid row menu__item_primary">
+						<paper-icon-button on-tap="selectEventInCalendar" data-eid$="[[event._id]]" icon="search"></paper-icon-button>
+						<div style="padding-top:6px;" class="label">[[formatEvent(event,event.start)]]</div>
+						<paper-icon-button on-tap="removeEventFromCalendar" data-eid$="[[event._id]]" icon="delete"></paper-icon-button>
+					</div>
+				</li>
+			</template>
+		</ul>
+	</template>
+	<script>
+		Polymer( {
+			is: 'event-list',
+			properties: {
+				list: {
+					value: function() {
+						return [];
+					},
+					type: Array
+				}
+			},
+			attached: function() {
+				this.lang = simpl4.util.BaseManager.getLanguage();
+			},
+			formatEvent: function( event ) {
+				return event.start.format( 'lll' );
+			},
+			eventListSort: function( a, b ) {
+				return a.start > b.start;
+			},
+			selectEventInCalendar: function( e ) {
+				var eid = e.target.dataset.eid;
+				this.fire( "select-action", {
+					eid: eid
+				} );
+			},
+			removeEventFromCalendar: function( e ) {
+				var eid = e.target.dataset.eid;
+				this.fire( "remove-action", {
+					eid: eid
+				} );
+			}
+		} );
+
+	</script>
+</dom-module>
