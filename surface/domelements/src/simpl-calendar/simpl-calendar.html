@@ -26,8 +26,13 @@
 		#eventList li {
 			list-style: none;
 		}
-		:host /deep/ .fc-state-highlight {
-			background: beige;
+		:host /deep/ a.fc-state-highlight {
+			background: #A3F7BB !important;
+			border: 1px solid #A3F7BB !important;
+		}
+		:host /deep/ a.fc-event {
+			border: 1px solid #8FCBE8;
+			background-color: #8FCBE8;
 		}
 		:host paper-icon-button {
 			padding: 2px;
@@ -42,7 +47,7 @@
 					<template id="listTemplateId" sort="eventListSort" is="dom-repeat" as="event" items="{{eventList}}">
 						<li id="listevt2">
 							<div class="layout horizontal">
-								<div style="padding-top:6px;" class="label">[[formatEvent(event,event.startFormated)]]</div>
+								<div style="padding-top:6px;" class="label">[[formatEvent(event,event.start)]]</div>
 								<paper-icon-button on-tap="selectEventInCalendar" data-eid$="[[event._id]]" icon="create"></paper-icon-button>
 								<paper-icon-button on-tap="removeEventFromCalendar" data-eid$="[[event._id]]" icon="delete"></paper-icon-button>
 							</div>
@@ -85,14 +90,15 @@
 				this.lang = simpl4.util.BaseManager.getLanguage();
 			},
 			formatEvent: function( event ) {
-				console.log( "formatEvent:", event.startFormated );
+				console.log( "formatEvent:", event.start.format( 'LLL' ) );
 				return event.start.format( 'LLL' );
 			},
-			eventListSort:function(a,b){
-				return a.start> b.start;
+			eventListSort: function( a, b ) {
+				return a.start > b.start;
 			},
 			getEventById: function( eid ) {
 				var el = this.eventList;
+				console.log( "getEventById:", el );
 				for ( var i = 0; i < el.length; i++ ) {
 					if ( el[ i ]._id == eid ) {
 						return el[ i ];
@@ -112,13 +118,18 @@
 			selectEventInCalendar: function( e ) {
 				var eid = e.target.dataset.eid;
 				var ev = this.getEventById( eid );
-				console.log( "selectEvent.eid:", eid );
+				console.log( "selectEvent.eid:", eid + "/" + ev.start.format( "LLL" ) );
 
 				$( fullcalendar ).fullCalendar( 'gotoDate', ev.start );
 				var element = this.getElementById( eid );
-				console.log( "selectEvent.element:", element );
 				$( ".fc-state-highlight" ).removeClass( "fc-state-highlight" );
 				$( element ).addClass( "fc-state-highlight" );
+				var picker = this.querySelector( "#picker" );
+				console.log( "start:", ev.start.toDate() );
+				var date = ev.start.toDate();
+				$( picker ).datetimepicker( {
+					value: new Date(date) //I don`t know why?
+				} );
 			},
 			removeEventFromCalendar: function( e ) {
 				var fullcalendar = this.querySelector( "#fullcalendar" );
@@ -134,13 +145,12 @@
 			updateEventList: function() {
 				var fullcalendar = this.querySelector( "#fullcalendar" );
 				var evList = $( fullcalendar ).fullCalendar( 'clientEvents' );
-				console.log( "updateEventList:",evList );
+				console.log( "updateEventList:", evList );
 				this.notifyPath( 'eventList', [] );
 				for ( var i = 0; i < evList.length; i++ ) {
 					var ev = evList[ i ];
-					ev.startFormated = ev.start.format( 'LLL' );
 					this.push( 'eventList', ev );
-					this.notifyPath( 'eventList.' + i + ".startFormated", ev.startFormated );
+					this.notifyPath( 'eventList.' + i + ".start", ev.start );
 				}
 			},
 			createCalendar: function() {
@@ -151,6 +161,7 @@
 					format: 'd.m.Y H:i',
 					inline: true,
 					lang: this.lang,
+					timepicker: false,
 					onChangeDateTime: function( ct, $i ) {
 						var m = moment( ct.getTime() );
 						$( fullcalendar ).fullCalendar( 'gotoDate', m );
@@ -182,7 +193,6 @@
 						//	console.log( "eventAfter:", event._id );
 						event.element = element;
 						event.view = view;
-						event.startFormated = event.start.format( 'LLL' );
 						self.updateEventList();
 					},
 					viewRender: function( view, element ) {
