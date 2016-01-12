@@ -1006,9 +1006,13 @@
 			text-overflow: ellipsis;
 			overflow: hidden;
 		}
+		grid-element-renderer {
+			padding-left: 3px;
+			padding-right: 3px;
+		}
 		:host paper-icon-button {
 			padding: 0px;
-			padding-top: 16px;
+			padding-top: 22px;
 		}
 		#containerId {
 			position: relative;
@@ -1027,17 +1031,17 @@
 		<div id="containerId" vertical layout style$="[[getContainerStyle(height)]]">
 
 			<template is="dom-repeat" index-as="lid" as="line" items="[[lines]]">
-				<template is="dom-repeat" index-as="cid" as="col" items="[[columns]]">
-					<div class="line grid row menu__item_primary">
+				<div class="line grid row">
+					<template is="dom-repeat" index-as="cid" as="col" items="[[columns]]">
 						<grid-element-renderer id="[[getElementId(lid,cid)]]" class="flex" item="[[col]]"></grid-element-renderer>
-						<paper-icon-button on-tap="addLine" data-lid$="[[lid]]" icon="add"></paper-icon-button>
-						<paper-icon-button on-tap="removeLine" data-lid$="[[lid]]" icon="remove"></paper-icon-button>
-						<template is="dom-if" if="[[arrows]]">
-							<paper-icon-button on-tap="upLine" data-lid$="[[lid]]" icon="expand-less"></paper-icon-button>
-							<paper-icon-button on-tap="downLine" data-lid$="[[lid]]" icon="expand-more"></paper-icon-button>
-						</template>
-					</div>
-				</template>
+					</template>
+					<paper-icon-button on-tap="addLine" data-lid$="[[lid]]" icon="add"></paper-icon-button>
+					<paper-icon-button on-tap="removeLine" data-lid$="[[lid]]" icon="remove"></paper-icon-button>
+					<template is="dom-if" if="[[arrows]]">
+						<paper-icon-button on-tap="upLine" data-lid$="[[lid]]" icon="expand-less"></paper-icon-button>
+						<paper-icon-button on-tap="downLine" data-lid$="[[lid]]" icon="expand-more"></paper-icon-button>
+					</template>
+				</div>
 			</template>
 
 			<div class="error layout horizontal center" hidden$="[[!isInvalid]]">
@@ -1081,22 +1085,50 @@
 				},
 				height: {
 					value: null,
-					observer: "heightChanged",
 					type: String
 				}
 			},
-			getElementId: function( lid, cid ) {
-				var id = "id" + lid + "_" + cid;
-				console.log( "getElementId:", id );
-				return id;
-			},
-			attached: function() {},
 			ready: function() {
 				this.isInvalid = false;
 				this.push( "lines", {} );
 			},
-			ContainerStyle: function() {
+			getValue: function() {
+				var value = [];
+				for ( var i = 0; i < this.lines.length; i++ ) {
+					var line = this.lines[ i ];
+					value.push( this.getLineValues( i ) );
+				}
+				return value;
+			},
+			setValue: function( v ) {
+				if ( !v ) {
+					return;
+				}
+				for ( var i = 1; i < v.length; i++ ) {
+					this.push( "lines", {} );
+				}
+				this.async( function() {
+					for ( var i = 0; i < v.length; i++ ) {
+						var line = v[ i ];
+						this.setLineValues( line, i );
+					}
+				}, 10 );
+			},
+			getContainerStyle: function() {
 				return "border:0px solid #f5f5f5;padding:2px;height:" + this.height + "px";
+			},
+			getElementId: function( lid, cid ) {
+				return "id" + lid + "_" + cid;
+			},
+			columnsChanged: function() {
+				this.columns.each( ( function( c ) {
+					c.regulaConstraints = this.constructRegulaConstraints( c.constraints );
+					c.label = c.display;
+					c.id = "Input";
+					c.xf_type = c.type;
+					c.xf_id = c.colname;
+				} ).bind( this ) );
+				console.debug( "columnsChanged:", this.columns );
 			},
 			addLine: function( e ) {
 				var lid = parseInt(e.target.dataset.lid);
@@ -1114,17 +1146,17 @@
 					console.log( "ret:", ret );
 				}
 			},
-			_upLine: function( lid ) {
-				var temp = this.getLineValues(lid-1);
-				this.setLineValues( this.getLineValues(lid), lid-1);
-				this.setLineValues( temp, lid);
-			},
 			upLine: function( e ) {
 				var lid = parseInt(e.target.dataset.lid);
 				if ( lid == 0 || this.lines.length==1 ) {
 					return;
 				}
 				this._upLine(lid);
+			},
+			_upLine: function( lid ) {
+				var temp = this.getLineValues(lid-1);
+				this.setLineValues( this.getLineValues(lid), lid-1);
+				this.setLineValues( temp, lid);
 			},
 			downLine: function( e ) {
 				var lid = parseInt(e.target.dataset.lid);
@@ -1134,33 +1166,6 @@
 				var temp = this.getLineValues(lid+1);
 				this.setLineValues( this.getLineValues(lid), lid+1);
 				this.setLineValues( temp, lid);
-			},
-			checkConstraints: function() {
-				this.setInvalid( false );
-				for ( var i = 0; i < this.lines.length; i++ ) {
-					this._validateLine(i);
-				}
-			},
-			getValue: function() {
-				var value = [];
-				for ( var i = 0; i < this.lines.length; i++ ) {
-					var line = this.lines[ i ];
-					value.push( this.getLineValues( i ) );
-				}
-				return value;
-			},
-			setValue: function( v ) {
-				if ( v ) {
-					for ( var i = 1; i < v.length; i++ ) {
-						this.push( "lines", {} );
-					}
-					this.async( function() {
-						for ( var i = 0; i < v.length; i++ ) {
-							var line = v[ i ];
-							this.setLineValues( line, i );
-						}
-					}, 10 );
-				}
 			},
 
 			setLineValues: function( line, i ) {
@@ -1184,7 +1189,13 @@
 				}
 				return line;
 			},
-			_validateLine: function( i ) {
+			checkConstraints: function() {
+				this.setInvalid( false );
+				for ( var i = 0; i < this.lines.length; i++ ) {
+					this.validateLine(i);
+				}
+			},
+			validateLine: function( i ) {
 				var line = {};
 				for ( var j = 0; j < this.columns.length; j++ ) {
 					var e = this.querySelector( "#id" + i + "_" + j );
@@ -1203,16 +1214,6 @@
 			},
 			setInvalid: function( b ) {
 				this.isInvalid = b;
-			},
-			columnsChanged: function() {
-				this.columns.each( ( function( c ) {
-					c.regulaConstraints = this.constructRegulaConstraints( c.constraints );
-					c.label = c.display;
-					c.id = "Input";
-					c.xf_type = c.type;
-					c.xf_id = c.colname;
-				} ).bind( this ) );
-				console.debug( "columnsChanged:", this.columns );
 			},
 			isRequired: function() {
 				var data = this.form.getData();
