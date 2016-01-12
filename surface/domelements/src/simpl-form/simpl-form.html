@@ -189,6 +189,9 @@
 		isTableSelect: function( id ) {
 			return id == 'Tableselect';
 		},
+		isGridInput: function( id ) {
+			return id == 'Gridinput';
+		},
 		isTextArea: function( id ) {
 			return id == 'Textarea';
 		},
@@ -214,7 +217,7 @@
 			return r;
 		},
 		isField: function( id ) {
-			var r = id == 'Input' || id == 'Tableselect' || id == 'Enumselect' || id == 'Upload' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
+			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id == 'Enumselect' || id == 'Upload' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
 			return r;
 		},
 		isInputAndBoolean: function( id, xf_type ) {
@@ -231,6 +234,67 @@
 	};
 
 </script>
+
+<dom-module id="grid-element-renderer">
+	<style>
+		:host {
+			display:block;
+		}
+	</style>
+	<template>
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isInputAndBoolean(item.id,item.xf_type)}}">
+			<checkbox-field gridfield class="flex" type={{item.xf_type}} enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></checkbox-field>
+		</template>
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isInputAndNotBoolean(item.id,item.xf_type)}}">
+			<input-field gridfield class="flex" type="{{item.xf_type}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></input-field>
+		</template>
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isEnumSelect(item.id)}}">
+			<dropdown-field gridfield class="flex" name$="{{item.xf_id}}" items="{{item.items}}" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			</dropdown-field>
+		</template>
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isUpload(item.id)}}">
+			<upload-field gridfield class="flex" name$="{{item.xf_id}}" enabled-expr$="{{item.xf_enabled}}" required$="[[item.xf_required]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" label="{{item.label}}" raised>
+			</upload-field>
+		</template>
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isTextArea(item.id)}}">
+			<multiline-field gridfield class="flex" name$="{{item.xf_id}}" rows="{{item.xf_rows}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></multiline-field>
+		</template>
+	</template>
+	<script>
+		Polymer( {
+			is: 'grid-element-renderer',
+			properties: {
+				item: {
+					observer: "itemChanged",
+					type: Object
+				}
+			},
+			behaviors: [
+				FormElementSelectorBehavior
+			],
+			setValue:function(v){
+console.log("setValue;",v);
+				this._getField().setValue(v);
+			},
+			getValue:function(){
+				var v = this._getField().getValue();
+console.log("getValue;",v);
+				return v;
+			},
+			itemChanged: function() {
+				//console.log( "grid-element-renderer:", this.item );
+			},
+			_getField:function(){
+				if( this.field) return this.field;
+				this.field = this.querySelector("[gridfield]");
+				return this.field;
+			},
+			attached: function() {
+			}
+		} );
+
+	</script>
+</dom-module>
 
 <dom-module id="form-element-renderer">
 	<style>
@@ -266,6 +330,10 @@
 		<template is="dom-if" if="{{isTableSelect(item.id)}}">
 			<tableselect-field field class="flex" name$="{{item.xf_id}}" multi-select="[[item.xf_multiselection]]" required$="[[item.xf_required]]" height="[[item.height]]" items="[[item.items]]" meta="[[item.meta]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</tableselect-field>
+		</template>
+		<template is="dom-if" if="{{isGridInput(item.id)}}">
+			<gridinput-field field class="flex" name$="{{item.xf_id}}" required$="[[item.xf_required]]" height="[[item.height]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			</gridinput-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isTextArea(item.id)}}">
 			<multiline-field field class="flex" name$="{{item.xf_id}}" rows="{{item.xf_rows}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></multiline-field>
@@ -492,6 +560,7 @@
 		related-field,
 		db-selector-field,
 		tableselect-field,
+		gridinput-field,
 		dropdown-field {
 			margin: 5px;
 		}
