@@ -1099,7 +1099,13 @@
 				return "border:0px solid #f5f5f5;padding:2px;height:" + this.height + "px";
 			},
 			addLine: function( e ) {
+				var lid = parseInt(e.target.dataset.lid);
 				this.push( "lines", {} );
+				this.async( function() {
+					for ( var i = this.lines.length-1; i > lid; i-- ) {
+						this._upLine(i);
+					}
+				}, 20 );
 			},
 			removeLine: function( e ) {
 				if ( this.lines.length > 1 ) {
@@ -1108,22 +1114,32 @@
 					console.log( "ret:", ret );
 				}
 			},
+			_upLine: function( lid ) {
+				var temp = this.getLineValues(lid-1);
+				this.setLineValues( this.getLineValues(lid), lid-1);
+				this.setLineValues( temp, lid);
+			},
 			upLine: function( e ) {
-				var lid = e.target.dataset.lid;
-				if ( lid == 0 ) {}
-				var e = this.querySelector( "#id0_0" );
-				//this.push("lines", {id:"1"} );
-				console.log( "up:", e.value );
-				e.value = "Hallo";
+				var lid = parseInt(e.target.dataset.lid);
+				if ( lid == 0 || this.lines.length==1 ) {
+					return;
+				}
+				this._upLine(lid);
+			},
+			downLine: function( e ) {
+				var lid = parseInt(e.target.dataset.lid);
+				if ( lid == (this.lines.length-1) || this.lines.length==1 ) {
+					return;
+				}
+				var temp = this.getLineValues(lid+1);
+				this.setLineValues( this.getLineValues(lid), lid+1);
+				this.setLineValues( temp, lid);
 			},
 			checkConstraints: function() {
 				this.setInvalid( false );
-				if ( !this.isRequired() ) return;
-				if ( this.selection && this.selection.length > 0 ) {
-					return;
+				for ( var i = 0; i < this.lines.length; i++ ) {
+					this._validateLine(i);
 				}
-				this.setInvalid( true );
-				this.setErrorMessage( tr( "This field is required" ) );
 			},
 			getValue: function() {
 				var value = [];
@@ -1146,12 +1162,14 @@
 					}, 10 );
 				}
 			},
+
 			setLineValues: function( line, i ) {
 				for ( var j = 0; j < this.columns.length; j++ ) {
 					var e = this.querySelector( "#id" + i + "_" + j );
 					var col = this.columns[ j ];
 					var name = col.colname;
 					var val = line[ name ];
+					e.getField().withoutCheck = true;
 					e.setValue( val );
 				}
 			},
@@ -1165,6 +1183,20 @@
 					line[ col.colname ] = val;
 				}
 				return line;
+			},
+			_validateLine: function( i ) {
+				var line = {};
+				for ( var j = 0; j < this.columns.length; j++ ) {
+					var e = this.querySelector( "#id" + i + "_" + j );
+					var elements =e.getField();
+					regula.bind( {
+						elements: [elements]
+					} );
+					var errorList = regula.validate( {
+						elements: [elements]
+					} );
+					console.log("errorList:",errorList);
+				}
 			},
 			setErrorMessage: function( message ) {
 				this.error = message;
