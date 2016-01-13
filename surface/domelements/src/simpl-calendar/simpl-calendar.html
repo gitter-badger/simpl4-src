@@ -71,7 +71,7 @@
 	<template>
 		<style is="custom-style" include="simpl-calendar-shared-styles"></style>
 		<simpl-panel heading="[[panelHeader]]">
-			<div id="mainAreaId" style="[[getMainAreaStyle()]]" class="flex grid row">
+			<div id="mainAreaId" style$="[[getMainAreaStyle()]]" class="flex grid row">
 				<div id="leftSideId" class="column">
 					<div id="pickerAreadId">
 						<div id="pickerId"></div>
@@ -100,7 +100,7 @@
 					type: Array
 				},
 				simple: {
-					value: true,
+					value: false,
 					type: Boolean
 				}
 			},
@@ -128,6 +128,29 @@
 					this.createCalendar();
 				}, 100 );
 				this.lang = simpl4.util.BaseManager.getLanguage();
+			},
+			getValue: function() {
+				var ret = [];
+				var fullcalendar = this.querySelector( "#fullcalendar" );
+				var evList = $( fullcalendar ).fullCalendar( 'clientEvents' );
+				for ( ev in this.evList ) {
+					var _ev = {};
+					_ev.start = ev.start.toISOString();
+					_ev.end = ev.start.end.toISOString();
+					_ev.allDay = ev.allDay;
+					_ev.title = ev.title;
+					ret.push( _ev );
+				}
+				return JSON.stringify( ret );
+			},
+			setValue: function( value ) {
+				if ( value ) {
+					var evList = JSON.parse( value );
+					var fullcalendar = this.querySelector( "#fullcalendar" );
+					$( fullcalendar ).fullCalendar( 'removeEvents' );
+					$( fullcalendar ).fullCalendar( 'addEventSource', evList );
+					this.updateEventList();
+				}
 			},
 			isSimple: function( simple ) {
 				return simple;
@@ -185,8 +208,8 @@
 			},
 			removeEventFromCalendar: function( e ) {
 				var eid = e.detail.eid;
-				if( this.simple){
-					this.removeEventById(eid);
+				if ( this.simple ) {
+					this.removeEventById( eid );
 					return;
 				}
 				var fullcalendar = this.querySelector( "#fullcalendar" );
@@ -198,7 +221,7 @@
 				$( fullcalendar ).fullCalendar( 'gotoDate', current );
 				this.updateEventList();
 			},
-			removeEventById:function(id){
+			removeEventById: function( id ) {
 				var index = this.eventList.findIndex( function( element, index, array ) {
 					return element._id == id;
 				} );
@@ -208,7 +231,7 @@
 				}
 			},
 			updateEventList: function() {
-				if( this.simple) return;
+				if ( this.simple ) return;
 				var fullcalendar = this.querySelector( "#fullcalendar" );
 				var evList = $( fullcalendar ).fullCalendar( 'clientEvents' );
 				console.log( "updateEventList:", evList );
@@ -223,7 +246,7 @@
 				console.log( "simpleEventSelected:", m.toDate() );
 				var ev = {};
 				ev.start = m;
-				ev._id = "ev_"+ (this._id++);
+				ev._id = "ev_" + ( this._id++ );
 				var index = this.eventList.findIndex( function( element, index, array ) {
 					return element.start.unix() == m.unix();
 				} );
