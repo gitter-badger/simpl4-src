@@ -109,6 +109,7 @@ public class GitServiceImpl implements GitService {
 	List<String> m_s4List = new ArrayList<String>() {
 		{
 			add("sw.rule");
+			add("sw.role");
 			add("sw.process");
 			add("sw.filter");
 			add("sw.form");
