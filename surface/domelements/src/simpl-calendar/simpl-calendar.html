@@ -33,7 +33,7 @@
 			display: block;
 		}
 		#pickerAreadId {
-			padding-top: 46px;
+//			padding-top: 46px;
 			padding-right: 5px;
 		}
 		:host /deep/ .fc-today {
@@ -70,23 +70,27 @@
 	</style>
 	<template>
 		<style is="custom-style" include="simpl-calendar-shared-styles"></style>
-		<simpl-panel heading="[[panelHeader]]">
+		<simpl-panel heading="[[panelHeader]]" collapsable>
 			<div id="mainAreaId" style$="[[getMainAreaStyle()]]" class="flex grid row">
 				<div id="leftSideId" class="column">
 					<div id="pickerAreadId">
 						<div id="pickerId"></div>
 					</div>
+				</div>
+
+			</div>
+		</simpl-panel>
+		<simpl-panel heading="[[panelHeader]]" collapsable>
 					<div class="flex">
 						<event-list list="[[eventList]]" on-select-action="selectEventInCalendar" on-remove-action="removeEventFromCalendar"></event-list>
 					</div>
-				</div>
-
+		</simpl-panel>
+		<simpl-panel heading="[[panelHeader]]" collapsable>
 				<template is="dom-if" if="[[!isSimple(simple)]]">
-					<div class="flex">
+					<div id="lowerId" class="flex">
 						<div id="fullcalendar"></div>
 					</div>
 				</template>
-			</div>
 		</simpl-panel>
 	</template>
 	<script>
@@ -112,11 +116,10 @@
 			isDesktop: Modernizr.desktop,
 			attached: function() {
 				this._id = 1;
-				$( this.$.mainAreaId ).panzoom( {
-					disablePan: true
-				} );
-				if ( !this.isDesktop ) {
-					$( this.$.mainAreaId ).pep( {
+				var lowerId = this.querySelector( "#lowerId" );
+//				$( lowerId ).panzoom( { disablePan: true } );
+				if ( false/*!this.isDesktop */) {
+					$( lowerId ).pep( {
 						useCSSTranslation: false,
 						velocityMultiplier: 0.8,
 						allowDragEventPropagation: false,
@@ -159,9 +162,9 @@
 				var style = "";
 				if ( this.simple ) {} else {
 					style += "position: relative !important;";
-					style += "height: 700px;";
-					style += "width: 100%;";
-					style += "min-width: 800px;";
+			//		style += "height: 700px;";
+			//		style += "width: 100%;";
+			//		style += "min-width: 800px;";
 				}
 				return style;
 			},
