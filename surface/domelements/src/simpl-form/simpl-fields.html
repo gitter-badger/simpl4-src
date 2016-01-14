@@ -249,6 +249,7 @@
 				},
 				type: {
 					value: "text",
+          observer: "typeChanged",
 					type: String
 				},
 				step: {
@@ -273,6 +274,31 @@
 			_noLabelFloat: function() {
 				return this.floatingLabel === "false" || this.floatingLabel === false;
 			},
+			typeChanged: function() {
+				if( this.type && this.type.match(/^date/) ){
+					this._origType = this.type;
+					if( !this.hasDate ){
+						this.type = "text";
+						this.$.input.setAttribute( 'type', "text" );
+					}
+				}
+			},
+			isDate:function(){
+				if( this._origType && this._origType.match(/^date/) ){
+					return true;
+				}
+				return false;
+			},
+			isDateTime:function(){
+				if( this._origType && this._origType.match(/^datetime/) ){
+					return true;
+				}
+				return false;
+			},
+			created: function() {
+				this._origType=null;
+				console.log("created");
+			},
 			ready: function() {
 				var self = this;
 				Object.keys( this.properties ).forEach( function( key ) {
@@ -285,20 +311,16 @@
 				} );
 			},
 			attached: function() {
-				this._type = this.type;
-				if( this.type.match(/^date/) && !this.hasDate){
-					this.type = "text";
-				}
 				if ( this.label == null || this.label == '' ) this.label = this.name;
 				this.validateAttributes();
 				this.decorator = this.$.decorator;
 				this.input = this.$.input;
 				this.validateAttributes();
-				if ( this._type == "number" ) {
+				if ( this.type == "number" ) {
 					this.preventInvalidInput = true;
 				}
-				var showTime = this._type.match( /^datetime/ ) != null;
-				if ( this._type.match( /^date/ ) != null && !this.hasDate ) {
+				var showTime = this.isDateTime();
+				if ( this.isDate() && !this.hasDate ) {
 					this.picker = new Pikaday( {
 						field: this.$.input,
 						trigger: this.$.input,
@@ -318,7 +340,7 @@
 						this.picker.gotoDate( this._date );
 					}
 				}
-				if ( this._type.match( /^date.*/ ) && this.hasDate ) {
+				if ( this.isDate() && this.hasDate ) {
 					this.async( function() {
 						this.decorator._inputHasContent = true;
 						this.alwaysFloatLabel=true;
@@ -328,7 +350,7 @@
 					console.log( "Add compact" );
 					jQuery( this.decorator ).addClass( "compact" );
 					jQuery( this.$.input ).addClass( "compact" );
-					if ( is_chromium && this._type != "date" ) {
+					if ( is_chromium && !this.isDate() ) {
 						jQuery( this.$.input ).css( "margin-top", "0px" );
 					}
 				}
@@ -351,7 +373,7 @@
 			},
 			isAuthorizedType: function() {
 				var okTypes = [ 'checkbox', 'color', 'date', 'datetime', 'datetime-local', 'email', 'file', 'month', 'number', 'password', 'radio', 'range', 'tel', 'text', 'time', 'url', 'week' ];
-				return ( okTypes.indexOf( this._type ) != -1 );
+				return ( okTypes.indexOf( this.type ) != -1 );
 			},
 			lpad: function pad( value, length ) {
 				length = length || 2;
@@ -361,10 +383,14 @@
 				if ( !this.input ) {
 					return;
 				}
-				if ( this._type != 'text' && !this.isAuthorizedType() ) {
-					this._type = 'text'
+				if ( this.type != 'text' && !this.isAuthorizedType() ) {
+					if( this.type == "double" || this.type == "integer"){
+						this.type = 'number'
+					}else{
+						this.type = 'text'
+					}
 				}
-				if ( this._type == 'datetime' && this.hasDate) {
+				if ( this.isDateTime() && this.hasDate) {
 					this.input.setAttribute( 'type', "datetime-local" );
 				} else {
 					this.input.setAttribute( 'type', this.type );
@@ -374,8 +400,8 @@
 			},
 			editValueChanged: function() {
 				//this.$.input.focus();
-				if ( this._type == null ) return;
-				if ( this._type.match( /^date/ ) && !this.hasDate ) {
+				if ( this.type == null ) return;
+				if ( this.isDate() && !this.hasDate ) {
 					this.value = this._i18nToIso( this.editValue );
 				} else {
 					this.value = this.editValue;
@@ -396,7 +422,7 @@
 				this.checkConstraints();
 			},
 			setValue: function( v ) {
-				if ( this._type.match( /^date/ ) ) {
+				if ( this.isDate() ) {
 					if ( !this.hasDate ) {
 						v = this._convertDate( v );
 					} else {
@@ -406,7 +432,7 @@
 				this.editValue = v;
 			},
 			getValue: function() {
-				if ( this._type.match( /^date/ ) ) {
+				if ( this.isDate() ) {
 					if ( typeof this.value === "string" && !this._isIsoDate(this.value) ) {
 						return null;
 					}
@@ -435,14 +461,14 @@
 				var isString = ( typeof v ) === "string";
 				var isNumber = ( typeof v ) === "number";
 				if ( isNumber || isString && !v.match( /[-]/ ) ) {
-					var showTime = this._type.match( /^datetime/ ) != null;
+					var showTime = this.isDateTime();
 					iso = moment( parseInt( v ) ).format( showTime ? "YYYY-MM-DDTHH:mm" : "YYYY-MM-DD" );
 				}
 				return iso;
 			},
 			_isoToI18n: function( iso ) {
 				var mdate = moment( iso );
-				var showTime = this._type.match( /^datetime/ ) != null;
+				var showTime = this.isDateTime();
 				var format = simpl4.util.BaseManager.getDateFormat() + ( showTime ? " HH:mm" : "" );
 
 				var i18n = mdate.format( format );
@@ -454,7 +480,7 @@
 			},
 			_i18nToIso: function( i18n ) {
 				var iso;
-				if ( this._type.match( /^datetime/ ) != null ) {
+				if ( this.isDateTime() ) {
 					var mdate = moment( i18n, simpl4.util.BaseManager.getDateFormat() + " HH:mm" );
 					iso = mdate.year() + "-" + this.lpad( ( mdate.month() + 1 ) ) + "-" + this.lpad( mdate.date() ) + "T" + this.lpad( mdate.hour() ) + ":" + this.lpad( mdate.minute() );
 				} else {
@@ -464,7 +490,7 @@
 				return iso;
 			},
 			_isIsoDate:function(s){
-				var hasTime = this._type.match( /^datetime/ ) != null;
+				var hasTime = this.isDateTime();
 				if( hasTime){
  					return s.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
 				}else{
