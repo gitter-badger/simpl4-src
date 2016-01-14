@@ -43,10 +43,12 @@ public class AsciidoctorX{
 	def ext2 = {  
 			blockmacro (name: 'imagezoom') {
 						parent, target, attributes ->
-System.out.println("parent:"+parent);
-System.out.println("target:"+target);
-System.out.println("attributes:"+attributes);
-						String content = "<simpl-zoom image=\"${target}\"></simpl-zoom>"
+						def classes= attributes.get(1);
+						if( classes == null ){
+							classes="";
+						}
+						classes= classes.replace('.', ' ');
+						String content = "<simpl-zoom class=\""+classes+"\" image=\"${target}\"></simpl-zoom>"
 						createBlock(parent, "pass", [content], attributes, config);
 				}
 	}
