@@ -158,6 +158,8 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 			}
 		}
 		properties.put("__logExceptionsOnly", getBoolean(shape, "logExceptionsOnly", false));
+		properties.put("_namespace",namespace);
+		properties.put("_method",methodName);
 		info("methodParams:" + methodParams);
 		debug("paramList:" + paramList);
 		debug("properties:" + properties);
