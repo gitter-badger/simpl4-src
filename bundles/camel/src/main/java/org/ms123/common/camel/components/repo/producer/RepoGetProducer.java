@@ -51,6 +51,7 @@ public class RepoGetProducer extends RepoProducer {
 	public void process(Exchange exchange) throws Exception {
 		String path = getString(exchange, "path", configuration.getPath());
 		String repo = getString(exchange, "repo", configuration.getRepo());
+		if( repo == null || "-".equals(repo)) repo = exchange.getProperty("_namespace", String.class);
 		String type = getString(exchange, "type", configuration.getType());
 		String target = getString(exchange, "target", configuration.getTarget());
 		String header = getString(exchange, "header", configuration.getHeader());
