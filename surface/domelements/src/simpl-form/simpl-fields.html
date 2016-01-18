@@ -1035,6 +1035,7 @@
 		grid-element-renderer {
 			padding-left: 3px;
 			padding-right: 3px;
+			line-height:20px;
 		}
 		:host paper-icon-button {
 			padding: 0px;
@@ -1059,7 +1060,7 @@
 			<template is="dom-repeat" index-as="lid" as="line" items="[[lines]]">
 				<div class="line grid row">
 					<template is="dom-repeat" index-as="cid" as="col" items="[[columns]]">
-						<grid-element-renderer id="[[getElementId(lid,cid)]]" class="flex" item="[[col]]"></grid-element-renderer>
+						<grid-element-renderer id="[[getElementId(lid,cid)]]" style$="[[getColStyle(col.width)]]" class$="[[getColFlex(col.width)]]" item="[[col]]"></grid-element-renderer>
 					</template>
 					<paper-icon-button on-tap="addLine" data-lid$="[[lid]]" icon="add"></paper-icon-button>
 					<paper-icon-button on-tap="removeLine" data-lid$="[[lid]]" icon="remove"></paper-icon-button>
@@ -1141,7 +1142,7 @@
 				}, 10 );
 			},
 			getContainerStyle: function() {
-				return "border:0px solid #f5f5f5;padding:2px;height:" + this.height + "px";
+				return "border:0px solid #f5f5f5;padding:2px;min-height:" + this.height + "px";
 			},
 			getElementId: function( lid, cid ) {
 				return "id" + lid + "_" + cid;
@@ -1220,6 +1221,18 @@
 				for ( var i = 0; i < this.lines.length; i++ ) {
 					this.validateLine(i);
 				}
+			},
+			getColFlex:function(w){
+				if( w != null && parseInt(w) > 0){
+					return "";
+				}
+				return "flex";
+			},
+			getColStyle:function(w){
+				if( w != null && parseInt(w) > 0){
+					return "max-width:"+w+"px;min-width:"+w+"px;";
+				}
+				return "";
 			},
 			validateLine: function( i ) {
 				var line = {};

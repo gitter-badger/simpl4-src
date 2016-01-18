@@ -243,21 +243,21 @@
 	</style>
 	<template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isInputAndBoolean(item.id,item.xf_type)}}">
-			<checkbox-field gridfield class="flex" type={{item.xf_type}} enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></checkbox-field>
+			<checkbox-field gridfield class="flex" type={{item.xf_type}} enabled-expr$="{{item.xf_enabled}}" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></checkbox-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isInputAndNotBoolean(item.id,item.xf_type)}}">
-			<input-field gridfield class="flex" type="{{item.xf_type}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></input-field>
+			<input-field gridfield class="flex" type="{{item.xf_type}}" enabled-expr$="{{item.xf_enabled}}" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></input-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isEnumSelect(item.id)}}">
-			<dropdown-field gridfield class="flex" name$="{{item.xf_id}}" items="{{item.items}}" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			<dropdown-field gridfield class="flex" name$="{{item.xf_id}}" items="{{item.items}}" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</dropdown-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isUpload(item.id)}}">
-			<upload-field gridfield class="flex" name$="{{item.xf_id}}" enabled-expr$="{{item.xf_enabled}}" required$="[[item.xf_required]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" label="{{item.label}}" raised>
+			<upload-field gridfield class="flex" name$="{{item.xf_id}}" enabled-expr$="{{item.xf_enabled}}" required$="[[item.xf_required]]" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</upload-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isTextArea(item.id)}}">
-			<multiline-field gridfield class="flex" name$="{{item.xf_id}}" rows="{{item.xf_rows}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></multiline-field>
+			<multiline-field gridfield class="flex" name$="{{item.xf_id}}" rows="{{item.xf_rows}}" enabled-expr$="{{item.xf_enabled}}" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></multiline-field>
 		</template>
 	</template>
 	<script>
@@ -273,7 +273,6 @@
 				FormElementSelectorBehavior
 			],
 			setValue:function(v){
-console.log("setValue;",v);
 				this._getField().setValue(v);
 			},
 			getField:function(){
@@ -281,11 +280,10 @@ console.log("setValue;",v);
 			},
 			getValue:function(){
 				var v = this._getField().getValue();
-console.log("getValue;",v);
 				return v;
 			},
 			itemChanged: function() {
-				//console.log( "grid-element-renderer:", this.item );
+			//	console.log( "grid-element-renderer:", this.item );
 			},
 			_getField:function(){
 				if( this.field) return this.field;
@@ -353,12 +351,12 @@ console.log("getValue;",v);
 		<template is="dom-if" if="{{isGroup(item.id)}}">
 			<simpl-group class="group layout vertical">
 				<label for=".group">{{item.label}}</label>
-				<form-element-selector class="flex layout horizontal center wrap" items="{{item.childShapes}}" />
+				<form-element-selector class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
 			</simpl-group>
 		</template>
 		<template is="dom-if" if="{{isRow(item.id)}}">
 			<simpl-row class="horizontal layout center wrap">
-				<form-element-selector class="flex layout horizontal center wrap" items="{{item.childShapes}}" />
+				<form-element-selector class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
 			</simpl-row>
 		</template>
 	</template>
@@ -507,13 +505,13 @@ console.log("getValue;",v);
 			<template is="dom-if" if="{{isGroup(item.id)}}">
 				<simpl-group class="flex layout vertical group">
 					<label for=".group">{{item.label}}</label>
-					<form-element-selector class="flex layout horizontal center wrap" items="{{item.childShapes}}" />
+					<form-element-selector class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
 				</simpl-group>
 			</template>
 
 			<template is="dom-if" if="{{isRow(item.id)}}">
 				<simpl-row class="horizontal layout center wrap">
-					<form-element-selector class="flex layout horizontal center wrap" items="{{item.childShapes}}" />
+					<form-element-selector class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
 				</simpl-row>
 			</template>
 
