@@ -448,82 +448,104 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 		} else if (target.endsWith(".html")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource2(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("text/html;charset=UTF-8");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".html.gz")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource2(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("text/html;charset=UTF-8");
 			response.setHeader("Content-Encoding","gzip");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".css")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource2(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("text/css;charset=UTF-8");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".css.gz")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource2(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("text/css;charset=UTF-8");
 			response.setHeader("Content-Encoding","gzip");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".js.gz")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource2(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("text/javascript;charset=UTF-8");
 			response.setHeader("Content-Encoding","gzip");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".js")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource2(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("text/javascript;charset=UTF-8");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".gif")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("image/gif");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".jpg")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("image/jpeg");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".png")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("image/png");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".woff")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("application/x-font-woff");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".ttf")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("application/x-font-ttf");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".pdf")) {
 			target = removeFirstSegmentInCaseWebsite(target);
@@ -533,7 +555,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			}
 			response.setContentLength((int)fr.length());
 			response.setContentType("application/pdf");
-			response.addDateHeader("Date", new java.util.Date().getTime());
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".xml")) {
 			target = removeFirstSegmentInCaseWebsite(target);
@@ -543,14 +565,16 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			}
 			response.setContentLength((int)fr.length());
 			response.setContentType("application/xml;charset=UTF-8");
-			response.addDateHeader("Date", new java.util.Date().getTime());
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else if (target.endsWith(".svg")) {
 			target = removeFirstSegmentInCaseWebsite(target);
 			FileResource fr = getFileResource(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
 			response.setContentType("image/svg+xml;charset=UTF-8");
-			response.addDateHeader("Date", new java.util.Date().getTime());
-			response.addDateHeader("Expires", new java.util.Date().getTime() + 1000000000);
+			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else {
 			handled = false;
@@ -841,9 +865,15 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			response.setStatus(304);
 			return false;
 		}else{
-			response.setDateHeader("Last-Modified", modTime + 10000 );
+			response.setDateHeader("Last-Modified", modTime );
 			return true;
 		}
+	}
+
+	private void setHeaders(HttpServletResponse response){
+		response.setHeader("Cache-Control", "must-revalidate, private");
+		response.setDateHeader("Last-Modified", new java.util.Date().getTime());
+		response.setIntHeader("Expires", -1 );
 	}
 
 	private void getAsset(String namespace, String name, String type, String ext, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -859,6 +889,9 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			}
 			if( "image/pdf".equals(type)){
 				contentType = "application/pdf";
+			}
+			if( "image/jpeg".equals(type)){
+				type = "image/jpg";
 			}
 			info("getAsset.FileName:"+name+"/contentType:"+type);
 			asset = m_gitService.searchFile(namespace, name, type);
@@ -879,7 +912,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				if( name.endsWith(".gz")){
 					response.setHeader("Content-Encoding","gzip");
 				}
-				response.setDateHeader("Last-Modified", modTime + 10000 );
+				setHeaders(response);
 				response.setStatus(HttpServletResponse.SC_OK);
 				if( "adoc".equals(ext)){
 					response.setContentType( "text/html; charset=UTF-8" );
