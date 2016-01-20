@@ -705,6 +705,86 @@
 	</script>
 </dom-module>
 
+<dom-module id="custom-field">
+	<style>
+		#insertPoint{
+		}
+
+		:host #label {
+			padding: 0 !important;
+			font-size: 14px;
+			font-weight: normal;
+		}
+	</style>
+	<template>
+		<div id="insertPoint"></div>
+	</template>
+	<script>
+		Polymer( {
+			is: "custom-field",
+			behaviors: [ FieldBehavior ],
+			properties: {
+				url: {
+					type: String
+				},
+				elementname: {
+					type: String
+				},
+				url: {
+					observer: 'urlChanged',
+					type: String
+				}
+			},
+			observers: [
+				'//valueChanged(value)'
+			],
+
+			urlChanged:function(){			
+				if( this.url == null) return;
+				this.importHref( this.url, this.onResponse.bind( this ) );
+			},
+
+			onResponse: function( e ) {
+				var body = e.target.import.body;
+
+				var insertPoint = this.$.insertPoint;
+				while ( insertPoint.firstChild ) {
+					Polymer.dom( insertPoint ).removeChild( insertPoint.firstChild );
+				}
+				if ( body && body.firstElementChild ) {
+					if($(body).children().length == 1 ){
+						Polymer.dom( insertPoint ).appendChild( body.firstElementChild );
+					}else{
+						Polymer.dom( insertPoint ).appendChild( body);
+					}
+				}
+				this.field  = this.querySelector(this.elementname);
+				console.log("f:",this.field);
+				this.field.setValue(this.value);
+				this.field.label = this.label;
+			},
+			setValue:function(v){
+				this.value = v;
+				if( this.field==null) return;
+				this.field.setValue(v);
+			},
+			getValue:function(){
+				this.value=this.field.getValue();
+				return this.value;
+			},
+			valueChanged: function( e ) {
+				if ( this.isDomReady != true ) return;
+				if ( this.withoutCheck ) {
+					this.withoutCheck = false;
+					return;
+				}
+				//this.checkConstraints();
+			}
+		} );
+
+	</script>
+</dom-module>
+
 <dom-module id="checkbox-field">
 	<style>
 		:host {
@@ -1239,6 +1319,7 @@
 				for ( var j = 0; j < this.columns.length; j++ ) {
 					var e = this.querySelector( "#id" + i + "_" + j );
 					var elements =e.getField();
+					if( !elements.getAttribute("data-constraints")) continue;
 					regula.bind( {
 						elements: [elements]
 					} );

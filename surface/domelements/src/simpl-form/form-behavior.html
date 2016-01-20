@@ -317,6 +317,8 @@
 				shape.stencil.id.toLowerCase() == 'enumselect' ||
 				shape.stencil.id.toLowerCase() == 'tableselect' ||
 				shape.stencil.id.toLowerCase() == 'gridinput' ||
+				shape.stencil.id.toLowerCase() == 'checkbox' ||
+				shape.stencil.id.toLowerCase() == 'custom' ||
 				shape.stencil.id.toLowerCase() == 'group'
 			) {
 				var labelChild = this.getLabelShape( shape.childShapes );
@@ -417,6 +419,7 @@
 					}, this );
 					var bounds = shape.bounds;
 					props.height = bounds.lowerRight.y - bounds.upperLeft.y;
+					if( props.height < 75) props.height = 75;
 				}
 			} else if ( shape.stencil.id.toLowerCase() == "actionbutton" ) {
 				var icon = shape.properties.xf_iconname;
