@@ -123,6 +123,7 @@ public class LoginFilter implements Filter {
 		String method = request.getMethod();
 		boolean isStaticResource = false;
 		boolean ok = false;
+		boolean options = false;
 		if (method != null && "get".equals(method.toLowerCase())) {
 			if (arr.length > 3 && "sw".equals(arr[1]) && "website".equals(arr[3])) {
 				ok = true;
@@ -140,13 +141,16 @@ public class LoginFilter implements Filter {
 			}
 		} else if (request.getHeader("Origin") != null && method != null && "options".equals(method.toLowerCase())) {
 			ok = true;
+			options=true;
 		}
 
-		if (request.getParameter("rpc") != null || request.getRequestURI().startsWith("/rpc")) {
-			ok = false;
-		}
-		if (request.getParameter("ws") != null || request.getRequestURI().startsWith("/ws")) {
-			ok = false;
+		if( !options){
+			if (request.getParameter("rpc") != null || request.getRequestURI().startsWith("/rpc")) {
+				ok = false;
+			}
+			if (request.getParameter("ws") != null || request.getRequestURI().startsWith("/ws")) {
+				ok = false;
+			}
 		}
 
 		Map<String, Object> accessRule = null;
