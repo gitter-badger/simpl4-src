@@ -497,6 +497,7 @@
 
 		notBlank: function(params) {
 			if( this.value == null) return false;
+			if (typeof this.value !== "string") return true;
 			return this.value.replace(/\s/g, "") != "";
 		},
 
