@@ -211,7 +211,7 @@
 				this.formSpec = [ formSpec ];
 			},
 			getFormSpec: function( item ) {
-				return [simpl4FormManager.getCrudForm( item.entity, item.namespace )];
+				return [simpl4FormManager.getCrudForm( item.entity, item.namespace || this.namespace )];
 			},
 			getEditMode: function() {
 				return "edit";
