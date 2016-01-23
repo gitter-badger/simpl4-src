@@ -43,11 +43,13 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 	members: {
 		initialize: function (options, mirrorOptions) {
 			var defaultOptions = {
-				buttons: ['undo', 'redo', 'find', 'findNext', 'replace', 'replaceAll', 'vimMode','reindent']
+				buttons: ['undo', 'redo', 'find', 'findNext', 'replace', 'replaceAll', 'vimMode','reindent', "foldAll", "wrapLines" ]
 			}
 			this.options = options;
 			this.setDefaults(this.options, defaultOptions);
 			this._vimMode = ms123.config.ConfigManager.isVimMode();
+			this._fold = false;
+			this._wrap = true;
 
 
 			this.buttonDefs = {
@@ -58,7 +60,9 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 				'replace': [this.tr("Replace"), "replace", "resource/ms123/edit-find-replace.png", this.replace],
 				'replaceAll': [this.tr("ReplaceAll"), "replaceAll", "resource/ms123/replace.png", this.replaceAll],
 				'vimMode': [this.tr("EditorMode"), "vimMode", "resource/ms123/vim.png", this.vimMode],
-				'reindent': [this.tr("Reformat whole document"), "reindent", "icon/16/actions/format-justify-left.png", this.reindent]
+				'reindent': [this.tr("Reformat whole document"), "reindent", "icon/16/actions/format-justify-left.png", this.reindent],
+				'foldAll': [this.tr("Fold/Unfold"), "foldAll", "icon/16/places/folder-open.png", this.foldAll],
+				'wrapLines': [this.tr("Wrap/Nowrap lines"), "wrapLines", "icon/16/actions/object-flip-horizontal.png", this.wrapLines]
 			};
 
 			this.self = this;
@@ -90,6 +94,22 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 					button.setIcon("resource/ms123/vim.png");
 				}else{
 					button.setIcon("icon/16/apps/utilities-text-editor.png");
+				}
+			}
+			if( action == 'foldAll'){
+				this._foldButton = button;
+				if( this._fold ){
+					button.setIcon("icon/16/places/folder.png");
+				}else{
+					button.setIcon("icon/16/places/folder-open.png");
+				}
+			}
+			if( action == 'wrapLines'){
+				this._wrapButton = button;
+				if( this._wrap ){
+					button.setIcon("icon/16/actions/object-flip-vertical.png");
+				}else{
+					button.setIcon("icon/16/actions/object-flip-horizontal.png");
 				}
 			}
 			button.setToolTipText(name);
@@ -147,6 +167,25 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 		},
 		reindent: function () {
 			this.mirror.execCommand("indentAuto");
+		},
+		foldAll: function () {
+			if( !this._fold ){
+				this.mirror.execCommand("foldAll");
+				this._foldButton.setIcon("icon/16/places/folder.png");
+			}else{
+				this.mirror.execCommand("unfoldAll");
+				this._foldButton.setIcon("icon/16/places/folder-open.png");
+			}
+			this._fold = !this._fold;
+		},
+		wrapLines: function () {
+			this._wrap = !this._wrap;
+			this.mirror.setOption("lineWrapping", this._wrap);
+			if( this._wrap ){
+				this._wrapButton.setIcon("icon/16/actions/object-flip-vertical.png");
+			}else{
+				this._wrapButton.setIcon("icon/16/actions/object-flip-horizontal.png");
+			}
 		}
 	},
 
