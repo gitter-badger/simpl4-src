@@ -321,7 +321,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 			}
 			win.setAllowMaximize(true);
 			win.setAllowMinimize(true);
-			win.setModal(false);
+			win.setModal(true);
 			win.setActive(false);
 			if( this._height){
 				win.setHeight(this._height);

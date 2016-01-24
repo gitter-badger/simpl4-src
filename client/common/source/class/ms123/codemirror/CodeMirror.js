@@ -141,6 +141,9 @@ qx.Class.define( "ms123.codemirror.CodeMirror", {
 						cm.foldCode( cm.getCursor() );
 					}
 				},
+				foldOptions: {
+  				minFoldSize: 3
+				},
 				vimMode: ms123.config.ConfigManager.isVimMode(),
 				showCursorWhenSelecting: true
 			} );
