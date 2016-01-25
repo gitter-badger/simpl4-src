@@ -295,7 +295,10 @@ public class BaseImportingServiceImpl implements Constants {
 		CharBuffer cbuf = chDecoder.decode(bbuf);  
 
 		CharsetEncoder utf8encoder = Charset.forName("UTF-8").newEncoder();  
-		return utf8encoder.encode(cbuf).array();
+		ByteBuffer bb = utf8encoder.encode(cbuf);
+		byte[] ba=new byte[bb.limit()];
+		bb.get(ba);
+		return ba;
 	}
 
 	protected synchronized String detectCharset(byte[] content) throws Exception {
