@@ -962,7 +962,7 @@
 		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[invalid]]">
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
 			<input hidden is="iron-input" id="input" bind-value="[[value]]" />
-			<select id="select" name="[[name]]">
+			<select multiple$=[[multiple]]  id="select" name="[[name]]">
 				<!--template is="dom-repeat" as="i" items="{{items}}">
 					<option value$="{{i.value}}">{{i.label}}</option>
 				</template-->
@@ -983,6 +983,9 @@
 				FieldBehavior
 			],
 			properties: {
+				multiple: {
+					value: false
+				},
 				compact: {
 					value: false
 				},
