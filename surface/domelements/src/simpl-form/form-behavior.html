@@ -205,6 +205,20 @@
 			console.debug( "Data:", JSON.stringify( this.getData(), null, 2 ) );
 		},
 
+		_getFormJsonDataForSelectionLists:function(method){
+			if( this.isEmpty(method)) return {};
+			try{
+				if( method.indexOf(".") == -1){
+					method = this.namespace + ":"+ method;
+				}
+				var jsonData = simpl4.util.Rpc.rpcSync( "camelRoute:"+method, { } );
+				console.log("_getFormJsonDataForSelectionLists.jsonData:", jsonData);
+				return jsonData;
+			}catch(e){
+				console.error("_getFormJsonDataForSelectionLists:",e);
+			}
+		},
+
 		formNameChanged: function() {
 			this.async( function() {
 				this._formNameChanged();
@@ -222,6 +236,7 @@
 				this._form = form.properties;
 				this.defaultButtons = form.properties.xf_default_buttons;
 				this.formVar = form.properties.xf_name;
+				this.jsonDataForSelectionLists = this._getFormJsonDataForSelectionLists( form.properties.xf_method_fetch );
 				this.shapes = this.prepareShape( form ).childShapes;
 				this._shapeMap={};
 				this._buildShapeMap(this.shapes[0]);
@@ -368,13 +383,22 @@
 				if ( shape.stencil.id.toLowerCase() == 'enumselect' ) {
 					var props = shape.properties;
 					var enumembed = props.xf_enumembed;
+					var jsonpath = props.xf_jsonpath;
 					var si;
-					if ( enumembed && enumembed.totalCount > 0 ) {
+					if ( !this.isEmpty(jsonpath) ) {
+						var a  = JSONPath({json: this.jsonDataForSelectionLists, path: jsonpath, callback: function(){}});
+						if( a == null || a.length==0){
+							props.items = [];
+						}else{
+							props.items = a[0];
+						}
+					}else if ( enumembed && enumembed.totalCount > 0 ) {
 						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
+						props.items = si.getItems();
 					} else {
 						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
+						props.items = si.getItems();
 					}
-					props.items = si.getItems();
 					try{
 						if( this.isEmpty(props.xf_default)){
 							props.xf_default = props.items[0].value;
