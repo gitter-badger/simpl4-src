@@ -95,14 +95,13 @@
 				} )
 				var self = this;
 				$( this.$.bigImage ).swipe( {
+					fingers:2,  
+        	pinchThreshold:0,
 					tap: function( event, target ) {
 						return false;
 					},
 					doubleTap: function( event, target ) {
-						self.async( function() {
-							self.$.imageDialog.close();
-							self.showMainToolbar(true);
-						}, 50 );
+						self.dialogClose();
 					},
 					doubleTapThreshold: 200
 				} );
@@ -110,17 +109,31 @@
 			attached: function() {
 				var self = this;
 				$( this.$.imageClosed ).swipe( {
+					fingers:2,  
+        	//pinchThreshold:0,
 					tap: function( event, target ) {
 						return false;
 					},
+					pinchIn:function(){
+						console.error("pinchIn");
+						self.dialogOpen();
+					},
 					doubleTap: function( event, target ) {
-						self.backdrop = self.isDrawerOpen();
-						self.async( function() {
-							self.$.imageDialog.open();
-							self.showMainToolbar(false);
-						}, 50 );
+						self.dialogOpen();
 					}
 				} );
+			},
+			dialogOpen: function() {
+				this.async( function() {
+					this.$.imageDialog.open();
+					this.showMainToolbar(false);
+				}, 50 );
+			},
+			dialogClose: function() {
+				this.async( function() {
+					this.$.imageDialog.close();
+					this.showMainToolbar(true);
+				}, 50 );
 			},
 			dialogClosed: function() {
 				this.showMainToolbar(true);
