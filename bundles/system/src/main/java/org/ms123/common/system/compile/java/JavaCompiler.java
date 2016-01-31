@@ -6,12 +6,16 @@ import javax.tools.DiagnosticCollector;
 import javax.tools.Diagnostic;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import org.phidias.compile.BundleJavaManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import org.phidias.compile.StringJavaFileObject;
 
 /**
  * Created by trung on 5/3/15.
@@ -57,33 +61,35 @@ public class JavaCompiler {
 	}
 
 	public static void compile(String namespace, Bundle bundle, String className, String sourceCodeInText, File destinationDirectory) throws Exception {
-		File[] locations = new File[2];
-		locations[0] = new File(workspace, "jooq/build");
-		locations[1] = new File(gitRepos, namespace+ "/.etc/jooq/build");
-		SourceCode sourceCode = new SourceCode(className, sourceCodeInText);
-		CompiledCode compiledCode = new CompiledCode(className);
-		Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
+		List<String> options = new ArrayList<String>();
+		options.add("-verbose"); 
 
-		ClassLoader loader = bundle.adapt(BundleWiring.class).getClassLoader();
-		DynamicClassLoader cl = new DynamicClassLoader(loader);
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-		ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(javac.getStandardFileManager(diagnostics, null, null), locations, compiledCode, cl);
+		StandardJavaFileManager standardFileManager = javac.getStandardFileManager(diagnostics, null, null);
+		JavaFileObject[] sourceFiles = { new StringJavaFileObject(className, sourceCodeInText)};
+		standardFileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(destinationDirectory)); 
 
- // the OSGi aware file manager
-    BundleJavaManager bundleFileManager = new BundleJavaManager( bundle, fileManager, null);
+		List<File> classPath = new ArrayList<File>(); 
+		classPath.add( new File(workspace, "jooq/build"));
+		classPath.add( new File(gitRepos, namespace+ "/.etc/jooq/build"));
 
+		standardFileManager.setLocation( StandardLocation.CLASS_PATH, classPath);
 
-		javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, bundleFileManager, diagnostics, null, null, compilationUnits);
-		fileManager.close();
-		if (task.call()) {
-			writeByteArrayToFile(new File(destinationDirectory, className + ".class"), compiledCode.getByteCode());
-		} else {
-			StringBuffer error = new StringBuffer();
-			for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-				error.append(diagnostic.toString());
-			}
-			throw new Exception(error.toString());
+		BundleJavaManager bundleFileManager = new BundleJavaManager( bundle, standardFileManager, options);
+		javax.tools.JavaCompiler.CompilationTask compilationTask = javac.getTask( null, bundleFileManager, diagnostics, options, null, Arrays.asList(sourceFiles));
+		bundleFileManager.close();
+
+		// perform the actual compilation
+		if (compilationTask.call()) {
+			// Success!
+			return;
 		}
+
+		StringBuffer error = new StringBuffer();
+		for (Diagnostic<?> dm: diagnostics.getDiagnostics()) {
+			error.append(dm.toString());
+		}
+		throw new Exception(error.toString());
 	}
 }
 
