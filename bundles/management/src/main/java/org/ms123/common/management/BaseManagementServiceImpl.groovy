@@ -48,6 +48,7 @@ import org.osgi.service.event.EventHandler;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.ServiceRegistration;
+import org.apache.commons.io.FileUtils;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
 
@@ -127,6 +128,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			for( String ns : allNamespaces){
 				if( createdNamespaces.indexOf(ns) < 0){
 					createRoutesFromJson(ns);
+					installBundles(ns);
 				}
 			}
 		}
@@ -134,11 +136,28 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	}
 
 	private void doAllInNamespace(String ns){
+		installBundles(ns);
 		compileGroovy(ns);
 		compileJava(ns);
 		createClasses(ns);
 		createRoutesFromJson(ns);
 		deployWorkflows(ns);
+	}
+
+	private void installBundles(String ns){
+		try{
+			String fileInstallDir = (String) System.getProperty("felix.fileinstall.dir");
+			String gitRepos = (String) System.getProperty("git.repos");
+			File src = new File(gitRepos,ns+"/.etc/bundles");
+			File dest = new File(fileInstallDir);
+			if( src.exists()){
+				info(this,"installBundles:"+src+" -> "+ dest);
+				FileUtils.copyDirectory(src, dest);
+			}
+		}catch(Exception e){
+			error(this, "installBundlesNamespace.error:%[exception]s",e);
+			e.printStackTrace();
+		}
 	}
 
 	private void compileGroovy(String ns){
