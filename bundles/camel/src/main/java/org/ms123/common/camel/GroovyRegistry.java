@@ -28,8 +28,9 @@ import org.osgi.framework.BundleContext;
 import org.apache.camel.NoSuchBeanException;
 import org.osgi.framework.ServiceReference;
 import org.apache.camel.spi.Registry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.debug;
 
 /**
  */
@@ -57,12 +58,12 @@ public class GroovyRegistry implements Registry {
 
 
 	private Object _lookupByNameType (String name,Class type) {
-		debug("_lookupByNameAndType1:" + name+"/"+type);
+		debug(this,"_lookupByNameAndType1:" + name+"/"+type);
 		Object obj = getObjectFromFileSystemClassloader(name);
 		if( obj == null || !canCast(obj,type)){
 			obj = getDataSource(name);
 		}
-		debug("_lookupByNameAndType2:" + obj);
+		debug(this,"_lookupByNameAndType2:" + obj);
 		return obj;
 	}
 	private boolean canCast(Object obj, Class type){
@@ -78,13 +79,13 @@ public class GroovyRegistry implements Registry {
 		try {
 			ServiceReference[] sr = m_bundleContect.getServiceReferences((String)null, "(&(objectClass=javax.sql.DataSource)(dataSourceName="+name+"))");
 			if( sr != null && sr.length>0){
-					debug("ds:"+sr[0]);
+					debug(this,"ds:"+sr[0]);
 				return m_bundleContect.getService(sr[0]);
 			}else{
-				//error("getDataSource1(" + name + "):not found");
+				//error(this,"getDataSource1(" + name + "):not found");
 			}
 		} catch (Throwable e) {
-			error("getDataSource2(" + name + "):" + e);
+			error(this,"getDataSource2(" + name + "):%[exception]s" , e);
 		}
 		return null;
 	}
@@ -93,10 +94,10 @@ public class GroovyRegistry implements Registry {
 		try {
 			Class clazz = m_fsClassLoader.loadClass(name);
 			Object obj = clazz.newInstance();
-			debug("getObjectFromFileSystemClassloader:" + clazz + "/" + obj);
+			debug(this,"getObjectFromFileSystemClassloader:" + clazz + "/" + obj);
 			return obj;
 		} catch (Throwable e) {
-			debug("getObjectFromFileSystemClassloader(" + name + "):" + e);
+			debug(this,"getObjectFromFileSystemClassloader(" + name + "):" + e);
 		}
 		return null;
 	}
@@ -105,7 +106,7 @@ public class GroovyRegistry implements Registry {
 		return _lookupByNameType(name,null);
 	}
 	public <T> T lookupByNameAndType(String name, Class<T> type) {
-		debug("lookupByNameAndType:" + name + "/" + type);
+		debug(this,"lookupByNameAndType:" + name + "/" + type);
 		Object answer = _lookupByNameType(name,type);
 		if (answer == null) {
 			return null;
@@ -119,7 +120,7 @@ public class GroovyRegistry implements Registry {
 	}
 
 	public <T> Map<String, T> findByTypeWithName(Class<T> type) {
-		debug("findByTypeWithName:" + type);
+		debug(this,"findByTypeWithName:" + type);
 		Map<String, T> result = new HashMap<String, T>();
 		T answer = lookupByNameAndType(type.getName(), type);
 		if (answer != null) {
@@ -129,7 +130,7 @@ public class GroovyRegistry implements Registry {
 	}
 
 	public <T> Set<T> findByType(Class<T> type) {
-		debug("findByType:" + type);
+		debug(this,"findByType:" + type);
 		Set<T> result = new HashSet<T>();
 		T answer = lookupByNameAndType(type.getName(), type);
 		if (answer != null) {
@@ -153,12 +154,4 @@ public class GroovyRegistry implements Registry {
 	public void newClassLoader() {
 		m_fsClassLoader = new FileSystemClassLoader(GroovyRegistry.class.getClassLoader(), m_locations);
 	}
-	private static void error(String msg) {
-		System.out.println(msg);
-		m_logger.error(msg);
-	}
-	private static void debug(String msg) {
-		m_logger.debug(msg);
-	}
-	private static final Logger m_logger = LoggerFactory.getLogger(GroovyRegistry.class);
 }

@@ -77,6 +77,9 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.jndi.JNDIContextManager;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.debug;
 
 /** CamelService implementation
  */
@@ -85,11 +88,11 @@ import org.osgi.service.jndi.JNDIContextManager;
 public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.common.camel.api.CamelService{
 
 	public CamelServiceImpl(){
-		info("CamelServiceImpl construct");
+		info(this,"CamelServiceImpl construct");
 	}
 
 	protected void activate(BundleContext bundleContext, Map props) {
-		info("CamelServiceImpl.activate.props:" + props);
+		info(this,"CamelServiceImpl.activate.props:" + props);
 		try {
 			m_bundleContext = bundleContext;
 			//registerEventHandler(bundleContext);
@@ -99,7 +102,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 	}
 
 	protected void deactivate() throws Exception {
-		info("CamelServiceImpl deactivate");
+		info(this,"CamelServiceImpl deactivate");
 		if( m_serviceRegistration!=null){
 			m_serviceRegistration.unregister();
 		}
@@ -123,6 +126,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 				msg += "\n"+e.getMessage();
 			}
 			e.printStackTrace();
+			error(this, "createRoutesFromJson.error:%[exception]s",e);
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "CamelServiceImpl.createRoutesFromJson:"+msg);
 		}
 	}
@@ -151,6 +155,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 				msg += "\n"+e.getMessage();
 			}
 			e.printStackTrace();
+			error(this, "saveRoutesJson.error:%[exception]s",e);
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "CamelServiceImpl.saveRoutesJson:"+msg);
 		}
 	}
@@ -292,7 +297,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 		if( route == null){
 			throw new RuntimeException("CamelServiceImpl:route '"+routeName+"' not found");
 		}
-		info("Endpoint(Id:"+routeName+"):" + route.getEndpoint());
+		info(this,"Endpoint(Id:"+routeName+"):" + route.getEndpoint());
 		Object answer = camelSend(ns, route.getEndpoint(), body, headers, properties);
 		return answer;
 	}
@@ -354,48 +359,48 @@ System.out.println("Process:"+key);
 
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
 	public void setDataLayer(DataLayer dataLayer) {
-		info("CamelServiceImpl.setDataLayer:" + dataLayer);
+		info(this,"CamelServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
 	}
 
 	@Reference(dynamic = true, optional = false)
 	public void setGitService(GitService gitService) {
-		info("CamelServiceImpl.setGitService:" + gitService);
+		info(this,"CamelServiceImpl.setGitService:" + gitService);
 		m_gitService = gitService;
 	}
 
 	@Reference(dynamic = true, optional = false)
 	public void setWampService(WampService wampService) {
-		info("CamelServiceImpl.setWampService:" + wampService);
+		info(this,"CamelServiceImpl.setWampService:" + wampService);
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
-		info("CamelServiceImpl.setPermissionService:" + paramPermissionService);
+		info(this,"CamelServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setAuthService(AuthService paramService) {
 		this.m_authService = paramService;
-		info("CamelServiceImpl.setAuthService:" + paramService);
+		info(this,"CamelServiceImpl.setAuthService:" + paramService);
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setUtilsService(UtilsService paramUtilsService) {
 		this.m_utilsService = paramUtilsService;
-		info("CamelServiceImpl.setUtilsService:" + paramUtilsService);
+		info(this,"CamelServiceImpl.setUtilsService:" + paramUtilsService);
 	}
 	@Reference(dynamic = true, optional=true)
 	public void setNamespaceService(NamespaceService paramNamespaceService) {
 		this.m_namespaceService = paramNamespaceService;
-		info("CamelServiceImpl.setNamespaceService:" + paramNamespaceService);
+		info(this,"CamelServiceImpl.setNamespaceService:" + paramNamespaceService);
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setDatamapperService(DatamapperService paramService) {
 		this.m_datamapperService = paramService;
-		info("CamelServiceImpl.setDatamapperService:" + paramService);
+		info(this,"CamelServiceImpl.setDatamapperService:" + paramService);
 	}
 	@Reference(dynamic = true,optional=true)
 	public void setEventAdmin(EventAdmin paramEventAdmin) {
@@ -404,7 +409,7 @@ System.out.println("Process:"+key);
 	}
 	@Reference(dynamic = true,optional=true)
 	public void setJNDIContextManager  (JNDIContextManager   cmService) {
-		info("JNDIContextManager.set:" + cmService);
+		info(this,"JNDIContextManager.set:" + cmService);
 		this.m_jdniContextManager = cmService;
 	}
 }
