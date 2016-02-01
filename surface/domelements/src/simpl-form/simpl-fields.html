@@ -956,6 +956,10 @@
 		:host #label.compact {
 			display: none;
 		}
+		:host.compact /deep/ input {
+			width: initial !important;
+			position:relative !important;
+		}
 		:host /deep/ .selectize-input > * {
 			vertical-align: baseline;
 			font-size:14px;
@@ -977,6 +981,9 @@
 			margin-left:10px;
 			margin-top:0px;
 			max-width:300px;
+		}
+		:host.compact /deep/ .selectize-dropdown {
+			position: absolute !important;
 		}
 		:host /deep/ .selectize-input {
 			border: 0px !important;
@@ -1219,11 +1226,22 @@
 			setValue: function( v ) {
 				console.log( "select-field(" + this.name + ").setValue:",v );
 				this.value = v;
-
+				this.selectize.setValue(v);
+			},
+			getValue: function() {
+				console.log( "select-field(" + this.name + "),getValue:", this.value );
+				return this.value;
+			},
+			onChange: function( val ) {
+				if( val == undefined) return;
+				console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
+				this.value = val;
+				this.fire( 'value-changed', this );
+			},
+			selectize: function() {
 				if( this.multiple === true){
 					this.maxItems = 1000;
 				}
- 				var field = this.$.select;
 				var options = {
 						delimiter: this.delimiter,
 						diacritics: this.diacritics,
@@ -1260,30 +1278,16 @@
 						copyClassesToDropdown: this.copyClassesToDropdown,
 						onChange: this.onChange.bind(this)
 				};
-				if (null !== this.ajaxOptions) {
-					//	this.buildAjaxOptions(field, options)
-				} else {
-						$(field).selectize(options);
-				}
-				//this.async( function() {
-				//this.setStyleScope( field, "style-scope", this.tagName.toLowerCase() );
-				//},10 );
-			},
-			getValue: function() {
-				console.log( "select-field(" + this.name + "),getValue:", this.value );
-				return this.value;
-			},
-			onChange: function( val ) {
-				if( val == undefined) return;
-				console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
-				this.value = val;
-				this.fire( 'value-changed', this );
+ 				var field = this.$.select;
+				var $select = $(field).selectize(options);
+				this.selectize = $select[0].selectize;
 			},
 			attached: function() {
 				this.isDomReady = true;
 				if ( this.compact ) {
 					this.compactChanged();
 				}
+				this.selectize();
 			}
 		} );
 
