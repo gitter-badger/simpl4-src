@@ -175,12 +175,10 @@
 			this.data = data;
 		},
 		_setData: function( data ) {
-console.log("_setData:", data);
 			this.fields.forEach( function( field ) {
 				if ( field.setValue == null ) return;
 				field.withoutCheck = true;
 				if ( field.setInvalid ) field.setInvalid( false );
-console.log("_value:", field.defaultvalue);
 				field.setValue( data[ field.name ] || field.defaultvalue || "" );
 			}, this );
 		},
