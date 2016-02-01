@@ -108,7 +108,7 @@
 	function getElementsByAttribute(oElm, strTagName, strAttributeName, strAttributeValue) {
 		var arrElements = (strTagName == "*" && oElm.all) ? oElm.all : oElm.getElementsByTagName(strTagName);
 		var arrReturnElements = []; //modified; used to say new Array();
-		var oAttributeValue = (typeof strAttributeValue !== "undefined") ? new RegExp("(^|\\s)" + strAttributeValue + "(\\s|$)") : null;
+		var oAttributeValue = (typeof strAttributeValue !== "undefined") ? new XRegExp("(^|\\s)" + strAttributeValue + "(\\s|$)") : null;
 		var oCurrent;
 		var oAttribute;
 		for (var i = 0; i < arrElements.length; i++) {
@@ -267,7 +267,7 @@
 			str += array[i] + delimeter;
 		}
 
-		return str.replace(new RegExp(delimeter + "$"), "");
+		return str.replace(new XRegExp(delimeter + "$"), "");
 	}
 
 	return {
@@ -521,11 +521,11 @@
 				}
 
 				if (typeof params["flags"] !== "undefined") {
-					re = new RegExp(regex.toString().replace(/^\//, "").replace(/\/[^\/]*$/, ""), params["flags"]);
+					re = new XRegExp(regex.toString().replace(/^\//, "").replace(/\/[^\/]*$/, ""), params["flags"]);
 				} else {
-					re = new RegExp(regex);
+					re = new XRegExp(regex);
 				}
-
+console.log("Regex:",re+"|"+this.value+ " -> ", re.test(this.value));
 				result = re.test(this.value);
 			}
 
@@ -1986,7 +1986,7 @@
 
 		for (var param in params)
 			if (params.hasOwnProperty(param)) {
-				var re = new RegExp("{" + param + "}", "g");
+				var re = new XRegExp("{" + param + "}", "g");
 				errorMessage = errorMessage.replace(re, params[param]);
 			}
 
@@ -1998,7 +1998,7 @@
 				for (var param in composingConstraint.params)
 					if (composingConstraint.params.hasOwnProperty(param)) {
 
-						var re = new RegExp("{" + param + "}", "g");
+						var re = new XRegExp("{" + param + "}", "g");
 						errorMessage = errorMessage.replace(re, composingConstraint.params[param]);
 					}
 			}
