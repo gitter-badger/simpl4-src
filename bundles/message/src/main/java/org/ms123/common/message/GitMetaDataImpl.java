@@ -102,8 +102,14 @@ class GitMetaDataImpl implements MetaData {
 	}
 
 	public void addMessages(String namespace, String lang, List<Map> msgList,boolean overwrite) throws Exception {
-		String ret = m_gitService.getContent(namespace, format(MESSAGESLANG_PATH, lang));
-		List<Map> msgs = (List) m_ds.deserialize(ret);
+		List<Map> msgs=null;
+		try{
+			String ret = m_gitService.getContent(namespace, format(MESSAGESLANG_PATH, lang));
+			msgs = (List) m_ds.deserialize(ret);
+		}catch(Exception e){
+			System.out.println("addMessages:newMessages:"+e);
+			msgs = new ArrayList<Map>();
+		}
 		for( Map msg : msgList){
 			String id = (String) msg.get("msgid");
 			Map _msg = getMessageById(msgs, id);
@@ -126,8 +132,14 @@ class GitMetaDataImpl implements MetaData {
 		if( msgIds == null && regex == null){
 			m_gitService.deleteObject(namespace, format(MESSAGESLANG_PATH, lang));
 		}else{
-			String ret = m_gitService.getContent(namespace, format(MESSAGESLANG_PATH, lang));
-			List<Map> msgs = (List) m_ds.deserialize(ret);
+			List<Map> msgs=null;
+			try{
+				String ret = m_gitService.getContent(namespace, format(MESSAGESLANG_PATH, lang));
+				msgs = (List) m_ds.deserialize(ret);
+			}catch(Exception e){
+				System.out.println("deleteMessages:MessagesNotExists:"+e);
+				return;
+			}
 			if( msgIds != null){
 				for( String id : msgIds){
 					Map _msg = getMessageById(msgs, id);
@@ -141,7 +153,7 @@ class GitMetaDataImpl implements MetaData {
 				while( it.hasNext() ){
 					Map<String,String> msg = it.next();
 					String msgid = (String)msg.get("msgid");
-System.out.println("deleteMessages:"+msgid+"|regex:"+regex+"|reseult:"+msgid.matches(regex));
+					System.out.println("deleteMessages:"+msgid+"|regex:"+regex+"|reseult:"+msgid.matches(regex));
 					if ( msgid.matches(regex)) {
 						it.remove();
 					}

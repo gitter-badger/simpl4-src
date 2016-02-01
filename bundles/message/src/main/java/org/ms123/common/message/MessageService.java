@@ -19,8 +19,11 @@
 package org.ms123.common.message;
 import java.util.Map;
 import java.util.List;
+import org.ms123.common.rpc.RpcException;
 
 public interface MessageService {
 	public Map<String, String> getMessage(String namespace, String lang, String id) throws Exception;
 	public List<Map> getMessages(String namespace, String lang, Map filter) throws Exception;
+	public void addMessages( String namespace, String lang, List<Map> msgs, Boolean overwrite) throws RpcException;
+	public void deleteMessages( String namespace, String lang, String regex, List<String> msgIds) throws RpcException;
 }
