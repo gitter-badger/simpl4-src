@@ -930,6 +930,366 @@
 	</template>
 </dom-module>
 
+<link rel="import" type="css" href="selectize.bootstrap3.css" />
+<dom-module id="select-field">
+	<style>
+		:host {
+			padding: 0.75em 0;
+			--paper-input-container: {
+				padding: 0px;
+			}
+			;
+		}
+		:host.compact {
+			padding: 0;
+		}
+		:host #decorator.compact {
+			padding: 0;
+			margin: 0px;
+		}
+		:host #decorator {
+			line-height: 0;
+		}
+		:host /deep/ .floated-label-placeholder.compact {
+			display: none;
+		}
+		:host #label.compact {
+			display: none;
+		}
+		:host /deep/ .selectize-input > * {
+			vertical-align: baseline;
+			font-size:14px;
+			height:24px;
+		}
+		:host /deep/ .selectize-control {
+			display: inline !important;
+			line-height:0px;
+		}
+		:host /deep/ .selectize-input {
+			min-height: 24px !important;
+			max-height: 24px !important;
+			padding: 0px !important;
+		}
+		:host /deep/ .selectize-dropdown {
+			position: relative !important;
+			top: 5px !important;
+			margin-bottom:40px;
+			margin-left:10px;
+			margin-top:0px;
+			max-width:300px;
+		}
+		:host /deep/ .selectize-input {
+			border: 0px !important;
+		}
+		:host /deep/ .selectize-input.focus {
+			box-shadow: inset 0 0px !important;
+		}
+		:host /deep/ div.dropdown-field > input.fakeinput {
+			font-size: 14px !important;
+		}
+
+	</style>
+	<template>
+		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[invalid]]">
+			<label id="label" hidden$="[[!label]]">[[label]]</label>
+			<input hidden is="iron-input" id="input" bind-value="[[value]]" />
+			<select multiple$=[[multiple]]  id="select" name="[[name]]">
+			</select>
+      <template is="dom-if" if="[[errorMessage]]">
+        <paper-input-error>[[errorMessage]]</paper-input-error>
+      </template>
+		</paper-input-container>
+	</template>
+	<script>
+		Polymer( {
+			is: "select-field",
+			behaviors: [
+				Polymer.IronFormElementBehavior,
+				Polymer.PaperInputBehavior,
+				Polymer.IronControlState,
+				StyleScopeBehavior,
+				FieldBehavior
+			],
+			properties: {
+				multiple: {
+					value: false
+				},
+				compact: {
+					value: false
+				},
+				jsonItems: {
+					type: String
+				},
+				items: {
+					observer:"itemsChanged",
+					type: Object
+				},
+				delimiter: {
+						type: String,
+						value: ','
+				},
+				diacritics: {
+						type: Boolean,
+						value: true
+				},
+				create: {
+						type: Boolean,
+						value: false
+				},
+				createOnBlur: {
+						type: Boolean,
+						value: false
+				},
+				createFilter: {
+						type: String,
+						value: null
+				},
+				highlight: {
+						type: Boolean,
+						value: true
+				},
+				persist: {
+						type: Boolean,
+						value: true
+				},
+				openOnFocus: {
+						type: Boolean,
+						value: true
+				},
+				maxOptions: {
+						type: Number,
+						value: 1000
+				},
+				maxItems: {
+						type: Number,
+						value: 1
+				},
+				hideSelected: {
+						type: Boolean,
+						value: true
+				},
+				closeAfterSelect: {
+						type: Boolean,
+						value: false
+				},
+				allowEmptyOption: {
+						type: Boolean,
+						value: false
+				},
+				scrollDuration: {
+						type: Number,
+						value: 60
+				},
+				loadThrottle: {
+						type: Number,
+						value: 300
+				},
+				loadingClass: {
+						type: String,
+						value: 'loading'
+				},
+				preload: {
+						type: String, //check if it works
+						value: false
+				},
+				dropdownParent: {
+						type: String,
+						value: null
+				},
+				addPrecedence: {
+						type: Boolean,
+						value: false
+				},
+				selectOnTab: {
+						type: Boolean,
+						value: false
+				},
+				options: {
+						type: Array,
+						value: []
+				},
+				optgroups: {
+						type: Array,
+						value: []
+				},
+				dataAttr: {
+						type: String,
+						value: 'data-data'
+				},
+				valueField: {
+						type: String,
+						value: 'value'
+				},
+				optgroupValueField: {
+						type: String,
+						value: 'value'
+				},
+				labelField: {
+						type: String,
+						value: 'text'
+				},
+				optgroupLabelField: {
+						type: String,
+						value: 'label'
+				},
+				optgroupField: {
+						type: String,
+						value: 'optgroup'
+				},
+				sortField: {
+						type: String,
+						value: '$order'
+				},
+				searchField: {
+						type: Array,
+						value: ['text']
+				},
+				searchConjunction: {
+						type: String,
+						value: 'and'
+				},
+				lockOptgroupOrder: {
+						type: Boolean,
+						value: false
+				},
+				copyClassesToDropdown: {
+						type: Boolean,
+						value: true
+				},
+				ajaxOptions: {
+						type: String,
+						value: null
+				},
+				ajaxOptionsRoot: {
+						type: String,
+						value: null
+				},
+				ajaxOptionsDataType: {
+						type: String,
+						value: null
+				}
+			},
+			observers: [
+				'valueChanged(value)',
+				'compactChanged(compact)',
+				'jsonItemsChanged(jsonItems)'
+			],
+			compactChanged: function( ) {
+				console.log("compactChanged:", this.compact);
+				if( this.compact === false) return;
+				this.async( function() {
+					jQuery( this.decorator ).addClass( "compact" );
+					jQuery( this.$.label ).addClass( "compact" );
+					jQuery( this ).addClass( "compact" );
+					var e = this.$.decorator.querySelector( ".floated-label-placeholder" );
+					jQuery( e ).addClass( "compact" );
+				}, 20 );
+			},
+			jsonItemsChanged: function( v ) {
+				var o = JSON.parse( this.jsonItems );
+				console.log( "prsed:", o );
+				this.items = o;
+			},
+			itemsChanged:function(){
+				var select = this.$.select;
+				while (select.firstChild) {
+    			select.removeChild(select.firstChild);
+				}
+				if( this.items == null){
+					return;
+				}
+				for( var i=0; i < this.items.length;i++){
+					var item = this.items[i];
+					var option = document.createElement("option");
+					var label = document.createTextNode(item.label);
+					option.value = item.value;
+					Polymer.dom( option ).appendChild( label );
+					Polymer.dom( select ).appendChild( option );
+				}
+			},
+			valueChanged: function( v ) {
+				console.log( "select-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
+				if ( this.isDomReady != true ) return;
+				if ( this.withoutCheck ) {
+					this.withoutCheck = false;
+					return;
+				}
+				this.checkConstraints();
+			},
+			setValue: function( v ) {
+				console.log( "select-field(" + this.name + ").setValue:",v );
+				this.value = v;
+
+				if( this.multiple === true){
+					this.maxItems = 1000;
+				}
+ 				var field = this.$.select;
+				var options = {
+						delimiter: this.delimiter,
+						diacritics: this.diacritics,
+						create: this.create,
+						createOnBlur: this.createOnBlur,
+						createFilter: this.createFilter,
+						highlight: this.highlight,
+						persist: this.persist,
+						openOnFocus: this.openOnFocus,
+						maxOptions: this.maxOptions,
+						maxItems: this.maxItems,
+						hideSelected: this.hideSelected,
+						closeAfterSelect: this.closeAfterSelect,
+						alglowEmptyOption: this.allowEmptyOption,
+						scrollDuration: this.scrollDuration,
+						loadThrottle: this.loadThrottle,
+						loadingClass: this.loadingClass,
+						preload: this.preload,
+						dropdownParent: this.dropdownParent,
+						addPrecedence: this.addPrecedence,
+						selectOnTab: this.selectOnTab,
+						options: this.options,
+						optgroups: this.optgroups,
+						dataAttr: this.dataAttr,
+						valueField: this.valueField,
+						optgroupValueField: this.optgroupValueField,
+						labelField: this.labelField,
+						optgroupLabelField: this.optgroupLabelField,
+						optgroupField: this.optgroupField,
+						sortField: this.sortField,
+						searchField: this.searchField,
+						searchConjunction: this.searchConjunction,
+						lockOptgroupOrder: this.lockOptgroupOrder,
+						copyClassesToDropdown: this.copyClassesToDropdown,
+						onChange: this.onChange.bind(this)
+				};
+				if (null !== this.ajaxOptions) {
+					//	this.buildAjaxOptions(field, options)
+				} else {
+						$(field).selectize(options);
+				}
+				//this.async( function() {
+				//this.setStyleScope( field, "style-scope", this.tagName.toLowerCase() );
+				//},10 );
+			},
+			getValue: function() {
+				console.log( "select-field(" + this.name + "),getValue:", this.value );
+				return this.value;
+			},
+			onChange: function( val ) {
+				if( val == undefined) return;
+				console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
+				this.value = val;
+				this.fire( 'value-changed', this );
+			},
+			attached: function() {
+				this.isDomReady = true;
+				if ( this.compact ) {
+					this.compactChanged();
+				}
+			}
+		} );
+
+	</script>
+</dom-module>
+
 <dom-module id="dropdown-field">
 	<link rel="import" type="css" href="jquery.dropdown.css" />
 	<style>

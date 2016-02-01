@@ -97,7 +97,7 @@
 		},
 		validate: function( e ) {
 			var errorList = [];
-			var elements = this.filterToArray( this.$.formdiv.querySelectorAll( "input-field,checkbox-field,dropdown-field" ), false );
+			var elements = this.filterToArray( this.$.formdiv.querySelectorAll( "input-field,checkbox-field,select-field" ), false );
 			Array.prototype.forEach.call( elements, function( elem ) {
 				elem.setInvalid( false );
 			} );
