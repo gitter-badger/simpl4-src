@@ -175,10 +175,12 @@
 			this.data = data;
 		},
 		_setData: function( data ) {
+console.log("_setData:", data);
 			this.fields.forEach( function( field ) {
 				if ( field.setValue == null ) return;
 				field.withoutCheck = true;
 				if ( field.setInvalid ) field.setInvalid( false );
+console.log("_value:", field.defaultvalue);
 				field.setValue( data[ field.name ] || field.defaultvalue || "" );
 			}, this );
 		},
@@ -352,7 +354,7 @@
 				} else {
 					shape.properties.label = "";
 				}
-				if ( shape.properties.xf_default ) {
+				if ( !this.isEmpty(shape.properties.xf_default )) {
 					if( shape.stencil.id.toLowerCase() == 'input' ){
 						if( shape.properties.xf_type.startsWith("date")){
 							var d = shape.properties.xf_default;
@@ -387,6 +389,8 @@
 					var si;
 					if ( !this.isEmpty(jsonpath) ) {
 						var a  = JSONPath({json: this.jsonDataForSelectionLists, path: jsonpath, callback: function(){}});
+						console.log("jsonpath:",jsonpath);
+						console.log("jsonData:",a);
 						if( a == null || a.length==0){
 							props.items = [];
 						}else{
@@ -401,7 +405,7 @@
 					}
 					try{
 						if( this.isEmpty(props.xf_default)){
-							props.xf_default = props.items[0].value;
+							//props.xf_default = props.items[0].value;
 						}
 					}catch(e){
 					}

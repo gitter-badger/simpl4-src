@@ -956,6 +956,9 @@
 		:host #label.compact {
 			display: none;
 		}
+		:host #label {
+			font-size: 14px;
+		}
 		:host.compact /deep/ input {
 			width: initial !important;
 			position:relative !important;
@@ -963,15 +966,15 @@
 		:host /deep/ .selectize-input > * {
 			vertical-align: baseline;
 			font-size:14px;
-			height:24px;
+			height:22px;
 		}
 		:host /deep/ .selectize-control {
 			display: inline !important;
 			line-height:0px;
+			opacity:0;
 		}
 		:host /deep/ .selectize-input {
 			min-height: 24px !important;
-			max-height: 24px !important;
 			padding: 0px !important;
 		}
 		:host /deep/ .selectize-dropdown {
@@ -1233,10 +1236,10 @@
 				return this.value;
 			},
 			onChange: function( val ) {
-				if( val == undefined) return;
 				console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
 				this.value = val;
 				this.fire( 'value-changed', this );
+				jQuery( this.selectizeControl ).css( "opacity", this.isEmpty(val) ? "0" : "1" );
 			},
 			selectize: function() {
 				if( this.multiple === true){
@@ -1288,6 +1291,14 @@
 					this.compactChanged();
 				}
 				this.selectize();
+				this.selectizeControl = this.$.decorator.querySelector( ".selectize-control" );
+			},
+			isEmpty: function( s ) {
+				if( Array.isArray(s)){
+					return s.length == 0;
+				}
+				if ( s == null || s == '' ) return true;
+				return false;
 			}
 		} );
 
