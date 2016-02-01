@@ -187,10 +187,11 @@ public class MessageServiceImpl implements MessageService {
 	public void deleteMessages(
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName("lang")             String lang,
+			@PName("regex")        @POptional  String regex,
 			@PName("msgIds")        @POptional  List<String> msgIds
 					) throws RpcException {
 		try {
-			m_gitMetaData.deleteMessages(namespace, lang,msgIds);
+			m_gitMetaData.deleteMessages(namespace, lang,regex, msgIds);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "MessageServiceImpl.deleteMessages:", e);
 		}

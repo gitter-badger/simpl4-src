@@ -52,7 +52,7 @@ interface MetaData {
 
 	public void saveMessages(String namespace, String lang, List<Map> msgs) throws Exception;
 
-	public void deleteMessages(String namespace, String lang,List<String> msgIds) throws Exception;
+	public void deleteMessages(String namespace, String lang,String regex, List<String> msgIds) throws Exception;
 
 	public void deleteMessage(String namespace, String lang, String id) throws Exception;
 

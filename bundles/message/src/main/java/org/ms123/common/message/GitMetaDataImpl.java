@@ -122,16 +122,29 @@ class GitMetaDataImpl implements MetaData {
 		m_gitService.putContent(namespace, format(MESSAGESLANG_PATH, lang), MESSAGESLANG_TYPE, m_js.deepSerialize(msgs));
 	}
 
-	public void deleteMessages(String namespace, String lang,List<String> msgIds) throws Exception {
-		if( msgIds == null){
+	public void deleteMessages(String namespace, String lang,String regex, List<String> msgIds) throws Exception {
+		if( msgIds == null && regex == null){
 			m_gitService.deleteObject(namespace, format(MESSAGESLANG_PATH, lang));
 		}else{
 			String ret = m_gitService.getContent(namespace, format(MESSAGESLANG_PATH, lang));
 			List<Map> msgs = (List) m_ds.deserialize(ret);
-			for( String id : msgIds){
-				Map _msg = getMessageById(msgs, id);
-				if (_msg != null) {
-					msgs.remove(_msg);
+			if( msgIds != null){
+				for( String id : msgIds){
+					Map _msg = getMessageById(msgs, id);
+					if (_msg != null) {
+						msgs.remove(_msg);
+					}
+				}
+			}
+			if( regex != null){
+				Iterator<Map> it = msgs.iterator();
+				while( it.hasNext() ){
+					Map<String,String> msg = it.next();
+					String msgid = (String)msg.get("msgid");
+System.out.println("deleteMessages:"+msgid+"|regex:"+regex+"|reseult:"+msgid.matches(regex));
+					if ( msgid.matches(regex)) {
+						it.remove();
+					}
 				}
 			}
 			m_gitService.putContent(namespace, format(MESSAGESLANG_PATH, lang), MESSAGESLANG_TYPE, m_js.deepSerialize(msgs));
