@@ -1189,9 +1189,12 @@
 			$dropdown_parent  = $(settings.dropdownParent || $wrapper);
 			$dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(inputMode).hide().appendTo($dropdown_parent);
 			$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
-			console.log("mobile:", Modernizr.mobile);
+			var padding = Modernizr.mobile ? "70" : "140";
+			$control_close    = $('<iron-icon style="margin:2px;margin-left:'+padding+'px;cursor:pointer;" icon="close" />').appendTo($dropdown);
+			$control_close.on('click', function(e){
+				self.blur(e.target);
+			});
 			if( Modernizr.mobile){
-				$control_close    = $('<iron-icon style="margin:2px;margin-left:70px;cursor:pointer;" icon="close" />').appendTo($dropdown);
 				$control_keyboard    = $('<iron-icon id="kon" float="right" style="margin:2px;margin-left:25px;cursor:pointer;" icon="hardware:keyboard" />').appendTo($dropdown);
 				$control_keyboard_hide    = $('<iron-icon id="koff" float="right" style="margin:2px;margin-left:25px;cursor:pointer;" icon="hardware:keyboard-hide" />').appendTo($dropdown);
 				$wrapper[0].querySelector("#kon").style.color="#212121";
@@ -1208,9 +1211,6 @@
 					}
 				}, false);
 
-				$control_close.on('click', function(e){
-					self.blur(e.target);
-				});
 				$control_keyboard.on('click', function(e){
 					$control_input.removeAttr('readonly');
 					$control_input.focus();
