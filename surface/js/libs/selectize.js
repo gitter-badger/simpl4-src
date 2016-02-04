@@ -1189,6 +1189,11 @@
 			$dropdown_parent  = $(settings.dropdownParent || $wrapper);
 			$dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(inputMode).hide().appendTo($dropdown_parent);
 			$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
+			$control_close    = $('<iron-icon style="margin:2px;margin-left:130px;cursor:pointer;" icon="close" />').appendTo($dropdown);
+
+			$control_close.on('click', function(e){
+						self.blur(e.target);
+			});
 	
 			if(self.settings.copyClassesToDropdown) {
 				$dropdown.addClass(classes);
