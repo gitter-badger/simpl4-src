@@ -525,7 +525,6 @@
 				} else {
 					re = new XRegExp(regex);
 				}
-console.log("Regex:",re+"|"+this.value+ " -> ", re.test(this.value));
 				result = re.test(this.value);
 			}
 
