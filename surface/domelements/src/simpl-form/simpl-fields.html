@@ -19,6 +19,8 @@
  */
 -->
 <script src="jquery.dropdown.js"></script>
+<link rel="import" type="css" href="bootstrap-datetimepicker-standalone.css" />
+<link rel="import" type="css" href="bootstrap-datetimepicker.css" />
 <script>
 	FieldBehavior = {
 		properties: {
@@ -187,7 +189,7 @@
 
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
 
-			<input is="iron-input" id="input"
+			<input is="iron-input" id="input"  class="form-control"
 				aria-labelledby$="[[_ariaLabelledBy]]"
 				aria-describedby$="[[_ariaDescribedBy]]"
 				disabled$="[[disabled]]"
@@ -265,7 +267,7 @@
 					type: String
 				}
 			},
-			hasDate: Modernizr.inputtypes.date && Modernizr.desktop !== true,
+			hasDate: false,//Modernizr.inputtypes.date && Modernizr.desktop !== true,
 			observers: [
 				'editValueChanged(editValue)',
 				'valueChanged(value)',
@@ -311,6 +313,8 @@
 				} );
 			},
 			attached: function() {
+				//this.pickerType = "pikaday";
+				this.pickerType = "bootstrap";
 				if ( this.label == null || this.label == '' ) this.label = this.name;
 				this.validateAttributes();
 				this.decorator = this.$.decorator;
@@ -321,23 +325,10 @@
 				}
 				var showTime = this.isDateTime();
 				if ( this.isDate() && !this.hasDate ) {
-					this.picker = new Pikaday( {
-						field: this.$.input,
-						trigger: this.$.input,
-						onSelect: function( a ) {}.bind( this ),
-						i18n: simpl4.util.BaseManager.getLanguage() == 'de' ? this.i18n_de : this.i18n_en,
-						format: simpl4.util.BaseManager.getDateFormat() + ( showTime ? " HH:mm" : "" ),
-						showTime: showTime,
-						showSeconds: false,
-						use24hour: simpl4.util.BaseManager.getLanguage() == 'de' ? true : false,
-						firstDay: 1,
-						//minDate: new Date( '2000-01-01' ),
-						//maxDate: new Date( '2020-12-31' ),
-						yearRange: [ 1900, 2030 ]
-					} );
+					this.datetimePicker = this.getDatePicker(showTime, {}/*options*/);
 					this.readonly = true;
 					if ( this._date ) {
-						this.picker.gotoDate( this._date );
+						this.datetimePickerGotoDate(this._date);
 					}
 				}
 				if ( this.isDate() && this.hasDate ) {
@@ -399,6 +390,7 @@
 			committedValueChanged: function() { //@@@MS ???
 			},
 			editValueChanged: function() {
+				console.log("editValueChanged:",this.editValue);
 				//this.$.input.focus();
 				if ( this.type == null ) return;
 				if ( this.isDate() && !this.hasDate ) {
@@ -439,10 +431,47 @@
 				}
 				return this.value;
 			},
+			getDatePicker:function(showTime,options){
+				if( this.pickerType == "pikaday"){
+					var picker = new Pikaday( {
+						field: this.$.input,
+						trigger: this.$.input,
+						onSelect: function( a ) {}.bind( this ),
+						i18n: simpl4.util.BaseManager.getLanguage() == 'de' ? this.i18n_de : this.i18n_en,
+						format: simpl4.util.BaseManager.getDateFormat() + ( showTime ? " HH:mm" : "" ),
+						showTime: showTime,
+						showSeconds: false,
+						use24hour: simpl4.util.BaseManager.getLanguage() == 'de' ? true : false,
+						firstDay: 1,
+						//minDate: new Date( '2000-01-01' ),
+						//maxDate: new Date( '2020-12-31' ),
+						yearRange: [ 1900, 2030 ]
+					} );
+					return picker;
+				}
+				if( this.pickerType == "bootstrap"){
+					var _format= simpl4.util.BaseManager.getDateFormat() + ( showTime ? " HH:mm" : "" );
+					var picker = $(this.$.input).datetimepicker( {viewMode:"years", showComponents:"MY", ignoreReadonly:true, focusOnShow:false, format:_format, showClose:true});
+					var self = this;
+					picker.on("dp.change", function(e){
+						console.log("change.date:",e.date.toDate());
+						console.log("change.val:",$(self.$.input).val());
+						self.editValue = $(self.$.input).val();
+					});
+					return picker;
+				}
+			},
+			datetimePickerGotoDate:function(date){
+				if( this.pickerType == "pikaday"){
+					this.datetimePicker.gotoDate( date );
+				}
+				if( this.pickerType == "bootstrap"){
+				}
+			},
 			_convertDate: function( v ) {
 				if ( !v ) {
-					if ( this.picker ) {
-						this.picker.gotoDate( new Date() );
+					if ( this.datetimePicker ) {
+						this.datetimePickerGotoDate(new Date());
 					} else {
 						this._date = new Date();
 					}
@@ -450,8 +479,8 @@
 				}
 				var iso = this._toIso( v );
 				this._date = this._isoToDate( iso );
-				if ( this.picker ) {
-					this.picker.gotoDate( this._date );
+				if ( this.datetimePicker ) {
+					this.datetimePickerGotoDate(this._date);
 					this._date = null;
 				}
 				return this._isoToI18n( iso );
@@ -1104,7 +1133,7 @@
 				},
 				dropdownParent: {
 						type: String,
-						value: null
+						value: "body"
 				},
 				addPrecedence: {
 						type: Boolean,
@@ -1193,6 +1222,7 @@
 					jQuery( this ).addClass( "compact" );
 					var e = this.$.decorator.querySelector( ".floated-label-placeholder" );
 					jQuery( e ).addClass( "compact" );
+					jQuery( this.selectizeControl ).css( "opacity", "1" );
 				}, 20 );
 			},
 			jsonItemsChanged: function( v ) {
@@ -1235,11 +1265,17 @@
 				console.log( "select-field(" + this.name + "),getValue:", this.value );
 				return this.value;
 			},
+			onFocus: function( val ) {
+				console.log( "select-field(" + this.name + ").onFocus" );
+				//this.selectizeControl.blur();
+			},
 			onChange: function( val ) {
 				console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
 				this.value = val;
 				this.fire( 'value-changed', this );
-				jQuery( this.selectizeControl ).css( "opacity", this.isEmpty(val) ? "0" : "1" );
+				if( this.compact === false){
+					jQuery( this.selectizeControl ).css( "opacity", this.isEmpty(val) ? "0" : "1" );
+				}
 			},
 			selectize: function() {
 				if( this.multiple === true){
@@ -1279,19 +1315,22 @@
 						searchConjunction: this.searchConjunction,
 						lockOptgroupOrder: this.lockOptgroupOrder,
 						copyClassesToDropdown: this.copyClassesToDropdown,
-						onChange: this.onChange.bind(this)
+						onChange: this.onChange.bind(this),
+						onFocus: this.onFocus.bind(this)
 				};
  				var field = this.$.select;
 				var $select = $(field).selectize(options);
 				this.selectize = $select[0].selectize;
 			},
 			attached: function() {
+				console.log( "select-field(" + this.name + ").attached" );
 				this.isDomReady = true;
 				if ( this.compact ) {
 					this.compactChanged();
 				}
 				this.selectize();
 				this.selectizeControl = this.$.decorator.querySelector( ".selectize-control" );
+//					jQuery( this.selectizeControl ).css( "pointer-events", "none" );
 			},
 			isEmpty: function( s ) {
 				if( Array.isArray(s)){

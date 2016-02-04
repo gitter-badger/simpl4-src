@@ -205,6 +205,13 @@
 			console.debug( "Data:", JSON.stringify( this.getData(), null, 2 ) );
 		},
 
+		getFormJsonDataForSelectionLists:function(){
+			if( this.jsonDataForSelectionLists==null){
+				this.jsonDataForSelectionLists = this._getFormJsonDataForSelectionLists( this._form.properties.xf_method_fetch );
+			}
+			return this.jsonDataForSelectionLists;
+		},
+
 		_getFormJsonDataForSelectionLists:function(method){
 			if( this.isEmpty(method)) return {};
 			try{
@@ -532,6 +539,7 @@
 		},
 		mapKeys: function( key ) {
 			if ( key == "NotNull" ) return "NotEmpty";
+			if ( key == "Size" ) return "Length";
 			return key;
 		},
 		constraintParams: {
@@ -540,6 +548,7 @@
 			Range: [ "min", "max" ],
 			Pattern: [ "regex" ],
 			Length: [ "min", "max" ],
+			Size: [ "min", "max" ],
 			Digits: [ "integer", "fraction" ],
 			Past: [ "format" ],
 			Future: [ "format" ],
