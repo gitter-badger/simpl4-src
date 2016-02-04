@@ -4480,4 +4480,4 @@ module.exports = XRegExp;
 });
 
 
-XRegExp.install('natives');
+//XRegExp.install('natives');
