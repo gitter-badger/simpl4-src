@@ -1185,16 +1185,44 @@
 	
 			$wrapper          = $('<div>').addClass(settings.wrapperClass).addClass(classes).addClass(inputMode);
 			$control          = $('<div>').addClass(settings.inputClass).addClass('items').appendTo($wrapper);
-			$control_input    = $('<input type="text" autocomplete="off" />').appendTo($control).attr('tabindex', $input.is(':disabled') ? '-1' : self.tabIndex);
+			$control_input    = $('<input readonly type="text" autocomplete="off" />').appendTo($control).attr('tabindex', $input.is(':disabled') ? '-1' : self.tabIndex);
 			$dropdown_parent  = $(settings.dropdownParent || $wrapper);
 			$dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(inputMode).hide().appendTo($dropdown_parent);
 			$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
-			$control_close    = $('<iron-icon style="margin:2px;margin-left:130px;cursor:pointer;" icon="close" />').appendTo($dropdown);
+			console.log("mobile:", Modernizr.mobile);
+			if( Modernizr.mobile){
+				$control_close    = $('<iron-icon style="margin:2px;margin-left:70px;cursor:pointer;" icon="close" />').appendTo($dropdown);
+				$control_keyboard    = $('<iron-icon id="kon" float="right" style="margin:2px;margin-left:25px;cursor:pointer;" icon="hardware:keyboard" />').appendTo($dropdown);
+				$control_keyboard_hide    = $('<iron-icon id="koff" float="right" style="margin:2px;margin-left:25px;cursor:pointer;" icon="hardware:keyboard-hide" />').appendTo($dropdown);
+				$wrapper[0].querySelector("#kon").style.color="#212121";
+				$wrapper[0].querySelector("#koff").style.color="#DDDDDD";
 
-			$control_close.on('click', function(e){
-						self.blur(e.target);
-			});
-	
+				var initial_screen_size = window.innerHeight;
+				window.addEventListener("resize", function() {
+					var is_keyboard = (window.innerHeight < initial_screen_size);
+					console.log("is_keyboard:",is_keyboard);
+					if( !is_keyboard ){
+						$control_input.attr('readonly', true);
+						$wrapper[0].querySelector("#kon").style.color="#212121";
+						$wrapper[0].querySelector("#koff").style.color="#DDDDDD";
+					}
+				}, false);
+
+				$control_close.on('click', function(e){
+					self.blur(e.target);
+				});
+				$control_keyboard.on('click', function(e){
+					$control_input.removeAttr('readonly');
+					$control_input.focus();
+					$wrapper[0].querySelector("#kon").style.color="#DDDDDD";
+					$wrapper[0].querySelector("#koff").style.color="#212121";
+				});
+				$control_keyboard_hide.on('click', function(e){
+					$control_input.attr('readonly', true);
+					$wrapper[0].querySelector("#kon").style.color="#212121";
+					$wrapper[0].querySelector("#koff").style.color="#DDDDDD";
+				});
+			}
 			if(self.settings.copyClassesToDropdown) {
 				$dropdown.addClass(classes);
 			}
