@@ -942,6 +942,7 @@
                 next: function () {
                     var navFnc = datePickerModes[currentViewMode].navFnc;
                     viewDate.add(datePickerModes[currentViewMode].navStep, navFnc);
+                    setValue(date.clone().year(viewDate.year()).month(viewDate.month()));
                     fillDate();
                     viewUpdate(navFnc);
                 },
@@ -949,6 +950,7 @@
                 previous: function () {
                     var navFnc = datePickerModes[currentViewMode].navFnc;
                     viewDate.subtract(datePickerModes[currentViewMode].navStep, navFnc);
+                    setValue(date.clone().year(viewDate.year()).month(viewDate.month()));
                     fillDate();
                     viewUpdate(navFnc);
                 },
