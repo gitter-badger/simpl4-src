@@ -997,28 +997,13 @@
 			font-size:14px;
 			height:22px;
 		}
-		:host /deep/ .selectize-control {
-			display: inline !important;
-			line-height:0px;
-			opacity:0;
-		}
-		:host /deep/ .selectize-input {
-			min-height: 24px !important;
-			padding: 0px !important;
-		}
-		:host /deep/ .selectize-dropdown {
-			position: relative !important;
-			top: 5px !important;
-			margin-bottom:40px;
-			margin-left:10px;
-			margin-top:0px;
-			max-width:300px;
-		}
 		:host.compact /deep/ .selectize-dropdown {
 			position: absolute !important;
 		}
 		:host /deep/ .selectize-input {
 			border: 0px !important;
+			padding:0px !important;
+			min-height:24px;
 		}
 		:host /deep/ .selectize-input.focus {
 			box-shadow: inset 0 0px !important;
@@ -1133,7 +1118,7 @@
 				},
 				dropdownParent: {
 						type: String,
-						value: "body"
+						value:null 
 				},
 				addPrecedence: {
 						type: Boolean,
@@ -1222,7 +1207,6 @@
 					jQuery( this ).addClass( "compact" );
 					var e = this.$.decorator.querySelector( ".floated-label-placeholder" );
 					jQuery( e ).addClass( "compact" );
-					jQuery( this.selectizeControl ).css( "opacity", "1" );
 				}, 20 );
 			},
 			jsonItemsChanged: function( v ) {
@@ -1273,9 +1257,6 @@
 				console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
 				this.value = val;
 				this.fire( 'value-changed', this );
-				if( this.compact === false){
-					jQuery( this.selectizeControl ).css( "opacity", this.isEmpty(val) ? "0" : "1" );
-				}
 			},
 			selectize: function() {
 				if( this.multiple === true){
@@ -1323,6 +1304,7 @@
 				this.selectize = $select[0].selectize;
 			},
 			attached: function() {
+				this.alwaysFloatLabel = true;
 				console.log( "select-field(" + this.name + ").attached" );
 				this.isDomReady = true;
 				if ( this.compact ) {
