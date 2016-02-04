@@ -170,20 +170,21 @@
                 if (typeof granularity !== 'string' || granularity.length > 1) {
                     throw new TypeError('isEnabled expects a single character string parameter');
                 }
+                var showComponents = options.showComponents;
                 switch (granularity) {
                     case 'y':
-                        return actualFormat.indexOf('Y') !== -1;
+                        return showComponents.indexOf('Y') !== -1;
                     case 'M':
-                        return actualFormat.indexOf('M') !== -1;
+                        return showComponents.indexOf('M') !== -1;
                     case 'd':
-                        return actualFormat.toLowerCase().indexOf('d') !== -1;
+                        return showComponents.toLowerCase().indexOf('d') !== -1;
                     case 'h':
                     case 'H':
-                        return actualFormat.toLowerCase().indexOf('h') !== -1;
+                        return showComponents.toLowerCase().indexOf('h') !== -1;
                     case 'm':
-                        return actualFormat.indexOf('m') !== -1;
+                        return showComponents.indexOf('m') !== -1;
                     case 's':
-                        return actualFormat.indexOf('s') !== -1;
+                        return showComponents.indexOf('s') !== -1;
                     default:
                         return false;
                 }
@@ -959,8 +960,8 @@
                 selectMonth: function (e) {
                     var month = $(e.target).closest('tbody').find('span').index($(e.target));
                     viewDate.month(month);
+                    setValue(date.clone().year(viewDate.year()).month(viewDate.month()));
                     if (currentViewMode === minViewModeNumber) {
-                        setValue(date.clone().year(viewDate.year()).month(viewDate.month()));
                         if (!options.inline) {
                             hide();
                         }
@@ -974,8 +975,8 @@
                 selectYear: function (e) {
                     var year = parseInt($(e.target).text(), 10) || 0;
                     viewDate.year(year);
+                    setValue(date.clone().year(viewDate.year()));
                     if (currentViewMode === minViewModeNumber) {
-                        setValue(date.clone().year(viewDate.year()));
                         if (!options.inline) {
                             hide();
                         }
@@ -989,8 +990,8 @@
                 selectDecade: function (e) {
                     var year = parseInt($(e.target).data('selection'), 10) || 0;
                     viewDate.year(year);
+                    setValue(date.clone().year(viewDate.year()));
                     if (currentViewMode === minViewModeNumber) {
-                        setValue(date.clone().year(viewDate.year()));
                         if (!options.inline) {
                             hide();
                         }
@@ -1196,7 +1197,6 @@
                 }
 
                 widget = getTemplate();
-
                 fillDow();
                 fillMonths();
 
@@ -1381,7 +1381,6 @@
                     });
                 });
 
-
                 parseFormats = options.extraFormats ? options.extraFormats.slice() : [];
                 if (parseFormats.indexOf(format) < 0 && parseFormats.indexOf(actualFormat) < 0) {
                     parseFormats.push(actualFormat);
@@ -1520,6 +1519,19 @@
             if (actualFormat) {
                 initFormatting(); // reinit formatting
             }
+            return picker;
+        };
+
+        picker.showComponents = function (newShowComponents) {
+            if (arguments.length === 0) {
+                return options.showComponents;
+            }
+
+            if ((typeof newShowComponents !== 'string') && ((typeof newShowComponents !== 'boolean') || (newShowComponents !== false))) {
+                throw new TypeError('showComponents() expects a sting or boolean:false parameter ' + newShowComponents);
+            }
+
+            options.showComponents = newShowComponents;
             return picker;
         };
 
