@@ -286,7 +286,14 @@
 				}
 			},
 			isDate:function(){
+				if( this.isDateYearMonth()) return true;
 				if( this._origType && this._origType.match(/^date/) ){
+					return true;
+				}
+				return false;
+			},
+			isDateYearMonth:function(){
+				if( this._origType && this._origType.match(/^dateyearmonth/) ){
 					return true;
 				}
 				return false;
@@ -363,7 +370,7 @@
 				noon: 'Noon'
 			},
 			isAuthorizedType: function() {
-				var okTypes = [ 'checkbox', 'color', 'date', 'datetime', 'datetime-local', 'email', 'file', 'month', 'number', 'password', 'radio', 'range', 'tel', 'text', 'time', 'url', 'week' ];
+				var okTypes = [ 'checkbox', 'color', 'date', 'datetime', 'datetime-local', 'dateyearmonth', 'email', 'file', 'month', 'number', 'password', 'radio', 'range', 'tel', 'text', 'time', 'url', 'week' ];
 				return ( okTypes.indexOf( this.type ) != -1 );
 			},
 			lpad: function pad( value, length ) {
@@ -383,6 +390,8 @@
 				}
 				if ( this.isDateTime() && this.hasDate) {
 					this.input.setAttribute( 'type', "datetime-local" );
+				}else if ( this.isDateYearMonth() && this.hasDate) {
+					this.input.setAttribute( 'type', "date" );
 				} else {
 					this.input.setAttribute( 'type', this.type );
 				}
@@ -451,7 +460,15 @@
 				}
 				if( this.pickerType == "bootstrap"){
 					var _format= simpl4.util.BaseManager.getDateFormat() + ( showTime ? " HH:mm" : "" );
-					var picker = $(this.$.input).datetimepicker( {viewMode:"years", showComponents:"MY", ignoreReadonly:true, focusOnShow:false, format:_format, showClose:true});
+					var viewMode = this.isDateYearMonth() ? "years" : "days";
+					var showComponents = "MYd";
+					if( this.isDateYearMonth()){
+						showComponents = "MY";
+					}else{
+						showComponents = "MYdhm";
+					}
+					console.log("showComponents:", showComponents+"/"+viewMode);
+					var picker = $(this.$.input).datetimepicker( {viewMode:viewMode, showComponents:showComponents, ignoreReadonly:true, focusOnShow:false, format:_format, showClose:true});
 					var self = this;
 					picker.on("dp.change", function(e){
 						console.log("change.date:",e.date.toDate());
