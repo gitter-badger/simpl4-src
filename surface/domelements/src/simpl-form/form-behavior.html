@@ -171,6 +171,7 @@
 			}).bind(this) );
 		},
 		setData: function( data ) {
+			this.resetData = jQuery.extend({}, data);;
 			if( data == null) return;
 			this.data = data;
 		},
@@ -254,6 +255,9 @@
 					}, this );
 					this.fieldsMap = this.toMap( this.fields );
 					this.valueChanged();
+					if( this.resetData == null){
+						this.resetData = this.getData();
+					}
 				},1 );
 			},1 );
 		},
@@ -276,6 +280,9 @@
 					}, this );
 					this.fieldsMap = this.toMap( this.fields );
 					this.valueChanged();
+					if( this.resetData == null){
+						this.resetData = this.getData();
+					}
 				},1 );
 			},1 );
 		},

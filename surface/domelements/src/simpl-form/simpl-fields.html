@@ -333,7 +333,9 @@
 				var showTime = this.isDateTime();
 				if ( this.isDate() && !this.hasDate ) {
 					this.datetimePicker = this.getDatePicker(showTime, {}/*options*/);
-					this.readonly = true;
+					if( this.hasTouch()){
+						this.readonly = true;
+					}
 					if ( this._date ) {
 						this.datetimePickerGotoDate(this._date);
 					}
@@ -368,6 +370,60 @@
 				weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
 				midnight: 'Midnight',
 				noon: 'Noon'
+			},
+			tooltips: {
+				today: 'Go to today',
+				clear: 'Clear selection',
+				close: 'Close the picker',
+				selectMonth: 'Select Month',
+				prevMonth: 'Previous Month',
+				nextMonth: 'Next Month',
+				selectYear: 'Select Year',
+				prevYear: 'Previous Year',
+				nextYear: 'Next Year',
+				selectDecade: 'Select Decade',
+				prevDecade: 'Previous Decade',
+				nextDecade: 'Next Decade',
+				prevCentury: 'Previous Century',
+				nextCentury: 'Next Century',
+				pickHour: 'Pick Hour',
+				incrementHour: 'Increment Hour',
+				decrementHour: 'Decrement Hour',
+				pickMinute: 'Pick Minute',
+				incrementMinute: 'Increment Minute',
+				decrementMinute: 'Decrement Minute',
+				pickSecond: 'Pick Second',
+				incrementSecond: 'Increment Second',
+				decrementSecond: 'Decrement Second',
+				togglePeriod: 'Toggle Period',
+				selectTime: 'Select Time'
+			},
+			tooltips_de: {
+				today: 'Heute auswählen',
+				clear: 'Löschen',
+				close: 'Schließen',
+				selectMonth: 'Monat auswählen',
+				prevMonth: 'vorheriger Monat',
+				nextMonth: 'nächster Monat',
+				selectYear: 'Jahr auswählen',
+				prevYear: 'vorheriges Jahr',
+				nextYear: 'nächstes Jahr',
+				selectDecade: 'Dekade auswählen',
+				prevDecade: 'vorherige Dekade',
+				nextDecade: 'nächste Dekade',
+				prevCentury: 'vorheriges Jahrhundert',
+				nextCentury: 'nächstes Jahrhundert',
+				pickHour: 'Stunde auswählen',
+				incrementHour: 'Stunde +1',
+				decrementHour: 'Stunde -1',
+				pickMinute: 'Minute auswählen',
+				incrementMinute: 'Minute +1',
+				decrementMinute: 'Minute -1',
+				pickSecond: 'Sekunde auswählen',
+				incrementSecond: 'Sekunde +1',
+				decrementSecond: 'Sekunde -1',
+				togglePeriod: 'Periode umschalten',
+				selectTime: 'Zeit auswählen'
 			},
 			isAuthorizedType: function() {
 				var okTypes = [ 'checkbox', 'color', 'date', 'datetime', 'datetime-local', 'dateyearmonth', 'email', 'file', 'month', 'number', 'password', 'radio', 'range', 'tel', 'text', 'time', 'url', 'week' ];
@@ -467,8 +523,9 @@
 					}else{
 						showComponents = "MYdhm";
 					}
+					var tooltips = this["tooltips_"+simpl4.util.BaseManager.getLanguage()];
 					console.log("showComponents:", showComponents+"/"+viewMode);
-					var picker = $(this.$.input).datetimepicker( {viewMode:viewMode, showComponents:showComponents, ignoreReadonly:true, focusOnShow:false, format:_format, showClose:true});
+					var picker = $(this.$.input).datetimepicker( {viewMode:viewMode, showComponents:showComponents, ignoreReadonly:true, tooltips:tooltips, focusOnShow:false, format:_format, showTodayButton:true, showClear:false, showClose:true});
 					var self = this;
 					picker.on("dp.change", function(e){
 						console.log("change.date:",e.date.toDate());
@@ -549,6 +606,9 @@
 			setInvalid: function( b ) {
 				if ( this.decorator == null ) return;
 				this.invalid = b;
+			},
+			hasTouch:function(){
+				return  (('ontouchstart' in window) || window.DocumentTouch && document instanceof window.DocumentTouch);
 			},
 			setCustomValidity: function( message ) {
 				//Dummy,regula want access this

@@ -621,6 +621,9 @@
 			<simpl-row>
 				<xaction-button on-tap="internalXAction" class="button button_primary" xid="{{_form.xf_id}}" xaction="execute" raised>
 					<iron-icon icon="check"></iron-icon>[[tr('form.execute')]]</xaction-button>
+				<xaction-button on-tap="internalXAction" class="button" xid="{{_form.xf_id}}" xaction="reset" raised>
+					<iron-icon icon="refresh"></iron-icon>[[tr('tasks.form.reset')]]</xaction-button>
+			</simpl-row>
 				<xaction-button on-tap="internalXAction" class="button" xid="{{_form.xf_id}}" xaction="cancel" raised>
 					<iron-icon icon="clear"></iron-icon>[[tr('tasks.form.cancel')]]</xaction-button>
 			</simpl-row>
@@ -673,6 +676,11 @@
 				var target = e.target || e.srcElement;
 				var data = this.getData();
 				var valid;
+				if ( target.xaction === "reset" ) {
+					console.log("resetData:",this.resetData);
+					this._setData(this.resetData);
+					return;
+				}
 				if ( target.xaction !== "cancel" ) {
 					valid = this.validate();
 				}
