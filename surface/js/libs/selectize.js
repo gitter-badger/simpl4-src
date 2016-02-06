@@ -1462,16 +1462,14 @@
 			var self = this;
 			var defaultPrevented = e.isDefaultPrevented();
 			var $target = $(e.target);
-	
 			if (self.isFocused) {
 				// retain focus by preventing native handling. if the
 				// event target is the input it should not be modified.
 				// otherwise, text selection within the input won't work.
+				// toggle dropdown
+				self.isOpen ? self.close() : self.open();
 				if (e.target !== self.$control_input[0]) {
-					if (self.settings.mode === 'single') {
-						// toggle dropdown
-						self.isOpen ? self.close() : self.open();
-					} else if (!defaultPrevented) {
+					if (self.settings.mode === 'multi' && !defaultPrevented) {
 						self.setActiveItem(null);
 					}
 					return false;
