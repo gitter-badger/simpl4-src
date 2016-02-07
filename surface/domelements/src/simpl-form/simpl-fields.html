@@ -521,11 +521,16 @@
 					if( this.isDateYearMonth()){
 						showComponents = "MY";
 					}else{
-						showComponents = "MYdhm";
+						if( this.isDateTime() ){
+							showComponents = "MYdhm";
+						}else{
+							showComponents = "MYd";
+						}
 					}
 					var tooltips = this["tooltips_"+simpl4.util.BaseManager.getLanguage()];
 					console.log("showComponents:", showComponents+"/"+viewMode);
-					var picker = $(this.$.input).datetimepicker( {viewMode:viewMode, showComponents:showComponents, ignoreReadonly:true, tooltips:tooltips, focusOnShow:false, format:_format, showTodayButton:true, showClear:false, showClose:true});
+					var locale =  simpl4.util.BaseManager.getLanguage();
+					var picker = $(this.$.input).datetimepicker( {locale:locale, viewMode:viewMode, showComponents:showComponents, ignoreReadonly:true, tooltips:tooltips, focusOnShow:false, format:_format, showTodayButton:true, showClear:false, showClose:true});
 					var self = this;
 					picker.on("dp.change", function(e){
 						console.log("change.date:",e.date.toDate());
