@@ -1287,7 +1287,7 @@
 				keypress  : function() { return self.onKeyPress.apply(self, arguments); },
 				resize    : function() { self.positionDropdown.apply(self, []); },
 				blur      : function() { return self.onBlur.apply(self, arguments); },
-				focus     : function() { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); },
+				focus     : function() { self.ignoreBlur = false; /*return self.onFocus.apply(self, arguments);*/ }, //@@@MS for what?, dropdown is on after browser leave and enter
 				paste     : function() { return self.onPaste.apply(self, arguments); }
 			});
 	
@@ -1467,10 +1467,14 @@
 				// event target is the input it should not be modified.
 				// otherwise, text selection within the input won't work.
 				// toggle dropdown
-				self.isOpen ? self.close() : self.open();
 				if (e.target !== self.$control_input[0]) {
 					if (self.settings.mode === 'multi' && !defaultPrevented) {
+						if( !self.isOpen){
+							self.open();
+						}
 						self.setActiveItem(null);
+					}else{
+						self.isOpen ? self.close() : self.open();
 					}
 					return false;
 				}
