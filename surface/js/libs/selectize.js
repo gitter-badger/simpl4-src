@@ -1287,7 +1287,7 @@
 				keypress  : function() { return self.onKeyPress.apply(self, arguments); },
 				resize    : function() { self.positionDropdown.apply(self, []); },
 				blur      : function() { return self.onBlur.apply(self, arguments); },
-				focus     : function() { self.ignoreBlur = false; /*return self.onFocus.apply(self, arguments);*/ }, //@@@MS for what?, dropdown is on after browser leave and enter
+				focus     : function() { self.ignoreBlur = false; if(hasTouch()){return self.onFocus.apply(self, arguments);} }, //@@@MS for what?, dropdown is on after browser leave and enter
 				paste     : function() { return self.onPaste.apply(self, arguments); }
 			});
 	
