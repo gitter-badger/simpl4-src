@@ -37,14 +37,24 @@ import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.camel.components.ExchangeUtils;
 import org.ms123.common.camel.trace.ExchangeFormatter;
 import org.ms123.common.camel.trace.MessageHelper;
+import org.activiti.engine.impl.bpmn.helper.ScopeUtil;
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import flexjson.*;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
+import groovy.lang.Binding;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyClassLoader;
+import org.codehaus.groovy.control.*;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
 import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
 import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
@@ -64,6 +74,7 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_EXECUTION_I
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_BUSINESS_KEY;
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_INSTANCE_ID;
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_ACTIVITY_NAME;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
 @SuppressWarnings("unchecked")
 public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implements ActivitiConstants {
@@ -80,6 +91,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private Map<String, String> processCriteria;
 	private String activityId;
 	private String namespace;
+	private String headerFields;
+	private String signalName;
+	private String messageName;
 
 	private Map options;
 	private String activitiKey;
@@ -95,6 +109,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		String[] path = endpoint.getEndpointKey().split(":");
 		this.operation = ActivitiOperation.valueOf(path[1].replace("//", ""));
 		this.namespace = endpoint.getNamespace();
+		this.signalName = endpoint.getSignalName();
+		this.headerFields = endpoint.getHeaderFields();
+		this.messageName = endpoint.getMessageName();
 		this.processCriteria = endpoint.getProcessCriteria();
 		this.options = endpoint.getOptions();
 	}
@@ -140,15 +157,65 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private void doSendMessageEvent(Exchange exchange) {
+		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
+		Map props = exchange.getProperties();
+		Map headers = exchange.getIn().getHeaders();
+		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
+		String messageName = getString(exchange, "messageName", this.messageName);
+		info("processInstanceList:" + processInstanceList);
+		Map<String,Object> processVariables = getProcessVariables(exchange);
+		if( processInstanceList != null){
+			for( ProcessInstance pi : processInstanceList){
+				Execution execution = runtimeService.createExecutionQuery() .processInstanceId(pi.getId()).messageEventSubscriptionName(messageName).singleResult(); 
+				if( execution != null){
+					info("doSendMessageEvent:"+messageName+"/"+execution.getId());
+					if( processVariables == null){
+						this.runtimeService.messageEventReceived( messageName, execution.getId());
+					}else{
+						this.runtimeService.messageEventReceived( messageName, execution.getId(), processVariables);
+					}
+				}else{
+					info("doSendMessageEvent.message("+messageName+") not found in process:"+pi.getId());
+				}
+			}
+		}
 	}
 
 	private void doSendSignalEvent(Exchange exchange) {
-		//		ProcessDefinition processDefinition = getProcessDefinition();
+		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
+		Map props = exchange.getProperties();
+		Map headers = exchange.getIn().getHeaders();
+		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
+		String signalName = getString(exchange, "signalName", this.signalName);
+		info("processInstanceList:" + processInstanceList);
+		Map<String,Object> processVariables = getProcessVariables(exchange);
+		if( processInstanceList == null){
+			info("doSendSignalEvent:"+signalName);
+			if( processVariables == null){
+				this.runtimeService.signalEventReceived( signalName);
+			}else{
+				this.runtimeService.signalEventReceived( signalName, processVariables);
+			}
+		}else{
+			for( ProcessInstance pi : processInstanceList){
+				Execution execution = runtimeService.createExecutionQuery() .processInstanceId(pi.getId()).signalEventSubscriptionName(signalName).singleResult(); 
+				if( execution != null){
+					info("doSendSignalEvent:"+signalName+"/"+execution.getId());
+					if( processVariables == null){
+						this.runtimeService.signalEventReceived( signalName, execution.getId());
+					}else{
+						this.runtimeService.signalEventReceived( signalName, execution.getId(), processVariables);
+					}
+				}else{
+					info("doSendSignalEvent.signal("+signalName+") not found in process:"+pi.getId());
+				}
+			}
+		}
 	}
 
 	private void doSendSignalToReceiveTask(Exchange exchange) {
-		List<ProcessInstance> processInstanceiList = getProcessInstances(exchange);
-		for( ProcessInstance pi : processInstanceiList){
+		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
+		for( ProcessInstance pi : processInstanceList){
 			signal(exchange, pi);
 		}
 	}
@@ -253,43 +320,127 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 	}
 
+	private GroovyClassLoader groovyClassLoader = null;
+	private Map<String,Script> scriptCache = new HashMap();
+	private Script parse(String expr) {
+		if( groovyClassLoader == null){
+			ClassLoader parentLoader = this.getClass().getClassLoader();
+			groovyClassLoader =   new GroovyClassLoader(parentLoader,new CompilerConfiguration());
+		}
+		try{
+			GroovyCodeSource gcs = new GroovyCodeSource( expr, "script", "groovy/shell");
+			return InvokerHelper.createScript(groovyClassLoader.parseClass(gcs,false), new Binding());
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("ActivitiProducer.parse:"+e.getMessage()+" -> "+ expr);
+		}
+	}
+
+	private String eval(String expr, Map<String,Object> vars) {
+		info("--> eval_in:" + expr+",vars:"+vars);
+		Object result = expr;
+		Script script = scriptCache.get(expr);
+		if( script == null){
+			script = parse(expr);
+			scriptCache.put(expr, script);
+		}
+		script.setBinding(new Binding(vars));
+		try{
+			result = script.run();
+		}catch(Exception e){
+			String error = org.ms123.common.utils.Utils.formatGroovyException(e, expr);
+			info("ActivitiProducer.eval:"+error);
+		}
+		info("<-- eval_out:" + result);
+		return String.valueOf(result);
+	}
+
+	private Map<String,Object> getProcessVariables(Exchange exchange){
+		List<String> headerList=null;
+		String headerFields = getString(exchange, "headerFields", this.headerFields);
+		if( headerFields!=null){
+			headerList = Arrays.asList(headerFields.split(","));
+		}else{
+			headerList = new ArrayList();
+		}
+		Map<String,Object> processVariables = new HashMap();
+		for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
+			if( headerList.size()==0 || headerList.contains( header.getKey())){
+				if( header.getValue() instanceof Map){
+					processVariables.putAll((Map)header.getValue());
+				}else{
+					processVariables.put(header.getKey(), header.getValue());
+				}
+			}
+		}
+		return processVariables;
+	}
+
 	private List<ProcessInstance> getProcessInstances(Exchange exchange) {
 		Map<String, Object> vars = getCamelVariablenMap(exchange);
+
+		boolean hasCriteria = false;
 		info("findExecution:processCriteria:" + this.processCriteria + "/activityId:" + this.activityId);
+		info("findExecution:vars:" + vars);
 		ExecutionQuery eq = this.runtimeService.createExecutionQuery();
 		String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
-		if (processDefinitionId != null) {
-			eq.processDefinitionId(processDefinitionId);
+		if (!isEmpty(processDefinitionId)) {
+			eq.processDefinitionId(trimToEmpty(eval(processDefinitionId, vars)));
+			hasCriteria=true;
 		}
 		String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
-		if (processDefinitionKey != null) {
-			eq.processDefinitionKey(processDefinitionKey);
+		if (!isEmpty(processDefinitionKey)) {
+			eq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,vars)));
+			hasCriteria=true;
 		}
 		String processInstanceId = getString(exchange, PROCESS_INSTANCE_ID, this.processCriteria.get(PROCESS_INSTANCE_ID));
-		if (processInstanceId != null) {
-			eq.processInstanceId(processInstanceId);
+		if (!isEmpty(processInstanceId)) {
+			eq.processInstanceId(trimToEmpty(eval(processInstanceId,vars)));
+			info("processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
+			hasCriteria=true;
 		}
 		String businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
-		if (businessKey != null) {
-			eq.processInstanceBusinessKey(businessKey);
+		if (!isEmpty(businessKey)) {
+			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)));
+			hasCriteria=true;
 		}
 
 		String activityId = getString(exchange, ACTIVITY_ID, this.processCriteria.get(ACTIVITY_ID));
-		if (activityId != null) {
-			eq.activityId(activityId);
+		if (!isEmpty(activityId)) {
+			eq.activityId(trimToEmpty(eval(activityId,vars)));
+			hasCriteria=true;
 		}
 		String executionId = getString(exchange, EXECUTION_ID, this.processCriteria.get(EXECUTION_ID));
-		if (executionId != null) {
-			eq.executionId(executionId);
+		if (!isEmpty(executionId)) {
+			eq.executionId(trimToEmpty(eval(executionId,vars)));
+			hasCriteria=true;
+		}
+		String processVariable = getString(exchange, PROCESSVARIABLE, this.processCriteria.get(PROCESSVARIABLE));
+		if (!isEmpty(processVariable)) {
+			processVariable = trimToEmpty(processVariable);
+			int delim = processVariable.indexOf(",");
+			if( delim == -1){
+				eq.processVariableValueEquals(trimToEmpty(eval(processVariable,vars)));
+			}else{
+				String p [] = processVariable.split(",");
+				eq.processVariableValueEquals(
+					trimToEmpty(eval(p[0],vars)),
+					trimToEmpty(eval(p[1],vars))
+				);
+			}
+			hasCriteria=true;
 		}
 
-		eq.executionTenantId(this.namespace);
-		List<ProcessInstance> executionList = (List) eq.list();
-		info("getProcessInstances:" + executionList);
-		if (executionList == null || executionList.size() == 0) {
-			throw new RuntimeException("ActivitiProducer.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
+		if( hasCriteria ){
+			eq.executionTenantId(trimToEmpty(this.namespace));
+			List<ProcessInstance> executionList = (List) eq.list();
+			info("getProcessInstances:" + executionList);
+			if (executionList == null || executionList.size() == 0) {
+				throw new RuntimeException("ActivitiProducer.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
+			}
+			return executionList;
 		}
-		return executionList;
+		return null;
 	}
 
 	private ProcessDefinition getProcessDefinition(ProcessInstance processInstance) {
@@ -355,8 +506,11 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		return this.activityId == null;
 	}
 
+	private boolean isEmpty(String s) {
+		return (s == null || "".equals(s.trim()));
+	}
+
 	private Map getCamelVariablenMap(Exchange exchange) {
-		this.js.prettyPrint(true);
 		Map camelMap = new HashMap();
 		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
 		camelMap.putAll(exVars);
@@ -381,7 +535,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			value = e.getProperty(key, String.class);
 		}
 		info("getString:" + key + "=" + value + "/def:" + def);
-		return value != null ? value : def;
+		return value != null ? trimToEmpty(value) : trimToEmpty(def);
 	}
 
 	private boolean getBoolean(Exchange e, String key, boolean def) {

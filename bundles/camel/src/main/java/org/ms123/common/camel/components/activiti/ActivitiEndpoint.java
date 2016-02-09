@@ -39,6 +39,9 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private Map m_options;
 	private Map<String, String> processCriteria = new HashMap<String, String>();
 	private String namespace;
+	private String signalName;
+	private String messageName;
+	private String headerFields;
 
 	private PermissionService m_permissionService;
 	private WorkflowService m_workflowService;
@@ -74,6 +77,28 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 			return null;
 		}
 		return this.namespace;
+	}
+
+	public void setSignalName(String data) {
+		this.signalName = data;
+	}
+	public String getSignalName() {
+		return this.signalName;
+	}
+
+	public void setMessageName(String data) {
+		this.messageName = data;
+	}
+	public String getMessageName() {
+		return this.messageName;
+	}
+
+	public void setHeaderFields(String t) {
+		headerFields = t;
+	}
+
+	public String getHeaderFields() {
+		return headerFields;
 	}
 
 	public void setProcessCriteria(String data) {

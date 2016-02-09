@@ -64,8 +64,11 @@ public class ExchangeUtils {
 				}
 			}
 			camelVarMap = newCamelVarMap;
-		} else {
-			camelVarMap = new HashMap<String, Object>();
+		} 
+		if( true ) {
+			if( camelVarMap == null){
+				camelVarMap = new HashMap<String, Object>();
+			}
 			Object camelBody = null;
 			if (exchange.hasOut())
 				camelBody = exchange.getOut().getBody();
