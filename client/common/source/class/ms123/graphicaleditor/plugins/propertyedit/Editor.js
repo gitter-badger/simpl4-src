@@ -491,7 +491,11 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 							}).bind(this))
 							break;
 						case ms123.oryx.Config.TYPE_STRING:
-							var formElement = new qx.ui.form.TextField();
+							if( config == "password"){
+								formElement = new qx.ui.form.PasswordField();
+							}else{
+								formElement = new qx.ui.form.TextField();
+							}
 							formElement.setRequired(!pair.optional());
 							formElement.setMaxLength(pair.length());
 							formElement.setLiveUpdate(false);
