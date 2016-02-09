@@ -157,16 +157,16 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private void doSendMessageEvent(Exchange exchange) {
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
-		Map props = exchange.getProperties();
-		Map headers = exchange.getIn().getHeaders();
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
 		String messageName = getString(exchange, "messageName", this.messageName);
 		info("processInstanceList:" + processInstanceList);
+		info("messageName:" + messageName);
 		Map<String,Object> processVariables = getProcessVariables(exchange);
 		if( processInstanceList != null){
 			for( ProcessInstance pi : processInstanceList){
-				Execution execution = runtimeService.createExecutionQuery() .processInstanceId(pi.getId()).messageEventSubscriptionName(messageName).singleResult(); 
+				info("PI:"+pi.getId());
+				Execution execution = runtimeService.createExecutionQuery() .executionId(pi.getId()).messageEventSubscriptionName(messageName).singleResult(); 
+				info("\tExecution:"+execution);
 				if( execution != null){
 					info("doSendMessageEvent:"+messageName+"/"+execution.getId());
 					if( processVariables == null){
@@ -176,15 +176,13 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 					}
 				}else{
 					info("doSendMessageEvent.message("+messageName+") not found in process:"+pi.getId());
+					List<Execution> execs = runtimeService.createExecutionQuery() .messageEventSubscriptionName(messageName).list(); 
 				}
 			}
 		}
 	}
 
 	private void doSendSignalEvent(Exchange exchange) {
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
-		Map props = exchange.getProperties();
-		Map headers = exchange.getIn().getHeaders();
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
 		String signalName = getString(exchange, "signalName", this.signalName);
 		info("processInstanceList:" + processInstanceList);
@@ -198,7 +196,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 		}else{
 			for( ProcessInstance pi : processInstanceList){
-				Execution execution = runtimeService.createExecutionQuery() .processInstanceId(pi.getId()).signalEventSubscriptionName(signalName).singleResult(); 
+				info("PI:"+pi.getId());
+				Execution execution = runtimeService.createExecutionQuery() .executionId(pi.getId()).signalEventSubscriptionName(signalName).singleResult(); 
+				info("\tExecution:"+execution);
 				if( execution != null){
 					info("doSendSignalEvent:"+signalName+"/"+execution.getId());
 					if( processVariables == null){
