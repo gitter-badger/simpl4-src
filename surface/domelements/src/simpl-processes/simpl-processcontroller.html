@@ -86,14 +86,41 @@
 	<script>
 		Polymer( {
 			is: 'simpl-processcontroller',
+			properties: {
+				namespace: {
+					type: String
+				},
+				name: {
+					type: String
+				},
+				parameter: {
+					type: String
+				}
+			},
+			observers: [
+				'nameChanged(namespace,name,parameter)'
+			],
 			ready: function() {
 				this.panelBackgroundColor = 'black';
 				this.panelHeader = '';
 				this.formName = null;
-				this.namespace = null;
+				console.log("ProcessController.ready");
+			},
+			attached: function() {
+				console.log("ProcessController.attached:",this.namespace+"/"+this.name+"/"+this.paramObject);
+				if( this.name && this.namespace && this.paramObject){
+					this.startByName(this.namespace, this.name, this.paramObject);
+				}
 			},
 			isParamsOk: function( namespace, formName ) {
 				return this.namespace != null && this.formName != null;
+			},
+			nameChanged:function(){
+				var params=null;
+				if( this.parameter && this.parameter.startsWith("{")){
+					params = JSON.parse(this.parameter);
+				}
+				this.paramObject = params || {};
 			},
 			startByName: function( namespace, name, parameter ) {
 				this.namespace = namespace || simpl4.util.BaseManager.getNamespace();
@@ -181,14 +208,18 @@
 				} else {
 					processVariables[ "__namespace" ] = simpl4.util.BaseManager.getNamespace();
 				}
-				this.panelHeader = processName + "/" + taskName;
+				if( taskName){
+					this.panelHeader = tr(processName) + "/" + taskName;
+				}else{
+					this.panelHeader = tr(processName);
+				}
 				this.variables = processVariables;
 				this.namespace = processTenantId;
 				this.formName = formName;
 				this.async( function() {
 					var form = this.querySelector( "#formid" );
 					form.setData( mappedFormValues );
-				}, 100 );
+				}, 1100 );
 			},
 			getFormName: function( formResourceKey ) {
 				var formName = null;
