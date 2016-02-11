@@ -640,7 +640,8 @@
 			var result = true;
 
 			if (shouldValidate(this, params)) {
-				result = (this.value.length >= params["min"] && this.value.length <= params["max"]);
+				var length = this.value ? this.value.length : 0;
+				result = (length >= params["min"] && length <= params["max"]);
 			}
 
 			return result;
