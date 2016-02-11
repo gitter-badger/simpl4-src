@@ -183,6 +183,14 @@
 					this.$.panelContent.style[ "-ms-flex-preferred-size" ] = ( parseInt( this.height, 10 ) - 50 ) + "px";
 				}
 			},
+			close: function() {
+				this.collapsed = true;
+				this.$.collapsable.icon = "custom-icons:" + ( this.collapsed ? "icon-collapse" : "icon-expand" );
+			},
+			open: function() {
+				this.collapsed = false;
+				this.$.collapsable.icon = "custom-icons:" + ( this.collapsed ? "icon-collapse" : "icon-expand" );
+			},
 			toggleCollapse: function() {
 				this.collapsed = !this.collapsed;
 				this.$.collapsable.icon = "custom-icons:" + ( this.collapsed ? "icon-collapse" : "icon-expand" );
