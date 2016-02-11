@@ -97,32 +97,43 @@
 			var self = this;
 			var rows = this._api.rows().nodes();
 			for ( var i = 0; i < rows.length; i++ ) {
-				$( rows[ i ] ).tap( function( e ) {
-					self.currentRowIndex = e.currentTarget._DT_RowIndex;
-					if ( self.multiSelect ) {
-						self.tapActionMulti( e, this, false );
-					} else {
-						self.tapActionSingle( e, this, false );
-					}
-				}, false );
+					$( rows[ i ] ).swipe(  {
+					tap:function(event, target) {
+						self.tapAction($(target).closest("tr"), false);
+					},
+					doubleTap:function(target) {
+						self.tapAction($(target).closest("tr"),true);
+					},
+					threshold:50
+				});
 			}
 		},
-		tapActionSingle: function( e, t, double ) {
-			if ( $( t ).hasClass( 'selected' ) ) {
+		tapAction:function( row, doubleTap){
+			this.currentRowIndex = row._DT_RowIndex;
+			if ( this.multiSelect ) {
+				this.tapActionMulti( row, doubleTap );
+			} else {
+				this.tapActionSingle( row, doubleTap );
+			}
+		},
+		tapActionSingle: function( row, doubleTap ) {
+			if ( $( row ).hasClass( 'selected' ) ) {
 				return;
 			}
 			this.unselectAll();
-			$( t ).addClass( 'selected' );
+			$( row ).addClass( 'selected' );
 			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
+				doubleTap:doubleTap,
 				rows: sel
 			} );
 			this.selection = sel;
 		},
-		tapActionMulti: function( e, t, double ) {
-			$( t ).toggleClass( 'selected' );
+		tapActionMulti: function(row, doubleTap ) {
+			$( row ).toggleClass( 'selected' );
 			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
+				doubleTap:doubleTap,
 				rows: sel
 			} );
 			this.selection = sel;
