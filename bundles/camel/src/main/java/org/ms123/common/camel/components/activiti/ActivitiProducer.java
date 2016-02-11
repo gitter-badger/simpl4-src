@@ -196,7 +196,6 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 		}else{
 			for( ProcessInstance pi : processInstanceList){
-				info("PI:"+pi.getId());
 				Execution execution = runtimeService.createExecutionQuery() .executionId(pi.getId()).signalEventSubscriptionName(signalName).singleResult(); 
 				info("\tExecution:"+execution);
 				if( execution != null){
