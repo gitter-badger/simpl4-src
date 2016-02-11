@@ -680,7 +680,7 @@
 					console.log("resetData:",this.resetData);
 					this._setData(this.resetData);
 				}
-				if ( target.xaction !== "cancel" ) {
+				if ( target.xaction !== "cancel" && target.xaction !== "reset") {
 					valid = this.validate();
 				}
 				this.fire( 'xaction', {
