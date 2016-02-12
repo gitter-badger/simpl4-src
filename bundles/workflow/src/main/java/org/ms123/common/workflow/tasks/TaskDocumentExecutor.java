@@ -64,7 +64,7 @@ public class TaskDocumentExecutor extends TaskBaseExecutor implements JavaDelega
 			OutputStream os = new FileOutputStream(new File(getProcessDocBasedir(execution), filename.getValue(
 					execution).toString()));
 			String json = getFileContentFromGit(execution, namespace, fn, "sw.document");
-			ds.jsonToDocbookPdf(namespace, json, vars, os);
+			ds.jsonToPdf(namespace, json, vars, os);
 			os.close();
 		} catch (Exception e) {
 			throw new RuntimeException("TaskDocumentExecutor.execute:", e);

@@ -50,6 +50,9 @@ public class Simpl4UserTaskJsonConverter extends UserTaskJsonConverter {
 	private final String CANDIDATEGROUPS_PROP = "candidategroups";
 	private final String CANDIDATEGROUPS = "candidategroups";
 
+	private final String CANDIDATEUSERS_PROP = "candidateusers";
+	private final String CANDIDATEUSERS = "candidateusers";
+
 	private final String ASSIGNEE_PROP = "assignee";
 	private final String ASSIGNEE = "assignee";
 
@@ -72,10 +75,16 @@ public class Simpl4UserTaskJsonConverter extends UserTaskJsonConverter {
 		String formkey = getString(propMap.get(FORMKEY_PROP));
 		task.setFormKey(formkey);
 		String assignee = getString(propMap.get(ASSIGNEE_PROP));
-		task.setAssignee(assignee);
+		if( assignee != null){
+			task.setAssignee(assignee);
+		}
 		String candidategroups = getString(propMap.get(CANDIDATEGROUPS_PROP));
 		if (candidategroups != null) {
 			task.setCandidateGroups(Arrays.asList(candidategroups.split(",")));
+		}
+		String candidateusers = getString(propMap.get(CANDIDATEUSERS_PROP));
+		if (candidateusers != null) {
+			task.setCandidateUsers(Arrays.asList(candidateusers.split(",")));
 		}
 		String variablesmapping = getVarMapping(propMap.get(VARMAPPING_PROP));
 		System.out.println("UserTask.variablesmapping:" + variablesmapping);
