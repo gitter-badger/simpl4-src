@@ -28,17 +28,18 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ModuleSelectorField"
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
-	construct: function (from, key, facade) {
+	construct: function (config, key, facade) {
 		this.base(arguments);
-		var p  = from.split(":");
+		var p  = config.from.split(":");
 		this.module = p[0];
 		this.field = p[1];
 		this.key = key;
+		this.config = config;
 		this.facade = facade;
 		var layout = new qx.ui.layout.HBox();
 		this._setLayout(layout);
 
-console.error("ModuleSelectorField:"+from+"/"+key);
+console.error("ModuleSelectorField:"+config.from+"/"+key);
 		var textField = this._createChildControl("textfield");
 		var select = this._createChildControl("select");
 		var clear = this._createChildControl("clear");
@@ -112,8 +113,10 @@ console.error("ModuleSelectorField:"+from+"/"+key);
 				control = new qx.ui.form.TextField();
 				control.setLiveUpdate(true);
 				control.setFocusable(false);
-				control.setReadOnly(true);
-				control.setEnabled(false);
+				if( this.config.readonly){
+					control.setReadOnly(true);
+					control.setEnabled(false);
+				}
 				control.addState("inner");
 				control.addListener("changeValue", this._onTextFieldChangeValue, this);
 				this._add(control, {
