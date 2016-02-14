@@ -121,10 +121,13 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	public void process(Exchange exchange) throws Exception {
 		this.activityId = getString(exchange, ACTIVITY_ID, this.activityId);
 		this.namespace = getString(exchange, NAMESPACE, this.namespace);
-		if (this.namespace == null) {
+		if (isEmpty(this.namespace)) {
 			this.namespace = (String) exchange.getContext().getRegistry().lookupByName("namespace");
 		}
-		info("ActivitiProducer.operation:" + this.operation);
+		if (isEmpty(this.namespace)) {
+			this.namespace = (String) exchange.getProperty("_namespace");
+		}
+		info("ActivitiProducer.operation:" + this.operation+"/namespace:"+this.namespace);
 		invokeOperation(this.operation, exchange);
 		/* final CamelService camelService = (CamelService) exchange.getContext().getRegistry().lookupByName(CamelService.class.getName());
 		 exchange.setProperty(WORKFLOW_ACTIVITY_NAME, this.activityId);
@@ -209,6 +212,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 					}
 				}else{
 					info("doSendSignalEvent.signal("+signalName+") not found in process:"+pi.getId());
+					List<Execution> execs = runtimeService.createExecutionQuery() .signalEventSubscriptionName(signalName).list(); 
+					info("doSendSignalEvent.allExecutions("+signalName+"):"+execs);
 				}
 			}
 		}
@@ -342,7 +347,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 	}
 
-	private String eval(String expr, Map<String,Object> vars) {
+	private String eval2(String expr, Map<String,Object> vars) {
 		info("--> eval_in:" + expr+",vars:"+vars);
 		Object result = expr;
 		Script script = scriptCache.get(expr);
@@ -359,6 +364,38 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 		info("<-- eval_out:" + result);
 		return String.valueOf(result);
+	}
+
+	private String eval(String str, Map<String,Object> scope) {
+		int countRepl = 0;
+		int countPlainStr = 0;
+		Object replacement = null;
+		String newString = "";
+		int openBrackets = 0;
+		int first = 0;
+		for (int i = 0; i < str.length(); i++) {
+			if (i < str.length() - 2 && str.substring(i, i + 2).compareTo("${") == 0) {
+				if (openBrackets == 0) {
+					first = i + 2;
+				}
+				openBrackets++;
+			} else if (str.charAt(i) == '}' && openBrackets > 0) {
+				openBrackets -= 1;
+				if (openBrackets == 0) {
+					countRepl++;
+					replacement = eval2(str.substring(first, i), scope);
+					newString += replacement;
+				}
+			} else if (openBrackets == 0) {
+				newString += str.charAt(i);
+				countPlainStr++;
+			}
+		}
+		if (countRepl == 1 && countPlainStr == 0) {
+			return String.valueOf(replacement);
+		} else {
+			return newString;
+		}
 	}
 
 	private Map<String,Object> getProcessVariables(Exchange exchange){
@@ -392,22 +429,19 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
 		if (!isEmpty(processDefinitionId)) {
 			eq.processDefinitionId(trimToEmpty(eval(processDefinitionId, vars)));
+			info("getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,vars)));
 			hasCriteria=true;
 		}
 		String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 		if (!isEmpty(processDefinitionKey)) {
 			eq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,vars)));
-			hasCriteria=true;
-		}
-		String processInstanceId = getString(exchange, PROCESS_INSTANCE_ID, this.processCriteria.get(PROCESS_INSTANCE_ID));
-		if (!isEmpty(processInstanceId)) {
-			eq.processInstanceId(trimToEmpty(eval(processInstanceId,vars)));
-			info("processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
+			info("getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,vars)));
 			hasCriteria=true;
 		}
 		String businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
 		if (!isEmpty(businessKey)) {
-			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)));
+			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)),true);
+			info("getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
 			hasCriteria=true;
 		}
 
@@ -438,6 +472,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 
 		if( hasCriteria ){
+			info("getProcessInstances.namespace:"+this.namespace);
 			eq.executionTenantId(trimToEmpty(this.namespace));
 			List<ProcessInstance> executionList = (List) eq.list();
 			info("getProcessInstances:" + executionList);
@@ -525,7 +560,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private String getStringCheck(Exchange e, String key, String def) {
 		String value = e.getIn().getHeader(key, String.class);
-		info("getStringCheck:" + key + "=" + value + "/def:" + def);
+		debug("getStringCheck:" + key + "=" + value + "/def:" + def);
 		if (value == null) {
 			value = e.getProperty(key, String.class);
 		}
@@ -540,7 +575,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		if (value == null) {
 			value = e.getProperty(key, String.class);
 		}
-		info("getString:" + key + "=" + value + "/def:" + def);
+		debug("getString:" + key + "=" + value + "/def:" + def);
 		return value != null ? trimToEmpty(value) : trimToEmpty(def);
 	}
 
@@ -549,7 +584,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		if (value == null) {
 			value = e.getProperty(key, Boolean.class);
 		}
-		info("getString:" + key + "=" + value + "/def:" + def);
+		debug("getString:" + key + "=" + value + "/def:" + def);
 		return value != null ? value : def;
 	}
 
@@ -560,6 +595,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private void info(String msg) {
 		System.err.println(msg);
 		m_logger.info(msg);
+	}
+	private void debug(String msg) {
+		m_logger.debug(msg);
 	}
 
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(ActivitiProducer.class);
