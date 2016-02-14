@@ -38,6 +38,7 @@ import org.ms123.common.form.FormService;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.workflow.api.WorkflowService;
+import org.ms123.common.permission.api.PermissionService;
 import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
 import org.activiti.engine.runtime.*;
@@ -63,6 +64,7 @@ class BaseActivitiServiceImpl implements Constants {
 	protected NucleusService m_nucleusService;
 
 	protected FormService m_formService;
+	protected PermissionService m_permissionService;
 
 	protected ProcessEngine m_processEngine;
 

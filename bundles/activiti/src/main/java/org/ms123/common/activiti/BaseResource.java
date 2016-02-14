@@ -25,6 +25,7 @@ import java.util.Map;
 import org.activiti.engine.ProcessEngine;
 import org.ms123.common.form.FormService;
 import org.ms123.common.workflow.api.WorkflowService;
+import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
 import org.osgi.service.event.EventAdmin;
 import flexjson.*;
@@ -48,6 +49,9 @@ public class BaseResource {
 	public ProcessEngine getPE() {
 		return m_as.getPE();
 	}
+	public PermissionService getPermissionService() {
+		return m_as.getPermissionService();
+	}
 	public FormService getFormService() {
 		return m_as.getFormService();
 	}
@@ -59,6 +63,22 @@ public class BaseResource {
 	}
 	public EventAdmin getEventAdmin() {
 		return m_as.getEventAdmin();
+	}
+	protected void checkUser(String user){
+		if(getPermissionService().hasAdminRole()){
+			return;
+		}
+		if(!getPermissionService().isUserThis(user)){
+			throw new RuntimeException("TasksResource.checkUser:no permission:" + user);
+		}
+	}
+	protected void checkRole(String role){
+		if(getPermissionService().hasAdminRole()){
+			return;
+		}
+		if(!getPermissionService().hasUserRole(role)){
+			throw new RuntimeException("TasksResource.checkRole:no permission:" + role);
+		}
 	}
 	protected void info(String msg) {
 		System.out.println(msg);

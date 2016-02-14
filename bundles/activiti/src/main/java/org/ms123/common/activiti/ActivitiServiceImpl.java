@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import org.ms123.common.data.api.DataLayer;
+import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.auth.api.AuthService;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.rpc.PDefaultBool;
@@ -91,6 +92,9 @@ public class ActivitiServiceImpl extends BaseActivitiServiceImpl implements Acti
 
 	public ProcessEngine getPE() {
 		return m_processEngine;
+	}
+	public PermissionService getPermissionService(){
+		return m_permissionService;
 	}
 
 	public FormService getFormService(){
@@ -310,6 +314,13 @@ public class ActivitiServiceImpl extends BaseActivitiServiceImpl implements Acti
 		this.m_formService = paramFormService;
 		System.out.println("ActivitiServiceImpl.setFormService:" + paramFormService);
 	}
+
+	@Reference(dynamic = true,optional=true)
+	public void setPermissionService(PermissionService paramPermissionService) {
+		this.m_permissionService = paramPermissionService;
+		System.out.println("ActivitiServiceImpl.setPermissionService:" + paramPermissionService);
+	}
+
 
 	@Reference(dynamic = true,optional=true)
 	public void setEventAdmin(EventAdmin paramEventAdmin) {

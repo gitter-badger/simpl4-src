@@ -26,6 +26,7 @@ import org.activiti.engine.task.TaskQuery;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 import org.ms123.common.activiti.Util;
+import org.ms123.common.permission.api.PermissionService;
 
 /**
  */
@@ -60,16 +61,23 @@ public class TasksResource extends BaseResource {
 		String strDueDate = Util.getString(m_queryParams, "dueDate");
 		String strMinDueDate = Util.getString(m_queryParams, "minDueDate");
 		String strMaxDueDate = Util.getString(m_queryParams, "maxDueDate");
+		String businessKey = Util.getString(m_queryParams, "businessKey");
 		TaskQuery taskQuery = getPE().getTaskService().createTaskQuery();
+
 		if (personalTaskUserId != null) {
+			checkUser(personalTaskUserId);
 			taskQuery.taskAssignee(personalTaskUserId);
 		} else if (ownerTaskUserId != null) {
+			checkUser(ownerTaskUserId);
 			taskQuery.taskOwner(ownerTaskUserId);
 		} else if (involvedTaskUserId != null) {
+			checkUser(involvedTaskUserId);
 			taskQuery.taskInvolvedUser(involvedTaskUserId);
 		} else if (candidateTaskUserId != null) {
+			checkUser(candidateTaskUserId);
 			taskQuery.taskCandidateUser(candidateTaskUserId);
 		} else if (candidateGroupId != null) {
+			checkRole(candidateGroupId);
 			taskQuery.taskCandidateGroup(candidateGroupId);
 		} else {
 			throw new RuntimeException("Tasks must be filtered with 'assignee', 'owner', 'involved', 'candidate' or 'candidate-group'");
@@ -91,6 +99,9 @@ public class TasksResource extends BaseResource {
 			taskQuery.dueAfter(Util.parseToDate(strMinDueDate));
 		} else if (strMaxDueDate != null) {
 			taskQuery.dueBefore(Util.parseToDate(strMaxDueDate));
+		}
+		if (businessKey != null) {
+			taskQuery.processInstanceBusinessKey(businessKey);
 		}
 		Map dataResponse = new TasksPaginateList(this).paginateList(m_listParams, taskQuery, "id", properties);
 		return dataResponse;

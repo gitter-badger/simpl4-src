@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import org.ms123.common.permission.api.PermissionService;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +54,7 @@ public class TaskOperationResource extends BaseResource {
 	}
 
 	public Map executeTaskOperation() {
+		checkPermission(m_taskId);
 		if ("claim".equals(m_operation)) {
 			String userId = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserName();
 			getPE().getTaskService().claim(m_taskId, userId);
@@ -76,7 +78,6 @@ public class TaskOperationResource extends BaseResource {
 			Map<String, Object> newVariables = new HashMap();
 			if (taskFormData != null) {
 				String formKey = taskFormData.getFormKey();
-
 
 				Task task = getPE().getTaskService().createTaskQuery().taskId(m_taskId).singleResult();
 				String taskName = task.getName();
@@ -142,6 +143,18 @@ public class TaskOperationResource extends BaseResource {
 		Map successNode = new HashMap();
 		successNode.put("success", true);
 		return successNode;
+	}
+	private void checkPermission(String taskId){
+		Task task = getPE().getTaskService().createTaskQuery().taskId(m_taskId).singleResult();
+		String assignee = task.getAssignee();
+		String owner = task.getOwner();
+		if( owner != null){
+			checkUser( owner );
+		}else if( assignee != null){
+			checkUser( assignee );
+		}else{
+			throw new RuntimeException("TaskOperationResource.checkPermission:assignee and owner are null");
+		}
 	}
 	private String getFormVar(String namespace,String formKey){
 		String formVar=null;
