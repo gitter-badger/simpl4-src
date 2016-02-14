@@ -42,6 +42,7 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private String signalName;
 	private String messageName;
 	private String headerFields;
+	private String businessKey;
 
 	private PermissionService m_permissionService;
 	private WorkflowService m_workflowService;
@@ -99,6 +100,14 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	public String getHeaderFields() {
 		return headerFields;
+	}
+
+	public void setBusinessKey(String t) {
+		businessKey = t;
+	}
+
+	public String getBusinessKey() {
+		return businessKey;
 	}
 
 	public void setProcessCriteria(String data) {

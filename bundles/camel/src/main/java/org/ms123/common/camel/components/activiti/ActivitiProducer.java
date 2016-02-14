@@ -92,6 +92,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String activityId;
 	private String namespace;
 	private String headerFields;
+	private String businessKey;
 	private String signalName;
 	private String messageName;
 
@@ -111,6 +112,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.namespace = endpoint.getNamespace();
 		this.signalName = endpoint.getSignalName();
 		this.headerFields = endpoint.getHeaderFields();
+		this.businessKey = endpoint.getBusinessKey();
 		this.messageName = endpoint.getMessageName();
 		this.processCriteria = endpoint.getProcessCriteria();
 		this.options = endpoint.getOptions();
@@ -289,28 +291,33 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private ProcessInstance executeProcess(Exchange exchange) {
-		Map<String, Object> vars = getCamelVariablenMap(exchange);
+		Map<String, Object> vars = getProcessVariables(exchange);//getCamelVariablenMap(exchange);
 		info("ExecuteProcess:criteria:" + this.processCriteria);
 		ThreadContext.loadThreadContext(this.namespace, "admin");
 		this.permissionService.loginInternal(this.namespace);
 		try {
 			ProcessInstanceBuilder pib = this.runtimeService.createProcessInstanceBuilder();
 			String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
-			if (processDefinitionId != null) {
+			if (!isEmpty(processDefinitionId)) {
+				info("ExecuteProcess:processDefinitionId:" + processDefinitionId);
 				pib.processDefinitionId(processDefinitionId);
 			}
 			String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
-			if (processDefinitionKey != null) {
+			if (!isEmpty(processDefinitionKey)) {
+				info("ExecuteProcess:processDefinitionKey:" + processDefinitionKey);
 				pib.processDefinitionKey(processDefinitionKey);
 			}
-			String businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
-			if (businessKey != null) {
+			String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
+			if (!isEmpty(businessKey)) {
+				info("ExecuteProcess:businessKey:" + businessKey);
 				pib.businessKey(businessKey);
 			}
 
 			for (Map.Entry<String, Object> entry : vars.entrySet()) {
+				info("ExecuteProcess:var:" + entry.getValue());
 				pib.addVariable(entry.getKey(), entry.getValue());
 			}
+			info("ExecuteProcess:tenant:" + this.namespace);
 			pib.tenantId(this.namespace);
 			return pib.start();
 		} finally {
