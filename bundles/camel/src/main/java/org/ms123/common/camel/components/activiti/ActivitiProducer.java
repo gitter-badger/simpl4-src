@@ -298,6 +298,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private ProcessInstance executeProcess(Exchange exchange) {
 		Map<String, Object> vars = getProcessVariables(exchange);//getCamelVariablenMap(exchange);
 		info("ExecuteProcess:criteria:" + this.processCriteria);
+		info("ExecuteProcess:vars:" + vars);
 		ThreadContext.loadThreadContext(this.namespace, "admin");
 		this.permissionService.loginInternal(this.namespace);
 		try {
@@ -319,7 +320,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 
 			for (Map.Entry<String, Object> entry : vars.entrySet()) {
-				info("ExecuteProcess:var:" + entry.getValue());
+				info("ExecuteProcess:var:" + entry.getKey()+"="+entry.getValue());
 				pib.addVariable(entry.getKey(), entry.getValue());
 			}
 			info("ExecuteProcess:tenant:" + this.namespace);
