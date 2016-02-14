@@ -194,8 +194,24 @@ class BasePermissionServiceImpl implements Constants {
 		return ret;
 	}
 
-	public List<String> getUserRoles( String userid ) throws Exception {
+	public boolean isUserThis(String userid){
+		if( userid == null || "".equals(userid)){
+			return false;
+		}
+		String	username = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserName();
+		return userid.equals(username);
+	}
+	public boolean hasUserRole(String role){
+		if( role == null || "".equals(role)){
+			return false;
+		}
+		String	username = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserName();
+		return getUserRoles(username).indexOf( role ) >= 0;
+	}
+
+	public List<String> getUserRoles( String userid ) {
 		List<String> roleListRet = new ArrayList();
+		if( userid == null) return roleListRet;
 		Map userProps = m_authService.getUserProperties(userid);
 		List<String> roleList = null;
 		if( userProps == null ) return roleListRet;

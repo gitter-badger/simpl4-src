@@ -41,6 +41,8 @@ public interface PermissionService {
 	public boolean hasRole(String role);
 
 	public boolean hasAdminRole();
+	public boolean isUserThis(String name);
+	public boolean hasUserRole(String name);
 
 	public Map getRole( String namespace, String name) throws RpcException;
 
