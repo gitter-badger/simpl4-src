@@ -214,9 +214,14 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 
 					var listData = [];
 					var items = this.items[i].items();
+					var self = this;
 					items.each(function (value) {
-						var option = [value.title(), null, value.value()];
-						listData.push(option);
+						var b = self.__maskedEval(value.enabled(),self._env);
+						console.log("value:",value.value()+"="+b);
+						if( b){
+							var option = [value.title(), null, value.value()];
+							listData.push(option);
+						}
 					});
 
 					var replaceMap = {};
@@ -528,6 +533,11 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 			splitPane.add(left, 4);
 			splitPane.add(right, 4);
 			return splitPane;
+		},
+		__maskedEval: function (scr, env) {
+			if( scr === false) return false;
+			if( scr === true) return true;
+			return (new Function("with(this) { return " + scr + "}")).call(env);
 		},
 		createWindow: function (name) {
 			var win = new qx.ui.window.Window(name, "").set({

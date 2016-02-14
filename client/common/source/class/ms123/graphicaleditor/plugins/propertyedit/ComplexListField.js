@@ -21,6 +21,7 @@
 
 qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListField", {
 	extend: ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow,
+	implement: [qx.ui.form.IStringForm,ms123.graphicaleditor.plugins.propertyedit.IUpdate],
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
@@ -42,6 +43,10 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListField", {
 			var select = this._createChildControl("select");
 			this._createChildControl("clear");
 			this.setFocusable(true);
+		},
+		// interface implementation
+		envChanged: function (env) {
+			this._env=env;
 		},
 		setValue: function (value) {
 			console.log("ComplexListWindow.setValue:" + value);
