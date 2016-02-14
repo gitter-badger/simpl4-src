@@ -55,7 +55,7 @@ public class GroovyExpression implements Expression {
 			.maximumWeightedCapacity(100).build();
 
 	public GroovyExpression(GroovyShell shell, ProcessEngine pe, String expressionText) {
-		log("GroovyExpression:" + expressionText);
+		debug("GroovyExpression:" + expressionText);
 		m_shell = shell;
 		m_processEngine = pe;
 		m_expressionText = expressionText;
@@ -63,16 +63,16 @@ public class GroovyExpression implements Expression {
 
 	public synchronized Object getValue(VariableScope variableScope) {
 		long start = new Date().getTime();
-		log("GroovyExpression.getValue-->" + m_expressionText);
+		debug("GroovyExpression.getValue-->" + m_expressionText);
 		Object o = expandString(m_expressionText, variableScope);
 		long end = new Date().getTime();
-		log("GroovyExpression.getValue<---:" + o);
-		log("TIME:" + (end - start));
+		debug("GroovyExpression.getValue<---:" + o);
+		debug("TIME:" + (end - start));
 		return o;
 	}
 
 	public void setValue(Object value, VariableScope variableScope) {
-		log("GroovyExpression.setValue:" + value);
+		debug("GroovyExpression.setValue:" + value);
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class GroovyExpression implements Expression {
 			script = m_shell.parse(expr);
 			Binding binding = new Binding(scope.getVariables());
 			script.setBinding(binding);
-			log("GroovyExpression.vars:" + scope.getVariables());
+			debug("GroovyExpression.vars:" + scope.getVariables());
 			return script.run();
 		} catch (Throwable e) {
 			log(">>>>>>>>>>>>" + e);
@@ -115,14 +115,14 @@ public class GroovyExpression implements Expression {
 	}
 
 	private Object getService(String clazzName) {
-		log("getService:" + clazzName);
+		debug("getService:" + clazzName);
 		Map beans = Context.getProcessEngineConfiguration().getBeans();
 		BundleContext bc = (BundleContext) beans.get("bundleContext");
-		log("__beans__:" + beans);
+		debug("__beans__:" + beans);
 		ServiceReference sr = bc.getServiceReference(clazzName);
-		log("sr___:" + sr);
+		debug("sr___:" + sr);
 		Object o = bc.getService(sr);
-		log("o:" + o);
+		debug("o:" + o);
 		return o;
 	}
 
@@ -152,9 +152,6 @@ public class GroovyExpression implements Expression {
 				openBrackets -= 1;
 				if (openBrackets == 0) {
 					countRepl++;
-log("Eval1:"+str);
-log("Eval2:"+str.substring(first,i));
-log("Eval3:"+scope.getVariables());
 					replacement = eval(str.substring(first, i), scope);
 					newString += replacement;
 				}
@@ -170,9 +167,12 @@ log("Eval3:"+scope.getVariables());
 		}
 	}
 
+	private void debug(String message) {
+		System.out.println(message);
+		m_logger.debug(message);
+	}
 	private void log(String message) {
 		m_logger.info(message);
-		System.out.println(message);
 	}
 }
 
