@@ -390,6 +390,15 @@
 				if ( shape.stencil.id.toLowerCase() == 'gridinput' ) {
 					var props = shape.properties;
 					props.columns = props.xf_columns.items;
+					for( var i=0; i < props.columns.length;i++){
+						var col = props.columns[i];
+						if ( col.display && col.display.match( /^[@%]/ ) ) {
+							col.display = tr( col.display.substring( 1 ) );
+						}
+						if ( col.label && col.label.match( /^[@%]/ ) ) {
+							col.label = tr( col.label.substring( 1 ) );
+						}
+					}
 					props.xf_columns = undefined;
 					var bounds = shape.bounds;
 					props.height = bounds.lowerRight.y - bounds.upperLeft.y;
