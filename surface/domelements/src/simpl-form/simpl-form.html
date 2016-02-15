@@ -192,6 +192,9 @@
 		isTableSelect: function( id ) {
 			return id == 'Tableselect';
 		},
+		isCheckboxMatrix: function( id ) {
+			return id == 'CheckboxMatrix';
+		},
 		isGridInput: function( id ) {
 			return id == 'Gridinput';
 		},
@@ -220,7 +223,7 @@
 			return r;
 		},
 		isField: function( id ) {
-			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id == 'Enumselect' || id == 'Upload' || id == 'Custom' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
+			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id == 'CheckboxMatrix' || id == 'Enumselect' || id == 'Upload' || id == 'Custom' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
 			return r;
 		},
 		isInputAndBoolean: function( id, xf_type ) {
@@ -338,6 +341,10 @@
 		<template is="dom-if" if="{{isGridInput(item.id)}}">
 			<gridinput-field field class="flex" name$="{{item.xf_id}}" required$="[[item.xf_required]]" height="[[item.height]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</gridinput-field>
+		</template>
+		<template is="dom-if" if="{{isCheckboxMatrix(item.id)}}">
+			<checkboxmatrix-field field class="flex" name$="{{item.xf_id}}" required$="[[item.xf_required]]" height="[[item.height]]" rows="[[item.row]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			</checkboxmatrix-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isTextArea(item.id)}}">
 			<multiline-field field class="flex" name$="{{item.xf_id}}" rows="{{item.xf_rows}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></multiline-field>
@@ -569,6 +576,7 @@
 		db-selector-field,
 		tableselect-field,
 		gridinput-field,
+		checkboxmatrix-field,
 		select-field {
 			margin: 5px;
 		}
