@@ -347,7 +347,7 @@
 			routeChanged: function() {
 				console.log( "routeChanged:" + this.route );
 
-				var route = this.route;
+				var route = this.route+"";
 				if ( route.match( /^!/ ) ) {
 					route = route.substring( 1 );
 				}
