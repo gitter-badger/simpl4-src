@@ -91,6 +91,9 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 				}
 			}
 			this.shapeSelection = shapeSelection;
+			if(this.shapeSelection.shapes.length !==1){
+				return;
+			}
 			if(  this.shapeSelection.shapes.first() instanceof ms123.oryx.core.Shape ){
 				var parent = this.shapeSelection.shapes.first().getParentShape();
 				if( parent != undefined ){
@@ -318,10 +321,18 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 			}).bind(this));
 		},
 		__maskedEval: function (scr, env) {
-			if( scr === false) return false;
-			if( scr === true) return true;
-			env["parent"] = this.parentID;
-			return (new Function("with(this) { return " + scr + "}")).call(env);
+			try{
+				if( scr === false) return false;
+				if( scr === true) return true;
+				env["parent"] = this.parentID;
+				return (new Function("with(this) { return " + scr + "}")).call(env);
+			}catch(e){
+				console.error(e);
+				console.debug("scr:",scr);
+				console.debug("env:",env);
+				console.trace();
+				return null;
+			}
 		},
 
 		// if a field becomes invalid after editing the shape must be restored to the old value
