@@ -150,7 +150,7 @@
 								</template>
 							</a>
 						</div>
-						<simpl-mmenu name="menu" background="{{mmenuBackground}}" classes="{{mmenuClasses}}" sliding-submenus="true" searchfield="true" pages="{{getPages()}}" class="flex" />
+						<simpl-mmenu name="[[mmenuName]]" background="{{mmenuBackground}}" classes="{{mmenuClasses}}" sliding-submenus="true" searchfield="true" pages="{{getPages()}}" class="flex" />
 					</div>
 				</div>
 
@@ -278,6 +278,10 @@
 				},
 				mmenuClasses: {
 					value: null,
+					type: String
+				},
+				mmenuName: {
+					value: "menu",
 					type: String
 				},
 				toolbarProvided: {
