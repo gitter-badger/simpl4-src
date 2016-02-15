@@ -92,6 +92,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String activityId;
 	private String namespace;
 	private String headerFields;
+	private String variableNames;
 	private String businessKey;
 	private String signalName;
 	private String messageName;
@@ -112,6 +113,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.namespace = endpoint.getNamespace();
 		this.signalName = endpoint.getSignalName();
 		this.headerFields = endpoint.getHeaderFields();
+		this.variableNames = endpoint.getVariableNames();
 		this.businessKey = endpoint.getBusinessKey();
 		this.messageName = endpoint.getMessageName();
 		this.processCriteria = endpoint.getProcessCriteria();
@@ -156,8 +158,40 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		case startProcess:
 			doStartProcess(exchange);
 			break;
+		case getProcessVariables:
+			doGetProcessVariables(exchange);
+			break;
 		default:
 			throw new RuntimeException("ActivitiProducer.Operation not supported. Value: " + operation);
+		}
+	}
+
+	private void doGetProcessVariables(Exchange exchange) {
+		List<ProcessInstance> processInstanceList = getProcessInstances(exchange, false );
+		if( processInstanceList.size() > 1 ){
+			throw new RuntimeException("ActivitiProducer.doGetProcessVariables.more as one process queried: " + processInstanceList);
+		}
+
+		ProcessInstance pi = processInstanceList.get(0);	
+		info("doGetProcessVariables.processInstance1:" + pi);
+		pi = 	runtimeService.createProcessInstanceQuery().includeProcessVariables().processInstanceId( pi.getId()).singleResult();
+		info("doGetProcessVariables.processInstance2:" + pi);
+		info("doGetProcessVariables.variables:" + pi.getProcessVariables());
+		String variableNames = getString(exchange, "variableNames", this.variableNames);
+		if( isEmpty(variableNames)){
+			exchange.getIn().setBody(pi.getProcessVariables());
+		}else{
+			List<String> nameList = Arrays.asList(variableNames.split(","));
+			info("doGetProcessVariables:nameList:" + nameList);
+			Map<String,Object> vars = pi.getProcessVariables();
+			Map<String,Object> ret = new HashMap();
+			for (Map.Entry<String, Object> entry : vars.entrySet()) {
+				if( nameList.indexOf( entry.getKey()) > -1){
+					info("doGetProcessVariables:var:" + entry.getKey()+"="+entry.getValue());
+					ret.put( entry.getKey(), entry.getValue());
+				}
+			}
+			exchange.getIn().setBody(ret);
 		}
 	}
 
@@ -402,7 +436,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private Map<String,Object> getProcessVariables(Exchange exchange){
 		List<String> headerList=null;
 		String headerFields = getString(exchange, "headerFields", this.headerFields);
-		if( headerFields!=null){
+		if( !isEmpty(headerFields)){
 			headerList = Arrays.asList(headerFields.split(","));
 		}else{
 			headerList = new ArrayList();
@@ -421,6 +455,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private List<ProcessInstance> getProcessInstances(Exchange exchange) {
+		return getProcessInstances(exchange, true );
+	}
+	private List<ProcessInstance> getProcessInstances(Exchange exchange, boolean childProcesses) {
 		Map<String, Object> vars = getCamelVariablenMap(exchange);
 
 		boolean hasCriteria = false;
@@ -439,9 +476,15 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			info("getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,vars)));
 			hasCriteria=true;
 		}
+		String processInstanceId = getString(exchange, PROCESS_INSTANCE_ID, this.processCriteria.get(PROCESS_INSTANCE_ID));
+		if (!isEmpty(processInstanceId)) {
+			eq.processInstanceId(trimToEmpty(eval(processInstanceId,vars)));
+			info("getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
+			hasCriteria=true;
+		}
 		String businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
 		if (!isEmpty(businessKey)) {
-			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)),true);
+			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)),childProcesses);
 			info("getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
 			hasCriteria=true;
 		}

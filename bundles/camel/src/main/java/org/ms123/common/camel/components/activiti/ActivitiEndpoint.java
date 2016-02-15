@@ -42,6 +42,7 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private String signalName;
 	private String messageName;
 	private String headerFields;
+	private String variableNames;
 	private String businessKey;
 
 	private PermissionService m_permissionService;
@@ -100,6 +101,14 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	public String getHeaderFields() {
 		return headerFields;
+	}
+
+	public void setVariableNames(String t) {
+		variableNames = t;
+	}
+
+	public String getVariableNames() {
+		return variableNames;
 	}
 
 	public void setBusinessKey(String t) {
