@@ -40,6 +40,8 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private Map<String, String> processCriteria = new HashMap<String, String>();
 	private String namespace;
 	private String signalName;
+	private boolean isSendSignal;
+	private boolean isSendMessage;
 	private String messageName;
 	private String headerFields;
 	private String variableNames;
@@ -79,6 +81,20 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 			return null;
 		}
 		return this.namespace;
+	}
+
+	public void setSendSignal(Boolean data) {
+		this.isSendSignal = data;
+	}
+	public Boolean isSendSignal() {
+		return this.isSendSignal;
+	}
+
+	public void setSendMessage(boolean data) {
+		this.isSendMessage = data;
+	}
+	public boolean isSendMessage() {
+		return this.isSendMessage;
 	}
 
 	public void setSignalName(String data) {

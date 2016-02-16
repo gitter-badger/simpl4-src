@@ -96,6 +96,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String businessKey;
 	private String signalName;
 	private String messageName;
+	private boolean isSendSignal;
+	private boolean isSendMessage;
 
 	private Map options;
 	private String activitiKey;
@@ -116,6 +118,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.variableNames = endpoint.getVariableNames();
 		this.businessKey = endpoint.getBusinessKey();
 		this.messageName = endpoint.getMessageName();
+		this.isSendSignal = endpoint.isSendSignal();
+		this.isSendMessage = endpoint.isSendMessage();
 		this.processCriteria = endpoint.getProcessCriteria();
 		this.options = endpoint.getOptions();
 	}
@@ -197,6 +201,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private void doSendMessageEvent(Exchange exchange) {
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
+		doSendMessageEvent(exchange, processInstanceList);
+	}
+	private void doSendMessageEvent(Exchange exchange,List<ProcessInstance> processInstanceList) {
 		String messageName = getString(exchange, "messageName", this.messageName);
 		info("processInstanceList:" + processInstanceList);
 		info("messageName:" + messageName);
@@ -223,6 +230,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private void doSendSignalEvent(Exchange exchange) {
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
+		doSendSignalEvent(exchange, processInstanceList);
+	}
+	private void doSendSignalEvent(Exchange exchange,List<ProcessInstance> processInstanceList) {
 		String signalName = getString(exchange, "signalName", this.signalName);
 		info("processInstanceList:" + processInstanceList);
 		Map<String,Object> processVariables = getProcessVariables(exchange);
@@ -261,12 +271,26 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private void doStartProcess(Exchange exchange) {
-		ProcessInstance pi = executeProcess(exchange);
-		info("ProcessInstance:" + pi);
-		if (pi != null) {
-			this.activitiKey += "/" + pi.getId();
-			info("m_activitiKey:" + this.activitiKey);
-			exchange.getOut().setBody(pi.getId());
+		boolean isSendSignal = getBoolean(exchange, "sendSignal", this.isSendSignal);
+		boolean isSendMessage = getBoolean(exchange, "sendMessage", this.isSendMessage);
+		List<ProcessInstance> processInstanceList=null;
+		if( isSendMessage || isSendSignal ){
+			processInstanceList = getProcessInstances(exchange, true, false);
+		}
+		if( !isEmpty(processInstanceList)){
+			if( isSendMessage){
+				doSendMessageEvent(exchange, processInstanceList);
+			}else if( isSendSignal){
+				doSendSignalEvent(exchange, processInstanceList);
+			}
+		}else{
+			ProcessInstance pi = executeProcess(exchange);
+			info("ProcessInstance:" + pi);
+			if (pi != null) {
+				this.activitiKey += "/" + pi.getId();
+				info("m_activitiKey:" + this.activitiKey);
+				exchange.getOut().setBody(pi.getId());
+			}
 		}
 	}
 
@@ -455,9 +479,12 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private List<ProcessInstance> getProcessInstances(Exchange exchange) {
-		return getProcessInstances(exchange, true );
+		return getProcessInstances(exchange, true, true );
 	}
 	private List<ProcessInstance> getProcessInstances(Exchange exchange, boolean childProcesses) {
+		return getProcessInstances(exchange, childProcesses, true );
+	}
+	private List<ProcessInstance> getProcessInstances(Exchange exchange, boolean childProcesses, boolean exception) {
 		Map<String, Object> vars = getCamelVariablenMap(exchange);
 
 		boolean hasCriteria = false;
@@ -520,7 +547,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			eq.executionTenantId(trimToEmpty(this.namespace));
 			List<ProcessInstance> executionList = (List) eq.list();
 			info("getProcessInstances:" + executionList);
-			if (executionList == null || executionList.size() == 0) {
+			if (exception && (executionList == null || executionList.size() == 0)) {
 				throw new RuntimeException("ActivitiProducer.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
 			}
 			return executionList;
@@ -594,6 +621,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private boolean isEmpty(String s) {
 		return (s == null || "".equals(s.trim()));
 	}
+	private boolean isEmpty(List s) {
+		return (s == null || s.size()==0);
+	}
 
 	private Map getCamelVariablenMap(Exchange exchange) {
 		Map camelMap = new HashMap();
@@ -625,10 +655,11 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private boolean getBoolean(Exchange e, String key, boolean def) {
 		Boolean value = e.getIn().getHeader(key, Boolean.class);
+		debug("getBoolean:" + key + "=" + value + "/def:" + def);
 		if (value == null) {
 			value = e.getProperty(key, Boolean.class);
 		}
-		debug("getString:" + key + "=" + value + "/def:" + def);
+		debug("getBoolean2:" + key + "=" + value + "/def:" + def);
 		return value != null ? value : def;
 	}
 
