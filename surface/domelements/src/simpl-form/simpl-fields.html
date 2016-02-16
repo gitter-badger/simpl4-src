@@ -880,6 +880,10 @@
 				this.field.setValue(v);
 			},
 			getValue:function(){
+				 if( this.field==null){
+					 console.log("custom-field.getValue:field is null");
+					 return null;
+				 }
 				this.value=this.field.getValue();
 				return this.value;
 			},
