@@ -90,4 +90,13 @@ public class GroovyTaskDsl {
 		return (List) m_binding.getVariable("__queriedObjects");
 	}
 
+	public  Map getVariables() {
+		return  m_binding.getVariables();
+	}
+	public  Object getVariable(String name) {
+		return  m_binding.getVariable(name);
+	}
+	public  boolean hasVariable(String name) {
+		return  m_binding.hasVariable(name);
+	}
 }

@@ -38,7 +38,7 @@ import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.workflow.GroovyTaskDsl;
-import org.osgi.service.event.Event;
+import org.ms123.common.workflow.GroovyVariablesVisitor;
 import org.osgi.service.event.EventAdmin;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -105,12 +105,17 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 
 	private void _execute(TaskContext tc, Map addVars) {
 		m_js.prettyPrint(true);
-		log(tc, "TaskScriptExecutor._execute:" + tc.getScript());
+		debug(tc, "TaskScriptExecutor._execute:" + tc.getScript());
 		printInfo(tc);
+		Map<String,Set<String>> scriptVars = GroovyVariablesVisitor.getVariables(tc.getScript());
+
+		debug(tc, "Bound variables:"+scriptVars.get("bound"));
+		debug(tc, "UnBound variables:"+scriptVars.get("unbound"));
+
 		showVariablenNames(tc);
 		SessionContext sc = getSessionContext(tc);
 		Map<String, Object> vars = new HashMap(tc.getExecution().getVariables());
-		log(tc, "TaskScriptExecutor.vars:" + m_js.deepSerialize(vars));
+		Set<String> existingVars = (Set)new HashSet(vars.keySet()).clone();
 		if (addVars != null) {
 			vars.putAll(addVars);
 		}
@@ -126,8 +131,16 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 			log(tc, "transaction.status:" + tx.getStatus() + "/" + org.ms123.common.system.thread.ThreadContext.getThreadContext());
 			ret = dsl.eval(tc.getScript());
 			log(tc, "TaskScriptExecutor.gvars:" + gvars);
+			log(tc, "TaskScriptExecutor.bindingVariables:" + dsl.getVariables());
 			tc.getExecution().setVariables(gvars);
 			tc.getExecution().setVariablesLocal(lvars);
+			log(tc, "TaskScriptExecutor.existingVars:" + existingVars);
+			for( String varName : scriptVars.get("unbound")){
+				if( !"gvars".equals(varName) && !"lvars".equals(varName) && dsl.hasVariable(varName) && !existingVars.contains(varName)){
+					log("\t###settingProcessVariable:"+varName+" -> " + dsl.getVariable(varName));
+					tc.getExecution().setVariable(varName, dsl.getVariable(varName));
+				}
+			}
 			for (Object o : dsl.getCreatedObjects()) {
 				log(tc, "createdObject:" + o);
 				sc.retrieve(o);

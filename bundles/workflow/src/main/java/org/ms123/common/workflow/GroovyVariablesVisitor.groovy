@@ -67,8 +67,7 @@ public class GroovyVariablesVisitor {
 		}
 
 		@Override
-		void call(final SourceUnit source, final GeneratorContext context, final ClassNode classNode)
-		throws CompilationFailedException {
+		void call(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) throws CompilationFailedException {
 			classNode.visitContents(visitor);
 		}
 	}

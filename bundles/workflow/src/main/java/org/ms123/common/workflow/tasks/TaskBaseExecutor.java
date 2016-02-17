@@ -81,7 +81,7 @@ public abstract class TaskBaseExecutor {
 	}
 
 	protected void printInfo(TaskContext tc) {
-		log(tc, getInfo(tc));
+		debug(tc, getInfo(tc));
 	}
 
 	protected String getExceptionInfo(TaskContext tc){
@@ -232,9 +232,9 @@ public abstract class TaskBaseExecutor {
 
 	protected void showVariablenNames(TaskContext tc) {
 		VariableScope execution = tc.getExecution();
-		log(tc, "VarNames(" + this.getClass().getSimpleName() + "):" + execution.getVariableNames());
+		debug(tc, "ProcessVariables(" + this.getClass().getSimpleName() + "):" + execution.getVariableNames());
 		for (String x : execution.getVariableNames()) {
-			log(tc, "\tx:" + x + "=" + execution.getVariable(x));
+			log(tc, "\t" + x + "=" + execution.getVariable(x));
 		}
 	}
 
@@ -359,15 +359,28 @@ public abstract class TaskBaseExecutor {
 		m_logger.info(message);
 		System.err.println(message);
 	}
+	protected void debug(String message) {
+		m_logger.debug(message);
+		System.err.println(message);
+	}
 
 	protected void log(TaskContext tc, String message) {
+		message = getlogMessage(tc, message);
+		m_logger.info(message);
+		System.err.println(message);
+	}
+	protected void debug(TaskContext tc, String message) {
+		message = getlogMessage(tc, message);
+		m_logger.debug(message);
+		System.err.println(message);
+	}
+	protected String getlogMessage(TaskContext tc, String message) {
 		VariableScope execution = tc.getExecution();
 		if ((execution instanceof DelegateExecution)) {
 			DelegateExecution d = (DelegateExecution) execution;
 			message = "(" + d.getProcessInstanceId() + "," + hashCode() + "):" + message;
 		}
-		m_logger.info(message);
-		System.err.println(message);
+		return message;
 	}
 }
 
