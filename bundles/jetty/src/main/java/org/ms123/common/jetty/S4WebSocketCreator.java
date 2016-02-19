@@ -73,14 +73,12 @@ public class S4WebSocketCreator implements WebSocketCreator {
 		if (service == null) {
 			throw new RuntimeException("WebSocketCreator.Cannot resolve service:org.ms123.common.camel.api.CamelService");
 		}
-		Class[] cargs = new Class[2];
+		Class[] cargs = new Class[1];
 		cargs[0] = String.class;
-		cargs[1] = String.class;
 		try {
 			Method meth = service.getClass().getMethod("getCamelContext", cargs);
-			Object[] args = new Object[2];
+			Object[] args = new Object[1];
 			args[0] = namespace;
-			args[1] = "default";
 			cc = (CamelContext)meth.invoke(service, args);
 			m_camelContextMap.put(namespace, cc);
 			return cc;
