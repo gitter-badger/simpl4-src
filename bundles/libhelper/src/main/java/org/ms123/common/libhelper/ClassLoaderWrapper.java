@@ -22,6 +22,7 @@ package org.ms123.common.libhelper;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -60,7 +61,7 @@ public class ClassLoaderWrapper extends ClassLoader {
 			} catch (ClassNotFoundException ignored) {
 			}
 		}
-		throw new ClassNotFoundException(name);
+		throw new ClassNotFoundException(name +" in " + Arrays.asList(parents));
 	}
 
 	public URL getResource(String name) {
