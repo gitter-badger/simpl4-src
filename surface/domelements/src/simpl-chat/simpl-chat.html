@@ -249,11 +249,6 @@ Use the Help button for an technical overview.
 										<div class="flex">[[tr('chat.add_contact')]]</div>
 									</paper-item>
 
-									<!--paper-item on-tap="showAddGroupForm">
-											<iron-icon icon="add-circle"></iron-icon>
-											<div class="flex">[[tr('chat.add_group')]]</div>
-										</paper-item-->
-
 									<paper-item on-tap="showJoinRoomForm">
 										<iron-icon icon="content-copy"></iron-icon>
 										<div class="flex">[[tr('chat.joinRoom')]]</div>
@@ -268,7 +263,7 @@ Use the Help button for an technical overview.
 
 							<span style="color:#D50303;">[[currentChat.chatState]]</span>
 							<div class="bottom fit horizontal layout">
-								<paper-tabs selected="{{chatId}}" selectables="paper-tab" style="max-width:600px;" attr-for-selected="chat-id" scrollable>
+								<paper-tabs selected="{{chatId}}" selectables="paper-tab" style="max-width:600px;" attr-for-selected="chat-id" id="chatTabId" scrollable>
 									<template is="dom-repeat" as="chat" items="{{chatList}}">
 										<paper-tab chat-id$="[[chat.id]]">[[chat.id]]</paper-tab>
 									</template>
@@ -371,7 +366,7 @@ Use the Help button for an technical overview.
 			</neon-animated-pages>
 
 		</simpl-panel>
-		<paper-toast id="toast_error" duration="5000" text="" style="background:#d50303;padding-right:60px;" role="alert" class="capsule">
+		<paper-toast id="toast_error" duration="5000" text="" style="background:#d50303;position:relative;padding-right:60px;" role="alert" class="capsule">
 			<div style="color:white;font-weight:bold;">{{errorMessage}}</div>
 		</paper-toast>
 	</template>
@@ -529,8 +524,10 @@ Use the Help button for an technical overview.
 					var chatId = this.getNameFromJid( message.from );
 					var chat = this.chatHash[ chatId ];
 					if ( chat ) {
-						chat.presence = message.presence;
-						console.log( "chat.presence:" + JSON.stringify( chat, null, 2 ) );
+						var index = this.getChatIndex( chat );
+						console.log( "index:", index );
+						this.set( "chatList." + index + ".presence", message.presence );
+						console.log( "chat.presence:", this.chatList[ index ].presence );
 					}
 				}
 			},
@@ -570,12 +567,12 @@ Use the Help button for an technical overview.
 					params[ "password" ] = formData.password;
 					params[ "resourceId" ] = this.resourceId;
 				}
-
 				this.$.websocket.openConnection( params, this.socketTimeoutCallback.bind( this ) );
 			},
 			disconnect: function() {
 				this.sendChatState( "gone" );
 				this.async( function() {
+					this.removeAllChat();
 					this.$.websocket.closeConnection();
 				}, null, 300 );
 			},
@@ -661,19 +658,21 @@ Use the Help button for an technical overview.
 					return;
 				}
 				var chat = {};
-				chat.id = formData.room[ 0 ].name;
-				chat.description = formData.room[ 0 ].description;
+				chat.id = formData.room.length ? formData.room[ 0 ].name : formData.room.name;
+				chat.description = formData.room.length ? formData.room[ 0 ].description : formData.room.description;
 				if ( this.chatHash[ chat.id ] ) {
-					this.chatId = chat.id;
+					this.set( "chatId", chat.id );
+					this.$.chatTabId.selected = chat.id;
 					return;
 				}
 				chat.messages = [];
 				chat.type = 'groupchat';
 				this.addChat( chat );
 				this.async( function() {
-					this.chatId = chat.id;
+					this.set( "chatId", chat.id );
 					this.sendJoin();
 				}, null, 300 );
+				this.$.chatTabId.selected = chat.id;
 			},
 			openSingleChat: function() {
 				var participant = $( this.querySelector( "#participant-" + this.chatId ) ).val();
@@ -688,7 +687,7 @@ Use the Help button for an technical overview.
 				$( this.querySelector( "#participant-" + this.chatId ) ).val( null );
 				this.isCurrentParticipant = false;
 				try {
-					this.chatId = chat.id;
+					this.set( "chatId", chat.id );
 				} catch ( e ) {}
 			},
 			showLeaveRoomForm: function() {
@@ -915,17 +914,6 @@ Use the Help button for an technical overview.
 				this.isCurrentParticipant = true;
 				chat.chatState = '';
 			},
-			resetChatList: function() {
-				this.arrayClear( this.chatList );
-				var chat = {
-					id: 'main',
-					isComposing: false,
-					messages: [],
-					type: 'mixedchat'
-				};
-				this.currentChat = chat;
-				this.addChat( chat );
-			},
 			filterSingleChat: function( roster ) {
 				var ret = [];
 				for ( var i = 0; i < roster.length; i++ ) {
@@ -938,6 +926,22 @@ Use the Help button for an technical overview.
 			updateRoster: function() {
 				this.rosterEntries = this.filterSingleChat( this.rosterEntries );
 			},
+			resetChatList: function() {
+				this.arrayClear( this.chatList );
+				var chat = {
+					id: 'main',
+					isComposing: false,
+					messages: [],
+					type: 'mixedchat'
+				};
+				this.currentChat = chat;
+				this.addChat( chat );
+			},
+			removeAllChat: function() {
+				this.splice( "chatList", 1, this.chatList.length - 1 );
+				this.chatHash = this.toHash( this.chatList );
+				this.set( "chatId", "main" );
+			},
 			removeChat: function( name ) {
 				for ( var i = 0; i < this.chatList.length; i++ ) {
 					if ( name === this.chatList[ i ].id ) {
@@ -946,7 +950,7 @@ Use the Help button for an technical overview.
 					}
 				}
 				this.chatHash = this.toHash( this.chatList );
-				this.chatId = "main";
+				this.set( "chatId", "main" );
 			},
 			addChat: function( chat ) {
 				chat.messages = [];
@@ -959,6 +963,13 @@ Use the Help button for an technical overview.
 			arrayClear: function( a ) {
 				if ( a.length == 0 ) return;
 				this.splice( "chatList", 0, a.length );
+			},
+			getChatIndex: function( chat ) {
+				for ( var i = 0; i < this.chatList.length; i++ ) {
+					if ( chat.id === this.chatList[ i ].id ) {
+						return i;
+					}
+				}
 			},
 			toHash: function( list ) {
 				var hash = {}
