@@ -37,5 +37,5 @@ $ gradlew deploy
 ```
 ----
 
-####[*Website*](http://www.simpl4.org) and [*Demo-applications*](https://github.com/simpl4-apps)
+####[*Website*](http://www.simpl4.org) and [*Demo-applications*](https://github.com/simpl4-apps?tab=repositories)
 
