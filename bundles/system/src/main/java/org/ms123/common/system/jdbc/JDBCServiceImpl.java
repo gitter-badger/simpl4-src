@@ -44,6 +44,7 @@ public class JDBCServiceImpl implements JDBCService {
 		try {
 			m_bundleContext = bundleContext;
 			registerAS400();
+			registerJTDS();
 			registerJNDIDataSources();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -57,6 +58,15 @@ public class JDBCServiceImpl implements JDBCService {
 		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "as400");
 		info("as400.register.dsf:" + dsf);
 		info("as400.register.props:" + props);
+		m_bundleContext.registerService(DataSourceFactory.class.getName(), dsf, props);
+	}
+	private void registerJTDS() throws Exception {
+		JTDSDataSourceFactory dsf = new JTDSDataSourceFactory();
+		Dictionary<String, String> props = new Hashtable<String, String>();
+		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS, "net.sourceforge.jtds.jdbc.Driver");
+		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "jtds");
+		info("jtds.register.dsf:" + dsf);
+		info("jtds.register.props:" + props);
 		m_bundleContext.registerService(DataSourceFactory.class.getName(), dsf, props);
 	}
 
