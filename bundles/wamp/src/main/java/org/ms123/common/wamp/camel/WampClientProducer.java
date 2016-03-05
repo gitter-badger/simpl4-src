@@ -29,19 +29,27 @@ import org.apache.camel.util.MessageHelper;
 import org.apache.camel.Message;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
-import org.slf4j.helpers.MessageFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import org.ms123.common.wamp.camel.WampClientConstants.*;
 import org.ms123.common.wamp.WampClientSession;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
+import groovy.lang.Binding;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyClassLoader;
+import org.codehaus.groovy.control.*;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.ms123.common.camel.components.ExchangeUtils;
 
 @SuppressWarnings("unchecked")
 public class WampClientProducer extends DefaultAsyncProducer {
 
-	private static final Logger LOG = LoggerFactory.getLogger(WampClientProducer.class);
 	private WampClientSession clientSession;
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -57,20 +65,21 @@ public class WampClientProducer extends DefaultAsyncProducer {
 	@Override
 	public boolean process(Exchange exchange, AsyncCallback callback) {
 		String namespace = getEndpoint().getCamelContext().getName().split("/")[0];
-		this.clientSession.publish(namespace + "." + getEndpoint().getTopic(),null,buildResponse(getPublishData(exchange)));
+		Map<String, Object> vars = getCamelVariablenMap(exchange);
+		String topic = trimToEmpty(eval(getEndpoint().getTopic(), vars));
+		info(this,"process.topic:" + topic);
+		this.clientSession.publish(topic,null,buildResponse(getPublishData(exchange)));
 		return true;
 	}
 
 	protected void doStart() throws Exception {
 		String namespace = getEndpoint().getCamelContext().getName().split("/")[0];
-		debug("######WampProducer.doSart:" + namespace + "." + getEndpoint().getTopic());
 		super.doStart();
 		this.clientSession = getEndpoint().createWampClientSession("realm1");
 	}
 
 	protected void doStop() throws Exception {
 		String namespace = getEndpoint().getCamelContext().getName().split("/")[0];
-		debug("######WampProducer.doStop:" + namespace + "." + getEndpoint().getTopic());
 		this.clientSession.close();
 		super.doStop();
 	}
@@ -121,22 +130,76 @@ public class WampClientProducer extends DefaultAsyncProducer {
 		}
 		return null;
 	}
-
-	protected void debug(String msg, Object... args) {
-		System.out.println(MessageFormatter.arrayFormat(msg, varargsToArray(args)).getMessage());
-		LOG.debug(msg, args);
-	}
-
-	protected void info(String msg, Object... args) {
-		System.out.println(MessageFormatter.arrayFormat(msg, varargsToArray(args)).getMessage());
-		LOG.info(msg, args);
-	}
-
-	private Object[] varargsToArray(Object... args) {
-		Object[] ret = new Object[args.length];
-		for (int i = 0; i < args.length; i++) {
-			ret[i] = args[i];
+	private GroovyClassLoader groovyClassLoader = null;
+	private Map<String,Script> scriptCache = new HashMap();
+	private Script parse(String expr) {
+		if( groovyClassLoader == null){
+			ClassLoader parentLoader = this.getClass().getClassLoader();
+			groovyClassLoader =   new GroovyClassLoader(parentLoader,new CompilerConfiguration());
 		}
-		return ret;
+		try{
+			GroovyCodeSource gcs = new GroovyCodeSource( expr, "script", "groovy/shell");
+			return InvokerHelper.createScript(groovyClassLoader.parseClass(gcs,false), new Binding());
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("ActivitiProducer.parse:"+e.getMessage()+" -> "+ expr);
+		}
+	}
+
+	private String eval2(String expr, Map<String,Object> vars) {
+		info(this, "--> eval_in:" + expr+",vars:"+vars);
+		Object result = expr;
+		Script script = scriptCache.get(expr);
+		if( script == null){
+			script = parse(expr);
+			scriptCache.put(expr, script);
+		}
+		script.setBinding(new Binding(vars));
+		try{
+			result = script.run();
+		}catch(Exception e){
+			String error = org.ms123.common.utils.Utils.formatGroovyException(e, expr);
+			info(this, "ActivitiProducer.eval:"+error);
+		}
+		info(this, "<-- eval_out:" + result);
+		return String.valueOf(result);
+	}
+
+	private String eval(String str, Map<String,Object> scope) {
+		int countRepl = 0;
+		int countPlainStr = 0;
+		Object replacement = null;
+		String newString = "";
+		int openBrackets = 0;
+		int first = 0;
+		for (int i = 0; i < str.length(); i++) {
+			if (i < str.length() - 2 && str.substring(i, i + 2).compareTo("${") == 0) {
+				if (openBrackets == 0) {
+					first = i + 2;
+				}
+				openBrackets++;
+			} else if (str.charAt(i) == '}' && openBrackets > 0) {
+				openBrackets -= 1;
+				if (openBrackets == 0) {
+					countRepl++;
+					replacement = eval2(str.substring(first, i), scope);
+					newString += replacement;
+				}
+			} else if (openBrackets == 0) {
+				newString += str.charAt(i);
+				countPlainStr++;
+			}
+		}
+		if (countRepl == 1 && countPlainStr == 0) {
+			return String.valueOf(replacement);
+		} else {
+			return newString;
+		}
+	}
+	private Map getCamelVariablenMap(Exchange exchange) {
+		Map camelMap = new HashMap();
+		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
+		camelMap.putAll(exVars);
+		return camelMap;
 	}
 }
