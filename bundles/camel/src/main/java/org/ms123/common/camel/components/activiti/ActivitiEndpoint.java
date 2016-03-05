@@ -19,8 +19,8 @@
 package org.ms123.common.camel.components.activiti;
 
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.HistoryService;
 import org.apache.camel.*;
-import org.activiti.camel.ActivitiConsumer;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.workflow.api.WorkflowService;
@@ -28,14 +28,20 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import flexjson.*;
+import org.apache.camel.spi.UriEndpoint;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /**
  */
 @SuppressWarnings({"unchecked","deprecation"})
+@UriEndpoint(scheme = "activiti", title = "Activiti", syntax = "activiti:name", consumerClass = ActivitiConsumer.class)
 public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private RuntimeService m_runtimeService;
+	private HistoryService m_historyService;
 	private Map m_options;
 	private Map<String, String> processCriteria = new HashMap<String, String>();
 	private String namespace;
@@ -53,23 +59,39 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	public ActivitiEndpoint(String uri, CamelContext camelContext, WorkflowService ws, PermissionService ps) {
 		super(uri, camelContext);
 		m_runtimeService = ws.getProcessEngine().getRuntimeService();
+		m_historyService = ws.getProcessEngine().getHistoryService();
 		setRuntimeService(m_runtimeService);
 		m_permissionService = ps;
 		m_workflowService = ws;
 	}
 
 	public Producer createProducer() throws Exception {
-		info("ActivitiEndpoint.createProducer");
+		info(this, "ActivitiEndpoint.createProducer");
 		return new org.ms123.common.camel.components.activiti.ActivitiProducer(this, m_workflowService, m_permissionService);
 	}
 
+	public Consumer createConsumer(Processor processor) throws Exception {
+		info(this, "ActivitiEndpoint.createConsumer");
+		ActivitiConsumer consumer = new ActivitiConsumer(this, processor);
+		configureConsumer(consumer);
+		return consumer;
+	}
+	public boolean isSingleton() {
+		return true;
+	}
 	public void configureProperties(Map<String, Object> options) {
-		info("ActivitiEndpoint:" + options);
+		info(this, "ActivitiEndpoint:" + options);
 		m_options = options;
 	}
 
 	public Map getOptions() {
 		return m_options;
+	}
+	public RuntimeService getRuntimeService(){
+		return m_runtimeService;
+	}
+	public HistoryService getHistoryService(){
+		return m_historyService;
 	}
 
 	public void setNamespace(String data) {
@@ -150,18 +172,6 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	public Map<String, String> getProcessCriteria() {
 		return this.processCriteria;
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(ActivitiEndpoint.class);
-
-	private void debug(String msg) {
-		System.out.println(msg);
-		m_logger.debug(msg);
-	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
 	}
 }
 
