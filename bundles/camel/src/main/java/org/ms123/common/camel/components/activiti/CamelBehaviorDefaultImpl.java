@@ -32,6 +32,9 @@ import org.ms123.common.camel.api.CamelService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.CamelContext;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehaviorDefaultImpl {
@@ -39,21 +42,21 @@ public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehav
 	String m_tenant, m_processDefinitionKey;
 
 	protected void setAppropriateCamelContext(ActivityExecution execution) {
-		info("getProcessVariables:" + execution.getVariables());
+		info(this,"getProcessVariables:" + execution.getVariables());
 		Map vars = execution.getVariables();
 		String ns = (String) vars.get("__namespace");
 		Map beans = Context.getProcessEngineConfiguration().getBeans();
 		setTenantAndName(execution);
 		CamelService cs = (CamelService) lookupServiceByName(CamelService.class.getName());
-		info("m_tenant:" + m_tenant + "/" + ns + "/" + cs);
+		info(this,"m_tenant:" + m_tenant + "/" + ns + "/" + cs);
 		camelContextObj = cs.getCamelContext(ns);
-		info("camelContextObj:" + camelContextObj);
+		info(this,"camelContextObj:" + camelContextObj);
 	}
 
 	protected ActivitiEndpoint getEndpoint(String key) {
-		info("getEndpoint.key:" + key);
+		info(this,"getEndpoint.key:" + key);
 		for (Endpoint e : camelContextObj.getEndpoints()) {
-			info("\tgetEndpoint.e:" + e + "/" + e.getEndpointKey());
+			info(this,"\tgetEndpoint.e:" + e + "/" + e.getEndpointKey());
 			if (e.getEndpointKey().equals(key) && (e instanceof ActivitiEndpoint)) {
 				return (ActivitiEndpoint) e;
 			}
@@ -69,9 +72,9 @@ public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehav
 		ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
 		m_tenant = processDefinition.getTenantId();
 		m_processDefinitionKey = processDefinition.getKey();
-		info("ID:" + processDefinition.getId());
-		info("Name:" + processDefinition.getName());
-		info("Key:" + processDefinition.getKey());
+		info(this,"ID:" + processDefinition.getId());
+		info(this,"Name:" + processDefinition.getName());
+		info(this,"Key:" + processDefinition.getKey());
 	}
 
 	public Object lookupServiceByName(String name) {
@@ -87,11 +90,4 @@ public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehav
 		}
 		return service;
 	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(CamelBehaviorDefaultImpl.class);
 }

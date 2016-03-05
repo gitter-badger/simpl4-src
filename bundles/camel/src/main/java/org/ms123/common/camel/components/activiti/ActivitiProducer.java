@@ -75,6 +75,9 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_BUS
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_INSTANCE_ID;
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_ACTIVITY_NAME;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings("unchecked")
 public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implements ActivitiConstants {
@@ -133,7 +136,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		if (isEmpty(this.namespace)) {
 			this.namespace = (String) exchange.getProperty("_namespace");
 		}
-		info("ActivitiProducer.operation:" + this.operation+"/namespace:"+this.namespace);
+		info(this,"ActivitiProducer.operation:" + this.operation+"/namespace:"+this.namespace);
 		invokeOperation(this.operation, exchange);
 		/* final CamelService camelService = (CamelService) exchange.getContext().getRegistry().lookupByName(CamelService.class.getName());
 		 exchange.setProperty(WORKFLOW_ACTIVITY_NAME, this.activityId);
@@ -177,21 +180,21 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 
 		ProcessInstance pi = processInstanceList.get(0);	
-		info("doGetProcessVariables.processInstance1:" + pi);
+		info(this,"doGetProcessVariables.processInstance1:" + pi);
 		pi = 	runtimeService.createProcessInstanceQuery().includeProcessVariables().processInstanceId( pi.getId()).singleResult();
-		info("doGetProcessVariables.processInstance2:" + pi);
-		info("doGetProcessVariables.variables:" + pi.getProcessVariables());
+		info(this,"doGetProcessVariables.processInstance2:" + pi);
+		info(this,"doGetProcessVariables.variables:" + pi.getProcessVariables());
 		String variableNames = getString(exchange, "variableNames", this.variableNames);
 		if( isEmpty(variableNames)){
 			exchange.getIn().setBody(pi.getProcessVariables());
 		}else{
 			List<String> nameList = Arrays.asList(variableNames.split(","));
-			info("doGetProcessVariables:nameList:" + nameList);
+			info(this,"doGetProcessVariables:nameList:" + nameList);
 			Map<String,Object> vars = pi.getProcessVariables();
 			Map<String,Object> ret = new HashMap();
 			for (Map.Entry<String, Object> entry : vars.entrySet()) {
 				if( nameList.indexOf( entry.getKey()) > -1){
-					info("doGetProcessVariables:var:" + entry.getKey()+"="+entry.getValue());
+					info(this,"doGetProcessVariables:var:" + entry.getKey()+"="+entry.getValue());
 					ret.put( entry.getKey(), entry.getValue());
 				}
 			}
@@ -205,23 +208,23 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 	private void doSendMessageEvent(Exchange exchange,List<ProcessInstance> processInstanceList) {
 		String messageName = getString(exchange, "messageName", this.messageName);
-		info("processInstanceList:" + processInstanceList);
-		info("messageName:" + messageName);
+		info(this,"processInstanceList:" + processInstanceList);
+		info(this,"messageName:" + messageName);
 		Map<String,Object> processVariables = getProcessVariables(exchange);
 		if( processInstanceList != null){
 			for( ProcessInstance pi : processInstanceList){
-				info("PI:"+pi.getId());
+				info(this,"PI:"+pi.getId());
 				Execution execution = runtimeService.createExecutionQuery() .executionId(pi.getId()).messageEventSubscriptionName(messageName).singleResult(); 
-				info("\tExecution:"+execution);
+				info(this,"\tExecution:"+execution);
 				if( execution != null){
-					info("doSendMessageEvent:"+messageName+"/"+execution.getId());
+					info(this,"doSendMessageEvent:"+messageName+"/"+execution.getId());
 					if( processVariables == null){
 						this.runtimeService.messageEventReceived( messageName, execution.getId());
 					}else{
 						this.runtimeService.messageEventReceived( messageName, execution.getId(), processVariables);
 					}
 				}else{
-					info("doSendMessageEvent.message("+messageName+") not found in process:"+pi.getId());
+					info(this,"doSendMessageEvent.message("+messageName+") not found in process:"+pi.getId());
 					List<Execution> execs = runtimeService.createExecutionQuery() .messageEventSubscriptionName(messageName).list(); 
 				}
 			}
@@ -234,10 +237,10 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 	private void doSendSignalEvent(Exchange exchange,List<ProcessInstance> processInstanceList) {
 		String signalName = getString(exchange, "signalName", this.signalName);
-		info("processInstanceList:" + processInstanceList);
+		info(this,"processInstanceList:" + processInstanceList);
 		Map<String,Object> processVariables = getProcessVariables(exchange);
 		if( processInstanceList == null){
-			info("doSendSignalEvent:"+signalName);
+			info(this,"doSendSignalEvent:"+signalName);
 			if( processVariables == null){
 				this.runtimeService.signalEventReceived( signalName);
 			}else{
@@ -246,18 +249,18 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}else{
 			for( ProcessInstance pi : processInstanceList){
 				Execution execution = runtimeService.createExecutionQuery() .executionId(pi.getId()).signalEventSubscriptionName(signalName).singleResult(); 
-				info("\tExecution:"+execution);
+				info(this,"\tExecution:"+execution);
 				if( execution != null){
-					info("doSendSignalEvent:"+signalName+"/"+execution.getId());
+					info(this,"doSendSignalEvent:"+signalName+"/"+execution.getId());
 					if( processVariables == null){
 						this.runtimeService.signalEventReceived( signalName, execution.getId());
 					}else{
 						this.runtimeService.signalEventReceived( signalName, execution.getId(), processVariables);
 					}
 				}else{
-					info("doSendSignalEvent.signal("+signalName+") not found in process:"+pi.getId());
+					info(this,"doSendSignalEvent.signal("+signalName+") not found in process:"+pi.getId());
 					List<Execution> execs = runtimeService.createExecutionQuery() .signalEventSubscriptionName(signalName).list(); 
-					info("doSendSignalEvent.allExecutions("+signalName+"):"+execs);
+					info(this,"doSendSignalEvent.allExecutions("+signalName+"):"+execs);
 				}
 			}
 		}
@@ -285,10 +288,10 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 		}else{
 			ProcessInstance pi = executeProcess(exchange);
-			info("ProcessInstance:" + pi);
+			info(this,"ProcessInstance:" + pi);
 			if (pi != null) {
 				this.activitiKey += "/" + pi.getId();
-				info("m_activitiKey:" + this.activitiKey);
+				info(this,"m_activitiKey:" + this.activitiKey);
 				exchange.getOut().setBody(pi.getId());
 			}
 		}
@@ -329,10 +332,10 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			permissionService.loginInternal(ns);
 			while (true) {
 				try {
-					info("SignalThread.sending signal to:" + execution.getId());
+					info(this,"SignalThread.sending signal to:" + execution.getId());
 					runtimeService.signal(execution.getId(), this.options);
 				} catch (org.activiti.engine.ActivitiOptimisticLockingException e) {
-					info("SignalThread:" + e);
+					info(this,"SignalThread:" + e);
 					try {
 						Thread.sleep(100L);
 					} catch (Exception x) {
@@ -355,38 +358,38 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private ProcessInstance executeProcess(Exchange exchange) {
 		Map<String, Object> vars = getProcessVariables(exchange);//getCamelVariablenMap(exchange);
-		info("ExecuteProcess:criteria:" + this.processCriteria);
-		info("ExecuteProcess:vars:" + vars);
+		info(this,"ExecuteProcess:criteria:" + this.processCriteria);
+		info(this,"ExecuteProcess:vars:" + vars);
 		ThreadContext.loadThreadContext(this.namespace, "admin");
 		this.permissionService.loginInternal(this.namespace);
 		try {
 			ProcessInstanceBuilder pib = this.runtimeService.createProcessInstanceBuilder();
 			String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
 			if (!isEmpty(processDefinitionId)) {
-				info("ExecuteProcess:processDefinitionId:" + processDefinitionId);
+				info(this,"ExecuteProcess:processDefinitionId:" + processDefinitionId);
 				pib.processDefinitionId(processDefinitionId);
 			}
 			String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 			if (!isEmpty(processDefinitionKey)) {
-				info("ExecuteProcess:processDefinitionKey:" + processDefinitionKey);
+				info(this,"ExecuteProcess:processDefinitionKey:" + processDefinitionKey);
 				pib.processDefinitionKey(processDefinitionKey);
 			}
 			String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
 			if (!isEmpty(businessKey)) {
-				info("ExecuteProcess:businessKey:" + businessKey);
+				info(this,"ExecuteProcess:businessKey:" + businessKey);
 				pib.businessKey(businessKey);
 			}
 
 			for (Map.Entry<String, Object> entry : vars.entrySet()) {
-				info("ExecuteProcess:var:" + entry.getKey()+"="+entry.getValue());
+				info(this,"ExecuteProcess:var:" + entry.getKey()+"="+entry.getValue());
 				pib.addVariable(entry.getKey(), entry.getValue());
 			}
-			info("ExecuteProcess:tenant:" + this.namespace);
+			info(this,"ExecuteProcess:tenant:" + this.namespace);
 			pib.tenantId(this.namespace);
 			return pib.start();
 		} finally {
 			ThreadContext.getThreadContext().finalize(null);
-			info("EndProcess:" + this.processCriteria + "/" + this.namespace);
+			info(this,"EndProcess:" + this.processCriteria + "/" + this.namespace);
 		}
 	}
 
@@ -407,7 +410,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private String eval2(String expr, Map<String,Object> vars) {
-		info("--> eval_in:" + expr+",vars:"+vars);
+		info(this,"--> eval_in:" + expr+",vars:"+vars);
 		Object result = expr;
 		Script script = scriptCache.get(expr);
 		if( script == null){
@@ -419,9 +422,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			result = script.run();
 		}catch(Exception e){
 			String error = org.ms123.common.utils.Utils.formatGroovyException(e, expr);
-			info("ActivitiProducer.eval:"+error);
+			info(this,"ActivitiProducer.eval:"+error);
 		}
-		info("<-- eval_out:" + result);
+		info(this,"<-- eval_out:" + result);
 		return String.valueOf(result);
 	}
 
@@ -488,31 +491,31 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		Map<String, Object> vars = getCamelVariablenMap(exchange);
 
 		boolean hasCriteria = false;
-		info("findExecution:processCriteria:" + this.processCriteria + "/activityId:" + this.activityId);
-		info("findExecution:vars:" + vars);
+		info(this,"findExecution:processCriteria:" + this.processCriteria + "/activityId:" + this.activityId);
+		info(this,"findExecution:vars:" + vars);
 		ExecutionQuery eq = this.runtimeService.createExecutionQuery();
 		String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
 		if (!isEmpty(processDefinitionId)) {
 			eq.processDefinitionId(trimToEmpty(eval(processDefinitionId, vars)));
-			info("getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,vars)));
+			info(this,"getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,vars)));
 			hasCriteria=true;
 		}
 		String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 		if (!isEmpty(processDefinitionKey)) {
 			eq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,vars)));
-			info("getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,vars)));
+			info(this,"getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,vars)));
 			hasCriteria=true;
 		}
 		String processInstanceId = getString(exchange, PROCESS_INSTANCE_ID, this.processCriteria.get(PROCESS_INSTANCE_ID));
 		if (!isEmpty(processInstanceId)) {
 			eq.processInstanceId(trimToEmpty(eval(processInstanceId,vars)));
-			info("getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
+			info(this,"getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
 			hasCriteria=true;
 		}
 		String businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
 		if (!isEmpty(businessKey)) {
 			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)),childProcesses);
-			info("getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
+			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
 			hasCriteria=true;
 		}
 
@@ -543,10 +546,10 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 
 		if( hasCriteria ){
-			info("getProcessInstances.namespace:"+this.namespace);
+			info(this,"getProcessInstances.namespace:"+this.namespace);
 			eq.executionTenantId(trimToEmpty(this.namespace));
 			List<ProcessInstance> executionList = (List) eq.list();
-			info("getProcessInstances:" + executionList);
+			info(this,"getProcessInstances:" + executionList);
 			if (exception && (executionList == null || executionList.size() == 0)) {
 				throw new RuntimeException("ActivitiProducer.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
 			}
@@ -556,13 +559,13 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private ProcessDefinition getProcessDefinition(ProcessInstance processInstance) {
-		info("getProcessDefinition:" + processInstance.getProcessDefinitionId() + "/ns:" + this.namespace);
+		info(this,"getProcessDefinition:" + processInstance.getProcessDefinitionId() + "/ns:" + this.namespace);
 
 		ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processInstance.getProcessDefinitionId()).singleResult();
 		if (processDefinition == null) {
 			throw new RuntimeException("ActivitiProducer:getProcessDefinition:processDefinition not found:" + processInstance);
 		}
-		info("getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
+		info(this,"getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
 		return processDefinition;
 	}
 
@@ -589,7 +592,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		formatter.setShowHeaders(true);
 		formatter.setStyle(ExchangeFormatter.OutputStyle.Fixed);
 		String routeStackTrace = MessageHelper.dumpMessageHistoryStacktrace(exchange, formatter, true);
-		info(routeStackTrace);
+		info(this,routeStackTrace);
 	}
 
 	private void createLogEntry(Exchange exchange, ProcessDefinition processDefinition, Exception e) {
@@ -634,7 +637,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private String getStringCheck(Exchange e, String key, String def) {
 		String value = e.getIn().getHeader(key, String.class);
-		debug("getStringCheck:" + key + "=" + value + "/def:" + def);
+		debug(this,"getStringCheck:" + key + "=" + value + "/def:" + def);
 		if (value == null) {
 			value = e.getProperty(key, String.class);
 		}
@@ -649,32 +652,22 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		if (value == null) {
 			value = e.getProperty(key, String.class);
 		}
-		debug("getString:" + key + "=" + value + "/def:" + def);
+		debug(this,"getString:" + key + "=" + value + "/def:" + def);
 		return value != null ? trimToEmpty(value) : trimToEmpty(def);
 	}
 
 	private boolean getBoolean(Exchange e, String key, boolean def) {
 		Boolean value = e.getIn().getHeader(key, Boolean.class);
-		debug("getBoolean:" + key + "=" + value + "/def:" + def);
+		debug(this,"getBoolean:" + key + "=" + value + "/def:" + def);
 		if (value == null) {
 			value = e.getProperty(key, Boolean.class);
 		}
-		debug("getBoolean2:" + key + "=" + value + "/def:" + def);
+		debug(this,"getBoolean2:" + key + "=" + value + "/def:" + def);
 		return value != null ? value : def;
 	}
 
 	protected ActivitiEndpoint getActivitiEndpoint() {
 		return (ActivitiEndpoint) getEndpoint();
 	}
-
-	private void info(String msg) {
-		System.err.println(msg);
-		m_logger.info(msg);
-	}
-	private void debug(String msg) {
-		m_logger.debug(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(ActivitiProducer.class);
 }
 

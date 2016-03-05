@@ -26,6 +26,9 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.impl.DefaultComponent;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.workflow.api.WorkflowService;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /**
  */
@@ -48,8 +51,8 @@ public class ActivitiComponent extends org.activiti.camel.ActivitiComponent {
 		if (this.workflowService == null) {
 			this.permissionService = getByType(context, PermissionService.class);
 			this.workflowService = getByType(context, WorkflowService.class);
-			info("PermissionService:" + this.permissionService);
-			info("WorkflowService:" + this.workflowService);
+			info(this,"PermissionService:" + this.permissionService);
+			info(this,"WorkflowService:" + this.workflowService);
 		}
 	}
 
@@ -62,16 +65,9 @@ public class ActivitiComponent extends org.activiti.camel.ActivitiComponent {
 		CamelContext cc = getCamelContext();
 		getServices(cc);
 		ActivitiEndpoint endpoint = new ActivitiEndpoint(uri, cc, this.workflowService, this.permissionService);
-		info("createEndpoint:"+parameters);
+		info(this,"createEndpoint:"+parameters);
 		setProperties(endpoint, parameters);
 		return endpoint;
 	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(ActivitiComponent.class);
 }
 

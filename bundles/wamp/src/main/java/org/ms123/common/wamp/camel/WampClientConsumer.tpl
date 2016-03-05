@@ -37,15 +37,15 @@ import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.wamp.ApplicationError;
 import org.ms123.common.wamp.Request;
 import org.ms123.common.wamp.WampClientSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Subscription;
 import static org.ms123.common.wamp.camel.WampClientConstants.*;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class WampClientConsumer extends DefaultConsumer {
 
-	private static final Logger LOG = LoggerFactory.getLogger(WampClientConsumer.class);
 	private final WampClientEndpoint endpoint;
 	private WampClientSession clientSession;
 	private Processor processor;
@@ -72,10 +72,10 @@ public class WampClientConsumer extends DefaultConsumer {
 	private void wampClientConnected() {
 /* $if version >= 1.8 $ */
 		String namespace = endpoint.getCamelContext().getName().split("/")[0];
-		info("Consumer.register:" + namespace + "." + endpoint.getProcedure());
+		info(this,"Consumer.register:" + namespace + "." + endpoint.getProcedure());
 		Subscription addProcSubscription = this.clientSession.registerProcedure(namespace + "." + endpoint.getProcedure()).subscribe((request) -> {
 
-			info("Consumer.Procedure called:" + request + "/hashCode:" + this.hashCode());
+			info(this,"Consumer.Procedure called:" + request + "/hashCode:" + this.hashCode());
 			final boolean reply = false;
 			final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
 			try {
@@ -121,10 +121,10 @@ public class WampClientConsumer extends DefaultConsumer {
 		List<String> permittedUserList = this.endpoint.getPermittedUsers();
 		String userName = getUserName();
 		List<String> userRoleList = getUserRoles(userName);
-		debug("Consumer.prepare.userName:" + userName);
-		debug("Consumer.prepare.userRoleList:" + userRoleList);
-		debug("Consumer.prepare.permittedRoleList:" + permittedRoleList);
-		debug("Consumer.prepare.permittedUserList:" + permittedUserList);
+		debug(this,"Consumer.prepare.userName:" + userName);
+		debug(this,"Consumer.prepare.userRoleList:" + userRoleList);
+		debug(this,"Consumer.prepare.permittedRoleList:" + permittedRoleList);
+		debug(this,"Consumer.prepare.permittedUserList:" + permittedUserList);
 		if (!isPermitted(userName, userRoleList, permittedUserList, permittedRoleList)) {
 			throw new RuntimeException(PERMISSION_DENIED + ":User(" + userName + ") has no permission");
 		}
@@ -163,11 +163,11 @@ public class WampClientConsumer extends DefaultConsumer {
 			}
 		}
 		//properties.put("__logExceptionsOnly", getBoolean(shape, "logExceptionsOnly", false));
-		debug("Consumer.prepare.methodParams:" + methodParams);
-		debug("Consumer.prepare.paramList:" + paramList);
-		debug("Consumer.prepare.properties:" + properties);
-		debug("Consumer.prepare.headers:" + headers);
-		debug("Consumer.prepare.body:" + bodyObj);
+		debug(this,"Consumer.prepare.methodParams:" + methodParams);
+		debug(this,"Consumer.prepare.paramList:" + paramList);
+		debug(this,"Consumer.prepare.properties:" + properties);
+		debug(this,"Consumer.prepare.headers:" + headers);
+		debug(this,"Consumer.prepare.body:" + bodyObj);
 
 		exchange.getIn().setBody(bodyObj);
 		exchange.getIn().setHeaders(headers);
@@ -334,9 +334,9 @@ public class WampClientConsumer extends DefaultConsumer {
 		}
 		super.doStart();
 		this.clientSession = endpoint.createWampClientSession("realm1");
-		info("======Consumer.Start:" + this.clientSession);
+		info(this,"======Consumer.Start:" + this.clientSession);
 		this.clientSession.statusChanged().subscribe((state) -> {
-			info("Consumer.ClientSession:status changed to " + state);
+			info(this,"Consumer.ClientSession:status changed to " + state);
 			if (state == WampClientSession.Status.Connected) {
 				try {
 					Thread.sleep(100);
@@ -347,29 +347,19 @@ public class WampClientConsumer extends DefaultConsumer {
 			if (state == WampClientSession.Status.Disconnected) {
 			}
 		}, (t) -> {
-			debug("Consumer.ClientSession ended with error " + t);
+			debug(this,"Consumer.ClientSession ended with error " + t);
 			t.printStackTrace();
 		}, () -> {
-			debug("Consumer.ClientSession ended normally");
+			debug(this,"Consumer.ClientSession ended normally");
 		});
 $endif$ */
 	}
 
 	protected void doStop() throws Exception {
 		String namespace = endpoint.getCamelContext().getName().split("/")[0];
-		debug("######Consumer.Stop:" + namespace + "." + endpoint.getProcedure() + "/" + this.hashCode());
+		debug(this,"######Consumer.Stop:" + namespace + "." + endpoint.getProcedure() + "/" + this.hashCode());
 		this.clientSession.close();
 		super.doStop();
-	}
-
-	protected void debug(String msg) {
-		System.err.println(msg);
-		LOG.debug(msg);
-	}
-
-	protected void info(String msg) {
-		System.err.println(msg);
-		LOG.info(msg);
 	}
 }
 
