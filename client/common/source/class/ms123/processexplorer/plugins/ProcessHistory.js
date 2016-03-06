@@ -506,6 +506,11 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 
 			}).bind(this));
 			table.setStatusBarVisible(false);
+			for( var i=0; i< data.length;i++){
+				if( data[i].taskId ){
+					data[i].id = data[i].taskId;
+				}
+			}
 			tableModel.setDataAsMapArray(data, true);
 			return table;
 		},
