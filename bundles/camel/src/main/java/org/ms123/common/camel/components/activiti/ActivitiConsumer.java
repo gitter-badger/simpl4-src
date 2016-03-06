@@ -26,12 +26,13 @@ import org.apache.camel.Processor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 import org.activiti.engine.delegate.event.ActivitiEvent;
 import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.delegate.event.ActivitiEventListener;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.HistoryService;
-import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.interceptor.CommandContext;
@@ -40,6 +41,7 @@ import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.warn;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventListener {
@@ -66,9 +68,31 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		CommandContext commandContext = Context.getCommandContext();
 		ExecutionEntity ee=				commandContext.getExecutionEntityManager().findExecutionById(event.getExecutionId());
 		info(this, "ActivitiConsumer.onEvent:"+ ee.getProcessDefinitionId()+"/tasks:"+ ee.getTasks()+"/aid:"+ ee.getCurrentActivityName());
-		result.put( "businessKey", ee.getBusinessKey());
+		result.put( "businessKey", ee.getProcessBusinessKey());
 		List<TaskEntity> tasks = ee.getTasks();
 		result.put( "formKey", tasks.get(0).getFormKey());
+
+		final ProcessInstanceQuery processInstanceQuery = event.getEngineServices().getRuntimeService().createProcessInstanceQuery().processInstanceId(event.getProcessInstanceId()).includeProcessVariables();
+		final ProcessInstance processInstance = processInstanceQuery.singleResult();
+
+		if (processInstance == null) {
+			warn(this, "Unable to retrieve the process instance for which a user task starts.");
+		} else {
+			String variableNames = this.endpoint.getVariableNames();
+			if( isEmpty(variableNames)){
+				result.put("processVariables", processInstance.getProcessVariables());
+			}else{
+				List<String> nameList = Arrays.asList(variableNames.split(","));
+				Map<String,Object> vars = processInstance.getProcessVariables();
+				Map<String,Object> varMap = new HashMap();
+				for (Map.Entry<String, Object> entry : vars.entrySet()) {
+					if( nameList.indexOf( entry.getKey()) > -1){
+						varMap.put( entry.getKey(), entry.getValue());
+					}
+				}
+				result.put("processVariables", varMap );
+			}
+		}
 
 		info(this, "ActivitiConsumer.onEvent.result:"+ result);
 		exchange.getIn().setBody(result);
@@ -96,5 +120,8 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		info(this, "Remove EventListener");
 		rs.removeEventListener( this);
 		super.doStop();
+	}
+	private boolean isEmpty(String s) {
+		return (s == null || "".equals(s.trim()));
 	}
 }

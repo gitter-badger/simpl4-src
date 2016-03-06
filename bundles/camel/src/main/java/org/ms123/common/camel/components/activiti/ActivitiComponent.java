@@ -65,7 +65,7 @@ public class ActivitiComponent extends org.activiti.camel.ActivitiComponent {
 		CamelContext cc = getCamelContext();
 		getServices(cc);
 		ActivitiEndpoint endpoint = new ActivitiEndpoint(uri, cc, this.workflowService, this.permissionService);
-		info(this,"createEndpoint:"+parameters);
+		info(this,"createEndpoint("+uri+"):"+parameters);
 		setProperties(endpoint, parameters);
 		return endpoint;
 	}
