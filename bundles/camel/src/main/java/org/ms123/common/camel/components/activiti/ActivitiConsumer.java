@@ -71,6 +71,9 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		result.put( "businessKey", ee.getProcessBusinessKey());
 		List<TaskEntity> tasks = ee.getTasks();
 		result.put( "formKey", tasks.get(0).getFormKey());
+		result.put( "taskId", tasks.get(0).getId());
+		result.put( "owner", tasks.get(0).getOwner());
+		result.put( "assignee", tasks.get(0).getAssignee());
 
 		final ProcessInstanceQuery processInstanceQuery = event.getEngineServices().getRuntimeService().createProcessInstanceQuery().processInstanceId(event.getProcessInstanceId()).includeProcessVariables();
 		final ProcessInstance processInstance = processInstanceQuery.singleResult();
