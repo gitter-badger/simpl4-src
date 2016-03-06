@@ -105,6 +105,7 @@
 			},
 			setScope: function( insertPoint ) {
 				var page = simpl4PageRegistry.getActivePage();
+				if( page == null) return;
 				var scope = page.scope;
 				if ( this.isAsciidoc( this.url ) && scope == null ) {
 					scope = "asciidoctor-default";
