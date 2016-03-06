@@ -100,6 +100,9 @@ public class ActivitiServiceImpl extends BaseActivitiServiceImpl implements Acti
 	public FormService getFormService(){
 		return m_formService;
 	}
+	public GitService getGitService(){
+		return m_gitService;
+	}
 	public DataLayer getDataLayer(){
 		return m_dataLayer;
 	}
@@ -313,6 +316,12 @@ public class ActivitiServiceImpl extends BaseActivitiServiceImpl implements Acti
 	public void setFormService(FormService paramFormService) {
 		this.m_formService = paramFormService;
 		System.out.println("ActivitiServiceImpl.setFormService:" + paramFormService);
+	}
+
+	@Reference(dynamic = true,optional=true)
+	public void setGitService(GitService paramGitService) {
+		this.m_gitService = paramGitService;
+		System.out.println("ActivitiServiceImpl.setGitService:" + paramGitService);
 	}
 
 	@Reference(dynamic = true,optional=true)

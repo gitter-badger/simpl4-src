@@ -24,6 +24,7 @@ import org.ms123.common.store.StoreDesc;
 import org.activiti.engine.ProcessEngine;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.form.FormService;
+import org.ms123.common.git.GitService;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
@@ -33,6 +34,7 @@ public interface ActivitiService {
 
 	public ProcessEngine getPE();
 	public FormService getFormService();
+	public GitService getGitService();
 	public WorkflowService getWorkflowService();
 	public PermissionService getPermissionService();
 	public DataLayer getDataLayer();

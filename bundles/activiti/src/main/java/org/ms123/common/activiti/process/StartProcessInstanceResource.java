@@ -47,7 +47,7 @@ import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
 
 /**
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 public class StartProcessInstanceResource extends BaseResource {
 
 	private String m_processDefinitionId;

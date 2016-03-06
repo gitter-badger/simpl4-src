@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.form.FormService;
+import org.ms123.common.git.GitService;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.workflow.api.WorkflowService;
@@ -63,6 +64,7 @@ class BaseActivitiServiceImpl implements Constants {
 
 	protected NucleusService m_nucleusService;
 
+	protected GitService m_gitService;
 	protected FormService m_formService;
 	protected PermissionService m_permissionService;
 

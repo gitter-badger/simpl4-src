@@ -27,6 +27,7 @@ import org.ms123.common.form.FormService;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
+import org.ms123.common.git.GitService;
 import org.osgi.service.event.EventAdmin;
 import flexjson.*;
 
@@ -51,6 +52,9 @@ public class BaseResource {
 	}
 	public PermissionService getPermissionService() {
 		return m_as.getPermissionService();
+	}
+	public GitService getGitService() {
+		return m_as.getGitService();
 	}
 	public FormService getFormService() {
 		return m_as.getFormService();

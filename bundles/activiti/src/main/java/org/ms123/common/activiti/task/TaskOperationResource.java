@@ -96,8 +96,18 @@ public class TaskOperationResource extends BaseResource {
 				Map data = (Map)variables.get(formVar);
 				System.out.println("formKey:"+formVar+"/"+data+"/"+taskName);
 				if( data != null){
-					Map ret  = getFormService().validateForm(namespace,formKey,data,true);				
-					List<Map> errors = (List)ret.get("errors");
+					List<String> assetList = getGitService().assetList(namespace,formKey, "sw.form", true);
+					List<Map> errors=null;
+					Map ret = null;
+					if( assetList.size() > 0){
+						ret  = getFormService().validateForm(namespace,formKey,data,true);				
+						errors = (List)ret.get("errors");
+					}else{
+						errors = new ArrayList<Map>();
+						ret = new HashMap();
+						ret.put("cleanData", data);
+					}
+					System.out.println("data:"+ret);
 					if( errors.size()>0){
 						Map successNode = new HashMap();
 						successNode.put("success", false);
