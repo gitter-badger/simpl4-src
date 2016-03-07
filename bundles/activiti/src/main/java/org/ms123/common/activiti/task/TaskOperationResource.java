@@ -94,7 +94,7 @@ public class TaskOperationResource extends BaseResource {
 					formVar = getFormVar(namespace,formKey);
 				}
 				Map data = (Map)variables.get(formVar);
-				System.out.println("formKey:"+formVar+"/"+data+"/"+taskName);
+				System.out.println("formKey:"+formKey+"/formVar:" + formVar +"/"+data+"/"+taskName);
 				if( data != null){
 					List<String> assetList = getGitService().assetList(namespace,formKey, "sw.form", true);
 					List<Map> errors=null;
