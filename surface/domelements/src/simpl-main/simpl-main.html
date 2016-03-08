@@ -137,7 +137,7 @@
 		<!--iron-a11y-keys id="keys" target="[[target]]" keys="up down left right space space+shift" on-keys-pressed="keyHandler"></iron-a11y-keys-->
 
 		<simpl-dispatcher id="dispatcherId" on-mmenu-selected="menuItemSelected" selected="{{route}}" pages="{{getPages()}}">
-			<paper-drawer-panel id="drawerPanel" drawer-width="230px" responsive-width="700px" disable-swipe="false">
+			<paper-drawer-panel id="drawerPanel" drawer-width="230px" responsive-width="[[responsiveWidth]]" disable-swipe="false">
 				<div class="column grid" drawer>
 					<div class="grid column brand_drawer_panel fit">
 						<div class="brand__area">
@@ -282,6 +282,10 @@
 				},
 				mmenuName: {
 					value: "menu",
+					type: String
+				},
+				responsiveWidth: {
+					value: "700px",
 					type: String
 				},
 				toolbarProvided: {
