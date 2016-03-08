@@ -30,6 +30,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.processor.aggregate.UseLatestAggregationStrategy;
 import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
 import org.apache.camel.processor.aggregate.GroupedExchangeAggregationStrategy;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import groovy.text.SimpleTemplateEngine;
 import java.net.URLEncoder;
 import java.net.URL;
@@ -265,14 +267,29 @@ abstract class JsonConverterImpl implements JsonConverter{
 		return optionsMap;
 	}
 
-	def createProcessorGroovy(processMethodStr,importStr,namespace) {
-		def code = buildScript(processMethodStr,importStr,true);
+	def createProcessorGroovy(processMethodStr,importStr,namespace, completeClass) {
+		def code = null;
+		if( completeClass){
+			code = processMethodStr;
+			String pattern = "class\\s+(\\w+)\\s+implements\\s+Processor";
+			Pattern r = Pattern.compile(pattern);
+			Matcher m = r.matcher(code);
+			if (m.find()) {
+				String clazz = m.group(1);
+				code += "\nreturn "+clazz+".class\n";
+			}
+		}else{
+			code = buildScript(processMethodStr,importStr,true);
+
+		}
 		try {
 			URL url1 = 	new URL( "file:"+System.getProperty("workspace") + "/java/" + namespace+"/");
 			URL url2 = 	new URL( "file:"+System.getProperty("workspace") + "/groovy/" + namespace+"/");
-			URL[] urls = new URL[2];
+			URL url3 = 	new URL( "file:"+System.getProperty("git.repos") + "/"+namespace+"/.etc/jooq/build/");
+			URL[] urls = new URL[3];
 			urls[0] = url1;
 			urls[1] = url2;
+			urls[2] = url3;
 			URLClassLoader classLoader = new URLClassLoader( urls, getClass().getClassLoader() )
 			def gs = new GroovyShell(classLoader);
 			def clazz  = (Class) gs.evaluate(code);
@@ -283,8 +300,13 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}
 	}
 
-	def createProcessorJava(processMethodStr,importStr) {
-		def code = buildScript(processMethodStr,importStr,false);
+	def createProcessorJava(processMethodStr,importStr, completeClass) {
+		def code = null;
+		if( completeClass){
+			code = processMethodStr;
+		}else{
+			code = buildScript(processMethodStr,importStr,false);
+		}
 		System.out.println("Processor.Code.java:" + code);
 		try {
 			def clazz = JavaCompiler.compile(bundleContext.getBundle(), "MyProcessor", code);
@@ -787,6 +809,7 @@ class ProcessorJsonConverter extends JsonConverterImpl{
 		def code = shapeProperties.code;
 		def addImport = shapeProperties.addImport;
 		def codeLanguage = shapeProperties.codeLanguage;
+		def codeKind = shapeProperties.codeKind;
 		def isEndpoint = shapeProperties.isEndpoint;
 		def ref = shapeProperties.ref;
 		if( isNotEmpty(ref)){
@@ -803,9 +826,9 @@ class ProcessorJsonConverter extends JsonConverterImpl{
 			def namespace = ctx.modelCamelContext.getRegistry().lookup("namespace");
 			def processor=null;
 			if( "java".equals(codeLanguage)){
-				processor = createProcessorJava(code,codeImport);
+				processor = createProcessorJava(code,codeImport,codeKind=="completeClass");
 			}else{
-				processor = createProcessorGroovy(code,codeImport,namespace);
+				processor = createProcessorGroovy(code,codeImport,namespace, codeKind=="completeClass");
 			}
 			println("processor:"+processor);
 			ctx.current = ctx.current.process(processor);
