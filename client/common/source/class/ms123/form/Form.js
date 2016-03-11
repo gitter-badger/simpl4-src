@@ -815,10 +815,18 @@ qx.Class.define("ms123.form.Form", {
 									formElement.setValue(date);
 								}
 							} else {
-								formElement.setValue(new Date(fieldData.defaultValue));
+								if( fieldData.defaultValue.indexOf("now") != -1){ //'now' only in Webclient known
+									formElement.setValue(new Date());
+								}else{
+									formElement.setValue(new Date(fieldData.defaultValue));
+								}
 							}
 						} else {
-							formElement.setValue(fieldData.defaultValue);
+							if( fieldData.defaultValue.indexOf("now") != -1){ //'now' only in Webclient known
+								formElement.setValue(new Date());
+							}else{
+								formElement.setValue(new Date(fieldData.defaultValue));
+							}
 						}
 					}
 					break;
