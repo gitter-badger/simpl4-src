@@ -165,7 +165,6 @@ public class TaskOperationResource extends BaseResource {
 	}
 	private void setMapping(Map<String,Object> newVariables, Map formData, String variablesMapping, String executionId){
 		if( executionId == null) return;
-		Map pv = getPE().getRuntimeService().getVariables(executionId);
 		Map v = (Map) ds.deserialize(variablesMapping);
 		List<Map> items = (List) v.get("items");
 		for (Map item : items) {
@@ -173,9 +172,9 @@ public class TaskOperationResource extends BaseResource {
 			if (direction != null && direction.equals("outgoing")) {
 				String processvar = (String) item.get("processvar");
 				String formvar = (String) item.get("formvar");
-				Object o = formData.get(formvar);
 				try{
-					setValue(pv, newVariables, executionId, processvar, o);
+					Object o = PropertyUtils.getProperty(formData, formvar);
+					setValue(executionId, newVariables, processvar, o);
 				}catch(Exception e){
 					e.printStackTrace();
 					throw new RuntimeException("TaskOperationResource.setMapping:", e);
@@ -183,7 +182,7 @@ public class TaskOperationResource extends BaseResource {
 			}
 		}
 	}
-	protected void setValue(Map pv, Map<String,Object> newVariables, String executionId, String processvar, Object value) throws Exception {
+	protected void setValue(String executionId, Map<String,Object> newVariables, String processvar, Object value) throws Exception {
 		if (processvar.indexOf(".") == -1) {
 			newVariables.put(processvar, value);
 			return;
