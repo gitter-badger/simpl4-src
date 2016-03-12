@@ -87,6 +87,8 @@ public class RulesProcessor {
 				}
 				Object value = data.get(i);
 				if (value == null) {
+					exprStr += andStr + "true";
+					andStr = " && ";
 					continue;
 				}
 				if (varType.equals("date")) {
