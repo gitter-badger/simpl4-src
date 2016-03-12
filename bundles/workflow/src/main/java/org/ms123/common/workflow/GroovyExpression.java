@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.VariableScope;
+import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.activiti.engine.impl.context.Context;
 import groovy.lang.*;
@@ -89,8 +90,14 @@ public class GroovyExpression implements Expression {
 			Script script = null;//m_scriptCache.get(expr);
 			script = m_shell.parse(expr);
 			Binding binding = new Binding(scope.getVariables());
+			if( scope instanceof DelegateExecution){
+					DelegateExecution e = (DelegateExecution)scope;
+					binding.setVariable( "__processBusinessKey", e.getProcessBusinessKey());
+					binding.setVariable( "__processInstanceId", e.getProcessInstanceId());
+					binding.setVariable( "__processDefinitionId", e.getProcessDefinitionId());
+			}
 			script.setBinding(binding);
-			debug("GroovyExpression.vars:" + scope.getVariables());
+			debug("GroovyExpression.vars:" + binding.getVariables());
 			return script.run();
 		} catch (Throwable e) {
 			log(">>>>>>>>>>>>" + e);
@@ -148,7 +155,7 @@ public class GroovyExpression implements Expression {
 					first = i + 2;
 				}
 				openBrackets++;
-			} else if (str.charAt(i) == '}' && openBrackets > 0) {
+			} else if (str.charAt(i) == '}' && openBrackets>0 && !hasMoreRightBrackets(str,i)) {
 				openBrackets -= 1;
 				if (openBrackets == 0) {
 					countRepl++;
@@ -167,6 +174,19 @@ public class GroovyExpression implements Expression {
 		}
 	}
 
+	private boolean hasMoreRightBrackets(String str, int pos){
+		int len = str.length();
+		boolean hasMore = false;
+		for( int i=pos+1; i < len; i++){
+			if( str.charAt(i) == '}' ){
+				return true;
+			}
+			if( str.charAt(i) == '$' && i+1<len && str.charAt(i+1) == '{' ){
+				return false;
+			}
+		}
+		return false;
+	}
 	private void debug(String message) {
 		System.out.println(message);
 		m_logger.debug(message);
