@@ -34,6 +34,8 @@ import org.activiti.engine.form.TaskFormData;
 import org.ms123.common.form.FormService;
 import org.activiti.engine.form.FormProperty;
 import org.activiti.engine.repository.ProcessDefinition;
+import flexjson.*;
+import org.apache.commons.beanutils.*;
 
 /**
  */
@@ -41,6 +43,8 @@ import org.activiti.engine.repository.ProcessDefinition;
 public class TaskOperationResource extends BaseResource {
 
 	private String m_taskId;
+	JSONDeserializer ds = new JSONDeserializer();
+	JSONSerializer js = new JSONSerializer();
 
 	private String m_operation;
 
@@ -69,10 +73,14 @@ public class TaskOperationResource extends BaseResource {
 			TaskFormData taskFormData = getPE().getFormService().getTaskFormData(m_taskId);
 			List<FormProperty> userProperties = taskFormData.getFormProperties();
 			String formVar = null;
+			String variablesMapping = null;
 			for(FormProperty fp : userProperties){
 				System.out.println("TaskOperationResource.FormProperty:"+fp.getId()+"="+fp.getValue());
 				if( "formvarname".equals(fp.getId())){
 					formVar = fp.getValue();
+				}
+				if( "variablesmapping".equals(fp.getId())){
+					variablesMapping = fp.getValue();
 				}
 			}
 			Map<String, Object> newVariables = new HashMap();
@@ -116,6 +124,7 @@ public class TaskOperationResource extends BaseResource {
 					}else{
 						data = (Map)ret.get("cleanData");
 						newVariables.put(formVar,data);
+						setMapping(newVariables,  data, variablesMapping, executionId);
 						String script = (String)ret.get("postProcess");
 						if( script!=null && script.trim().length()> 2){
 							getWorkflowService().executeScriptTask( executionId, tenantId, processDefinitionKey, pid, script, newVariables, taskName );
@@ -153,6 +162,51 @@ public class TaskOperationResource extends BaseResource {
 		Map successNode = new HashMap();
 		successNode.put("success", true);
 		return successNode;
+	}
+	private void setMapping(Map<String,Object> newVariables, Map formData, String variablesMapping, String executionId){
+		if( executionId == null) return;
+		Map pv = getPE().getRuntimeService().getVariables(executionId);
+		Map v = (Map) ds.deserialize(variablesMapping);
+		List<Map> items = (List) v.get("items");
+		for (Map item : items) {
+			String direction = (String)item.get("direction");
+			if (direction != null && direction.equals("outgoing")) {
+				String processvar = (String) item.get("processvar");
+				String formvar = (String) item.get("formvar");
+				Object o = formData.get(formvar);
+				try{
+					setValue(pv, newVariables, executionId, processvar, o);
+				}catch(Exception e){
+					e.printStackTrace();
+					throw new RuntimeException("TaskOperationResource.setMapping:", e);
+				}
+			}
+		}
+	}
+	protected void setValue(Map pv, Map<String,Object> newVariables, String executionId, String processvar, Object value) throws Exception {
+		if (processvar.indexOf(".") == -1) {
+			newVariables.put(processvar, value);
+			return;
+		}
+		String[] parts = processvar.split("\\.");
+		Object o = getPE().getRuntimeService().getVariable(executionId,parts[0]);
+		if (o == null) {
+			o = new HashMap();
+		}
+		newVariables.put(parts[0], o);
+		for (int i = 1; i < parts.length; i++) {
+			String part = parts[i];
+			if (i < (parts.length - 1)) {
+				Object o1 = PropertyUtils.getProperty(o, part);
+				if (o1 == null) {
+					o1 = new HashMap();
+					PropertyUtils.setProperty(o, part, o1);
+				}
+				o = o1;
+			} else {
+				PropertyUtils.setProperty(o, part, value);
+			}
+		}
 	}
 	private void checkPermission(String taskId){
 		Task task = getPE().getTaskService().createTaskQuery().taskId(m_taskId).singleResult();

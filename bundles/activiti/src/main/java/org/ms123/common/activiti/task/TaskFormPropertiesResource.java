@@ -74,10 +74,13 @@ public class TaskFormPropertiesResource extends BaseResource {
 					Map v = (Map) ds.deserialize(value);
 					List<Map> items = (List) v.get("items");
 					for (Map item : items) {
-						String processvar = (String) item.get("processvar");
-						String formvar = (String) item.get("formvar");
-						Object val = getProcessVariableValue(pv, processvar);
-						values.put(formvar, val);
+						String direction = (String)item.get("direction");
+						if (direction == null || direction.equals("incoming")) {
+							String processvar = (String) item.get("processvar");
+							String formvar = (String) item.get("formvar");
+							Object val = getProcessVariableValue(pv, processvar);
+							values.put(formvar, val);
+						}
 					}
 				} else {
 					taskFormMap.put(fp.getName(), value);
