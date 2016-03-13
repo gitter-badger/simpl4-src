@@ -808,21 +808,22 @@ qx.Class.define("ms123.form.Form", {
 					});
 					if (fieldData.defaultValue) {
 						if ((fieldData.type.toLowerCase() == "datefield" || fieldData.type.toLowerCase() == "datetimefield") && typeof fieldData.defaultValue == "string") {
-							if (fieldData.defaultValue.indexOf(".") != -1) {
+							var isString = fieldData.defaultValue instanceof String;
+							if (isString && fieldData.defaultValue.indexOf(".") != -1) {
 								var dateParts = fieldData.defaultValue.split(".");
 								if (dateParts.length > 2) {
 									var date = new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]);
 									formElement.setValue(date);
 								}
 							} else {
-								if( fieldData.defaultValue.indexOf("now") != -1){ //'now' only in Webclient known
+								if( isString && fieldData.defaultValue.indexOf("now") != -1){ //'now' only in Webclient known
 									formElement.setValue(new Date());
 								}else{
 									formElement.setValue(new Date(fieldData.defaultValue));
 								}
 							}
 						} else {
-							if( fieldData.defaultValue.indexOf("now") != -1){ //'now' only in Webclient known
+							if( isString && fieldData.defaultValue.indexOf("now") != -1){ //'now' only in Webclient known
 								formElement.setValue(new Date());
 							}else{
 								formElement.setValue(new Date(fieldData.defaultValue));
