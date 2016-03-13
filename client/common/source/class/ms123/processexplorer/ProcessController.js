@@ -148,6 +148,10 @@ qx.Class.define("ms123.processexplorer.ProcessController", {
 			}else{
 				processVariables["__namespace"] = ms123.StoreDesc.getCurrentNamespace();
 			}
+console.log("formPath:",formPath);
+console.log("mappedFormValues:",mappedFormValues);
+console.log("processName:",processName);
+console.log("processVariables:",processVariables);
 			this._formContainer.open({
 				formPath: formPath,
 				mappedFormValues: mappedFormValues,
@@ -272,6 +276,7 @@ qx.Class.define("ms123.processexplorer.ProcessController", {
 				}
 			}).bind(this);
 			var failed = (function (ret) {
+				console.log("ret:",ret);
 				console.log("ret:"+qx.util.Serializer.toJson(ret));
 				ret = ret.toString();
 				var msg = ret.replace(/\|/g, "<br/>");
@@ -367,6 +372,7 @@ qx.Class.define("ms123.processexplorer.ProcessController", {
 					showErrors(result.errors);
 				}
 			} catch (e) {
+				console.error(e);
 				this._formContainer.close({});
 				failed.call(this,e);
 				return;
