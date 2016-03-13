@@ -91,7 +91,7 @@ public class ClassBuilder {
 
 	protected String getName(Map element) {
 		Map properties = (Map) element.get("properties");
-		return ((String) properties.get("xf_id")).toLowerCase();
+		return ((String) properties.get("xf_id"));
 	}
 
 
