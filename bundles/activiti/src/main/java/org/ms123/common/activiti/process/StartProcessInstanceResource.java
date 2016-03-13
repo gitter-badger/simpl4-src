@@ -43,6 +43,9 @@ import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
 import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
 import static org.ms123.common.system.history.HistoryService.HISTORY_HINT;
 import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 
 /**
@@ -93,11 +96,11 @@ public class StartProcessInstanceResource extends BaseResource {
 			}
 			uid = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserName();
 			getPE().getIdentityService().setAuthenticatedUserId(uid);
-			System.out.println("StartProcessInstanceResource:");
-			System.out.println("\tm_processDefinitionId:" + m_processDefinitionId);
-			System.out.println("\tm_processDefinitionKey:" + m_processDefinitionKey);
-			System.out.println("\tm_processDefinitionName:" + m_processDefinitionName);
-			System.out.println("\tm_messageName:" + m_messageName);
+			info(this,"StartProcessInstanceResource:");
+			info(this,"\tm_processDefinitionId:" + m_processDefinitionId);
+			info(this,"\tm_processDefinitionKey:" + m_processDefinitionKey);
+			info(this,"\tm_processDefinitionName:" + m_processDefinitionName);
+			info(this,"\tm_messageName:" + m_messageName);
 			if (m_processDefinitionKey != null) {
 				ProcessDefinitionQuery query = getPE().getRepositoryService().createProcessDefinitionQuery();
 				query = addVersion(query);
@@ -139,7 +142,7 @@ public class StartProcessInstanceResource extends BaseResource {
 				m_processDefinitionId = processDefinition.getId();
 			}
 			List<IdentityLink> links = getPE().getRepositoryService().getIdentityLinksForProcessDefinition(m_processDefinitionId);
-			System.out.println("CandidateLinks:" + links);
+			info(this,"CandidateLinks:" + links);
 			if (links.size() > 0) {
 				processDefinition = (ProcessDefinitionEntity) getPE().getRepositoryService().createProcessDefinitionQuery().
 					processDefinitionId(processDefinition.getId()).
@@ -165,7 +168,7 @@ public class StartProcessInstanceResource extends BaseResource {
 								value = new JSONDeserializer().deserialize(v);
 							}
 						}
-						System.out.println("put:" + name + "=" + value);
+						info(this,"put:" + name + "=" + value);
 						variables.put(name, value);
 					}
 				}
@@ -176,11 +179,11 @@ public class StartProcessInstanceResource extends BaseResource {
 				if (e instanceof NullPointerException) {
 					e.printStackTrace();
 				}
-				System.out.println("getResourceAsStream:" + e);
+				info(this,"getResourceAsStream:" + e);
 			}
 			ProcessInstance processInstance = getPE().getRuntimeService().startProcessInstanceById(processDefinition.getId(), m_businessKey, variables);
 			variables.put("__processInstanceId", processInstance.getProcessInstanceId());
-			System.out.println("StartProcessInstanceResource.variables:" + variables);
+			info(this,"StartProcessInstanceResource.variables:" + variables);
 			Map<String, String> response = new HashMap();
 			response.put("id", processInstance.getId());
 			response.put("businessKey", processInstance.getBusinessKey());
@@ -206,12 +209,12 @@ public class StartProcessInstanceResource extends BaseResource {
 		return query;
 	}
 	private void createLogEntry(ProcessDefinitionEntity processDefinition, String uid, Exception e){
-		info("createLogEntry.StartProcessInstanceResource");
+		info(this,"createLogEntry.StartProcessInstanceResource");
 		Map props = new HashMap();
 		Map hint = new HashMap();
 		props.put(HISTORY_TYPE, HISTORY_ACTIVITI_STARTPROCESS_EXCEPTION);
 		props.put(HISTORY_KEY, m_namespace+"/"+processDefinition.getId());
-		info("createLogEntry.props:" + props);
+		info(this,"createLogEntry.props:" + props);
 		Throwable r = getRootCause(e);
 		props.put(HISTORY_MSG, r != null ? getStackTrace(r) : getStackTrace(e));
 		hint.put("processDefinitionId", processDefinition.getId());

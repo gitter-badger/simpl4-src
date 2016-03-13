@@ -31,6 +31,9 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 import org.ms123.common.activiti.Util;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /**
  */

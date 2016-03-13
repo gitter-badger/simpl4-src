@@ -31,6 +31,9 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 import org.ms123.common.activiti.Util;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /**
  */
@@ -58,14 +61,14 @@ public class TaskFormPropertiesResource extends BaseResource {
 		if (m_executionId != null) {
 			pv = getPE().getRuntimeService().getVariables(m_executionId);
 			js.prettyPrint(true);
-			System.out.println("getTaskFormProperties.pv:"+js.deepSerialize(pv));
+			info(this,"getTaskFormProperties.pv:"+js.deepSerialize(pv));
 		}
 		TaskFormData formData = getPE().getFormService().getTaskFormData(m_taskId);
 		Map values = new HashMap();
 		if (formData != null) {
 			List<FormProperty> formProperties = formData.getFormProperties();
 			for (FormProperty fp : formProperties) {
-				System.out.println("fp::" + fp.getName() + "/" + fp.getValue());
+				info(this,"fp::" + fp.getName() + "/" + fp.getValue());
 				String value = fp.getValue();
 				if( value !=null && value.length() > 0 && value.startsWith("~")){
 					value = value.substring(1);
@@ -88,12 +91,12 @@ public class TaskFormPropertiesResource extends BaseResource {
 				taskFormMap.put("values", values);
 			}
 		}
-		System.out.println("<<<---TaskFormProperties:"+taskFormMap);
+		info(this,"<<<---TaskFormProperties:"+taskFormMap);
 		return taskFormMap;
 	}
 
 	private Object eval(String scriptStr, Map vars) {
-		System.out.println("eval:" + scriptStr);
+		info(this,"eval:" + scriptStr);
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.setScriptBaseClass(org.ms123.common.workflow.api.GroovyTaskDslBase.class.getName());
 		Binding binding = new MyBinding(vars);
@@ -106,15 +109,16 @@ public class TaskFormPropertiesResource extends BaseResource {
 			String expr = processvar.substring(2, processvar.length() - 1);
 			try {
 				Object val = eval(expr, processVariables);
-				System.out.println("val:" + val);
+				info(this,"val:" + val);
 				return val;
 			} catch (Throwable e) {
 				e.printStackTrace();
+				error(this, "getProcessVariableValue:%[exception]s",e);
 				String msg = Utils.formatGroovyException(e,expr);
 				throw new RuntimeException(msg);
 			}
 		} else {
-			System.out.println("_getProcessVariableValue:" + processvar);
+			info(this,"_getProcessVariableValue:" + processvar);
 			if (processvar.indexOf(".") == -1) {
 				return processVariables.get(processvar);
 			}
@@ -144,7 +148,7 @@ public class TaskFormPropertiesResource extends BaseResource {
 			if (super.hasVariable(name)) {
 				return super.getVariable(name);
 			}
-			System.out.println("getVariable.not_defined:" + name);
+			info(this,"getVariable.not_defined:" + name);
 			return null;
 		}
 	}
@@ -152,7 +156,7 @@ public class TaskFormPropertiesResource extends BaseResource {
 	public abstract static class ScriptBase extends Script {
 
 		public ScriptBase() {
-			System.out.println("ScriptBase");
+			info(this,"ScriptBase");
 		}
 	}
 }

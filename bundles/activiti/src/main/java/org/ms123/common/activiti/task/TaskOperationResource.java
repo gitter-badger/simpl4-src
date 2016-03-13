@@ -36,6 +36,9 @@ import org.activiti.engine.form.FormProperty;
 import org.activiti.engine.repository.ProcessDefinition;
 import flexjson.*;
 import org.apache.commons.beanutils.*;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /**
  */
@@ -75,7 +78,7 @@ public class TaskOperationResource extends BaseResource {
 			String formVar = null;
 			String variablesMapping = null;
 			for(FormProperty fp : userProperties){
-				System.out.println("TaskOperationResource.FormProperty:"+fp.getId()+"="+fp.getValue());
+				info(this,"TaskOperationResource.FormProperty:"+fp.getId()+"="+fp.getValue());
 				if( "formvarname".equals(fp.getId())){
 					formVar = fp.getValue();
 				}
@@ -97,12 +100,12 @@ public class TaskOperationResource extends BaseResource {
 				String processDefinitionKey = processDefinition.getKey();
 
 				String namespace=tenantId;
-				System.out.println("TaskOperationResource.formVar:"+formVar);
+				info(this,"TaskOperationResource.formVar:"+formVar);
 				if( formVar == null || formVar.length()==0 ){
 					formVar = getFormVar(namespace,formKey);
 				}
-				Map data = (Map)variables.get(formVar);
-				System.out.println("formKey:"+formKey+"/formVar:" + formVar +"/"+data+"/"+taskName);
+				Map data = (Map)variables.get(getFormKeyWithoutExtension(formKey));
+				info(this,"formKey:"+formKey+"/formVar:" + formVar +"/"+data+"/"+taskName);
 				if( data != null){
 					List<String> assetList = getGitService().assetList(namespace,formKey, "sw.form", true);
 					List<Map> errors=null;
@@ -115,7 +118,7 @@ public class TaskOperationResource extends BaseResource {
 						ret = new HashMap();
 						ret.put("cleanData", data);
 					}
-					System.out.println("data:"+ret);
+					info(this,"data:"+ret);
 					if( errors.size()>0){
 						Map successNode = new HashMap();
 						successNode.put("success", false);
@@ -123,7 +126,9 @@ public class TaskOperationResource extends BaseResource {
 						return successNode;
 					}else{
 						data = (Map)ret.get("cleanData");
-						newVariables.put(formVar,data);
+						if( !"-".equals(formVar)){
+							newVariables.put(formVar,data);
+						}
 						setMapping(newVariables,  data, variablesMapping, executionId);
 						String script = (String)ret.get("postProcess");
 						if( script!=null && script.trim().length()> 2){
@@ -152,6 +157,7 @@ public class TaskOperationResource extends BaseResource {
 				}
 			}
 
+			info(this,"newVariables:"+js.deepSerialize(newVariables));
 			getPE().getTaskService().complete(m_taskId, newVariables);
 		} else if ("assign".equals(m_operation)) {
 			String userId = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserName();
@@ -219,6 +225,13 @@ public class TaskOperationResource extends BaseResource {
 			throw new RuntimeException("TaskOperationResource.checkPermission:assignee and owner are null");
 		}
 	}
+
+	private String getFormKeyWithoutExtension(String formKey){
+		if( formKey.endsWith(".form")){
+			return formKey.substring(0,formKey.length()-5);
+		}
+		return formKey;
+	}
 	private String getFormVar(String namespace,String formKey){
 		String formVar=null;
 		try{
@@ -226,7 +239,7 @@ public class TaskOperationResource extends BaseResource {
 		}catch(Exception e){
 			throw new RuntimeException("TaskOperationResource:cannot get formVar:",e);
 		}
-		System.out.println("TaskOperationResource:"+formVar);
+		info(this,"TaskOperationResource:"+formVar);
 		if( formVar == null){
 			throw new RuntimeException("TaskOperationResource:formVar is null");
 		}
