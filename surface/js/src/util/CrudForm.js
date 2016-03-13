@@ -39,7 +39,7 @@ clazz.construct.extend( "simpl4.util.CrudForm", {
 			var row = null;
 			var prevF=null;
 			tabLists[ tabKey ].forEach( function( f, i ) {
-				if ( layout == "single" ) {
+				if ( layout== "full" || layout == "single" ) {
 					row = {
 						id: "Row",
 						childShapes: []
