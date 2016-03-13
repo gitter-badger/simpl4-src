@@ -46,6 +46,7 @@ public class TasksResource extends BaseResource {
 		properties.put("priority", TaskQueryProperty.PRIORITY);
 		properties.put("assignee", TaskQueryProperty.ASSIGNEE);
 		properties.put("executionId", TaskQueryProperty.EXECUTION_ID);
+		properties.put("tenantId", TaskQueryProperty.TENANT_ID);
 		properties.put("processInstanceId", TaskQueryProperty.PROCESS_INSTANCE_ID);
 	}
 
@@ -62,6 +63,7 @@ public class TasksResource extends BaseResource {
 		String strMinDueDate = Util.getString(m_queryParams, "minDueDate");
 		String strMaxDueDate = Util.getString(m_queryParams, "maxDueDate");
 		String businessKey = Util.getString(m_queryParams, "businessKey");
+		String tenantId = Util.getString(m_queryParams, "tenantId");
 		TaskQuery taskQuery = getPE().getTaskService().createTaskQuery();
 
 		if (personalTaskUserId != null) {
@@ -102,6 +104,9 @@ public class TasksResource extends BaseResource {
 		}
 		if (businessKey != null) {
 			taskQuery.processInstanceBusinessKey(businessKey);
+		}
+		if (tenantId != null) {
+			taskQuery.taskTenantId(tenantId);
 		}
 		Map dataResponse = new TasksPaginateList(this).paginateList(m_listParams, taskQuery, "id", properties);
 		return dataResponse;
