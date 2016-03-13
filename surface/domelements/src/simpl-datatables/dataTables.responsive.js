@@ -677,9 +677,12 @@ Responsive.prototype = {
 
 		inserted.insertBefore( dt.table().node() );
 
+		var cols = dt.columns().eq(0).length;
+		var x = tableWidth/cols*0.04;
+		console.log("x:"+x+"/",(dt.columns().eq(0)));
 		// The cloned header now contains the smallest that each column can be
 		dt.columns().eq(0).each( function ( idx ) {
-			columns[idx].minWidth = cells[ idx ].offsetWidth || 0;
+			columns[idx].minWidth = (cells[ idx ].offsetWidth-x) || 0;
 		} );
 
 		inserted.remove();
