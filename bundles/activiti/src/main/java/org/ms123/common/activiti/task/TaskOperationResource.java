@@ -215,6 +215,9 @@ public class TaskOperationResource extends BaseResource {
 	}
 	private void checkPermission(String taskId){
 		Task task = getPE().getTaskService().createTaskQuery().taskId(m_taskId).singleResult();
+		if( task == null){
+			throw new RuntimeException("TaskOperationResource.task not found:"+m_taskId);
+		}
 		String assignee = task.getAssignee();
 		String owner = task.getOwner();
 		if( owner != null){
