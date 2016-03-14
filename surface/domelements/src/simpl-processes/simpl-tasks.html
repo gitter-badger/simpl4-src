@@ -73,6 +73,11 @@
 				ModernizrBehavior,
 				TranslationsBehavior
 			],
+			properties: {
+				namespace: {
+					type: String
+				}
+			},
 			observers: [
 				'taskListModeSelectedChanged(taskListModeSelected)',
 				'selectionChanged(selection)'
@@ -104,7 +109,7 @@
 
 				var self = this;
 				this.$.processController.showForm( task, function() {
-					this.async( function() {
+					self.async( function() {
 						self.pageSelected = 0;
 						self.taskListModeSelectedChanged( this.taskListModeSelected == 0 ? 0 : 1 );
 					}, 50 );
@@ -188,11 +193,13 @@
 				};
 				try {
 					var queryParams = {
-						assignee: this.userid
+						assignee: this.userid,
+							tenantId: this.namespace
 					};
 					if ( what == "notassigned" ) {
 						queryParams = {
-							candidate: this.userid
+							candidate: this.userid,
+							tenantId: this.namespace
 						};
 					}
 
