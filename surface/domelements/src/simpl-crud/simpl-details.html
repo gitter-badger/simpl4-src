@@ -99,7 +99,7 @@
 				fields.forEach( function( f ) {
 					var dtName = f.name;
 					if ( f.hidden ) return;
-					if ( f.selectable_items ) {
+					if ( f.selectable_items && Array.isArray(f.selectable_items.getItems()) ) {
 						this.selectableList[ f.name ] = this.toMap( f.selectable_items.getItems() );
 						dtName = f.name + "_display";
 					}
