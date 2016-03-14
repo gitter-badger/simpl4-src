@@ -28,14 +28,14 @@
 			-webkit-box-sizing: border-box;
 			box-sizing: border-box;
 		}
-		@media all and (max-width: 480px) {} neon-animatable {
+		neon-animatable {
 			padding-left: 5px;
 			padding-top: 6px;
 			padding-right: 12px;
 		}
-			#loginDialog {
-				overflow:hidden;
-			}
+		#loginDialog {
+			overflow: hidden;
+		}
 		@media all and (max-width: 480px) {
 			html /deep/ #loginDialog {
 				top: 10vh;
@@ -127,11 +127,11 @@
 		neon-animatable {
 			//position:relative;
 		}
-		neon-animatable > div{
+		neon-animatable > div {
 			pointer-events: all;
 		}
 		a {
-			text-decoration:none;
+			text-decoration: none;
 		}
 
 	</style>
@@ -149,7 +149,7 @@
 						<div class="brand__area">
 							<a href="[[logoLinkLang]]" target="_blank">
 								<template is="dom-if" if="[[logoUrl]]">
-									<img class="brand__logo"  src="[[logoUrl]]"></img>
+									<img class="brand__logo" src="[[logoUrl]]"></img>
 								</template>
 								<template is="dom-if" if="[[logoData]]">
 									<simpl-import class="brand__logo" method="global.svgimport" data="[[logoData]]"></simpl-import>
@@ -330,14 +330,14 @@
 				if ( Detectizr.device.model == "android" ) {
 					this.entryAnimation = 'fade-in-animation';
 					this.exitAnimation = 'fade-out-animation';
-				}else{
+				} else {
 					this.entryAnimation = 'scale-up-animation';
 					this.exitAnimation = 'scale-down-animation';
 				}
 				this.helpMessage = tr( "button.help" );
 				this.drawerPanel = this.$.drawerPanel;
 				this.neonPages = this.$.pages;
-//				this.signInOutIcon="system-update-alt";
+				//				this.signInOutIcon="system-update-alt";
 				this.keys = this.$.keys;
 				// Allow selecting pages by num keypad. 
 				var keysToAdd = Array.apply( null, simpl4PageRegistry.getPages() ).map( function( x, i ) {
@@ -543,19 +543,19 @@
 				return url.indexOf( ".adoc" ) > 0;
 			},
 			getLogoUrl: function() {
-				if(this.logo.endsWith(".svg")){
+				if ( this.logo.endsWith( ".svg" ) ) {
 					return null;
-				}else{
+				} else {
 					return this.logo;
 				}
 			},
 			getLogoData: function() {
-				if(this.logo.endsWith(".svg")){
+				if ( this.logo.endsWith( ".svg" ) ) {
 					return {
 						path: this.logo,
-						repo:simpl4.util.BaseManager.getNamespace()
+						repo: simpl4.util.BaseManager.getNamespace()
 					}
-				}else{
+				} else {
 					return null;
 				}
 			},

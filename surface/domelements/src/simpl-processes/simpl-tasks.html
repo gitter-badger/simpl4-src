@@ -19,26 +19,27 @@
  */
 -->
 <dom-module id="simpl-tasks">
-	<template>
-		<style is="custom-style"  include="simpl-datatables-shared-styles"></style>
-		<style>
-			li {
-				height: 30px;
-				cursor: pointer;
-			}
-			li.iron-selected:after {
-				content: "\2713";
-				padding-left: 10px;
-			}
-			paper-button.ripple {
-				float: left;
-				position: relative;
-			}
-			iron-pages{
-				margin-top:20px;
-			}
-		</style>
+	<style is="custom-style" include="simpl-datatables-shared-styles"></style>
+	<style>
+		li {
+			height: 30px;
+			cursor: pointer;
+		}
+		li.iron-selected:after {
+			content: "\2713";
+			padding-left: 10px;
+		}
+		paper-button.ripple {
+			float: left;
+			position: relative;
+		}
+		iron-pages {
+			margin-top: 20px;
+		}
 
+	</style>
+
+	<template>
 		<iron-pages selected="[[pageSelected]]" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
 			<section>
 				<ul>
@@ -194,7 +195,7 @@
 				try {
 					var queryParams = {
 						assignee: this.userid,
-							tenantId: this.namespace
+						tenantId: this.namespace
 					};
 					if ( what == "notassigned" ) {
 						queryParams = {

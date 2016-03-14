@@ -19,18 +19,19 @@
  */
 -->
 <dom-module id="simpl-processes">
-	<template>
-		<style is="custom-style"  include="simpl-datatables-shared-styles"></style>
-		<style>
-			paper-button.ripple {
-				float: left;
-				position: relative;
-			}
-			iron-pages{
-				margin-top:20px;
-			}
-		</style>
+	<style is="custom-style" include="simpl-datatables-shared-styles"></style>
+	<style>
+		paper-button.ripple {
+			float: left;
+			position: relative;
+		}
+		iron-pages {
+			margin-top: 20px;
+		}
 
+	</style>
+
+	<template>
 		<iron-pages selected="[[pageSelected]]" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
 			<section>
 				<template is="dom-if" if="[[currentProcess]]">
