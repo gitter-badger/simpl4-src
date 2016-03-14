@@ -105,6 +105,9 @@ public class TaskOperationResource extends BaseResource {
 					formVar = getFormVar(namespace,formKey);
 				}
 				Map data = (Map)variables.get(getFormKeyWithoutExtension(formKey));
+				if( data == null){
+					data = (Map)variables.get(formVar);
+				}
 				info(this,"formKey:"+formKey+"/formVar:" + formVar +"/"+data+"/"+taskName);
 				if( data != null){
 					List<String> assetList = getGitService().assetList(namespace,formKey, "sw.form", true);
@@ -170,7 +173,7 @@ public class TaskOperationResource extends BaseResource {
 		return successNode;
 	}
 	private void setMapping(Map<String,Object> newVariables, Map formData, String variablesMapping, String executionId){
-		if( executionId == null) return;
+		if( executionId == null || variablesMapping==null) return;
 		Map v = (Map) ds.deserialize(variablesMapping);
 		List<Map> items = (List) v.get("items");
 		for (Map item : items) {
