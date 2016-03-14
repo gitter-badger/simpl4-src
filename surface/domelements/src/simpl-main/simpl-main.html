@@ -33,6 +33,9 @@
 			padding-top: 6px;
 			padding-right: 12px;
 		}
+			#loginDialog {
+				overflow:hidden;
+			}
 		@media all and (max-width: 480px) {
 			html /deep/ #loginDialog {
 				top: 10vh;
@@ -238,9 +241,9 @@
 				<simpl-import style="[[getHelpDialogStyle()]]" class="flex grid row" id="helpImport" url="{{substituteLang(selectedPage.help,1)}}"></simpl-import>
 			</paper-dialog-scrollable>
 		</paper-dialog>
-		<!--paper-dialog id="loginDialog">
-			<simpl-login on-login-ok="{{loginOk}}" id="login"></simpl-login>
-		</paper-dialog-->
+		<paper-dialog id="loginDialog">
+			<simpl-login on-login-ok="loginOk" id="login"></simpl-login>
+		</paper-dialog>
 	</template>
 	<script>
 		Polymer( {
@@ -291,6 +294,10 @@
 					value: "700px",
 					type: String
 				},
+				signInOutIcon: {
+					value: "",
+					type: String
+				},
 				toolbarProvided: {
 					value: false,
 					type: Boolean
@@ -330,7 +337,7 @@
 				this.helpMessage = tr( "button.help" );
 				this.drawerPanel = this.$.drawerPanel;
 				this.neonPages = this.$.pages;
-				//this.signInOutIcon="system-update-alt";
+//				this.signInOutIcon="system-update-alt";
 				this.keys = this.$.keys;
 				// Allow selecting pages by num keypad. 
 				var keysToAdd = Array.apply( null, simpl4PageRegistry.getPages() ).map( function( x, i ) {
