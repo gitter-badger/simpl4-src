@@ -26,18 +26,13 @@
 			<h2>{{heading}}</h2>
 			<content select="[top]"></content>
 			<content select="[identifierHeading]"></content>
-			<paper-input id="identifierInput" value="{{identifier}}" label="{{identification}}" floatingLabel></paper-input>
+			<paper-input id="identifierInput" value="{{identifier}}" label="[[identification]]" floatingLabel></paper-input>
 			<content select="[passwordHeading]"></content>
 			<paper-input id="passwordInput" value="{{password}}" label="Password" type="password" floatingLabel></paper-input>
-			<paper-button id="submitbutton" raised on-click="validate">{{submit}}</paper-button>
+			<paper-button id="submitbutton" raised on-click="validate">[[submit]]</paper-button>
 			<content select="[bottom]"></content>
 		</div>
-		<paper-toast id="toast_error" text="" style="background:red;padding-right:60px;" role="alert" class="capsule">
-			<div style="color:black;font-weight:bold;">{{message}}</div>
-		</paper-toast>
-		<paper-toast id="toast_ok" text="" style="background:gray;padding-right:60px;" role="alert" class="capsule">
-			<div style="">{{message}}</div>
-		</paper-toast>
+		<simpl-toast id="toastId"></simpl-toast>
 	</template>
 
 	<script>
@@ -50,7 +45,6 @@
 				this.identifier = "";
 				this.password = "";
 			},
-
 			validate: function() {
 				this.$.identifierInput.invalid = !!!this.identifier;
 				this.$.passwordInput.invalid = !!!this.password;
@@ -67,10 +61,11 @@
 					simpl4.util.BaseManager.setUser( this.identifier );
 					simpl4.util.BaseManager.setPassword( this.password );
 					this.showOk( tr( "login.ok" ) );
-					setTimeout( ( function() {
+					this.shakeOk();
+					this.async( function() {
 						this.fireLoginOk();
 						this.$.passwordInput.value = "";
-					} ).bind( this ), 3000 );
+					}, 2500 );
 				} else {
 					this.showError( tr( "login.error" ) );
 					this.shake();
@@ -78,12 +73,22 @@
 
 			},
 			showError: function( msg ) {
-				this.message = msg;
-				this.$.toast_error.show();
+				this.$.toastId.show( msg, "error", "10000" );
 			},
 			showOk: function( msg ) {
-				this.message = msg;
-				this.$.toast_ok.show();
+				this.$.toastId.show( msg, "success", "10000" );
+			},
+			shakeOk: function() { //@@@Dummy success toast not show without it
+				var animation = this.animate( [ {
+					transform: "translateY(-1px)"
+				}, {
+					transform: "translateY(1px)"
+				} ], {
+					direction: "alternate",
+					duration: 3600,
+					iterations: 1
+				} );
+				animation.play();
 			},
 			shake: function() {
 				var animation = this.animate( [ {
@@ -92,8 +97,8 @@
 					transform: "translateX(10px)"
 				} ], {
 					direction: "alternate",
-					duration: 100,
-					iterations: 5
+					duration: 250,
+					iterations: 10
 				} );
 				animation.play();
 			},
