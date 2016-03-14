@@ -189,19 +189,19 @@ Property   | Value           | Description
 		paper-toast#toast {
 			z-index: 10;
 		}
+		:host iron-icon[icon="error"] {
+			color: red;
+		}
+		:host iron-icon[icon="info"] {
+			color: lightblue;
+		}
+		:host iron-icon[icon="warning"] {
+			color: yellow;
+		}
+		:host iron-icon[icon="check"] {
+			background: green;
+		}
 
-		:host iron-icon[icon="error"]{
-			color:red;
-		}
-		:host iron-icon[icon="info"]{
-			color:lightblue;
-		}
-		:host iron-icon[icon="warning"]{
-			color:yellow;
-		}
-		:host iron-icon[icon="check"]{
-			background:green;
-		}
 	</style>
 
 	<template>
@@ -328,7 +328,7 @@ Property   | Value           | Description
 						shelf = bread.shelf || this.shelf,
 						toast = this.$.toast;
 					// Shows the toast.
-					if ( true/*!toast.visible*/ ) {
+					if ( true /*!toast.visible*/ ) {
 						this.shift( '_breads' );
 						toast.text = bread.text || this.text;
 						toast.duration = duration;
