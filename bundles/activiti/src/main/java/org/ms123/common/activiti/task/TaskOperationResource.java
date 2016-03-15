@@ -183,6 +183,8 @@ public class TaskOperationResource extends BaseResource {
 				String formvar = (String) item.get("formvar");
 				try{
 					Object o = PropertyUtils.getProperty(formData, formvar);
+					info(this, "setMapping("+processvar+"):"+o);
+					System.out.println("setMapping("+processvar+"):"+o);
 					setValue(executionId, newVariables, processvar, o);
 				}catch(Exception e){
 					e.printStackTrace();
