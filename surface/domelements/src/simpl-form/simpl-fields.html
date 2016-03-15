@@ -1335,7 +1335,7 @@
 			},
 			getValue: function() {
 				console.log( "select-field(" + this.name + "),getValue:", this.value );
-				if( this.multiple !== true && this.value && this.value.length && this.value.length>0){
+				if( this.multiple !== true && this.value && Array.isArray(this.value) && this.value.length>0){
 					return this.value[0];
 				}
 				return this.value;
