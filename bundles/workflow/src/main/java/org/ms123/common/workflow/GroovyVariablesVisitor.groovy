@@ -87,11 +87,22 @@ public class GroovyVariablesVisitor {
 		}
 	}
 
+	private static ClassLoader _setContextClassLoader() {
+		ClassLoader saveCl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(WorkflowServiceImpl.class.getClassLoader());
+		return saveCl;
+	}
+
 	public static Map<String,Set<String>> getVariables(final String scriptText) {
 		assert scriptText != null;
 		GroovyClassVisitor visitor = new VariableVisitor()
-		VisitorClassLoader myCL = new VisitorClassLoader(visitor);
-		myCL.parseClass(scriptText);
+		ClassLoader saveCl = _setContextClassLoader();
+		try{
+			VisitorClassLoader myCL = new VisitorClassLoader(visitor);
+			myCL.parseClass(scriptText);
+		}finally{
+			Thread.currentThread().setContextClassLoader(saveCl);
+		}
 		def ret = [:];
 		ret.bound = visitor.bound;
 		ret.unbound = visitor.unbound;
