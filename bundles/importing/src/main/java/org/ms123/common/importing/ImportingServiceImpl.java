@@ -320,6 +320,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 				Map importFile = (Map) fileMap.get("importfile");
 				String storeLocation = (String) importFile.get("storeLocation");
 				InputStream is = new FileInputStream(new File(storeLocation));
+				is = checkForUtf8BOMAndDiscardIfAny(is);
 				bytes = toByteArray(is);
 				is.close();
 			}else if (fileContent != null && fileContent.startsWith("data:")){
