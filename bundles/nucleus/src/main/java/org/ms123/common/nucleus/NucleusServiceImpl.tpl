@@ -181,6 +181,9 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 					pml = new H2PersistenceManagerLoader(m_bc, sdesc, baseDirs, m_aidClassLoader,props, m_transactionService);
 				}
 			}
+			if (sdesc.getStore().equals(StoreDesc.STORE_JDBC)) {
+					pml = new JDBCPersistenceManagerLoader(m_bc, sdesc, baseDirs, m_aidClassLoader,props, m_transactionService);
+			}
 			if (sdesc.getStore().equals(StoreDesc.STORE_FILE)) {
 				pml = new FilePersistenceManagerLoader(m_bc, sdesc, baseDirs, m_aidClassLoader,props, m_transactionService);
 			}

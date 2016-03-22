@@ -78,7 +78,7 @@ public class QueryBuilder {
 		m_type = type;
 		m_params = params;
 		insertFilterParams(filters);
-		if (sdesc.getStore().equals("cassandra")) {
+		if (sdesc.getStore().equals("cassandra") || "jdbc".equals(sdesc.getStore())) {
 			m_mainSelectBuilder = new JPASelectBuilder(this, sdesc, entityName, joinFields, filters, fieldSets);
 		}else if (sdesc.getVendor().equals(StoreDesc.VENDOR_H2)) {
 			m_mainSelectBuilder = new JPASelectBuilderH2(this, sdesc, entityName, joinFields, filters, fieldSets);

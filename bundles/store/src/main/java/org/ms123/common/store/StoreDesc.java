@@ -61,6 +61,7 @@ public class StoreDesc {
 	public static final String VENDOR_H2 = "h2";
 
 	public static final String VENDOR_HSQL = "hsql";
+	public static final String STORE_JDBC = "jdbc";
 
 	public static final String RDBMS_H2 = "rdbms:h2";
 
