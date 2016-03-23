@@ -37,6 +37,7 @@ import org.apache.sling.commons.compiler.CompilationUnit;
 import org.apache.sling.commons.compiler.CompilerMessage;
 import org.apache.sling.commons.compiler.JavaCompiler;
 import org.apache.sling.commons.compiler.Options;
+import org.ms123.common.system.compile.CompileService;
 import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.store.StoreDesc;
@@ -47,7 +48,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.service.component.ComponentContext;
@@ -60,14 +60,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
+import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.permission.api.PermissionService;
+import org.jooq.util.jaxb.Configuration;
+import org.jooq.util.GenerationTool;
+import org.jooq.util.jaxb.Generator;
+import org.jooq.util.jaxb.Target;
 import static org.apache.commons.beanutils.PropertyUtils.getProperty;
 import static org.apache.commons.beanutils.PropertyUtils.setProperty;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static org.apache.commons.io.FileUtils.moveDirectoryToDirectory;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
 
 /** DomainObjectsServiceImpl implementation
  */
@@ -76,13 +83,14 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 public class DomainObjectsServiceImpl implements DomainObjectsService, EventHandler {
 
 	private static final Logger m_logger = LoggerFactory.getLogger(DomainObjectsServiceImpl.class);
-	private  ServiceRegistration m_serviceRegistration;
+	private ServiceRegistration m_serviceRegistration;
 
 	protected BundleContext m_bc;
 
 	private EntityService m_entityService;
 
 	private JavaCompiler m_javaCompiler;
+	protected CompileService m_compileService;
 
 	private SourceGenService m_sourceGenService;
 
@@ -113,6 +121,8 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 	protected Inflector m_inflector = Inflector.getInstance();
 
 	static final String[] topics = new String[] { "namespace/installed" };
+	private static String workspace = System.getProperty("workspace");
+	private static String gitRepos = System.getProperty("git.repos");
 
 	public DomainObjectsServiceImpl() {
 		m_logger.info("DomainObjectsServiceImpl construct");
@@ -157,91 +167,6 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 		m_serviceRegistration.unregister();
 	}
 
-	//Old Stuff(SourceGen and Compile)
-	public void generateClasses(StoreDesc sdesc) throws Exception {
-		generateClasses(sdesc, null);
-	}
-
-	public void generateClasses(StoreDesc sdesc, List<Map> entities) throws Exception {
-		Map ret = generateSource(sdesc, entities);
-		List<String> srcFiles = (List) ret.get(SOURCES);
-		ret = compile(sdesc, (List<Map>) ret.get(ENTITIES), (List<String>) ret.get(SOURCES));
-		List errors = (List) ret.get("errors");
-		if (errors != null && errors.size() > 0) {
-			throw new RuntimeException("DomainObjectsServiceImpl.generateClasses:" + errors);
-		}
-	}
-
-	public Map generateSource(StoreDesc sdesc, List<Map> entities) throws Exception {
-		String namespace = sdesc.getNamespace();
-		String pack = sdesc.getPack();
-		if (entities == null) {
-			entities = getEntities(sdesc);
-		}
-		printList("\n----> generateSource.entities(" + namespace + "," + pack + "):", entities);
-		File outDir = new File(sdesc.getBaseDir(), "/src");
-		List<String> srcFiles = m_sourceGenService.generate(sdesc, entities, outDir.toString());
-		Map retMap = new HashMap();
-		retMap.put(SOURCES, srcFiles);
-		retMap.put(ENTITIES, entities);
-		return retMap;
-	}
-
-
-	public Map compile(StoreDesc sdesc, List<Map> entities, List<String> srcFiles) throws Exception {
-		File outDir1 = new File(sdesc.getBaseDir(), "classes");
-		if (!outDir1.exists()) {
-			outDir1.mkdirs();
-		}
-		File[] locations = new File[1];
-		locations[0] = outDir1;
-		FileSystemClassLoader fscl = new FileSystemClassLoader(this.getClass().getClassLoader(), locations);
-		JDOEnhancer enhancer = m_nucleusService.getEnhancer(sdesc);
-		enhancer.setClassLoader(fscl);
-		final Options options = new Options();
-		options.put(Options.KEY_SOURCE_VERSION, Options.VERSION_1_6);
-		options.put(Options.KEY_TARGET_VERSION, Options.VERSION_1_6);
-		options.put(Options.KEY_CLASS_LOADER_WRITER, createClassWriter(outDir1));
-		options.put(Options.KEY_CLASS_LOADER, fscl);
-		CompilationUnit[] cus = new CompilationUnit[srcFiles.size()];
-		int i = 0;
-		for (String src : srcFiles) {
-			cus[i++] = createCompileUnit(src);
-		}
-		CompilationResult result = m_javaCompiler.compile(cus, options);
-		System.out.println("result:" + result);
-		if (result != null && result.getErrors() != null) {
-			List<String> errorList = new ArrayList();
-			for (CompilerMessage msg : result.getErrors()) {
-				String ms = msg.getFile() + ":" + msg.getLine() + "=>" + msg.getMessage();
-				errorList.add(ms);
-			}
-			Map retMap = new HashMap();
-			System.out.println("result:" + errorList);
-			retMap.put("errors", errorList);
-			return retMap;
-		} else {
-			if (enhancer != null) {
-				for (int c = 0; c < cus.length; c++) {
-					String className = cus[c].getMainClassName();
-					File file = new File(outDir1, className.replace(".", "/"));
-					if (jdoStore(entities, className)) {
-						System.out.println("DomainObjectsServiceImpl.enhancer.add:" + file);
-						enhancer.addClasses(file.toString() + ".class");
-					}
-				}
-				enhancer.enhance();
-			}
-			try {
-				m_nucleusService.close(sdesc);
-			} catch (Exception e) {
-				System.out.println("CLOSE:" + e);
-			}
-			return new HashMap();
-		}
-	}
-	//End old stuff
-
 	public void createClasses(StoreDesc sdesc) throws Exception {
 		String namespace = sdesc.getNamespace();
 		String pack = sdesc.getPack();
@@ -266,7 +191,7 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 		}
 		File[] locations = new File[1];
 		locations[0] = outDir1;
-System.out.println("Enhancer.enhance:"+sdesc);
+		System.out.println("Enhancer.enhance:" + sdesc);
 		FileSystemClassLoader fscl = new FileSystemClassLoader(this.getClass().getClassLoader(), locations);
 		JDOEnhancer enhancer = m_nucleusService.getEnhancer(sdesc);
 		enhancer.setClassLoader(fscl);
@@ -281,7 +206,7 @@ System.out.println("Enhancer.enhance:"+sdesc);
 			enhancer.enhance();
 		}
 		try {
-System.out.println("Enhancer.close:"+sdesc);
+			System.out.println("Enhancer.close:" + sdesc);
 			m_nucleusService.close(sdesc);
 		} catch (Exception e) {
 			System.out.println("Nucleus.close.ex:" + e);
@@ -408,32 +333,76 @@ System.out.println("Enhancer.close:"+sdesc);
 	}
 
 	/*BEGIN JSON-RPC-API*/
-	public void generateClasses(
-			@PName(StoreDesc.STORE_ID) String storeId) throws RpcException {
-		try {
-			StoreDesc sdesc = StoreDesc.get(storeId);
-			generateClasses(sdesc,null);
-		} catch (Exception e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DomainObjectsServiceImpl.generateClasses:", e);
-		}
-	}
-	public void generateSource(
-			@PName(StoreDesc.STORE_ID) String storeId) throws RpcException {
-		try {
-			StoreDesc sdesc = StoreDesc.get(storeId);
-			generateSource(sdesc,null);
-		} catch (Exception e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DomainObjectsServiceImpl.generateClasses:", e);
-		}
-	}
-	public void createClasses(
-			@PName(StoreDesc.STORE_ID) String storeId) throws RpcException {
+	@RequiresRoles("admin")
+	public void createClasses(@PName(StoreDesc.STORE_ID) String storeId) throws RpcException {
 		try {
 			StoreDesc sdesc = StoreDesc.get(storeId);
 			createClasses(sdesc);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DomainObjectsServiceImpl.createClasses:", e);
+		}
+	}
+
+	private void compileMetadata(Boolean toWorkspace, String namespace) throws Exception {
+		List<File> classPath = new ArrayList<File>();
+		File basedir = null;
+		if (toWorkspace) {
+			classPath.add(new File(workspace, "jooq/build"));
+			basedir = new File(workspace, "jooq");
+		} else {
+			classPath.add(new File(gitRepos, namespace + "/.etc/jooq/build"));
+			basedir = new File(gitRepos, namespace + "/.etc/jooq");
+		}
+
+		File destinationDirectory = new File(basedir, "build");
+		File sourceDirectory = new File(basedir, "gen");
+		m_compileService.compileJava(m_bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
+	}
+
+	@RequiresRoles("admin")
+	public void buildMetadata(@PName(StoreDesc.STORE_ID) String storeId, @PName("configFile") @POptional String configFile, @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
+		try {
+			StoreDesc sdesc = StoreDesc.get(storeId);
+			String namespace = sdesc.getNamespace();
+			File f = null;
+			if (configFile != null) {
+				if (configFile.indexOf("/") > 0) {
+					f = new File(new File(gitRepos, sdesc.getNamespace()), configFile);
+				} else {
+					f = new File(new File(gitRepos, sdesc.getNamespace()), ".etc/" + configFile);
+				}
+			} else {
+				f = new File(gitRepos, sdesc.getNamespace() + "/.etc/jooqConfig.xml");
+			}
+			if (!f.exists()) {
+				throw new RuntimeException("DomainObjectsServiceImpl.readMetadata:(" + f + ") not exists.");
+			}
+
+			Configuration c = GenerationTool.load(new FileInputStream(f));
+			String packageDir = c.getGenerator().getTarget().getPackageName().replace(".", "/");
+			File basedir = null;
+			if (toWorkspace) {
+				basedir = new File(workspace, "jooq");
+			} else {
+				basedir = new File(gitRepos, namespace + "/.etc/jooq");
+			}
+			File pdir = new File(basedir, "gen/" + packageDir);
+			deleteDirectory(pdir);
+
+			File bdir = new File(basedir, "build/" + packageDir);
+			bdir.mkdirs();
+
+			File tdir = new File("/tmp/jooq", packageDir);
+			deleteDirectory(tdir);
+			GenerationTool.generate(c);
+			File parent = new File(basedir, "gen/" + packageDir).getParentFile();
+			System.out.println("parent:" + parent);
+			moveDirectoryToDirectory(tdir, parent, true);
+			compileMetadata(toWorkspace, sdesc.getNamespace());
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DomainObjectsServiceImpl.buildMetadata:", e);
 		}
 	}
 
@@ -468,9 +437,16 @@ System.out.println("Enhancer.close:"+sdesc);
 		this.m_permissionService = shiroService;
 	}
 
+	@Reference(dynamic = true, optional = true)
+	public void setCompileService(CompileService paramService) {
+		this.m_compileService = paramService;
+		System.out.println("DomainObjectsServiceImpl.setCompileService:" + paramService);
+	}
+
 	@Reference(dynamic = true)
 	public void setJavaCompiler(JavaCompiler compiler) {
 		m_javaCompiler = compiler;
 		System.out.println("DomainObjectsServiceImpl.setJavaCompiler:" + compiler);
 	}
 }
+

@@ -25,6 +25,7 @@
 		com.sun.org.apache.xerces.internal.jaxp,
 		com.sun.org.apache.xerces.internal.parsers,
 		com.sun.org.apache.xpath.internal.jaxp,
+		com.sun.xml.internal.bind.v2,
     sun.rmi.server,
     sun.rmi.transport,
 	  sun.reflect,
