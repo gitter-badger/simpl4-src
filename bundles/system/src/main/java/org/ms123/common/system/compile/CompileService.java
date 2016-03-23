@@ -18,6 +18,8 @@
  */
 package org.ms123.common.system.compile;
 import java.util.List;
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import org.osgi.framework.Bundle;
 import org.ms123.common.rpc.RpcException;
@@ -32,4 +34,5 @@ public interface CompileService {
 	public void compileJavaAll();
 	public List<Map> compileJavaNamespace(String namespace);
 	public List<Map> compileJavaNamespace(String namespace, Bundle bundle);
+	public void compileJava(Bundle bundle, File destinationDirectory, File compileDirectory, List<File> classPath) throws IOException;
 }

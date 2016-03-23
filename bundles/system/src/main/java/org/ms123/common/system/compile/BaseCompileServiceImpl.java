@@ -20,7 +20,9 @@ package org.ms123.common.system.compile;
 
 import flexjson.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
 import java.util.Collection;
 import java.io.StringWriter;
 import java.io.PrintWriter;
@@ -44,6 +47,13 @@ import org.ms123.common.system.compile.java.JavaCompiler;
 import org.osgi.framework.Bundle;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
+import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
+import javax.tools.DiagnosticCollector;
+import javax.tools.Diagnostic;
+import javax.tools.StandardJavaFileManager;
+import org.phidias.compile.BundleJavaManager;
+import javax.tools.StandardLocation;
 
 /**
  *
@@ -70,10 +80,10 @@ abstract class BaseCompileServiceImpl {
 		List<Map> repos = m_gitService.getRepositories(new ArrayList(), false);
 		for (Map<String, String> repo : repos) {
 			String namespace = repo.get("name");
-			info(this,"Compile in " + namespace + ":");
+			info(this, "Compile in " + namespace + ":");
 			List<Map> resultList = compileGroovyNamespace(namespace);
 			for (Map<String, String> result : resultList) {
-				info(this,"CompileGroovy:" + result.get(PATH) + " -> " + result.get(MSG));
+				info(this, "CompileGroovy:" + result.get(PATH) + " -> " + result.get(MSG));
 			}
 		}
 	}
@@ -110,7 +120,7 @@ abstract class BaseCompileServiceImpl {
 	}
 
 	private String _compileGroovy(String namespace, String path, String code) {
-		info(this,"_compileGroovy:"+namespace+":"+path);
+		info(this, "_compileGroovy:" + namespace + ":" + path);
 		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
 		List<String> classpath = new ArrayList<String>();
@@ -123,7 +133,7 @@ abstract class BaseCompileServiceImpl {
 		CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", false);
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.getOptimizationOptions().put("indy", false);
-		config.setClasspathList( classpath );
+		config.setClasspathList(classpath);
 		config.setTargetDirectory(destDir);
 		FileSystemCompiler fsc = new FileSystemCompiler(config);
 
@@ -132,7 +142,7 @@ abstract class BaseCompileServiceImpl {
 		try {
 			fsc.compile(files);
 		} catch (Throwable e) {
-			error(this, "_compileGroovy.error:%[exception]s",e);
+			error(this, "_compileGroovy.error:%[exception]s", e);
 			return Utils.formatGroovyException(e, code);
 		}
 		return null;
@@ -143,26 +153,27 @@ abstract class BaseCompileServiceImpl {
 		List<Map> repos = m_gitService.getRepositories(new ArrayList(), false);
 		for (Map<String, String> repo : repos) {
 			String namespace = repo.get("name");
-			info(this,"Compile in " + namespace + ":");
+			info(this, "Compile in " + namespace + ":");
 			List<Map> resultList = compileJavaNamespace(namespace);
 			for (Map<String, String> result : resultList) {
-				info(this,"CompileJava:" + result.get(PATH) + " -> " + result.get(MSG));
+				info(this, "CompileJava:" + result.get(PATH) + " -> " + result.get(MSG));
 			}
 		}
 	}
 
 	public void compileJava(String namespace, String path, String code) {
-		compileJava( namespace, path, code, m_bundleContext.getBundle());
+		compileJava(namespace, path, code, m_bundleContext.getBundle());
 	}
+
 	public void compileJava(String namespace, String path, String code, Bundle bundle) {
-		String msg = _compileJava(namespace, path, code,bundle);
+		String msg = _compileJava(namespace, path, code, bundle);
 		if (msg != null) {
 			throw new RuntimeException(msg);
 		}
 	}
 
 	public List<Map> compileJavaNamespace(String namespace) {
-		return compileJavaNamespace(namespace,m_bundleContext.getBundle());
+		return compileJavaNamespace(namespace, m_bundleContext.getBundle());
 	}
 
 	public List<Map> compileJavaNamespace(String namespace, Bundle bundle) {
@@ -180,7 +191,7 @@ abstract class BaseCompileServiceImpl {
 		for (Map pathMap : pathList) {
 			String path = (String) pathMap.get(PATH);
 			String code = m_gitService.getContent(namespace, path);
-			String msg = _compileJava(namespace, path, code,bundle);
+			String msg = _compileJava(namespace, path, code, bundle);
 			Map<String, String> result = new HashMap();
 			result.put(PATH, path);
 			result.put(MSG, msg);
@@ -189,14 +200,13 @@ abstract class BaseCompileServiceImpl {
 		return resultList;
 	}
 
-
 	private String _compileJava(String namespace, String path, String code, Bundle bundle) {
 		String destDir = System.getProperty("workspace") + "/" + "java" + "/" + namespace;
 		String srcDir = System.getProperty("git.repos") + "/" + namespace;
 
-		try{
-			JavaCompiler.compile(namespace, bundle, FilenameUtils.getBaseName(path), code,new File(destDir));
-		}catch(Exception e){
+		try {
+			JavaCompiler.compile(namespace, bundle, FilenameUtils.getBaseName(path), code, new File(destDir));
+		} catch (Exception e) {
 			return e.getMessage();
 		}
 
@@ -211,6 +221,62 @@ abstract class BaseCompileServiceImpl {
 		List<Map> childList = (List) fileMap.get("children");
 		for (Map child : childList) {
 			toFlatList(child, types, result);
+		}
+	}
+
+	public void compileJava(Bundle bundle, File destinationDirectory, File compileDirectory, List<File> classPath) throws IOException {
+		javax.tools.JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		if (compiler == null) {
+			throw new RuntimeException("JDK required (running inside of JRE)");
+		}
+
+		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+		StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
+		fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(destinationDirectory));
+		fileManager.setLocation(StandardLocation.CLASS_PATH, classPath);
+		try {
+			Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(getAllFiles(compileDirectory, ".java"));
+			List<String> options = new ArrayList<String>();
+			options.add("-verbose");
+			BundleJavaManager bundleFileManager = new BundleJavaManager(bundle, fileManager, options);
+			javax.tools.JavaCompiler.CompilationTask task = compiler.getTask(null, bundleFileManager, diagnostics, options, null, compilationUnits);
+			if (!task.call()) {
+				Locale myLocale = Locale.getDefault();
+				StringBuilder msg = new StringBuilder();
+				msg.append("Cannot compile to Java bytecode:");
+				for (Diagnostic<? extends JavaFileObject> err : diagnostics.getDiagnostics()) {
+					msg.append('\n');
+					msg.append(err.getKind());
+					msg.append(": ");
+					if (err.getSource() != null) {
+						msg.append(err.getSource().getName());
+					}
+					msg.append(':');
+					msg.append(err.getLineNumber());
+					msg.append(": ");
+					msg.append(err.getMessage(myLocale));
+				}
+				throw new RuntimeException(msg.toString());
+			}
+		} finally {
+			fileManager.close();
+		}
+	}
+
+	private List<File> getAllFiles(File dir, String extension) {
+		ArrayList<File> fileList = new ArrayList<>();
+		getAllFiles(dir, extension, fileList);
+		return fileList;
+	}
+
+	private void getAllFiles(File dir, String extension, List<File> fileList) {
+		for (File f : dir.listFiles()) {
+			if (f.getName().endsWith(extension)) {
+				fileList.add(f);
+			}
+			if (f.isDirectory()) {
+				getAllFiles(f, extension, fileList);
+			}
 		}
 	}
 }
