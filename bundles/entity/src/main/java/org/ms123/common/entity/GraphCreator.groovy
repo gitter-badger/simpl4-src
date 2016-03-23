@@ -162,7 +162,7 @@ class GraphCreator implements org.ms123.common.entity.api.Constants, org.ms123.c
 	}
 	private void addField(Map entityMap,Map treeNode){
 		Map field = [:];
-		field.name = treeNode.name;
+		field.name = firstToLower(treeNode.name as String);
 		def type = treeNode.fieldType;
 		if( type == "byte") type = "binary";
 		if( type == "double") type = "decimal";
@@ -175,6 +175,10 @@ class GraphCreator implements org.ms123.common.entity.api.Constants, org.ms123.c
 		fields[field.name as String] = field;
 	}
 
+	private String firstToLower(String s) {
+		String fc = s.substring(0, 1);
+		return fc.toLowerCase() + s.substring(1);
+	}
 	private String getBasename(Map<String,String> entity){
 		String entityName = entity.get("name");
 		int dot = entityName.lastIndexOf(".");
@@ -195,7 +199,7 @@ class GraphCreator implements org.ms123.common.entity.api.Constants, org.ms123.c
 	}
 
 	private void initEntityMap(Map entityMap,Map treeNode){
-		entityMap.name = (treeNode.name as String).toLowerCase();
+		entityMap.name = firstToLower(treeNode.name as String);
 		entityMap.description = "";
 		entityMap.default_fields = false;
 		entityMap.team_security = false;

@@ -609,6 +609,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 	}
 
 	private void makeField(StoreDesc sdesc, ClassPool cp, CtClass ctClass, String name, String datatype, String edittype, String defaultValue, String classname, Object co, boolean withAnnotation) throws Exception {
+		name = firstToLower(name);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
 		Class type = getClass(datatype);
 		CtField f = createField(ctClass, name, type.getName());
@@ -983,6 +984,11 @@ public class ClassGenServiceImpl implements ClassGenService {
 	private String firstToUpper(String s) {
 		String fc = s.substring(0, 1);
 		return fc.toUpperCase() + s.substring(1);
+	}
+
+	private String firstToLower(String s) {
+		String fc = s.substring(0, 1);
+		return fc.toLowerCase() + s.substring(1);
 	}
 
 	protected List getEntityMetaData(StoreDesc sdesc, String entity) throws Exception {
