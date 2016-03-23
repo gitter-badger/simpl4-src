@@ -120,6 +120,7 @@ public class GitServiceImpl implements GitService {
 			add("sw.datamapper");
 			add("sw.document");
 			add("sw.entitytype");
+			add("sw.relations");
 			add("sw.enum");
 			add("sw.messageslang");
 		}
