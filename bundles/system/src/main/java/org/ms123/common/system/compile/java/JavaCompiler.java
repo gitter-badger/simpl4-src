@@ -62,7 +62,7 @@ public class JavaCompiler {
 
 	public static void compile(String namespace, Bundle bundle, String className, String sourceCodeInText, File destinationDirectory) throws Exception {
 		List<String> options = new ArrayList<String>();
-		options.add("-verbose"); 
+		//options.add("-verbose"); 
 
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 		StandardJavaFileManager standardFileManager = javac.getStandardFileManager(diagnostics, null, null);

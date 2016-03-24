@@ -237,7 +237,7 @@ abstract class BaseCompileServiceImpl {
 		try {
 			Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(getAllFiles(compileDirectory, ".java"));
 			List<String> options = new ArrayList<String>();
-			options.add("-verbose");
+//			options.add("-verbose");
 			BundleJavaManager bundleFileManager = new BundleJavaManager(bundle, fileManager, options);
 			javax.tools.JavaCompiler.CompilationTask task = compiler.getTask(null, bundleFileManager, diagnostics, options, null, compilationUnits);
 			if (!task.call()) {
