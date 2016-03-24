@@ -31,4 +31,6 @@ dependencies {
 	compile files("${repository}/phidias-0.3.5.jar")
  	compile files("${repository}/jcabi-1.0.jar")
 	compile files("${repository}/cassandra/cassandra-driver-core-2.1.6.jar")
+  compile files("${repository}/jooq/jooq-3.6.0-ms.jar")
+  compile files("${repository}/jooq/jooq-meta-codegen-3.6.0-ms.jar")
 }
