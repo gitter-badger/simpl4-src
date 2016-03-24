@@ -31,19 +31,21 @@ import java.util.Properties;
 import java.util.Set;
 import javax.jdo.JDOEnhancer;
 import javax.jdo.JDOHelper;
-import org.apache.sling.commons.compiler.ClassLoaderWriter;
-import org.apache.sling.commons.compiler.CompilationResult;
-import org.apache.sling.commons.compiler.CompilationUnit;
-import org.apache.sling.commons.compiler.CompilerMessage;
-import org.apache.sling.commons.compiler.JavaCompiler;
-import org.apache.sling.commons.compiler.Options;
-import org.ms123.common.system.compile.CompileService;
+import javax.jdo.PersistenceManager;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.entity.api.EntityService;
-import org.ms123.common.nucleus.api.NucleusService;
-import org.ms123.common.store.StoreDesc;
-import org.ms123.common.setting.api.SettingService;
 import org.ms123.common.libhelper.FileSystemClassLoader;
 import org.ms123.common.libhelper.Inflector;
+import org.ms123.common.nucleus.api.NucleusService;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.rpc.PDefaultBool;
+import org.ms123.common.rpc.PName;
+import org.ms123.common.rpc.POptional;
+import org.ms123.common.rpc.RpcException;
+import org.ms123.common.setting.api.SettingService;
+import org.ms123.common.store.StoreDesc;
+import org.ms123.common.system.compile.CompileService;
+import org.ms123.common.system.thread.ThreadContext;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -55,26 +57,15 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
-import javax.jdo.PersistenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.ms123.common.rpc.PName;
-import org.ms123.common.rpc.POptional;
-import org.ms123.common.rpc.PDefaultBool;
-import org.ms123.common.rpc.RpcException;
-import org.ms123.common.system.thread.ThreadContext;
-import org.ms123.common.permission.api.PermissionService;
-import org.jooq.util.jaxb.Configuration;
-import org.jooq.util.GenerationTool;
-import org.jooq.util.jaxb.Generator;
-import org.jooq.util.jaxb.Target;
 import static org.apache.commons.beanutils.PropertyUtils.getProperty;
 import static org.apache.commons.beanutils.PropertyUtils.setProperty;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.commons.io.FileUtils.moveDirectoryToDirectory;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
-import static org.apache.commons.io.FileUtils.moveDirectoryToDirectory;
-import static org.apache.commons.io.FileUtils.deleteDirectory;
 
 /** DomainObjectsServiceImpl implementation
  */
@@ -89,10 +80,7 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 
 	private EntityService m_entityService;
 
-	private JavaCompiler m_javaCompiler;
 	protected CompileService m_compileService;
-
-	private SourceGenService m_sourceGenService;
 
 	private ClassGenService m_classGenService;
 
@@ -269,62 +257,6 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 		return false;
 	}
 
-	private CompilationUnit createCompileUnit(final String sourceFile) throws Exception {
-		return new CompilationUnit() {
-
-			public String getMainClassName() {
-				int slash = sourceFile.lastIndexOf("src/");
-				int dot = sourceFile.lastIndexOf(".");
-				String mp = sourceFile.substring(slash + 4, dot).replaceAll("/", ".");
-				return mp;
-			}
-
-			public Reader getSource() throws IOException {
-				InputStream in = new FileInputStream(sourceFile);
-				return new InputStreamReader(in, "UTF-8");
-			}
-
-			public long getLastModified() {
-				return 0;
-			}
-		};
-	}
-
-	private ClassLoaderWriter createClassWriter(final File outDir) throws Exception {
-		return new ClassLoaderWriter() {
-
-			public boolean delete(String path) {
-				return false;
-			}
-
-			public InputStream getInputStream(String path) throws IOException {
-				System.out.println("getInputStream:" + path);
-				return null;
-			}
-
-			public long getLastModified(String path) {
-				return -1;
-			}
-
-			public OutputStream getOutputStream(String path) {
-				File file = new File(outDir, path);
-				if (!file.getParentFile().exists()) {
-					file.getParentFile().mkdirs();
-				}
-				try {
-					return new FileOutputStream(file);
-				} catch (Exception e) {
-					e.printStackTrace();
-					return null;
-				}
-			}
-
-			public boolean rename(String oldPath, String newPath) {
-				return false;
-			}
-		};
-	}
-
 	private String checkNull(Map m, String key, String msg) {
 		if (m.get(key) != null) {
 			return (String) m.get(key);
@@ -344,79 +276,11 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 		}
 	}
 
-	private void compileMetadata(Boolean toWorkspace, String namespace) throws Exception {
-		List<File> classPath = new ArrayList<File>();
-		File basedir = null;
-		if (toWorkspace) {
-			classPath.add(new File(workspace, "jooq/build"));
-			basedir = new File(workspace, "jooq");
-		} else {
-			classPath.add(new File(gitRepos, namespace + "/.etc/jooq/build"));
-			basedir = new File(gitRepos, namespace + "/.etc/jooq");
-		}
-
-		File destinationDirectory = new File(basedir, "build");
-		File sourceDirectory = new File(basedir, "gen");
-		m_compileService.compileJava(m_bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
-	}
-
-	@RequiresRoles("admin")
-	public void buildMetadata(@PName(StoreDesc.STORE_ID) String storeId, @PName("configFile") @POptional String configFile, @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
-		try {
-			StoreDesc sdesc = StoreDesc.get(storeId);
-			String namespace = sdesc.getNamespace();
-			File f = null;
-			if (configFile != null) {
-				if (configFile.indexOf("/") > 0) {
-					f = new File(new File(gitRepos, sdesc.getNamespace()), configFile);
-				} else {
-					f = new File(new File(gitRepos, sdesc.getNamespace()), ".etc/" + configFile);
-				}
-			} else {
-				f = new File(gitRepos, sdesc.getNamespace() + "/.etc/jooqConfig.xml");
-			}
-			if (!f.exists()) {
-				throw new RuntimeException("DomainObjectsServiceImpl.readMetadata:(" + f + ") not exists.");
-			}
-
-			Configuration c = GenerationTool.load(new FileInputStream(f));
-			String packageDir = c.getGenerator().getTarget().getPackageName().replace(".", "/");
-			File basedir = null;
-			if (toWorkspace) {
-				basedir = new File(workspace, "jooq");
-			} else {
-				basedir = new File(gitRepos, namespace + "/.etc/jooq");
-			}
-			File pdir = new File(basedir, "gen/" + packageDir);
-			deleteDirectory(pdir);
-
-			File bdir = new File(basedir, "build/" + packageDir);
-			bdir.mkdirs();
-
-			File tdir = new File("/tmp/jooq", packageDir);
-			deleteDirectory(tdir);
-			GenerationTool.generate(c);
-			File parent = new File(basedir, "gen/" + packageDir).getParentFile();
-			System.out.println("parent:" + parent);
-			moveDirectoryToDirectory(tdir, parent, true);
-			compileMetadata(toWorkspace, sdesc.getNamespace());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DomainObjectsServiceImpl.buildMetadata:", e);
-		}
-	}
-
 	/*END JSON-RPC-API*/
 	@Reference(dynamic = true)
 	public void setEntityService(EntityService paramEntityService) {
 		m_entityService = paramEntityService;
 		System.out.println("DomainObjectsServiceImpl.setEntityService:" + paramEntityService);
-	}
-
-	@Reference(dynamic = true)
-	public void setSourceGenService(SourceGenService sgs) {
-		m_sourceGenService = sgs;
-		System.out.println("DomainObjectsServiceImpl.setSourceGenService:" + sgs);
 	}
 
 	@Reference(dynamic = true)
@@ -435,18 +299,6 @@ public class DomainObjectsServiceImpl implements DomainObjectsService, EventHand
 	public void setPermissionService(PermissionService shiroService) {
 		System.out.println("DomainObjectsServiceImpl:" + shiroService);
 		this.m_permissionService = shiroService;
-	}
-
-	@Reference(dynamic = true, optional = true)
-	public void setCompileService(CompileService paramService) {
-		this.m_compileService = paramService;
-		System.out.println("DomainObjectsServiceImpl.setCompileService:" + paramService);
-	}
-
-	@Reference(dynamic = true)
-	public void setJavaCompiler(JavaCompiler compiler) {
-		m_javaCompiler = compiler;
-		System.out.println("DomainObjectsServiceImpl.setJavaCompiler:" + compiler);
 	}
 }
 
