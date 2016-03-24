@@ -28,7 +28,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Collection;
 import java.util.Set;
+import javax.sql.DataSource;
+import java.sql.Connection;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jooq.util.GenerationTool;
 import org.jooq.util.jaxb.Configuration;
@@ -43,6 +46,7 @@ import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.compile.CompileService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -55,7 +59,7 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 /** JooqServiceImpl implementation
  */
 @SuppressWarnings("unchecked")
-@Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=domainobjects" })
+@Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=jooq" })
 public class JooqServiceImpl implements JooqService {
 
 	protected BundleContext m_bc;
@@ -86,7 +90,6 @@ public class JooqServiceImpl implements JooqService {
 		System.out.println("JooqServiceImpl.deactivate");
 	}
 
-	/*BEGIN JSON-RPC-API*/
 	private void compileMetadata(Boolean toWorkspace, String namespace) throws Exception {
 		List<File> classPath = new ArrayList<File>();
 		File basedir = null;
@@ -103,10 +106,21 @@ public class JooqServiceImpl implements JooqService {
 		m_compileService.compileJava(m_bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
 	}
 
+	private Object getService(Class clazz, String vendor) throws Exception {
+		Collection<ServiceReference> sr = m_bc.getServiceReferences(clazz, "(dataSourceName=" + vendor + ")");
+		if (sr.size() > 0) {
+			Object o = m_bc.getService((ServiceReference) sr.toArray()[0]);
+			return o;
+		}
+		return null;
+	}
+
+	/*BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")
-	public void buildMetadata(@PName(StoreDesc.STORE_ID) String storeId, 
-														@PName("configFile") @POptional String configFile, 
-														@PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
+	public void buildMetadata(@PName(StoreDesc.STORE_ID) String storeId,
+													  @PName("configFile") @POptional String configFile,
+													  @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
+		Connection conn = null;
 		try {
 			StoreDesc sdesc = StoreDesc.get(storeId);
 			String namespace = sdesc.getNamespace();
@@ -124,8 +138,8 @@ public class JooqServiceImpl implements JooqService {
 				throw new RuntimeException("JooqServiceImpl.readMetadata:(" + f + ") not exists.");
 			}
 
-			Configuration c = GenerationTool.load(new FileInputStream(f));
-			String packageDir = c.getGenerator().getTarget().getPackageName().replace(".", "/");
+			Configuration config = GenerationTool.load(new FileInputStream(f));
+			String packageDir = config.getGenerator().getTarget().getPackageName().replace(".", "/");
 			File basedir = null;
 			if (toWorkspace) {
 				basedir = new File(workspace, "jooq");
@@ -140,14 +154,27 @@ public class JooqServiceImpl implements JooqService {
 
 			File tdir = new File("/tmp/jooq", packageDir);
 			deleteDirectory(tdir);
-			GenerationTool.generate(c);
+
+			String vendor = sdesc.getVendor();
+			DataSource ds = (DataSource) getService(javax.sql.DataSource.class, vendor);
+			System.out.println("generate.call:" + ds);
+			GenerationTool gt = new GenerationTool();
+			gt.setConnection(conn = ds.getConnection());
+			gt.run(config);
 			File parent = new File(basedir, "gen/" + packageDir).getParentFile();
-			System.out.println("parent:" + parent);
 			moveDirectoryToDirectory(tdir, parent, true);
 			compileMetadata(toWorkspace, sdesc.getNamespace());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "JooqServiceImpl.buildMetadata:", e);
+		} finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (Exception ee) {
+				ee.printStackTrace();
+			}
 		}
 	}
 
