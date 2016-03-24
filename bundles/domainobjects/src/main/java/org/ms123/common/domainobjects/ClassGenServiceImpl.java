@@ -103,7 +103,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 		for (int i = 0; i < entities.size(); i++) { //Make empty classes to resolve relations
 			Map m = entities.get(i);
 			String classname = getFQN(sdesc, m);
-			System.out.println("\tmakeClass:"+classname);
+			System.out.println("\tmakeClass:" + classname);
 			cp.makeClass(classname);
 		}
 		for (int i = 0; i < entities.size(); i++) {
@@ -111,7 +111,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 			String name = (String) entMap.get("name");
 			String classname = getFQN(sdesc, entMap);
 			List fields = getEntityMetaData(sdesc, name);
-			makeClass(sdesc, cp, fields, classname, true);
+			makeClass(sdesc, cp, fields, classname, entMap, true);
 			classnameList.add(classname);
 		}
 		List<Map> rels = getRelations(sdesc);
@@ -121,14 +121,14 @@ public class ClassGenServiceImpl implements ClassGenService {
 		for (int i = 0; i < entities.size(); i++) {
 			Map entMap = entities.get(i);
 			String classname = getFQN(sdesc, entMap);
-			boolean genDefFields = getBoolean(entMap.get("default_fields"),false);
-			boolean genStateFields = getBoolean(entMap.get("state_fields"),false);
-			boolean team_security = getBoolean(entMap.get("team_security"),false);
+			boolean genDefFields = getBoolean(entMap.get("default_fields"), false);
+			boolean genStateFields = getBoolean(entMap.get("state_fields"), false);
+			boolean team_security = getBoolean(entMap.get("team_security"), false);
 			if (genDefFields) {
 				CtClass ctClass = cp.get(classname);
 				List<Map> defaultFields = m_entityService.getDefaultFields();
 				makeDefaultFields(cp, ctClass, sdesc, classname, defaultFields);
-			}else if( team_security){
+			} else if (team_security) {
 				CtClass ctClass = cp.get(classname);
 				List<Map> defaultFields = m_entityService.getTeamFields();
 				makeDefaultFields(cp, ctClass, sdesc, classname, defaultFields);
@@ -150,7 +150,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 		return classnameList;
 	}
 
-	protected void makeDefaultFields(ClassPool cp, CtClass ctClass, StoreDesc sdesc, String entity,List<Map> defaultFields) throws Exception {
+	protected void makeDefaultFields(ClassPool cp, CtClass ctClass, StoreDesc sdesc, String entity, List<Map> defaultFields) throws Exception {
 		if (sdesc.isAidPack()) {
 			return;
 		}
@@ -158,15 +158,15 @@ public class ClassGenServiceImpl implements ClassGenService {
 		for (Map<String, String> field : defaultFields) {
 			String datatype = field.get("datatype");
 			if (datatype.startsWith("array")) {
-					Map<String, Object> rel = new HashMap();
-					rel.put(RELATION, "one-to-many");
-					rel.put(LEFT_ENTITY, entity);
-					rel.put(LEFT_FIELD, field.get("name"));
-					rel.put(RIGHT_ENTITY, StoreDesc.PACK_AID + ".Team");
-					rel.put("dependent", true);
-					addRelations(cp, rel, sdesc);
+				Map<String, Object> rel = new HashMap();
+				rel.put(RELATION, "one-to-many");
+				rel.put(LEFT_ENTITY, entity);
+				rel.put(LEFT_FIELD, field.get("name"));
+				rel.put(RIGHT_ENTITY, StoreDesc.PACK_AID + ".Team");
+				rel.put("dependent", true);
+				addRelations(cp, rel, sdesc);
 			} else {
-				makeField(sdesc, cp, ctClass, field.get("name"), datatype, null, null, fqn, null, true);
+				makeField(sdesc, cp, ctClass, field.get("name"), null, datatype, null, null, null, fqn, null, true, true);
 			}
 		}
 	}
@@ -217,7 +217,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 		CtClass ctClass = cp.get(leftEntity);
 		System.out.println("ctClass:" + ctClass);
 		if (ctClass == null) {
-			throw new RuntimeException("ClassGenService.addRelations:leftEntity("+leftEntity+") is null");
+			throw new RuntimeException("ClassGenService.addRelations:leftEntity(" + leftEntity + ") is null");
 		}
 		if (oneToMany || oneToManyBi || manyToMany) {
 			System.out.println("relation:" + relation + ",lm:" + leftEntity + "/" + leftField + ",rm:" + rightEntity + "/" + rightField);
@@ -228,20 +228,19 @@ public class ClassGenServiceImpl implements ClassGenService {
 			}
 			if (manyToMany) {
 				addAnnotationOne(f, "javax.jdo.annotations.Join", "column", rightField.toLowerCase() + "_id");
-				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, rightEntity, rightField,isMap));
+				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, rightEntity, rightField, isMap));
 			}
 			if (oneToManyBi || manyToMany) {
 				createRightField(cp, leftEntity, rightEntity, leftField, rightField, manyToMany);
 			}
 			if (oneToMany) {
-				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, null, null,isMap));
-				addAnnotationOne(f, "javax.jdo.annotations.Join", "column", getLeftName(leftEntity,leftField));
-				if( isMap){
+				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, null, null, isMap));
+				addAnnotationOne(f, "javax.jdo.annotations.Join", "column", getLeftName(leftEntity, leftField));
+				if (isMap) {
 					addAnnotationOne(f, "javax.jdo.annotations.Key", "a#types", "java.lang.String");
 					addAnnotationOne(f, "javax.jdo.annotations.Value", "a#types", rightEntity);
-				}else{
-					addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", 
-									rightEntity, "column", removePackageName(rightEntity).replace('.', '_').toLowerCase(),"dependent","true" );
+				} else {
+					addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", removePackageName(rightEntity).replace('.', '_').toLowerCase(), "dependent", "true");
 				}
 			} else if (manyToMany) {
 				addAnnotationTwo(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", (leftField + "_id").toLowerCase());
@@ -274,7 +273,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 		if (!many) {
 			if (ctClass == null) {
 				System.out.println("ClassGenService.createRightField:" + rightEntity + " not exists");
-				throw new RuntimeException("ClassGenService.createRightField:rightEntity("+rightEntity+") is null");
+				throw new RuntimeException("ClassGenService.createRightField:rightEntity(" + rightEntity + ") is null");
 			}
 			if (ctClass.getField(rightField) != null) {
 				// RelatedTo
@@ -303,9 +302,9 @@ public class ClassGenServiceImpl implements ClassGenService {
 		final CtClass typeClass = ctClass.getClassPool().get(typeName);
 		CtField f = new CtField(typeClass, name, ctClass);
 		f.setModifiers(AccessFlag.PRIVATE);
-		if( typeName.equals("java.util.Set")){
+		if (typeName.equals("java.util.Set")) {
 			ctClass.addField(f, CtField.Initializer.byExpr("new java.util.HashSet()"));
-		}else{
+		} else {
 			ctClass.addField(f);
 		}
 		return f;
@@ -314,7 +313,9 @@ public class ClassGenServiceImpl implements ClassGenService {
 	private void addGetterSetter(CtClass ctClass, String name, String typeName) throws Exception {
 		String setName = "set" + firstToUpper(name);
 		String getName = "get" + firstToUpper(name);
-		if( typeName.equals("[B")) typeName = "byte[]";
+		if (typeName.equals("[B")) {
+			typeName = "byte[]";
+		}
 		String setBody = "public void " + setName + " (" + typeName + " " + name + "){this." + name + "=" + name + ";}";
 		String getBody = "public " + typeName + " " + getName + "(){return " + name + ";}";
 		//System.out.println("setBody:"+setBody);
@@ -375,7 +376,6 @@ public class ClassGenServiceImpl implements ClassGenService {
 		return false;
 	}
 
-
 	private void addAnnotationOne(CtField ctField, String classname, String key, Object value) {
 		AnnotationsAttribute attr = getAnnotationsAttribute(ctField);
 		ConstPool constPool = ctField.getDeclaringClass().getClassFile().getConstPool();
@@ -398,12 +398,12 @@ public class ClassGenServiceImpl implements ClassGenService {
 		ConstPool constPool = ctField.getDeclaringClass().getClassFile().getConstPool();
 		Annotation anno = new Annotation(classname, constPool);
 		String type = getTypeFromKey(key1);
-		if (type != null){
+		if (type != null) {
 			key1 = key1.substring(2);
 		}
 		anno.addMemberValue(key1, createMemberValue(type, value1, constPool));
 		type = getTypeFromKey(key2);
-		if (type != null){
+		if (type != null) {
 			key2 = key2.substring(2);
 		}
 		anno.addMemberValue(key2, createMemberValue(type, value2, constPool));
@@ -415,19 +415,19 @@ public class ClassGenServiceImpl implements ClassGenService {
 		ConstPool constPool = ctField.getDeclaringClass().getClassFile().getConstPool();
 		Annotation anno = new Annotation(classname, constPool);
 		String type = getTypeFromKey(key1);
-		if (type != null){
+		if (type != null) {
 			key1 = key1.substring(2);
 		}
 		anno.addMemberValue(key1, createMemberValue(type, value1, constPool));
 
 		type = getTypeFromKey(key2);
-		if (type != null){
+		if (type != null) {
 			key2 = key2.substring(2);
 		}
 		anno.addMemberValue(key2, createMemberValue(type, value2, constPool));
 
 		type = getTypeFromKey(key3);
-		if (type != null){
+		if (type != null) {
 			key3 = key3.substring(2);
 		}
 		anno.addMemberValue(key3, createMemberValue(type, value3, constPool));
@@ -441,32 +441,33 @@ public class ClassGenServiceImpl implements ClassGenService {
 		Annotation anno = new Annotation(classname, constPool);
 		attr.addAnnotation(anno);
 	}
-	private void addMapAnnotation(CtField f, String key,String val){
+
+	private void addMapAnnotation(CtField f, String key, String val) {
 		addAnnotationOne(f, "javax.jdo.annotations.Key", "a#types", key);
 		addAnnotationOne(f, "javax.jdo.annotations.Value", "a#types", val);
 		addEmptyAnnotation(f, "javax.jdo.annotations.Join");
 	}
 
-	private void addElementListAnnotation(AnnotationsAttribute attr,ConstPool constPool, String type){
+	private void addElementListAnnotation(AnnotationsAttribute attr, ConstPool constPool, String type) {
 		Annotation anno = new Annotation("javax.jdo.annotations.Element", constPool);
 		anno.addMemberValue("types", createMemberValue("a", type, constPool));
 		attr.addAnnotation(anno);
 		anno = new Annotation("javax.jdo.annotations.Join", constPool);
 		attr.addAnnotation(anno);
 	}
+
 	//maybe as example
-	private void addElementColumnsAnnotation(CtField ctField, String rightEntity,String colName){
+	private void addElementColumnsAnnotation(CtField ctField, String rightEntity, String colName) {
 		AnnotationsAttribute attr = getAnnotationsAttribute(ctField);
 		ConstPool constPool = ctField.getDeclaringClass().getClassFile().getConstPool();
 		Annotation anno = new Annotation("javax.jdo.annotations.Element", constPool);
 		anno.addMemberValue("types", createMemberValue("a", rightEntity, constPool));
 
-
 		Annotation columnAnnotation = new Annotation("javax.jdo.annotations.Column", constPool);
 		MemberValue mv = new StringMemberValue(colName, constPool);
 		columnAnnotation.addMemberValue("name", mv);
 		columnAnnotation.addMemberValue("nullable", new BooleanMemberValue(false, constPool));
-		mv  = new AnnotationMemberValue(columnAnnotation, constPool);
+		mv = new AnnotationMemberValue(columnAnnotation, constPool);
 		anno.addMemberValue("columns", mv);
 		attr.addAnnotation(anno);
 	}
@@ -500,7 +501,76 @@ public class ClassGenServiceImpl implements ClassGenService {
 		return attr;
 	}
 
-	protected void makeClass(StoreDesc sdesc, ClassPool cp, List fields, String classname, boolean withAnnotation) throws Exception {
+	private List<Map> getPrimaryKeys(List<Map<String, String>> fields) {
+		List<Map> pkList = new ArrayList<Map>();
+		String idField = "id";
+		Class idClass = String.class;
+		Object idConstraint = null;
+		if (fields != null) {
+			Iterator it = fields.iterator();
+			while (it.hasNext()) {
+				Map m = (Map) it.next();
+				boolean hasPrimaryKey = getBoolean(m.get("primary_key"), false);
+				if (hasPrimaryKey) {
+					System.out.println("primary_key:" + m.get("name"));
+					idField = (String) m.get("name");
+					idClass = ("number".equals(m.get("datatype")) ? Long.class : String.class);
+					idConstraint = m.get("constraints");
+					Map pkMap = new HashMap();
+					pkMap.put("idClass", idClass);
+					pkMap.put("idField", idField);
+					pkMap.put("idConstraint", idConstraint);
+					pkList.add(pkMap);
+				}
+			}
+		}
+		if (pkList.size() == 0) {
+			Map pkMap = new HashMap();
+			pkMap.put("idClass", idClass);
+			pkMap.put("idField", idField);
+			pkMap.put("idConstraint", idConstraint);
+			pkList.add(pkMap);
+		}
+		return pkList;
+	}
+
+	private Map<String, Object> getPkMap(List<Map> pkLIst, String idField) {
+		for (Map<String, Object> m : pkLIst) {
+			String _idField = (String) m.get("idField");
+			if (_idField.equals(idField)) {
+				return m;
+			}
+		}
+		return null;
+	}
+
+	private Map<String, Object> getField(List<Map> fields, String pk) {
+		for (Map<String, Object> m : fields) {
+			String name = (String) m.get("name");
+			if (name.equals(pk)) {
+				return m;
+			}
+		}
+		return null;
+	}
+
+	private List sortFields(List<Map> fields, List<String> primaryKeys) {
+		System.out.println("fields1:" + fields);
+		List result = new ArrayList();
+		for (String pk : primaryKeys) {
+			Map field = getField(fields, pk);
+			result.add(field);
+		}
+		for (Map field : fields) {
+			if (!result.contains(field)) {
+				result.add(field);
+			}
+		}
+		System.out.println("fields2:" + result);
+		return result;
+	}
+
+	protected void makeClass(StoreDesc sdesc, ClassPool cp, List fields, String classname, Map<String, Object> entMap, boolean withAnnotation) throws Exception {
 		CtClass ctClass = cp.get(classname);
 		System.out.println("makeClass:" + ctClass + "/" + classname);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
@@ -508,49 +578,54 @@ public class ClassGenServiceImpl implements ClassGenService {
 		String appName = sdesc.getNamespace();
 		AnnotationsAttribute classAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
 		ctClass.getClassFile().addAttribute(classAttr);
+
+		fields = sortFields(fields, (List) entMap.get("primaryKeys"));
+		List<Map> pkList = getPrimaryKeys(fields);
+
 		Annotation annotation = new Annotation("javax.jdo.annotations.PersistenceCapable", constPool);
-		EnumMemberValue mv = new EnumMemberValue(constPool);
-		mv.setType("javax.jdo.annotations.IdentityType");
-		mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
-		annotation.addMemberValue("identityType", mv);
-		classAttr.addAnnotation(annotation);
-		String idField = "id";
-		Class idClass = String.class;
-		Object idConstraint = null;
-		boolean hasPrimaryKey = false;
-		if (fields != null) {
-			Iterator it = fields.iterator();
-			while (it.hasNext()) {
-				Map m = (Map) it.next();
-				if (m.get("primary_key") != null && ((Boolean) m.get("primary_key")) == true) {
-					System.out.println("primary_key:" + m.get("name"));
-					idField = (String) m.get("name");
-					hasPrimaryKey = true;
-					idClass = ("number".equals(m.get("datatype")) ? Long.class : String.class);
-					idConstraint = m.get("constraints");
-				}
-			}
+		if (pkList.size() == 1) {
+			EnumMemberValue mv = new EnumMemberValue(constPool);
+			mv.setType("javax.jdo.annotations.IdentityType");
+			mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
+			annotation.addMemberValue("identityType", mv);
+		} else {
+			annotation.addMemberValue("objectIdClass", new ClassMemberValue("ComposedIdKey.class", constPool));
 		}
-		CtField f = createField(ctClass, idField, idClass.getName());
-		AnnotationsAttribute idAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-		f.getFieldInfo().addAttribute(idAttr);
-		if (!hasPrimaryKey) {
+
+		String tableName = (String) entMap.get("tableName");
+		String schemaName = (String) entMap.get("schemaName");
+		if (tableName != null) {
+			annotation.addMemberValue("table", new StringMemberValue(tableName, constPool));
+		}
+		if (schemaName != null) {
+			annotation.addMemberValue("schema", new StringMemberValue(schemaName, constPool));
+		}
+
+		classAttr.addAnnotation(annotation);
+		Map<String, Object> pkMap = pkList.get(0);
+		Object idConstraint = pkMap.get("idConstraint");
+		String idField = (String) pkMap.get("idField");
+		Class idClass = (Class) pkMap.get("idClass");
+		if (pkList.size() == 1) {
+			CtField f = createField(ctClass, idField, idClass.getName());
+			AnnotationsAttribute idAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+			f.getFieldInfo().addAttribute(idAttr);
 			annotation = new Annotation("javax.jdo.annotations.Persistent", constPool);
 			EnumMemberValue emv = new EnumMemberValue(constPool);
 			emv.setType("javax.jdo.annotations.IdGeneratorStrategy");
 			emv.setValue(javax.jdo.annotations.IdGeneratorStrategy.UUIDHEX.toString());
 			annotation.addMemberValue("valueStrategy", emv);
 			idAttr.addAnnotation(annotation);
-		}
-		annotation = new Annotation("javax.jdo.annotations.PrimaryKey", constPool);
-		idAttr.addAnnotation(annotation);
-		if (idConstraint != null) {
-			if (idConstraint instanceof String) {
-				idConstraint = JSONArray.fromObject((String) idConstraint);
+			annotation = new Annotation("javax.jdo.annotations.PrimaryKey", constPool);
+			idAttr.addAnnotation(annotation);
+			if (idConstraint != null) {
+				if (idConstraint instanceof String) {
+					idConstraint = JSONArray.fromObject((String) idConstraint);
+				}
+				generateConstraints(f, (List) idConstraint);
 			}
-			generateConstraints(f, (List) idConstraint);
+			addGetterSetter(ctClass, idField, idClass.getName());
 		}
-		addGetterSetter(ctClass, idField, idClass.getName());
 		if (fields == null) {
 			return;
 		}
@@ -566,7 +641,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 			val[1] = (String) m.get("datatype");
 			String edittype = (String) m.get("edittype");
 			String defaultValue = (m.get("default_value") != null) ? (m.get("default_value") + "") : null;
-			if (val[0].equals(idField)) {
+			if (pkList.size() == 1 && val[0].equals(idField)) {
 				continue;
 			}
 			if (val[1].startsWith("object") || val[1].startsWith("related")) {
@@ -583,7 +658,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 				System.out.println("\tdatatype2:" + datatype);
 				System.out.println("\tdatatype2.relatedToField:" + relatedToField);
 				String fieldName = relatedToField != null ? relatedToField : val[0];
-				f = createField(ctClass, fieldName, datatype);
+				CtField f = createField(ctClass, fieldName, datatype);
 				AnnotationsAttribute fieldAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
 				f.getFieldInfo().addAttribute(fieldAttr);
 				if (val[1].startsWith("related")) {
@@ -603,12 +678,18 @@ public class ClassGenServiceImpl implements ClassGenService {
 				if ("decimalnumber".equals(val[0])) {
 					System.out.println("m:" + m);
 				}
-				makeField(sdesc, cp, ctClass, val[0], val[1], edittype, defaultValue, classname, m.get("constraints"), withAnnotation);
+				boolean withIndex = getBoolean(m.get("index"), true);
+				AnnotationsAttribute fieldAttr = makeField(sdesc, cp, ctClass, val[0], (String) m.get("columnName"), val[1], edittype, (String) m.get("sqltype"), defaultValue, classname, m.get("constraints"), withAnnotation, withIndex);
+				Map _pkMap = getPkMap(pkList, val[0]);
+				if (_pkMap != null) {
+					annotation = new Annotation("javax.jdo.annotations.PrimaryKey", constPool);
+					fieldAttr.addAnnotation(annotation);
+				}
 			}
 		}
 	}
 
-	private void makeField(StoreDesc sdesc, ClassPool cp, CtClass ctClass, String name, String datatype, String edittype, String defaultValue, String classname, Object co, boolean withAnnotation) throws Exception {
+	private AnnotationsAttribute makeField(StoreDesc sdesc, ClassPool cp, CtClass ctClass, String name, String columnName, String datatype, String edittype, String sqltype, String defaultValue, String classname, Object co, boolean withAnnotation, boolean withIndex) throws Exception {
 		name = firstToLower(name);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
 		Class type = getClass(datatype);
@@ -624,6 +705,14 @@ public class ClassGenServiceImpl implements ClassGenService {
 				Annotation columnAnnotation = new Annotation("javax.jdo.annotations.Column", constPool);
 				MemberValue mv = new StringMemberValue("VARCHAR", constPool);
 				columnAnnotation.addMemberValue("jdbcType", mv);
+
+				if (columnName != null) {
+					columnAnnotation.addMemberValue("name", new StringMemberValue(columnName, constPool));
+				}
+				if (sqltype != null) {
+					columnAnnotation.addMemberValue("sqltype", new StringMemberValue(sqltype, constPool));
+				}
+
 				mv = new IntegerMemberValue(constPool, len);
 				columnAnnotation.addMemberValue("length", mv);
 				if (defaultValue != null) {
@@ -687,9 +776,21 @@ public class ClassGenServiceImpl implements ClassGenService {
 				ann.addMemberValue("defaultFetchGroup", new StringMemberValue("false", constPool));
 				fieldAttr.addAnnotation(ann);
 			} else {
+				boolean used = false;
+				Annotation columnAnnotation = new Annotation("javax.jdo.annotations.Column", constPool);
 				if (defaultValue != null) {
-					Annotation columnAnnotation = new Annotation("javax.jdo.annotations.Column", constPool);
 					columnAnnotation.addMemberValue("defaultValue", new StringMemberValue(defaultValue, constPool));
+					used = true;
+				}
+				if (columnName != null) {
+					columnAnnotation.addMemberValue("name", new StringMemberValue(columnName, constPool));
+					used = true;
+				}
+				if (sqltype != null) {
+					columnAnnotation.addMemberValue("sqltype", new StringMemberValue(sqltype, constPool));
+					used = true;
+				}
+				if (used) {
 					fieldAttr.addAnnotation(columnAnnotation);
 				}
 			}
@@ -706,16 +807,19 @@ public class ClassGenServiceImpl implements ClassGenService {
 				}
 			}
 			if (!datatype.equals("binary") && !datatype.equals("fulltext") && !isGraphical && !datatype.startsWith("map_") && !datatype.startsWith("list_")) {
-				Annotation ann = new Annotation("javax.jdo.annotations.Index", constPool);
-				ann.addMemberValue("name", new StringMemberValue("index_" + classname.replaceAll("\\.", "_").toLowerCase() + "_" + name, constPool));
-				fieldAttr.addAnnotation(ann);
+				if (withIndex) {
+					Annotation ann = new Annotation("javax.jdo.annotations.Index", constPool);
+					ann.addMemberValue("name", new StringMemberValue("index_" + classname.replaceAll("\\.", "_").toLowerCase() + "_" + name, constPool));
+					fieldAttr.addAnnotation(ann);
+				}
 			}
 		}
 		addGetterSetter(ctClass, name, type.getName());
+		return fieldAttr;
 	}
 
 	protected void generateConstraints(CtField f, List<Map> constraints) {
-			System.out.println("generateConstraints:"+f+"/"+constraints);
+		System.out.println("generateConstraints:" + f + "/" + constraints);
 		if (constraints == null) {
 			return;
 		}
@@ -729,7 +833,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 			if (cl.size() == 0) {
 				break;
 			}
-			System.out.println("cl:"+cl);
+			System.out.println("cl:" + cl);
 			if (cl.size() == 1) {
 				Map<String, Object> c = cl.get(0);
 				String a = (String) c.get("annotation");
@@ -745,22 +849,22 @@ public class ClassGenServiceImpl implements ClassGenService {
 				Annotation anno = new Annotation(annoClass.getName(), constPool);
 				for (String key : pmap.keySet()) {
 					if (pmap.get(key) instanceof Integer) {
-						anno.addMemberValue(key,new IntegerMemberValue(constPool, (Integer) pmap.get(key)) );
+						anno.addMemberValue(key, new IntegerMemberValue(constPool, (Integer) pmap.get(key)));
 					}
 					if (pmap.get(key) instanceof Long) {
-						anno.addMemberValue(key,new LongMemberValue((Long) pmap.get(key),constPool) );
+						anno.addMemberValue(key, new LongMemberValue((Long) pmap.get(key), constPool));
 					}
 					if (pmap.get(key) instanceof Double) {
-						anno.addMemberValue(key,new DoubleMemberValue((Double) pmap.get(key),constPool ));
+						anno.addMemberValue(key, new DoubleMemberValue((Double) pmap.get(key), constPool));
 					}
 					if (pmap.get(key) instanceof String) {
-						anno.addMemberValue(key,new StringMemberValue((String) pmap.get(key),constPool ));
+						anno.addMemberValue(key, new StringMemberValue((String) pmap.get(key), constPool));
 					}
 					if (pmap.get(key) instanceof Pattern.Flag) {
-						EnumMemberValue e = new EnumMemberValue(constPool );
+						EnumMemberValue e = new EnumMemberValue(constPool);
 						e.setType("javax.validation.constraints.Pattern.Flag");
-						e.setValue((String)pmap.get(key));
-						anno.addMemberValue(key,e);
+						e.setValue((String) pmap.get(key));
+						anno.addMemberValue(key, e);
 					}
 				}
 				attr.addAnnotation(anno);
@@ -776,39 +880,40 @@ public class ClassGenServiceImpl implements ClassGenService {
 					Object p2 = (c.get("parameter2") instanceof JSONNull) ? null : c.get("parameter2");
 					String msg = (c.get("message") instanceof JSONNull) ? null : (String) c.get("message");
 					Map<String, Object> pmap = parseParameter(p1, p2, msg, params);
-					Annotation anno = new Annotation(((Class)params[0]).getName(), constPool);
+					Annotation anno = new Annotation(((Class) params[0]).getName(), constPool);
 					aList.add(anno);
 					for (String key : pmap.keySet()) {
 						if (pmap.get(key) instanceof Integer) {
-							anno.addMemberValue(key,new IntegerMemberValue(constPool, (Integer) pmap.get(key)) );
+							anno.addMemberValue(key, new IntegerMemberValue(constPool, (Integer) pmap.get(key)));
 						}
 						if (pmap.get(key) instanceof Double) {
-							anno.addMemberValue(key,new DoubleMemberValue((Double) pmap.get(key),constPool ));
+							anno.addMemberValue(key, new DoubleMemberValue((Double) pmap.get(key), constPool));
 						}
 						if (pmap.get(key) instanceof String) {
-							anno.addMemberValue(key,new StringMemberValue((String) pmap.get(key),constPool ));
+							anno.addMemberValue(key, new StringMemberValue((String) pmap.get(key), constPool));
 						}
 						if (pmap.get(key) instanceof Pattern.Flag) {
-							EnumMemberValue e = new EnumMemberValue(constPool );
+							EnumMemberValue e = new EnumMemberValue(constPool);
 							e.setType("javax.validation.constraints.Pattern.Flag");
-							e.setValue((String)pmap.get(key));
-							anno.addMemberValue(key,e);
+							e.setValue((String) pmap.get(key));
+							anno.addMemberValue(key, e);
 						}
 					}
 				}
 				MemberValue[] aarray = new AnnotationMemberValue[aList.size()];
-				int i=0;
-				for(Annotation ae : aList){
-					aarray[i++] = new AnnotationMemberValue(ae,constPool);
+				int i = 0;
+				for (Annotation ae : aList) {
+					aarray[i++] = new AnnotationMemberValue(ae, constPool);
 				}
 				ArrayMemberValue amv = new ArrayMemberValue(constPool);
 				amv.setValue(aarray);
-				xanno.addMemberValue("value",amv);
+				xanno.addMemberValue("value", amv);
 				attr.addAnnotation(xanno);
 
 			}
 		}
 	}
+
 	protected List<Map> getNextConstraint(List<Map> constraints, Map<String, Boolean> processed) {
 		List<Map> ret = new ArrayList();
 		for (Map<String, String> constraint : constraints) {
@@ -851,7 +956,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 						paramMap.put(param, value);
 					}
 				} else {
-					if( param!=null&& param.length()>0){
+					if (param != null && param.length() > 0) {
 						paramMap.put(param, val);
 					}
 				}
@@ -1018,24 +1123,25 @@ public class ClassGenServiceImpl implements ClassGenService {
 		return sdesc.getJavaPackage() + "." + className;
 	}
 
-	private String getJoinTableName(String leftEntity, String leftField, String rightEntity, String rightField,boolean isMap) {
+	private String getJoinTableName(String leftEntity, String leftField, String rightEntity, String rightField, boolean isMap) {
 		String ret = removePackageName(leftEntity);
 		if (leftField != null) {
 			ret += "_" + leftField;
 		}
-		if( rightEntity != null){
+		if (rightEntity != null) {
 			ret += "_" + removePackageName(rightEntity);
 			if (rightField != null) {
 				ret += "_" + rightField;
 			}
 		}
-		if( isMap ){
+		if (isMap) {
 			ret = ret.replaceAll("_list", "_map");
 		}
 		return ret.toLowerCase();
 	}
+
 	private String getLeftName(String leftEntity, String leftField) {
-		String ret= removePackageName(leftEntity).toLowerCase();
+		String ret = removePackageName(leftEntity).toLowerCase();
 		if (leftField != null && !leftField.toLowerCase().equals(ret)) {
 			ret += "_" + leftField;
 		}
@@ -1043,6 +1149,8 @@ public class ClassGenServiceImpl implements ClassGenService {
 	}
 
 	private boolean getBoolean(Object o, boolean def) {
+		if (o == null)
+			return def;
 		try {
 			boolean b = (Boolean) o;
 			return b;
@@ -1058,3 +1166,4 @@ public class ClassGenServiceImpl implements ClassGenService {
 	}
 
 }
+

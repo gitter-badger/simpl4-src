@@ -47,6 +47,7 @@ import org.ms123.common.system.compile.CompileService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.ms123.common.entity.api.EntityService;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -159,11 +160,14 @@ public class JooqServiceImpl implements JooqService {
 			DataSource ds = (DataSource) getService(javax.sql.DataSource.class, vendor);
 			System.out.println("generate.call:" + ds);
 			GenerationTool gt = new GenerationTool();
-			gt.setConnection(conn = ds.getConnection());
-			gt.run(config);
-			File parent = new File(basedir, "gen/" + packageDir).getParentFile();
-			moveDirectoryToDirectory(tdir, parent, true);
-			compileMetadata(toWorkspace, sdesc.getNamespace());
+			synchronized ( gt ){
+				org.ms123.common.system.jooq.Simpl4Generator.setNamespace( namespace );
+				gt.setConnection(conn = ds.getConnection());
+				gt.run(config);
+				File parent = new File(basedir, "gen/" + packageDir).getParentFile();
+				moveDirectoryToDirectory(tdir, parent, true);
+				compileMetadata(toWorkspace, sdesc.getNamespace());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "JooqServiceImpl.buildMetadata:", e);
@@ -183,6 +187,11 @@ public class JooqServiceImpl implements JooqService {
 	public void setPermissionService(PermissionService shiroService) {
 		System.out.println("JooqServiceImpl:" + shiroService);
 		this.m_permissionService = shiroService;
+	}
+	@Reference(dynamic = true)
+	public void setEntityService(EntityService paramEntityService) {
+		org.ms123.common.system.jooq.Simpl4Generator.setEntityService( paramEntityService);
+		System.out.println("JooqServiceImpl.setEntityService:" + paramEntityService);
 	}
 
 	@Reference(dynamic = true, optional = true)

@@ -771,7 +771,7 @@ qx.Class.define('ms123.widgets.Table', {
 					this._showDetails(e);
 				};
 
-				var p = this._buildGetRpcParams(map[this._keyColumn]);
+				var p = this._buildGetRpcParams(map);
 				p.storeDesc = this.__storeDesc, p.async = false;
 				p.failed = failed;
 				p.completed = completed;
@@ -899,7 +899,8 @@ qx.Class.define('ms123.widgets.Table', {
 			console.log("BuildUrl:" + url);
 			return url;
 		},
-		_buildGetRpcParams: function (key) {
+		_buildGetRpcParams: function (map) {
+			var key = map[this._keyColumn];
 			var params = {};
 			if (this._props.path) {
 				var path = this._props.path + "/" + key;
@@ -916,7 +917,17 @@ qx.Class.define('ms123.widgets.Table', {
 			} else {
 				params.entity = this._context.config;
 			}
-			params.id = key + "";
+			if( this._context.primaryKeys ){
+				var id ='', colon='';
+				for( var i=0; i< this._context.primaryKeys.length;i++){
+					var pk = this._context.primaryKeys[i];
+					id = id + colon + map[pk];
+					colon=':';
+				}
+				params.id = id;
+			}else{
+				params.id = key + "";
+			}
 			params.namespace = this.__storeDesc.getNamespace();
 			params.pack = this.__storeDesc.getPack();
 			params.storeId = this.__storeDesc.getStoreId();
@@ -1130,7 +1141,7 @@ qx.Class.define('ms123.widgets.Table', {
 				this._showDetails(e);
 			};
 
-			var p = this._buildGetRpcParams(map[this._keyColumn]);
+			var p = this._buildGetRpcParams(map);
 			p.storeDesc = this.__storeDesc, p.async = false;
 			p.failed = failed;
 			p.completed = completed;
@@ -1272,7 +1283,17 @@ qx.Class.define('ms123.widgets.Table', {
 					if (!copy && self._currentIndex > -1) { //Edit
 						ms123.util.Clone.merge(map, self._currentRowData, m);
 						self.tableModel.setRowsAsMapArray([map], self._currentIndex, true);
-						id = map[self._keyColumn] + "";
+						if( self._context.primaryKeys ){
+							id =''; 
+							var colon='';
+							for( var i=0; i< self._context.primaryKeys.length;i++){
+								var pk = self._context.primaryKeys[i];
+								id = id + colon + map[pk];
+								colon=':';
+							}
+						}else{
+							id = map[self._keyColumn] + "";
+						}
 						method = "update";
 						url = url + '/' + id;
 					} else { //Add

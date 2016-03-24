@@ -233,6 +233,7 @@ qx.Class.define("ms123.Crud", {
 						widget.disable = ["import", "export"];
 					}
 					widget.storeDesc = mwidget.storeDesc;
+					widget.primaryKeys = mwidget.primaryKeys;
 
 					if (widget.config != "team") widget.contextmenu = self._contextMenuHandlerDetails;
 					widget.component = new ms123.widgets.Table(widget);

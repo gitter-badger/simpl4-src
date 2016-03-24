@@ -174,6 +174,7 @@ qx.Class.define("ms123.MainMenu", {
 			mwidget.not_in_menu = (_module.not_in_menu != null && _module.not_in_menu == true);
 			mwidget.teams_in_subpanel = (_module.teams_in_subpanel != null && _module.teams_in_subpanel == true);
 			mwidget.preFilter = _module.filter;
+			mwidget.primaryKeys = _module.primaryKeys;
 			widgetList.push(mwidget);
 
 			if (_module.childs != null) {
