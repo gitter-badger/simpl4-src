@@ -49,8 +49,8 @@ qx.Class.define("ms123.shell.views.Editor", {
 			widget = this._handleStencil(model);
 		}else if( model.getType() == ms123.shell.Config.DATAMAPPER_FT ){
 			widget = this._handleDatamapper(model);
-		}else if( model.getType() == ms123.shell.Config.WEBPAGE_FT ){
-			widget = this._handleWebpage(model);
+		}else if( model.getType() == ms123.shell.Config.DATASOURCE_FT ){
+			widget = this._handleDatasource(model);
 		}else if( model.getType() == ms123.shell.Config.GROOVY_FT ){
 			widget = this._handleGroovy(model);
 		}else if( model.getType() == ms123.shell.Config.JAVA_FT ){
@@ -156,23 +156,6 @@ qx.Class.define("ms123.shell.views.Editor", {
 			}, this);
 			return ge;
 		},
-		_handleWebpage:function(model){
-			var type = model.getType();
-			var config = {};
-			config.storeDesc = this.facade.storeDesc;
-			config.facade = this.facade;
-			config.helper = "DocumentMarkdown";
-			config.toolbarAddon = "WikiMarkdown";
-			config.mode="text/tiki";
-			var content = this._getContent(model.getPath());
-			var ge = new ms123.shell.views.TextEditor(config,content);
-			this._realEditor = ge;
-			ge.addListener("save", function(e){
-				var content = e.getData();
-				this._saveContent( model, type.substring(3), content);
-			}, this);
-			return ge;
-		},
 		_handleRule:function(model){
 			var context = {};
 			context.storeDesc = this.facade.storeDesc;
@@ -196,6 +179,20 @@ qx.Class.define("ms123.shell.views.Editor", {
 			re.addListener("save", function(e){
 				var data = e.getData();
 				this._saveContent( model, "datamapper", data);
+			}, this);
+			var content = this._getContent(model.getPath());
+			re.init(content);
+			return re;
+		},
+		_handleDatasource:function(model){
+			var context = {};
+			context.storeDesc = this.facade.storeDesc;
+			context.name = model.getValue();
+			var re = new ms123.datasource.Datasource(context);
+			this._realEditor = re;
+			re.addListener("save", function(e){
+				var data = e.getData();
+				this._saveContent( model, "datasource", data);
 			}, this);
 			var content = this._getContent(model.getPath());
 			re.init(content);

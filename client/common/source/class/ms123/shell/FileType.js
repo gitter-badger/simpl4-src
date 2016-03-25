@@ -43,10 +43,6 @@ qx.Class.define("ms123.shell.FileType", {
 			} else {
 				if (type == ms123.shell.Config.PROCESS_FT) {
 					return "icon/22/actions/system-run.png";
-				}else if (type == ms123.shell.Config.WEBSITE_FT) {
-					return "icon/22/categories/internet.png";
-				}else if (type == ms123.shell.Config.WEBPAGE_FT) {
-					return "resource/ms123/webpage.png";
 				}else if (type == ms123.shell.Config.CAMEL_FT) {
 					return "resource/ms123/camel.png";
 				}else if (type == ms123.shell.Config.STENCIL_FT) {
@@ -57,6 +53,8 @@ qx.Class.define("ms123.shell.FileType", {
 					return "resource/ms123/java.png";
 				}else if (type == ms123.shell.Config.DATAMAPPER_FT) {
 					return "resource/ms123/datamapper.png";
+				}else if (type == ms123.shell.Config.DATASOURCE_FT) {
+					return "resource/ms123/datasource.png";
 				}else if (type == "image/svg+xml") {
 					return "resource/ms123/svg.png";
 				}else if (type == "image/png") {
@@ -82,10 +80,10 @@ qx.Class.define("ms123.shell.FileType", {
 			return "resource/ms123/file.png";
 		},
 		getAllEditables:function(){
-				return  ["sw.rule","sw.process","sw.filter", "sw.form", "sw.website", "sw.webpage", "sw.camel", "sw.stencil", "sw.groovy", "sw.java", "sw.datamapper", "sw.document"];
+				return  ["sw.rule","sw.process","sw.filter", "sw.form", "sw.camel", "sw.groovy", "sw.java", "sw.datamapper", "sw.datasource", "sw.document"];
 		},
 		getAllJsonEditables:function(){
-				return  ["sw.rule","sw.process","sw.filter", "sw.form","sw.website", "sw.camel",  "sw.stencil", "sw.datamapper", "sw.document"];
+				return  ["sw.rule","sw.process","sw.filter", "sw.form","sw.camel",  "sw.datamapper", "sw.document"];
 		},
 
 		getAllTextEditables:function(){
@@ -112,13 +110,12 @@ qx.Class.define("ms123.shell.FileType", {
 			iconMap["application/json"]= "resource/ms123/json.png";
 			iconMap["application/vnd.oasis.opendocument.text"]= "resource/ms123/odt.png";
 			iconMap[ms123.shell.Config.PROCESS_FT]= "icon/16/actions/system-run.png";
-			iconMap[ms123.shell.Config.WEBSITE_FT]= "icon/16/categories/internet.png";
-			iconMap[ms123.shell.Config.WEBPAGE_FT]= "resource/ms123/webpage.png";
 			iconMap[ms123.shell.Config.CAMEL_FT]= "resource/ms123/camel.png";
 			iconMap[ms123.shell.Config.STENCIL_FT]= "resource/ms123/stencil.png";
 			iconMap[ms123.shell.Config.GROOVY_FT]= "resource/ms123/groovy.png";
 			iconMap[ms123.shell.Config.JAVA_FT]= "resource/ms123/java.png";
 			iconMap[ms123.shell.Config.DATAMAPPER_FT]= "resource/ms123/datamapper.png";
+			iconMap[ms123.shell.Config.DATASOURCE_FT]= "resource/ms123/datasource.png";
 			iconMap[ms123.shell.Config.RULE_FT] = ms123.shell.FileType._getIconUrl("bpmn/activity/list/type.business.rule.png");
 			iconMap[ms123.shell.Config.FORM_FT] = ms123.shell.FileType._getIconUrl("bpmn/activity/list/type.user.png");
 			iconMap[ms123.shell.Config.DOCUMENT_FT] = ms123.shell.FileType._getIconUrl("bpmn/activity/list/type.document.png");
@@ -140,8 +137,7 @@ qx.Class.define("ms123.shell.FileType", {
 				{ label: qx.locale.Manager.tr("Java/Bean"),   value: ms123.shell.Config.JAVA_FT+"/Bean"},
 				{ label: qx.locale.Manager.tr("Java/Processor"),   value: ms123.shell.Config.JAVA_FT+"/Processor"},
 				{ label: qx.locale.Manager.tr("shell.nt_datamapper"),   value: ms123.shell.Config.DATAMAPPER_FT},
-				{ label: qx.locale.Manager.tr("shell.nt_website"),   value: ms123.shell.Config.WEBSITE_FT},
-				{ label: qx.locale.Manager.tr("shell.nt_webpage"),   value: ms123.shell.Config.WEBPAGE_FT},
+				{ label: qx.locale.Manager.tr("shell.nt_datasource"),   value: ms123.shell.Config.DATASOURCE_FT},
 				{ label: qx.locale.Manager.tr("shell.nt_filter"),   value: ms123.shell.Config.FILTER_FT},
 				{ label: "Text",   value: "text/plain"}
 			]

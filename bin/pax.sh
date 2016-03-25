@@ -404,7 +404,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/rxjava-1.0.9.jar \
 	scan-bundle:file:$REPOSITORY/snakeyaml-1.13.bar \
 	scan-bundle:file:$REPOSITORY/asciidoctorj-1.5.2.bar \
-	scan-bundle:file:$REPOSITORY/schemacrawler-14.01.01.jar \
+	scan-bundle:file:$REPOSITORY/schemacrawler-14.07.05.jar \
 	scan-bundle:file:$REPOSITORY/management-api-1.1.bar \
 	scan-bundle:file:$REPOSITORY/asciidoctorj-groovy-dsl.bar \
 	scan-bundle:file:$REPOSITORY/EasyFlow-1.3.2.bar \

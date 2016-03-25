@@ -16,50 +16,52 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.system.jooq;
+package org.ms123.common.system.dbmeta;
 
+import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.jooq.util.ColumnDefinition;
+import org.jooq.util.Database;
+import org.jooq.util.GeneratorStrategy.Mode;
+import org.jooq.util.JavaGenerator;
+import org.jooq.util.JavaWriter;
+import org.jooq.util.SchemaDefinition;
+import org.jooq.util.TableDefinition;
+import org.jooq.util.TypedElementDefinition;
+import org.ms123.common.entity.api.EntityService;
+import org.ms123.common.libhelper.Inflector;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.system.compile.CompileService;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
-import org.jooq.util.SchemaDefinition;
-import org.jooq.util.TableDefinition;
-import org.jooq.util.JavaGenerator;
-import org.jooq.util.Database;
-import org.jooq.util.JavaWriter;
-import org.jooq.util.ColumnDefinition;
-import org.jooq.util.TypedElementDefinition;
-import org.jooq.util.GeneratorStrategy.Mode;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import org.ms123.common.libhelper.Inflector;
-import org.ms123.common.entity.api.EntityService;
-import flexjson.JSONDeserializer;
-import flexjson.JSONSerializer;
 
+import schemacrawler.schema.*;
+import schemacrawler.schemacrawler.*;
+import schemacrawler.utility.*;
 /**
+ *
  */
-public class Simpl4Generator extends JavaGenerator {
+@SuppressWarnings("unchecked")
+abstract class BaseDbMetaServiceImpl implements DbMetaService {
+
 	protected Inflector m_inflector = Inflector.getInstance();
 	protected JSONSerializer m_js = new JSONSerializer();
 	private static EntityService entityService;
 	private static String namespace;
-
-	public static void setEntityService(EntityService e) {
-		entityService = e;
-	}
-	public static void setNamespace(String ns) {
-		namespace = ns;
-	}
+	protected CompileService m_compileService;
+	protected PermissionService m_permissionService;
+	protected EntityService m_entityService;
 
 	protected void generateRelations(SchemaDefinition schema) {
-		super.generateRelations(schema);
 		System.out.println("generateRelations:" + schema.getName() + "/" + schema.getQualifiedName() + "/" + schema.getDatabase());
 	}
 
 	protected void generatePojos(SchemaDefinition schema) {
-		super.generatePojos(schema);
 		Database database = schema.getDatabase();
 		List<TableDefinition> tableDefinitions = database.getTables(schema);
 		System.out.println("generatePojos:" + schema);
@@ -68,15 +70,16 @@ public class Simpl4Generator extends JavaGenerator {
 	}
 
 	protected void generatePojo(TableDefinition table, JavaWriter out) {
-		super.generatePojo(table, out);
-		String className = getStrategy().getJavaClassName(table, Mode.POJO);
+		String className = null;//getStrategy().getJavaClassName(table, Mode.POJO);
 
 		System.out.println("Table:" + table);
-		System.out.println("Tablecolumns:" + table.getPrimaryKey().getKeyColumns());
-		System.out.println("Table.foreign:" + table.getPrimaryKey().getForeignKeys());
 		List<String> pkList = new ArrayList<String>();
-		for (ColumnDefinition cd : table.getPrimaryKey().getKeyColumns()) {
-			pkList.add(getJavaName(cd));
+		if( table.getPrimaryKey() != null ){
+			System.out.println("Table.primary:" + table.getPrimaryKey().getKeyColumns());
+			System.out.println("Table.foreign:" + table.getPrimaryKey().getForeignKeys());
+			for (ColumnDefinition cd : table.getPrimaryKey().getKeyColumns()) {
+				pkList.add(getJavaName(cd));
+			}
 		}
 		className = getClassName(className);
 		String entityName = m_inflector.getEntityName(className);
@@ -91,7 +94,7 @@ public class Simpl4Generator extends JavaGenerator {
 		entityMap.put("fields", fieldsMap);
 		for (TypedElementDefinition<?> column : table.getColumns()) {
 			if (column instanceof ColumnDefinition) {
-				String columnType = getJavaType(column.getType(), Mode.POJO);
+				String columnType = null;//getJavaType(column.getType(), Mode.POJO);
 				String name = getJavaName((ColumnDefinition)column);
 				Map<String, Object> fieldMap = new HashMap<String, Object>();
 				fieldMap.put("name", name);
@@ -116,7 +119,7 @@ public class Simpl4Generator extends JavaGenerator {
 	}
 
 	private String getJavaName(ColumnDefinition column){
-		String columnMember = getStrategy().getJavaMemberName(column, Mode.POJO);
+		String columnMember = null;//getStrategy().getJavaMemberName(column, Mode.POJO);
 		return m_inflector.lowerCamelCase(columnMember, ' ', '_', '-').replaceAll("_", "");
 	}
 	private String getType(String in) {

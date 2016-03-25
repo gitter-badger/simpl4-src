@@ -16,27 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.system.jooq;
+package org.ms123.common.system.dbmeta;
 
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
 import java.io.*;
+import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Collection;
 import java.util.Set;
 import javax.sql.DataSource;
-import java.sql.Connection;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jooq.util.GenerationTool;
 import org.jooq.util.jaxb.Configuration;
 import org.jooq.util.jaxb.Generator;
 import org.jooq.util.jaxb.Target;
+import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PName;
@@ -47,7 +48,6 @@ import org.ms123.common.system.compile.CompileService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.ms123.common.entity.api.EntityService;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -57,23 +57,19 @@ import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 
-/** JooqServiceImpl implementation
+/** DbMetaServiceImpl implementation
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=jooq" })
-public class JooqServiceImpl implements JooqService {
+public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaService {
 
 	protected BundleContext m_bc;
-
-	protected CompileService m_compileService;
-
-	private PermissionService m_permissionService;
 
 	private static String workspace = System.getProperty("workspace");
 	private static String gitRepos = System.getProperty("git.repos");
 
-	public JooqServiceImpl() {
-		System.out.println("JooqServiceImpl construct");
+	public DbMetaServiceImpl() {
+		System.out.println("DbMetaServiceImpl construct");
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
@@ -88,7 +84,7 @@ public class JooqServiceImpl implements JooqService {
 	}
 
 	protected void deactivate() throws Exception {
-		System.out.println("JooqServiceImpl.deactivate");
+		System.out.println("DbMetaServiceImpl.deactivate");
 	}
 
 	private void compileMetadata(Boolean toWorkspace, String namespace) throws Exception {
@@ -118,7 +114,25 @@ public class JooqServiceImpl implements JooqService {
 
 	/*BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")
-	public void buildMetadata(@PName(StoreDesc.STORE_ID) String storeId,
+	public void createDatasource(@PName(StoreDesc.STORE_ID) String storeId,
+													  @PName("config") @POptional Map config,
+				) throws RpcException {
+		try {
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DbMetaServiceImpl.createDatasource:", e);
+		} finally {
+			/*try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (Exception ee) {
+				ee.printStackTrace();
+			}*/
+		}
+	}
+	@RequiresRoles("admin")
+	public void buildJooqMetadata(@PName(StoreDesc.STORE_ID) String storeId,
 													  @PName("configFile") @POptional String configFile,
 													  @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
 		Connection conn = null;
@@ -136,7 +150,7 @@ public class JooqServiceImpl implements JooqService {
 				f = new File(gitRepos, sdesc.getNamespace() + "/.etc/jooqConfig.xml");
 			}
 			if (!f.exists()) {
-				throw new RuntimeException("JooqServiceImpl.readMetadata:(" + f + ") not exists.");
+				throw new RuntimeException("DbMetaServiceImpl.readMetadata:(" + f + ") not exists.");
 			}
 
 			Configuration config = GenerationTool.load(new FileInputStream(f));
@@ -161,7 +175,6 @@ public class JooqServiceImpl implements JooqService {
 			System.out.println("generate.call:" + ds);
 			GenerationTool gt = new GenerationTool();
 			synchronized ( gt ){
-				org.ms123.common.system.jooq.Simpl4Generator.setNamespace( namespace );
 				gt.setConnection(conn = ds.getConnection());
 				gt.run(config);
 				File parent = new File(basedir, "gen/" + packageDir).getParentFile();
@@ -170,7 +183,7 @@ public class JooqServiceImpl implements JooqService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "JooqServiceImpl.buildMetadata:", e);
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DbMetaServiceImpl.buildJooqMetadata:", e);
 		} finally {
 			try {
 				if (conn != null) {
@@ -185,19 +198,19 @@ public class JooqServiceImpl implements JooqService {
 	/*END JSON-RPC-API*/
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService shiroService) {
-		System.out.println("JooqServiceImpl:" + shiroService);
+		System.out.println("DbMetaServiceImpl:" + shiroService);
 		this.m_permissionService = shiroService;
 	}
 	@Reference(dynamic = true)
 	public void setEntityService(EntityService paramEntityService) {
-		org.ms123.common.system.jooq.Simpl4Generator.setEntityService( paramEntityService);
-		System.out.println("JooqServiceImpl.setEntityService:" + paramEntityService);
+		System.out.println("DbMetaServiceImpl.setEntityService:" + paramEntityService);
+		this.m_entityService = paramEntityService;
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setCompileService(CompileService paramService) {
 		this.m_compileService = paramService;
-		System.out.println("JooqServiceImpl.setCompileService:" + paramService);
+		System.out.println("DbMetaServiceImpl.setCompileService:" + paramService);
 	}
 }
 

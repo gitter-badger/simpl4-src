@@ -84,13 +84,12 @@ qx.Class.define("ms123.shell.Config", {
 		FORM_FT: "sw.form",
 		FILTER_FT: "sw.filter",
 		FILE_FT: "sw.file",
-		WEBSITE_FT: "sw.website",
-		WEBPAGE_FT: "sw.webpage",
 		CAMEL_FT: "sw.camel",
 		STENCIL_FT: "sw.stencil",
 		GROOVY_FT: "sw.groovy",
 		JAVA_FT: "sw.java",
 		DATAMAPPER_FT: "sw.datamapper",
+		DATASOURCE_FT: "sw.datasource",
 		DOCUMENT_FT: "sw.document"
 
 	}

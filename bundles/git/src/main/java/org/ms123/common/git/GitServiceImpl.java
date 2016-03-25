@@ -113,8 +113,6 @@ public class GitServiceImpl implements GitService {
 			add("sw.process");
 			add("sw.filter");
 			add("sw.form");
-			add("sw.website");
-			add("sw.webpage");
 			add("sw.camel");
 			add("sw.stencil");
 			add("sw.datamapper");
@@ -123,6 +121,7 @@ public class GitServiceImpl implements GitService {
 			add("sw.relations");
 			add("sw.enum");
 			add("sw.messageslang");
+			add("sw.datasource");
 		}
 	};
 
