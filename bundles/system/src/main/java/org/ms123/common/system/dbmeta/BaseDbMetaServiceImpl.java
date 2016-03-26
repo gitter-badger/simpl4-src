@@ -18,7 +18,6 @@
  */
 package org.ms123.common.system.dbmeta;
 
-
 import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
 import java.io.File;
@@ -51,6 +50,7 @@ import org.osgi.framework.ServiceReference;
 import schemacrawler.schema.*;
 import schemacrawler.schemacrawler.*;
 import schemacrawler.utility.*;
+import schemacrawler.utility.MetaDataUtility.ForeignKeyCardinality;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -58,6 +58,7 @@ import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.strip;
+import static schemacrawler.utility.MetaDataUtility.findForeignKeyCardinality;
 
 /**
  *
@@ -65,17 +66,19 @@ import static org.apache.commons.lang3.StringUtils.strip;
 @SuppressWarnings("unchecked")
 abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
-	protected BundleContext m_bc;
-	protected CompileService m_compileService;
-	protected EntityService m_entityService;
-	protected PermissionService m_permissionService;
+	protected BundleContext bc;
+	protected CompileService compileService;
+	protected EntityService entityService;
+	protected PermissionService permissionService;
 	protected Inflector m_inflector = Inflector.getInstance();
-	protected JSONSerializer m_js = new JSONSerializer();
+	protected JSONSerializer js = new JSONSerializer();
 	protected static String gitRepos = System.getProperty("git.repos");
 	protected static String workspace = System.getProperty("workspace");
 
 	protected void buildDatanucleusMetadata(StoreDesc sdesc, String dataSourceName, Map<String, String> datanucleusConfig) throws Exception {
+		String namespace = sdesc.getNamespace();
 		final SchemaCrawlerOptions options = new SchemaCrawlerOptions();
+		this.js.prettyPrint(true);
 		options.setRoutineTypes(null);
 
 		System.out.println("InputSchema:" + datanucleusConfig.get("datanucleus_inputschema"));
@@ -98,11 +101,27 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		Connection conn = ds.getConnection();
 		try {
 			final Catalog catalog = SchemaCrawlerUtility.getCatalog(conn, options);
+			List<Map> newRelationList = new ArrayList<Map>();
+			List<Map> entityList = new ArrayList<Map>();
 			for (final Schema schema : catalog.getSchemas()) {
 				System.out.println("++++++++++++++++++++++:" + schema);
 				for (final Table table : catalog.getTables(schema)) {
-					buildEntity(table);
+					Map entityMap = buildEntity(namespace, table);
+					if (entityMap != null) {
+						entityList.add(entityMap);
+					}
+					List<Map<String, Object>> rels = getRelations(table, table.getForeignKeys());
+					if (rels != null && rels.size() > 0) {
+						newRelationList.addAll(rels);
+					}
 				}
+			}
+			List<Map> relations = this.entityService.getRelations(sdesc);
+			relations = removeExistingRelations(relations, entityList);
+			relations.addAll(newRelationList);
+			this.entityService.saveRelations(sdesc, relations);
+			for (Map<String, Object> entityMap : entityList) {
+				this.entityService.saveEntitytype(namespace + "_data", (String) entityMap.get("name"), entityMap);
 			}
 		} finally {
 			try {
@@ -115,9 +134,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		}
 	}
 
-	protected void buildEntity(Table table) {
+	private Map buildEntity(String namespace, Table table) {
 		String cleanName = cleanName(table.getName());
-		System.out.println("Table:" + table.getName()+"/clean:"+cleanName);
+		System.out.println("Table:" + table.getName() + "/clean:" + cleanName);
 		String entityName = m_inflector.getEntityName(cleanName);
 		System.out.println("entityName:" + entityName + "/cleanName:" + cleanName);
 
@@ -156,8 +175,63 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			}
 			fieldsMap.put(name, fieldMap);
 		}
-		m_js.prettyPrint(true);
-		System.out.println("Entity:" + m_js.deepSerialize(entityMap));
+		System.out.println("Entity:" + this.js.deepSerialize(entityMap));
+		if (entityName.toLowerCase().indexOf("team") < 0) {
+			return entityMap;
+		}
+		return null;
+	}
+
+	private List<Map<String, Object>> getRelations(final Table table, final Collection<? extends BaseForeignKey<?>> foreignKeys) {
+		List<Map<String, Object>> relations = new ArrayList<Map<String, Object>>();
+		for (final BaseForeignKey<? extends ColumnReference> foreignKey : foreignKeys) {
+			final ForeignKeyCardinality fkCardinality = findForeignKeyCardinality(foreignKey);
+			if (fkCardinality == ForeignKeyCardinality.unknown) {
+				continue;
+			}
+			for (final ColumnReference columnRef : foreignKey) {
+				final Table referencedTable = columnRef.getForeignKeyColumn().getParent();
+				final boolean isForeignKeyFiltered = referencedTable.getAttribute("schemacrawler.table.no_grep_match", false);
+				if (isForeignKeyFiltered) {
+					continue;
+				}
+				if (table.equals(columnRef.getPrimaryKeyColumn().getParent())) {
+					relations.add(getRelation(foreignKey.getName(), columnRef, fkCardinality));
+				}
+			}
+		}
+		return relations;
+	}
+
+	private Map<String, Object> getRelation(final String fkName, final ColumnReference columnRef, final ForeignKeyCardinality fkCardinality) {
+		final boolean isForeignKey = columnRef instanceof ForeignKeyColumnReference;
+		Map<String, Object> rm = new HashMap<String, Object>();
+
+		final Column primaryKeyColumn = columnRef.getPrimaryKeyColumn();
+		final Column foreignKeyColumn = columnRef.getForeignKeyColumn();
+
+		String rightmodule = getJavaName(foreignKeyColumn.getParent().getName());
+		String rightfield = getJavaName(foreignKeyColumn.getName());
+		String leftmodule = getJavaName(primaryKeyColumn.getParent().getName());
+		String leftfield = getJavaName(primaryKeyColumn.getName());
+		System.out.println("--->>> fkName:" + fkName + "\t/primaryKeyColumn(" + leftmodule + "):" + leftfield + "\t/foreignKeyColumn(" + rightmodule + "):" + rightfield + "\t/fkCardinality:" + fkCardinality);
+		String rel = null;
+		if (fkCardinality == ForeignKeyCardinality.zero_one) {
+			rel = "one-to-one";
+		} else if (fkCardinality == ForeignKeyCardinality.zero_many) {
+			rel = "one-to-many";
+		} else if (fkCardinality == ForeignKeyCardinality.one_one) {
+			rel = "one-to-one";
+		}
+
+		rm.put("rightmodule", "data." + rightmodule);
+		rm.put("leftfield", leftfield);
+		rm.put("leftmodule", "data." + leftmodule);
+		rm.put("rightfield", rightfield);
+		rm.put("dependent", false);
+		rm.put("relation", rel);
+
+		return rm;
 	}
 
 	private String getType(String in) {
@@ -207,8 +281,35 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	}
 
 	private String getJavaName(String name) {
-		String columnMember = strip(name,"\"");
+		String columnMember = strip(name, "\"");
 		return m_inflector.lowerCamelCase(columnMember, ' ', '_', '-').replaceAll("_", "");
+	}
+
+	private List<Map> removeExistingRelations(List<Map> relations, List<Map> entityList) {
+		List<Map> newRelations = new ArrayList();
+		for (Map relation : relations) {
+			if (!relationContainsEntity(relation, entityList)) {
+				newRelations.add(relation);
+			}
+		}
+		return newRelations;
+	}
+
+	private boolean relationContainsEntity(Map<String, String> r, List<Map> etList) {
+		boolean leftFound = false;
+		boolean rightFound = false;
+		for (Map<String, String> et : etList) {
+			String name = et.get("name");
+			String rightmodule = r.get("rightmodule");
+			String leftmodule = r.get("leftmodule");
+			if (("data." + name).equals(rightmodule)) {
+				rightFound = true;
+			}
+			if (("data." + name).equals(leftmodule)) {
+				leftFound = true;
+			}
+		}
+		return leftFound && rightFound;
 	}
 
 	/*--End build datanucleus meta ---------------------------------------------------------------------------------------------*/
@@ -368,9 +469,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	}
 
 	private Object getService(Class clazz, String vendor) throws Exception {
-		Collection<ServiceReference> sr = m_bc.getServiceReferences(clazz, "(dataSourceName=" + vendor + ")");
+		Collection<ServiceReference> sr = this.bc.getServiceReferences(clazz, "(dataSourceName=" + vendor + ")");
 		if (sr.size() > 0) {
-			Object o = m_bc.getService((ServiceReference) sr.toArray()[0]);
+			Object o = this.bc.getService((ServiceReference) sr.toArray()[0]);
 			return o;
 		}
 		return null;

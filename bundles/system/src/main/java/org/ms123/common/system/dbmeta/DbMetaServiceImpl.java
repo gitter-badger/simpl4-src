@@ -68,7 +68,7 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		m_bc = bundleContext;
+		this.bc = bundleContext;
 		try {
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -95,7 +95,7 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 
 		File destinationDirectory = new File(basedir, "build");
 		File sourceDirectory = new File(basedir, "gen");
-		m_compileService.compileJava(m_bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
+		this.compileService.compileJava(this.bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
 	}
 
 	/*BEGIN JSON-RPC-API*/
@@ -207,18 +207,18 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService shiroService) {
 		System.out.println("DbMetaServiceImpl:" + shiroService);
-		this.m_permissionService = shiroService;
+		this.permissionService = shiroService;
 	}
 
 	@Reference(dynamic = true)
 	public void setEntityService(EntityService paramEntityService) {
 		System.out.println("DbMetaServiceImpl.setEntityService:" + paramEntityService);
-		this.m_entityService = paramEntityService;
+		this.entityService = paramEntityService;
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setCompileService(CompileService paramService) {
-		this.m_compileService = paramService;
+		this.compileService = paramService;
 		System.out.println("DbMetaServiceImpl.setCompileService:" + paramService);
 	}
 }
