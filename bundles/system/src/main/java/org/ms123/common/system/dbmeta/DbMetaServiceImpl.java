@@ -63,9 +63,6 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=dbmeta" })
 public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaService {
 
-	protected BundleContext m_bc;
-
-
 	public DbMetaServiceImpl() {
 		System.out.println("DbMetaServiceImpl construct");
 	}
@@ -101,32 +98,29 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 		m_compileService.compileJava(m_bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
 	}
 
-	private Object getService(Class clazz, String vendor) throws Exception {
-		Collection<ServiceReference> sr = m_bc.getServiceReferences(clazz, "(dataSourceName=" + vendor + ")");
-		if (sr.size() > 0) {
-			Object o = m_bc.getService((ServiceReference) sr.toArray()[0]);
-			return o;
-		}
-		return null;
-	}
-
 	/*BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")
-	public void createMetadata(@PName(StoreDesc.STORE_ID) String storeId,
-													  @PName("config") @POptional Map config
-				) throws RpcException {
+	public void createMetadata(@PName(StoreDesc.STORE_ID) String storeId, @PName("config") @POptional Map config) throws RpcException {
 		try {
-			System.out.println("createMetadata:"+ config);
+			System.out.println("createMetadata:" + config);
 			StoreDesc sdesc = StoreDesc.get(storeId);
 			String namespace = sdesc.getNamespace();
-			Map<String,Object> jooqConfig = (Map)config.get("jooq");
-			Map<String,String> dsConfig = (Map)config.get("datasource");
-			createDatasource( namespace, dsConfig);
-			File jooqConfigFile = createJooqConfig( namespace, (String)dsConfig.get("dataSourceName"), jooqConfig);
 
-			Boolean generate = (Boolean)jooqConfig.get("create_jooq_metadata");
-			if( generate == true ){
-				buildJooqMetadata( storeId, (String)dsConfig.get("dataSourceName"), jooqConfigFile.toString(), false );
+			Map<String, Object> jooqConfig = (Map) config.get("jooq");
+			Map<String, String> datanucleusConfig = (Map) config.get("datanucleus");
+			Map<String, String> dsConfig = (Map) config.get("datasource");
+
+			createDatasource(namespace, dsConfig);
+			File jooqConfigFile = createJooqConfig(namespace, (String) dsConfig.get("dataSourceName"), jooqConfig);
+
+			Boolean generate = (Boolean) jooqConfig.get("create_jooq_metadata");
+			if (generate == true) {
+				buildJooqMetadata(storeId, (String) dsConfig.get("dataSourceName"), jooqConfigFile.toString(), false);
+			}
+
+			generate = (Boolean) ((Map)datanucleusConfig).get("create_datanucleus_metadata");
+			if (generate == true) {
+				buildDatanucleusMetadata(sdesc, (String) dsConfig.get("dataSourceName"), datanucleusConfig);
 			}
 
 		} catch (Exception e) {
@@ -142,17 +136,15 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			}*/
 		}
 	}
+
 	@RequiresRoles("admin")
-	public void buildJooqMetadata(@PName(StoreDesc.STORE_ID) String storeId,
-													  @PName("dataSourceName") String dataSourceName,
-													  @PName("configFile")  String configFile,
-													  @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
+	public void buildJooqMetadata(@PName(StoreDesc.STORE_ID) String storeId, @PName("dataSourceName") String dataSourceName, @PName("configFile") String configFile, @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
 		Connection conn = null;
 		try {
 			StoreDesc sdesc = StoreDesc.get(storeId);
 			String namespace = sdesc.getNamespace();
 			File f = new File(configFile);
-			if( !f.exists()){
+			if (!f.exists()) {
 				if (configFile != null) {
 					if (configFile.indexOf("/") > 0) {
 						f = new File(new File(gitRepos, sdesc.getNamespace()), configFile);
@@ -169,16 +161,6 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			}
 
 			Configuration config = GenerationTool.load(new FileInputStream(f));
-			System.out.println("config:"+config);
-			if( config != null){
-				System.out.println("config.generator:"+config.getGenerator());
-				if( config.getGenerator() != null){
-					System.out.println("config.generator.target:"+config.getGenerator().getTarget());
-					if( config.getGenerator().getTarget() != null){
-						System.out.println("config.generator.target.packageName:"+config.getGenerator().getTarget().getPackageName());
-					}
-				}
-			}
 			String packageDir = config.getGenerator().getTarget().getPackageName().replace(".", "/");
 			File basedir = null;
 			if (toWorkspace) {
@@ -195,23 +177,17 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			File tdir = new File("/tmp/jooq", packageDir);
 			deleteDirectory(tdir);
 
-			String vendor = sdesc.getVendor();
-			DataSource ds = null;
-			int count = 10;
-			while( ds == null && count>0){
-				Thread.sleep( 1000);
-				ds = (DataSource) getService(javax.sql.DataSource.class, dataSourceName);
-				System.out.println("ds:" + ds);
-				count--;
-			}
+			DataSource ds = getDataSource(dataSourceName);
 			System.out.println("generate.call:" + ds);
 			GenerationTool gt = new GenerationTool();
-			synchronized ( gt ){
+			synchronized (gt) {
 				gt.setConnection(conn = ds.getConnection());
 				gt.run(config);
 				File parent = new File(basedir, "gen/" + packageDir).getParentFile();
-				moveDirectoryToDirectory(tdir, parent, true);
-				compileMetadata(toWorkspace, sdesc.getNamespace());
+				if( tdir.exists()){
+					moveDirectoryToDirectory(tdir, parent, true);
+					compileMetadata(toWorkspace, sdesc.getNamespace());
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -233,6 +209,7 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 		System.out.println("DbMetaServiceImpl:" + shiroService);
 		this.m_permissionService = shiroService;
 	}
+
 	@Reference(dynamic = true)
 	public void setEntityService(EntityService paramEntityService) {
 		System.out.println("DbMetaServiceImpl.setEntityService:" + paramEntityService);
