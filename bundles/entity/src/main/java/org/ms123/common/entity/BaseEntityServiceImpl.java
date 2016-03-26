@@ -402,6 +402,14 @@ System.out.println("className:"+className);
 		} finally {
 		}
 	}
+	public void  saveRelations(StoreDesc sdesc, List<Map> relations) throws Exception {
+		try {
+			m_gitMetaData.saveRelations(sdesc.getStoreId(), relations);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+		}
+	}
 
 	public String getIdField(StoreDesc sdesc, String entityName) throws Exception {
 		try {

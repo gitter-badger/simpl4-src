@@ -31,6 +31,7 @@ public interface EntityService {
 	public List<Map> getFields( StoreDesc  sdesc, String entityName,Boolean withAutoGen) throws Exception;
 	public List<Map> getFields( StoreDesc  sdesc, String entityName,Boolean withAutoGen,Boolean withRelations) throws Exception;
 	public List<Map> getRelations(StoreDesc sdesc) throws Exception;
+	public void saveRelations(StoreDesc sdesc, List<Map> relations) throws Exception;
 	public List<Map> getDefaultFields();
 	public List<Map> getTeamFields();
 	public List<Map> getStateFields();
