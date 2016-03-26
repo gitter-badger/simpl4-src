@@ -23,6 +23,7 @@ dependencies {
  	compile files("${repository}/jcabi-1.0.jar")
   compile files("${repository}/jooq/jooq-3.6.0-ms.jar")
   compile files("${repository}/jooq/jooq-meta-codegen-3.6.0-ms.jar")
+	compile files("${repository}/xom-1.2.7.jar")
 	compile files("${repository}/jotm-core-2.2.3.jar")
 	compile files("${repository}/jta-1.1.jar")
   compile files("${repository}/org.osgi.compendium-4.3.1.jar")

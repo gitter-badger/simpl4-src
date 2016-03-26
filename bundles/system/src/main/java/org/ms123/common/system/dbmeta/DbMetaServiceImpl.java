@@ -60,13 +60,11 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 /** DbMetaServiceImpl implementation
  */
 @SuppressWarnings("unchecked")
-@Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=jooq" })
+@Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=dbmeta" })
 public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaService {
 
 	protected BundleContext m_bc;
 
-	private static String workspace = System.getProperty("workspace");
-	private static String gitRepos = System.getProperty("git.repos");
 
 	public DbMetaServiceImpl() {
 		System.out.println("DbMetaServiceImpl construct");
@@ -114,13 +112,26 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 
 	/*BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")
-	public void createDatasource(@PName(StoreDesc.STORE_ID) String storeId,
-													  @PName("config") @POptional Map config,
+	public void createMetadata(@PName(StoreDesc.STORE_ID) String storeId,
+													  @PName("config") @POptional Map config
 				) throws RpcException {
 		try {
+			System.out.println("createMetadata:"+ config);
+			StoreDesc sdesc = StoreDesc.get(storeId);
+			String namespace = sdesc.getNamespace();
+			Map<String,Object> jooqConfig = (Map)config.get("jooq");
+			Map<String,String> dsConfig = (Map)config.get("datasource");
+			createDatasource( namespace, dsConfig);
+			File jooqConfigFile = createJooqConfig( namespace, (String)dsConfig.get("dataSourceName"), jooqConfig);
+
+			Boolean generate = (Boolean)jooqConfig.get("create_jooq_metadata");
+			if( generate == true ){
+				buildJooqMetadata( storeId, (String)dsConfig.get("dataSourceName"), jooqConfigFile.toString(), false );
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DbMetaServiceImpl.createDatasource:", e);
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DbMetaServiceImpl.createMetadata:", e);
 		} finally {
 			/*try {
 				if (conn != null) {
@@ -133,27 +144,41 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	}
 	@RequiresRoles("admin")
 	public void buildJooqMetadata(@PName(StoreDesc.STORE_ID) String storeId,
-													  @PName("configFile") @POptional String configFile,
+													  @PName("dataSourceName") String dataSourceName,
+													  @PName("configFile")  String configFile,
 													  @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
 		Connection conn = null;
 		try {
 			StoreDesc sdesc = StoreDesc.get(storeId);
 			String namespace = sdesc.getNamespace();
-			File f = null;
-			if (configFile != null) {
-				if (configFile.indexOf("/") > 0) {
-					f = new File(new File(gitRepos, sdesc.getNamespace()), configFile);
+			File f = new File(configFile);
+			if( !f.exists()){
+				if (configFile != null) {
+					if (configFile.indexOf("/") > 0) {
+						f = new File(new File(gitRepos, sdesc.getNamespace()), configFile);
+					} else {
+						f = new File(new File(gitRepos, sdesc.getNamespace()), ".etc/" + configFile);
+					}
 				} else {
-					f = new File(new File(gitRepos, sdesc.getNamespace()), ".etc/" + configFile);
+					f = new File(configFile);
+					//f = new File(gitRepos, sdesc.getNamespace() + "/.etc/jooqConfig.xml");
 				}
-			} else {
-				f = new File(gitRepos, sdesc.getNamespace() + "/.etc/jooqConfig.xml");
 			}
 			if (!f.exists()) {
 				throw new RuntimeException("DbMetaServiceImpl.readMetadata:(" + f + ") not exists.");
 			}
 
 			Configuration config = GenerationTool.load(new FileInputStream(f));
+			System.out.println("config:"+config);
+			if( config != null){
+				System.out.println("config.generator:"+config.getGenerator());
+				if( config.getGenerator() != null){
+					System.out.println("config.generator.target:"+config.getGenerator().getTarget());
+					if( config.getGenerator().getTarget() != null){
+						System.out.println("config.generator.target.packageName:"+config.getGenerator().getTarget().getPackageName());
+					}
+				}
+			}
 			String packageDir = config.getGenerator().getTarget().getPackageName().replace(".", "/");
 			File basedir = null;
 			if (toWorkspace) {
@@ -171,7 +196,14 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			deleteDirectory(tdir);
 
 			String vendor = sdesc.getVendor();
-			DataSource ds = (DataSource) getService(javax.sql.DataSource.class, vendor);
+			DataSource ds = null;
+			int count = 10;
+			while( ds == null && count>0){
+				Thread.sleep( 1000);
+				ds = (DataSource) getService(javax.sql.DataSource.class, dataSourceName);
+				System.out.println("ds:" + ds);
+				count--;
+			}
 			System.out.println("generate.call:" + ds);
 			GenerationTool gt = new GenerationTool();
 			synchronized ( gt ){

@@ -17,10 +17,10 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 /*
-*/
-qx.Class.define("ms123.datasource.Datasource", {
+ */
+qx.Class.define( "ms123.datasource.Datasource", {
 	extend: ms123.datasource.BaseDatasource,
-	include: [qx.locale.MTranslation],
+	include: [ qx.locale.MTranslation ],
 
 	/**
 	 *****************************************************************************
@@ -28,8 +28,8 @@ qx.Class.define("ms123.datasource.Datasource", {
 	 *****************************************************************************
 	 */
 
-	construct: function (facade) {
-		this.base(arguments, facade);
+	construct: function( facade ) {
+		this.base( arguments, facade );
 	},
 
 	/**
@@ -47,17 +47,17 @@ qx.Class.define("ms123.datasource.Datasource", {
 	 */
 
 	members: {
-		_createEditForm: function () {
+		_createEditForm: function() {
 			var formData = {
 				"name": {
 					'type': "SelectBox",
-					'label': this.tr("datasource.database"),
+					'label': this.tr( "datasource.database" ),
 					'value': "string",
-					'options': this._getDbList() 
+					'options': this._getDbList()
 				},
 				"url": {
 					'type': "TextField",
-					'label': this.tr("datasource.url"),
+					'label': this.tr( "datasource.url" ),
 					'validation': {
 						required: true
 					},
@@ -65,7 +65,7 @@ qx.Class.define("ms123.datasource.Datasource", {
 				},
 				"username": {
 					'type': "TextField",
-					'label': this.tr("datasource.username"),
+					'label': this.tr( "datasource.username" ),
 					'validation': {
 						required: true
 					},
@@ -73,7 +73,7 @@ qx.Class.define("ms123.datasource.Datasource", {
 				},
 				"password": {
 					'type': "TextField",
-					'label': this.tr("datasource.password"),
+					'label': this.tr( "datasource.password" ),
 					'validation': {
 						required: true
 					},
@@ -81,7 +81,7 @@ qx.Class.define("ms123.datasource.Datasource", {
 				},
 				"datasourcename": {
 					'type': "TextField",
-					'label': this.tr("datasource.datasourcename"),
+					'label': this.tr( "datasource.datasourcename" ),
 					'validation': {
 						required: true
 					},
@@ -89,7 +89,7 @@ qx.Class.define("ms123.datasource.Datasource", {
 				},
 				"databasename": {
 					'type': "TextField",
-					'label': this.tr("datasource.databasename"),
+					'label': this.tr( "datasource.databasename" ),
 					'validation': {
 						required: true
 					},
@@ -97,59 +97,64 @@ qx.Class.define("ms123.datasource.Datasource", {
 				},
 				"create_jooq_metadata": {
 					'type': "Checkbox",
-					'label': this.tr("datasource.create_jooq_metadata"),
+					'label': this.tr( "datasource.create_jooq_metadata" ),
 					'value': true
 				},
 				"jooq_inputschema": {
 					'type': "TextField",
-					'label': this.tr("datasource.jooq_inputschema"),
+					'label': this.tr( "datasource.jooq_inputschema" ),
 					'value': null
 				},
 				"jooq_includes": {
 					'type': "TextField",
-					'label': this.tr("datasource.jooq_includes"),
+					'label': this.tr( "datasource.jooq_includes" ),
 					'value': null
 				},
 				"jooq_excludes": {
 					'type': "TextField",
-					'label': this.tr("datasource.jooq_excludes"),
+					'label': this.tr( "datasource.jooq_excludes" ),
+					'value': null
+				},
+				"jooq_packagename": {
+					'type': "TextField",
+					'label': this.tr( "datasource.jooq_packagename" ),
 					'value': null
 				},
 				"create_datanucleus_metadata": {
 					'type': "Checkbox",
-					'label': this.tr("datasource.create_datanucleus_metadata"),
+					'label': this.tr( "datasource.create_datanucleus_metadata" ),
 					'value': true
 				},
 				"datanucleus_inputschema": {
 					'type': "TextField",
-					'label': this.tr("datasource.datanucleus_inputschema"),
+					'label': this.tr( "datasource.datanucleus_inputschema" ),
 					'value': null
 				},
 				"datanucleus_includes": {
 					'type': "TextField",
-					'label': this.tr("datasource.datanucleus_includes"),
+					'label': this.tr( "datasource.datanucleus_includes" ),
 					'value': null
 				},
 				"datanucleus_excludes": {
 					'type': "TextField",
-					'label': this.tr("datasource.datanucleus_excludes"),
+					'label': this.tr( "datasource.datanucleus_excludes" ),
 					'value': null
 				}
 			}
-			this._form = new ms123.form.Form({
-				"tabs": [{
+			this._form = new ms123.form.Form( {
+				"tabs": [ {
 					id: "tab1",
 					layout: "single",
 					lineheight: 20
-				}],
+				} ],
 				"formData": formData,
 				"allowCancel": true,
 				"inWindow": false,
 				"buttons": [],
-				"callback": function (m, v) {},
+				"callback": function( m, v ) {},
 				"context": null
-			});
+			} );
 			return this._form;
 		}
 	}
-});
+} );
