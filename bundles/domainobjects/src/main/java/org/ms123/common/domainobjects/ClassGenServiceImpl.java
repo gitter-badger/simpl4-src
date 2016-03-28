@@ -268,6 +268,9 @@ public class ClassGenServiceImpl implements ClassGenService {
 			} else {
 				addEmptyAnnotation(f, "javax.jdo.annotations.Persistent");
 			}
+			if( foreignKeyField!=null){
+				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "mappedBy", foreignKeyField);
+			}
 			addGetterSetter(ctClass, leftField, rightEntity);
 			if (oneToOneBi) {
 				createRightFieldOneToOneBi(cp, leftEntity, rightEntity, leftField, rightField, manyToMany);
