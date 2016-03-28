@@ -34,7 +34,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.system.thread.ThreadContext;
-import org.ms123.common.camel.components.ExchangeUtils;
+import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.camel.trace.ExchangeFormatter;
 import org.ms123.common.camel.trace.MessageHelper;
 import org.activiti.engine.impl.bpmn.helper.ScopeUtil;

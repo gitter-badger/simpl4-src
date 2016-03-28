@@ -39,7 +39,7 @@ import org.apache.camel.util.ExchangeHelper;
 import org.apache.camel.util.MessageHelper;
 import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.ms123.common.camel.components.ExchangeUtils;
+import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.wamp.camel.WampClientConstants.*;

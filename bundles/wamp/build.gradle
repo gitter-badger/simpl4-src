@@ -4,7 +4,7 @@ dependencies {
 	compile files("${bundlesBuild}/org.ms123.common.permission.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.rpc-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.system-1.0.0.jar")
-	compile files("${bundlesBuild}/org.ms123.common.camel-1.0.0.jar")
+	compile files("${bundlesBuild}/org.ms123.common.camel.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.utils-1.0.0.jar")
 	compile files("${repository}/camel/camel-core-2.15.2.jar")
 	compile files("${repository}/camel/camel-core-osgi-2.15.2.jar")

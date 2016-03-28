@@ -23,7 +23,7 @@ import org.apache.camel.CamelExchangeException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
-import org.ms123.common.camel.components.ExchangeUtils;
+import org.ms123.common.camel.api.ExchangeUtils;
 
 public class WebsocketProducer extends DefaultProducer {
 
