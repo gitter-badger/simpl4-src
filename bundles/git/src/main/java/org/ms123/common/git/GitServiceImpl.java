@@ -218,6 +218,33 @@ public class GitServiceImpl implements GitService {
 		}
 	}
 
+	@RequiresRoles("admin")
+	public void setStoreProperty(
+			@PName("repoName")       String repoName,
+			@PName("section")         String section,
+			@PName("subsection")         String subsection,
+			@PName("key")             String key,
+			@PName("value")           String value
+			) throws RpcException {
+		Git git = null;
+		try {
+			String gitSpace = System.getProperty("git.repos");
+			File dir = new File(gitSpace, repoName);
+			if (!dir.exists()) {
+				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.setStoreProperty:Repo(" + repoName + ") not exists");
+			}
+			FS fs = FS.detect();
+			FileBasedConfig fbc = new FileBasedConfig(new File(dir, "store.cfg"), fs);
+			fbc.load();
+			fbc.setString(section, subsection, key, value);
+			fbc.save();
+			return;
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.setStoreProperty:", e);
+		} finally {
+		}
+	}
+
 	public static boolean isDataRepo(String name){
 		return name.endsWith("_data");
 	}

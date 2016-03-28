@@ -66,4 +66,5 @@ public interface GitService {
 	public void putContentInternal(String repoName, String path, String type, String content);
 	public void deleteObjectInternal( String repoName, String path);
 	public String getFileType(File file);
+	public void setStoreProperty( String repoName, String section, String subsection, String key, String value) throws RpcException;
 }
