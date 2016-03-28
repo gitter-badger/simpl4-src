@@ -180,6 +180,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 		String relation = (String) rel.get(RELATION);
 		String leftEntity = sdesc.insertJavaPackage((String) rel.get(LEFT_ENTITY));
 		String leftField = (String) rel.get(LEFT_FIELD);
+		String foreignKeyField = (String) rel.get("foreignKeyField");
 		String rightEntity = sdesc.insertJavaPackage((String) rel.get(RIGHT_ENTITY));
 		String rightField = (String) rel.get(RIGHT_FIELD);
 		boolean dependent = getBoolean(rel.get("dependent"), false);
@@ -234,13 +235,21 @@ public class ClassGenServiceImpl implements ClassGenService {
 				createRightField(cp, leftEntity, rightEntity, leftField, rightField, manyToMany);
 			}
 			if (oneToMany) {
-				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, null, null, isMap));
-				addAnnotationOne(f, "javax.jdo.annotations.Join", "column", getLeftName(leftEntity, leftField));
+				if( foreignKeyField == null){
+					addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, null, null, isMap));
+					addAnnotationOne(f, "javax.jdo.annotations.Join", "column", getLeftName(leftEntity, leftField));
+				}
 				if (isMap) {
 					addAnnotationOne(f, "javax.jdo.annotations.Key", "a#types", "java.lang.String");
 					addAnnotationOne(f, "javax.jdo.annotations.Value", "a#types", rightEntity);
 				} else {
-					addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", removePackageName(rightEntity).replace('.', '_').toLowerCase(), "dependent", "true");
+					if( foreignKeyField!=null){
+						addAnnotationOne(f, "javax.jdo.annotations.Persistent", "mappedBy", foreignKeyField);
+						addAnnotationTwo(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "dependent",dependent ? "true": "false" );
+					}else{
+						//Is column really needed?,@@@MS
+						addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", removePackageName(rightEntity).replace('.', '_').toLowerCase(), "dependent", dependent ? "true": "false");
+					}
 				}
 			} else if (manyToMany) {
 				addAnnotationTwo(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", (leftField + "_id").toLowerCase());
@@ -504,6 +513,7 @@ public class ClassGenServiceImpl implements ClassGenService {
 	private List<Map> getPrimaryKeys(List<Map<String, String>> fields) {
 		List<Map> pkList = new ArrayList<Map>();
 		String idField = "id";
+		String idColumn = null;
 		Class idClass = String.class;
 		Object idConstraint = null;
 		if (fields != null) {
@@ -514,11 +524,13 @@ public class ClassGenServiceImpl implements ClassGenService {
 				if (hasPrimaryKey) {
 					System.out.println("primary_key:" + m.get("name"));
 					idField = (String) m.get("name");
+					idColumn = (String) m.get("columnName");
 					idClass = ("number".equals(m.get("datatype")) ? Long.class : String.class);
 					idConstraint = m.get("constraints");
 					Map pkMap = new HashMap();
 					pkMap.put("idClass", idClass);
 					pkMap.put("idField", idField);
+					pkMap.put("idColumn", idColumn);
 					pkMap.put("idConstraint", idConstraint);
 					pkList.add(pkMap);
 				}
@@ -575,7 +587,6 @@ public class ClassGenServiceImpl implements ClassGenService {
 		System.out.println("makeClass:" + ctClass + "/" + classname);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
 		ctClass.addInterface(cp.makeClass("java.io.Serializable"));
-		String appName = sdesc.getNamespace();
 		AnnotationsAttribute classAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
 		ctClass.getClassFile().addAttribute(classAttr);
 
@@ -589,7 +600,12 @@ public class ClassGenServiceImpl implements ClassGenService {
 			mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
 			annotation.addMemberValue("identityType", mv);
 		} else {
-			annotation.addMemberValue("objectIdClass", new ClassMemberValue("ComposedIdKey.class", constPool));
+			String pkClass = classname + "_PK";
+			annotation.addMemberValue("objectIdClass", new ClassMemberValue(pkClass, constPool));
+			EnumMemberValue mv = new EnumMemberValue(constPool);
+			mv.setType("javax.jdo.annotations.IdentityType");
+			mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
+			annotation.addMemberValue("identityType", mv);
 		}
 
 		String tableName = (String) entMap.get("tableName");
@@ -617,6 +633,11 @@ public class ClassGenServiceImpl implements ClassGenService {
 			annotation.addMemberValue("valueStrategy", emv);
 			idAttr.addAnnotation(annotation);
 			annotation = new Annotation("javax.jdo.annotations.PrimaryKey", constPool);
+			if( pkMap.get("idColumn") != null){
+				Annotation columnAnnotation = new Annotation("javax.jdo.annotations.Column", constPool);
+				columnAnnotation.addMemberValue("name", new StringMemberValue((String)pkMap.get("idColumn"), constPool));
+				idAttr.addAnnotation(columnAnnotation);
+			}
 			idAttr.addAnnotation(annotation);
 			if (idConstraint != null) {
 				if (idConstraint instanceof String) {

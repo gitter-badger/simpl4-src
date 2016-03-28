@@ -135,17 +135,15 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	}
 
 	private Map buildEntity(String namespace, Table table) {
-		String cleanName = cleanName(table.getName());
-		System.out.println("Table:" + table.getName() + "/clean:" + cleanName);
-		String entityName = m_inflector.getEntityName(cleanName);
-		System.out.println("entityName:" + entityName + "/cleanName:" + cleanName);
+		String entityName = entityName(table.getName());
+		System.out.println("Table:" + table.getName() + "/entityName:" + entityName);
 
 		List<String> pkList = new ArrayList<String>();
 		if (table.getPrimaryKey() != null) {
 			System.out.println("Table.primary:" + table.getPrimaryKey().getColumns());
 			System.out.println("Table.foreign:" + table.getForeignKeys());
 			for (Column col : table.getPrimaryKey().getColumns()) {
-				pkList.add(getJavaName(col.getName()));
+				pkList.add(fieldName(col.getName()));
 			}
 		}
 		System.out.println("pkList:" + pkList);
@@ -154,16 +152,16 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		entityMap.put("enabled", true);
 		entityMap.put("primaryKeys", pkList);
 		entityMap.put("name", entityName);
-		entityMap.put("tableName", table.getName());
-		entityMap.put("schemaName", table.getSchema().getName());
+		entityMap.put("tableName", tableName(table.getName()));
+		entityMap.put("schemaName", schemaName(table.getSchema().getName()));
 		Map<String, Object> fieldsMap = new HashMap<String, Object>();
 		entityMap.put("fields", fieldsMap);
 		for (Column column : table.getColumns()) {
 			String columnType = column.getColumnDataType().getTypeMappedClass().toString();
-			String name = getJavaName(column.getName());
+			String name = fieldName(column.getName());
 			Map<String, Object> fieldMap = new HashMap<String, Object>();
 			fieldMap.put("name", name);
-			fieldMap.put("columnName", strip(column.getName(), "\""));
+			fieldMap.put("columnName", columnName(column.getName()));
 			fieldMap.put("enabled", true);
 			fieldMap.put("index", false);
 			fieldMap.put("sqltype", column.getColumnDataType().getDatabaseSpecificTypeName());
@@ -210,11 +208,19 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		final Column primaryKeyColumn = columnRef.getPrimaryKeyColumn();
 		final Column foreignKeyColumn = columnRef.getForeignKeyColumn();
 
-		String rightmodule = getJavaName(foreignKeyColumn.getParent().getName());
-		String rightfield = getJavaName(foreignKeyColumn.getName());
-		String leftmodule = getJavaName(primaryKeyColumn.getParent().getName());
-		String leftfield = getJavaName(primaryKeyColumn.getName());
-		System.out.println("--->>> fkName:" + fkName + "\t/primaryKeyColumn(" + leftmodule + "):" + leftfield + "\t/foreignKeyColumn(" + rightmodule + "):" + rightfield + "\t/fkCardinality:" + fkCardinality);
+		String rightEntity = entityName(foreignKeyColumn.getParent().getName());
+		String rightTable = tableName(foreignKeyColumn.getParent().getName());
+
+		String foreignKeyField = fieldName(foreignKeyColumn.getName());
+		String _foreignKeyColumn = columnName(foreignKeyColumn.getName());
+
+		String leftEntity = entityName(primaryKeyColumn.getParent().getName());
+		String leftTable = tableName(primaryKeyColumn.getParent().getName());
+
+		String primaryKeyField = fieldName(primaryKeyColumn.getName());
+		String _primaryKeyColumn = columnName(primaryKeyColumn.getName());
+
+		System.out.println("--->>> fkName:" + fkName + "\t/primaryKeyColumn(" + leftEntity + "):" + _primaryKeyColumn + "\t/foreignKeyColumn(" + rightEntity + "):" + _foreignKeyColumn + "\t/fkCardinality:" + fkCardinality);
 		String rel = null;
 		if (fkCardinality == ForeignKeyCardinality.zero_one) {
 			rel = "one-to-one";
@@ -224,10 +230,18 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			rel = "one-to-one";
 		}
 
-		rm.put("rightmodule", "data." + rightmodule);
-		rm.put("leftfield", leftfield);
-		rm.put("leftmodule", "data." + leftmodule);
-		rm.put("rightfield", rightfield);
+		rm.put("rightmodule", "data." + rightEntity);
+		rm.put("righttable", rightTable);
+
+		rm.put("leftmodule", "data." + leftEntity);
+		rm.put("lefttable", leftTable);
+
+		rm.put("primaryKeyField", primaryKeyField);
+		rm.put("primaryKeyColumn", _primaryKeyColumn);
+
+		rm.put("foreignKeyField", foreignKeyField);
+		rm.put("foreignKeyColumn", _foreignKeyColumn);
+
 		rm.put("dependent", false);
 		rm.put("relation", rel);
 
@@ -243,6 +257,21 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		out = out.toLowerCase();
 		if ("bigdecimal".equals(out)) {
 			out = "decimal";
+		}
+		if ("double".equals(out)) {
+			out = "decimal";
+		}
+		if ("float".equals(out)) {
+			out = "decimal";
+		}
+		if ("short".equals(out)) {
+			out = "number";
+		}
+		if ("long".equals(out)) {
+			out = "number";
+		}
+		if ("biginteger".equals(out)) {
+			out = "number";
 		}
 		if ("integer".equals(out)) {
 			out = "number";
@@ -279,6 +308,22 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		}
 		return getJavaName(out);
 	}
+	private String fieldName(String in) {
+		return getJavaName(in);
+	}
+	private String columnName(String in) {
+		return strip(in, "\"");
+	}
+	private String tableName(String in) {
+		return strip(in, "\"");
+	}
+	private String schemaName(String in) {
+		return strip(in, "\"");
+	}
+	private String entityName(String in) {
+		in = cleanName(in);
+		return m_inflector.getEntityName(in);
+	}
 
 	private String getJavaName(String name) {
 		String columnMember = strip(name, "\"");
@@ -302,6 +347,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			String name = et.get("name");
 			String rightmodule = r.get("rightmodule");
 			String leftmodule = r.get("leftmodule");
+System.out.println("relationContainsEntity:"+name+"/"+rightmodule+"/"+leftmodule);
 			if (("data." + name).equals(rightmodule)) {
 				rightFound = true;
 			}
@@ -314,6 +360,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 	/*--End build datanucleus meta ---------------------------------------------------------------------------------------------*/
 
+	/*-- create/remove datasource ----------------------------------------------------------------------------------------------*/
 	protected void removeDatasource(String namespace, Map<String, String> config) throws Exception {
 		String dataSourceName = (String) config.get("dataSourceName");
 		deleteQuietly(new File(gitRepos, ".bundles/org.ops4j.datasource-" + dataSourceName + "-ds.cfg"));
@@ -347,6 +394,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		writeStringToFile(new File(gitRepos, ".bundles/org.ops4j.datasource-" + dataSourceName + "-cp.cfg"), cpDataSourceText, "UTF-8");
 	}
 
+	/*-- jooq metadata ------ ----------------------------------------------------------------------------------------------*/
 	protected File createJooqConfig(String namespace, String dataSourceName, Map<String, Object> config) throws Exception {
 		String ns = "http://www.jooq.org/xsd/jooq-codegen-3.6.0.xsd";
 		Element root = new Element("configuration", ns);
