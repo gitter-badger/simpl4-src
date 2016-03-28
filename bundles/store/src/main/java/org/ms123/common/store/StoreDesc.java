@@ -274,6 +274,10 @@ public class StoreDesc {
 		return getStoreId().equals(((StoreDesc) other).getStoreId());
 	}
 
+	public static StoreDesc get(StoreDesc sdesc) {
+		return get(sdesc.getStoreId());
+	}
+
 	public static StoreDesc get(String id) {
 		if (m_storeIds == null || m_storeIds.get(id) ==null) {
 			init();

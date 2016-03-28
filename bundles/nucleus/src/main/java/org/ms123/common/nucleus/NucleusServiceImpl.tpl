@@ -165,6 +165,8 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 				}
 				m_openList.clear();
 			}
+			StoreDesc.init();
+			sdesc = StoreDesc.get(sdesc);
 			if( m_aidClassLoader == null){
 				createAidClassLoader(sdesc.getBaseDir());
 			}
