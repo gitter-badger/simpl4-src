@@ -353,7 +353,6 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			String name = et.get("name");
 			String rightmodule = r.get("rightmodule");
 			String leftmodule = r.get("leftmodule");
-System.out.println("relationContainsEntity:"+name+"/"+rightmodule+"/"+leftmodule);
 			if (("data." + name).equals(rightmodule)) {
 				rightFound = true;
 			}
