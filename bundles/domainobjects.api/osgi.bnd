@@ -1,0 +1,11 @@
+version=1.0.0
+Export-Package org.ms123.common.domainobjects.api
+Bundle-Version:${version}
+Bundle-Vendor: MS123, Org.
+Bundle-Description: DomainObjectsApi Service
+Bundle-ManifestVersion: 2
+Bundle-Name: DomainObjectsServiceApi Bundle
+Bundle-SymbolicName:org.ms123.common.domainobjects.api
+DynamicImport-Package:*
+Service-Component: *
+-metatype: *

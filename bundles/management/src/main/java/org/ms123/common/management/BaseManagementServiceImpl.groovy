@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.Collection;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.store.StoreDesc;
-import org.ms123.common.domainobjects.DomainObjectsService;
+import org.ms123.common.domainobjects.api.DomainObjectsService;
 import org.ms123.common.system.compile.CompileService;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.permission.api.PermissionService;

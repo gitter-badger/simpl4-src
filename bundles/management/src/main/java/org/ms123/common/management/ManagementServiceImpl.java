@@ -47,7 +47,7 @@ import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.camel.api.CamelService;
-import org.ms123.common.domainobjects.DomainObjectsService;
+import org.ms123.common.domainobjects.api.DomainObjectsService;
 import org.ms123.common.system.compile.CompileService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.rpc.PName;

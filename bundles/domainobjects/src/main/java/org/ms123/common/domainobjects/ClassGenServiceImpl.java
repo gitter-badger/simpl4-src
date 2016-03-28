@@ -85,7 +85,7 @@ import javassist.bytecode.annotation.*;
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true)
-public class ClassGenServiceImpl implements ClassGenService {
+public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.ClassGenService {
 
 	protected Inflector m_inflector = Inflector.getInstance();
 

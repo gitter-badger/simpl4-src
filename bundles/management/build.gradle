@@ -5,7 +5,7 @@ dependencies {
 	compile files("${repository}/activiti-${activiti_version}/activiti-engine-${activiti_version2}.jar")
 	compile files("${bundlesBuild}/org.ms123.common.camel.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.data.api-1.0.0.jar")
-	compile files("${bundlesBuild}/org.ms123.common.domainobjects-1.0.0.jar")
+	compile files("${bundlesBuild}/org.ms123.common.domainobjects.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.git-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.libhelper-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.nucleus.api-1.0.0.jar")

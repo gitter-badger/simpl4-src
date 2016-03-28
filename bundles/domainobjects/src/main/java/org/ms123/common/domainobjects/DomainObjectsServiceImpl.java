@@ -38,6 +38,7 @@ import org.ms123.common.libhelper.FileSystemClassLoader;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.domainobjects.api.ClassGenService;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
@@ -71,7 +72,7 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=domainobjects" })
-public class DomainObjectsServiceImpl implements DomainObjectsService, EventHandler {
+public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.api.DomainObjectsService, EventHandler {
 
 	private static final Logger m_logger = LoggerFactory.getLogger(DomainObjectsServiceImpl.class);
 	private ServiceRegistration m_serviceRegistration;
