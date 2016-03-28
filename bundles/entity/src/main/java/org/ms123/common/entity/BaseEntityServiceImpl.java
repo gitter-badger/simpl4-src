@@ -147,6 +147,7 @@ System.out.println("className:"+className);
 							childMap.put("modulename", entityName);
 							Map modMap = modMaps.get(entityName);
 							if (modMap != null) {
+								childMap.put("primaryKeys", modMap.get("primaryKeys"));
 								childMap.put("index", modMap.get("index"));
 								childMap.put("multi_add", modMap.get("multi_add"));
 							}

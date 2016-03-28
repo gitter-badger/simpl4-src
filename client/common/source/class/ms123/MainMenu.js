@@ -198,6 +198,7 @@ qx.Class.define("ms123.MainMenu", {
 					}
 					widget.fieldname = child.name;
 					widget.dependent = child.dependent;
+					widget.primaryKeys = child.primaryKeys;
 					widget.tab_title = _this.tr("data." + _module.name + "." + child.name);
 					widgetList.push(widget);
 				}
