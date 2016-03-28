@@ -90,6 +90,11 @@ qx.Class.define("ms123.settings.CommonPropertyEdit", {
 					'label': this.tr("data.entity.stateselect"),
 					'value': false
 				},
+				"select_distinct":{
+					'type': "CheckBox",
+					'label': this.tr("data.entity.selectdistinct"),
+					'value': true
+				},
 				"no_resultset_count":{
 					'type': "CheckBox",
 					'label': this.tr("data.entity.no_resultset_count"),

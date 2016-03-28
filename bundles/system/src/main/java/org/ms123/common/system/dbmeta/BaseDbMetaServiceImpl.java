@@ -276,6 +276,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		if ("integer".equals(out)) {
 			out = "number";
 		}
+		if ("clob".equals(out)) {
+			out = "string";
+		}
 		if ("timestamp".equals(out)) {
 			out = "date";
 		}
@@ -292,6 +295,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		}
 		if ("number".equals(in)) {
 			out = "text";
+		}
+		if ("clob".equals(in)) {
+			out = "textarea";
 		}
 		if ("date".equals(in)) {
 			out = "date";

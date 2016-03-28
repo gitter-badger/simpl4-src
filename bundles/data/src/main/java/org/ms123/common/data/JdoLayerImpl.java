@@ -63,6 +63,7 @@ import static org.ms123.common.setting.api.Constants.TITLEEXPRESSION;
 import static org.ms123.common.setting.api.Constants.RECORDVALIDATION;
 import static org.ms123.common.setting.api.Constants.NORESULTSETCOUNT;
 import static org.ms123.common.setting.api.Constants.STATESELECT;
+import static org.ms123.common.setting.api.Constants.SELECTDISTINCT;
 import static org.ms123.common.setting.api.Constants.GLOBAL_SETTINGS;
 import static org.ms123.common.entity.api.Constants.STATE_OK;
 import static org.ms123.common.entity.api.Constants.STATE_NEW;
@@ -1435,7 +1436,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				andStr = " and";
 			}
 			boolean noResultSetCount = noResultSetCount(sdesc, entityName, entityNameDetails);
-			String sql = "Select distinct " + projection + " from " + from + " " + whereClause + " " + stateWhere + " " + teamUserWhere + " " + teamSecurityWhere + " "+ orderBy;
+			boolean noSelectDistinct = noSelectDistinct(sdesc, entityName, entityNameDetails);
+			String sql = "Select " + (noSelectDistinct ? " " : "distinct ") + projection + " from " + from + " " + whereClause + " " + stateWhere + " " + teamUserWhere + " " + teamSecurityWhere + " "+ orderBy;
 			info("=========================================================================================");
 			info("sql:" + sql);
 			info("=========================================================================================");
@@ -2200,6 +2202,14 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		}
 	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, en, null);
 		return m.get(STATESELECT) != null ? (Boolean)m.get(STATESELECT) : false;
+	}
+	private boolean noSelectDistinct(StoreDesc sdesc, String entityName, String entityNameDetails) {
+		String en = entityName;
+		if( entityNameDetails!=null){
+			en = entityNameDetails;
+		}
+	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, en, null);
+		return m.get(SELECTDISTINCT) != null ? (Boolean)m.get(SELECTDISTINCT) : false;
 	}
 	private boolean noResultSetCount(StoreDesc sdesc, String entityName, String entityNameDetails) {
 		String en = entityName;
