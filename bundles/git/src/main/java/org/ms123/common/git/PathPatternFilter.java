@@ -93,13 +93,13 @@ public class PathPatternFilter extends TreeFilter {
 			String a[] = path.split("/");
 			boolean b = m_compiledPattern.reset(a[a.length-1]).matches();
 			if( b){
-				if( path.startsWith("store")){
+				if( path.startsWith("store") && walker.isSubtree()){
 					b=false;
 				}
-				if( path.startsWith("settings")){
+				if( path.startsWith("settings") && walker.isSubtree()){
 					b=false;
 				}
-				if( path.startsWith("roles")){
+				if( path.startsWith("roles") && walker.isSubtree()){
 					b=false;
 				}
 				if( path.startsWith("data_description/admin")){
