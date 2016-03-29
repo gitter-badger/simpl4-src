@@ -1194,9 +1194,8 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 	}
 
 	private class PrimaryKeyClassCreator {
-		protected void makePKClass(StoreDesc sdesc, ClassPool cp, List<String> pkNameList, String classname, List<Map> fields) throws Exception {
+		private void makePKClass(StoreDesc sdesc, ClassPool cp, List<String> pkNameList, String classname, List<Map> fields) throws Exception {
 			CtClass ctClass = cp.makeClass(classname);
-			System.out.println("makePKClass:" + ctClass + "/" + classname);
 			ConstPool constPool = ctClass.getClassFile().getConstPool();
 			ctClass.addInterface(cp.makeClass("java.io.Serializable"));
 			for (String pkName : pkNameList) {
@@ -1205,27 +1204,27 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				CtField f = createField(ctClass, pkName, type.getName(), AccessFlag.PUBLIC);
 			}
 			ctClass.addConstructor(getConstructor1(ctClass, classname, pkNameList));
-			ctClass.addConstructor(getConstructor2(ctClass, classname, pkNameList));
+			ctClass.addConstructor(getConstructor2(ctClass, classname, pkNameList, fields));
+			ctClass.addMethod(getCheckNullMethod(ctClass));
 			ctClass.addMethod(getToStringMethod(ctClass, pkNameList));
 			ctClass.addMethod(getEqualsMethod(ctClass, classname, pkNameList));
 			ctClass.addMethod(getHashCodeMethod(ctClass, pkNameList));
 		}
 
 		private CtConstructor getConstructor1(CtClass ctClass, String classname, List<String> pkNameList) throws Exception {
-			int dot = classname.lastIndexOf(".");
-			String m = "public " + classname.substring(dot + 1) + "(){";
+			String m = "public " + removePackageName(classname) + "(){";
 			m += "}";
 			return CtNewConstructor.make(m, ctClass);
 		}
 
-		private CtConstructor getConstructor2(CtClass ctClass, String classname, List<String> pkNameList) throws Exception {
-			int dot = classname.lastIndexOf(".");
-			String m = "public " + classname.substring(dot + 1) + "(String  str){";
-			m += "java.util.StringTokenizer tokeniser = new java.util.StringTokenizer(str, \":\");";
+		private CtConstructor getConstructor2(CtClass ctClass, String classname, List<String> pkNameList, List<Map> fields) throws Exception {
+			String m = "public " + removePackageName(classname) + "(String  str){";
+			m += "String tokens[] = str.split(\":\");";
 			int i = 0;
 			for (String pkName : pkNameList) {
-				m += "String token" + i + " = tokeniser.nextToken();";
-				m += "this." + pkName + " = token" + i + ";";
+				Class type = getType(fields,pkName);
+				m += "String token" + i + " = tokens["+i+"];";
+				m += "this." + pkName + " = (\"null\".equals(token"+i+") || \"\".equals(token"+i+")) ? null : "+ type.getName() +".valueOf(token" + i + ");";
 				i++;
 			}
 			m += "}";
@@ -1234,27 +1233,28 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 
 		private CtMethod getToStringMethod(CtClass ctClass, List<String> pkNameList) throws Exception {
 			String m = "public String toString() {";
-			m += "java.lang.StringBuilder str = new java.lang.StringBuilder();";
+			m += "java.lang.StringBuilder sb = new java.lang.StringBuilder();";
 			boolean first = true;
 			for (String pkName : pkNameList) {
 				if (!first) {
-					m += "str.append(\":\");";
+					m += "sb.append(\":\");";
 				}
-				m += "str.append(this." + pkName + ".toString());";
+				m += "sb.append(checkNull(this." + pkName + ").toString());";
 				first = false;
 			}
-			m += "return str.toString();";
+			m += "return sb.toString();";
 			m += "}";
 			return CtNewMethod.make(m, ctClass);
 		}
 
 		private CtMethod getEqualsMethod(CtClass ctClass, String classname, List<String> pkNameList) throws Exception {
-			int dot = classname.lastIndexOf(".");
 			String m = "public boolean equals(Object obj) {";
-			m += "if (obj == this)";
+			m += "if (obj == this){";
 			m += "  return true;";
-			m += "if (!(obj instanceof " + classname + "))";
+			m += "}";
+			m += "if (!(obj instanceof " + classname + ")){";
 			m += "  return false;";
+			m += "}";
 			m += classname + " other = (" + classname + ")obj;";
 
 			boolean first = true;
@@ -1278,11 +1278,23 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				if (!first) {
 					m += " ^ ";
 				}
-				m += "this." + pkName + ".hashCode()";
+				m += "checkNull(this." + pkName + ").hashCode()";
 				first = false;
 			}
 			m += ";}";
 			return CtNewMethod.make(m, ctClass);
+		}
+
+		private CtMethod getCheckNullMethod(CtClass ctClass) throws Exception {
+			String m = "public Object checkNull(Object obj) {";
+			m += "if( obj == null) return \"null\";";
+			m += "return obj;";
+			m += "}";
+			return CtNewMethod.make(m, ctClass);
+		}
+		private Class getType( List<Map> fields, String name){
+			Map<String,String> m = (Map)getField(fields, name);
+			return _getClass(m.get("datatype"));
 		}
 	}
 
