@@ -139,6 +139,11 @@ qx.Class.define( "ms123.datasource.Datasource", {
 					'type': "TextField",
 					'label': this.tr( "datasource.datanucleus_excludes" ),
 					'value': null
+				},
+				"datasource_is_main_db": {
+					'type': "Checkbox",
+					'label': this.tr( "datasource.is_main_db" ),
+					'value': true
 				}
 			}
 			this._form = new ms123.form.Form( {

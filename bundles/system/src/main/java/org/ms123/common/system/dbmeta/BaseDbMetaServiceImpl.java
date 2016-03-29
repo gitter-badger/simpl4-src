@@ -42,7 +42,10 @@ import org.jooq.util.TableDefinition;
 import org.jooq.util.TypedElementDefinition;
 import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.libhelper.Inflector;
+import org.ms123.common.nucleus.api.NucleusService;
+import org.ms123.common.domainobjects.api.DomainObjectsService;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.git.GitService;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.compile.CompileService;
 import org.osgi.framework.BundleContext;
@@ -69,6 +72,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	protected BundleContext bc;
 	protected CompileService compileService;
 	protected EntityService entityService;
+	protected GitService gitService;
+	protected DomainObjectsService domainobjectsService;
+	protected NucleusService nucleusService;
 	protected PermissionService permissionService;
 	protected Inflector m_inflector = Inflector.getInstance();
 	protected JSONSerializer js = new JSONSerializer();
@@ -452,6 +458,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 		Document doc = new Document(root);
 		File out = new File(new File(gitRepos, namespace), ".etc/jooqConfig-" + dataSourceName + ".xml");
+		if( !out.getParentFile().exists()){
+			out.getParentFile().mkdirs();
+		}
 		System.out.println("createJooqConfig:" + out);
 		Serializer serializer = new Serializer(new FileOutputStream(out), "UTF-8");
 		serializer.setIndent(2);

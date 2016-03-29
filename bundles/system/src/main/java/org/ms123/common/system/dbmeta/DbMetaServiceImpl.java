@@ -38,13 +38,16 @@ import org.jooq.util.jaxb.Configuration;
 import org.jooq.util.jaxb.Generator;
 import org.jooq.util.jaxb.Target;
 import org.ms123.common.entity.api.EntityService;
+import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.domainobjects.api.DomainObjectsService;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.compile.CompileService;
+import org.ms123.common.git.GitService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -111,16 +114,23 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			Map<String, String> dsConfig = (Map) config.get("datasource");
 
 			createDatasource(namespace, dsConfig);
-			File jooqConfigFile = createJooqConfig(namespace, (String) dsConfig.get("dataSourceName"), jooqConfig);
+
+			Boolean isMainDb = (Boolean) ((Map)dsConfig).get("is_main_db");
+			if (isMainDb == true) {
+				gitService.setStoreProperty( namespace, "store", "data", "database", "jdbc:"+(String)dsConfig.get("dataSourceName"));
+				nucleusService.close(sdesc);
+			}
 
 			Boolean generate = (Boolean) jooqConfig.get("create_jooq_metadata");
 			if (generate == true) {
+				File jooqConfigFile = createJooqConfig(namespace, (String) dsConfig.get("dataSourceName"), jooqConfig);
 				buildJooqMetadata(storeId, (String) dsConfig.get("dataSourceName"), jooqConfigFile.toString(), false);
 			}
 
 			generate = (Boolean) ((Map)datanucleusConfig).get("create_datanucleus_metadata");
 			if (generate == true) {
 				buildDatanucleusMetadata(sdesc, (String) dsConfig.get("dataSourceName"), datanucleusConfig);
+				domainobjectsService.createClasses(sdesc);
 			}
 
 		} catch (Exception e) {
@@ -214,6 +224,23 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	public void setEntityService(EntityService paramEntityService) {
 		System.out.println("DbMetaServiceImpl.setEntityService:" + paramEntityService);
 		this.entityService = paramEntityService;
+	}
+
+	@Reference(dynamic = true)
+	public void setGitService(GitService paramService) {
+		System.out.println("DbMetaServiceImpl.setGitService:" + paramService);
+		this.gitService = paramService;
+	}
+	@Reference(dynamic = true)
+	public void setNucleusService(NucleusService paramService) {
+		System.out.println("DbMetaServiceImpl.setNucleusService:" + paramService);
+		this.nucleusService = paramService;
+	}
+
+	@Reference(dynamic = true)
+	public void setDomainObjectsService(DomainObjectsService paramService) {
+		System.out.println("DbMetaServiceImpl.setDomainObjectsService:" + paramService);
+		this.domainobjectsService = paramService;
 	}
 
 	@Reference(dynamic = true, optional = true)

@@ -308,6 +308,7 @@ ${cassandrabundles} \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.libhelper-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.store-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.domainobjects-1.0.0.jar \
+  scan-bundle:file:$BUNDLESBUILD/org.ms123.common.domainobjects.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.message-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.ea-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.bhs-1.0.0.jar \

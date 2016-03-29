@@ -113,6 +113,12 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 			List fields = getEntityMetaData(sdesc, name);
 			makeClass(sdesc, cp, fields, classname, entMap, true);
 			classnameList.add(classname);
+			List<String> pkNameList = (List) entMap.get("primaryKeys");
+			if (pkNameList != null && pkNameList.size() > 1) {
+				String classnamePK = classname + "_PK";
+				classnameList.add(classnamePK);
+				new PrimaryKeyClassCreator().makePKClass(sdesc, cp, pkNameList, classnamePK, fields);
+			}
 		}
 		List<Map> rels = getRelations(sdesc);
 		for (int i = 0; rels != null && i < rels.size(); i++) {
@@ -235,7 +241,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				createRightField(cp, leftEntity, rightEntity, leftField, rightField, manyToMany);
 			}
 			if (oneToMany) {
-				if( foreignKeyField == null){
+				if (foreignKeyField == null) {
 					addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, null, null, isMap));
 					addAnnotationOne(f, "javax.jdo.annotations.Join", "column", getLeftName(leftEntity, leftField));
 				}
@@ -243,12 +249,12 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 					addAnnotationOne(f, "javax.jdo.annotations.Key", "a#types", "java.lang.String");
 					addAnnotationOne(f, "javax.jdo.annotations.Value", "a#types", rightEntity);
 				} else {
-					if( foreignKeyField!=null){
+					if (foreignKeyField != null) {
 						addAnnotationOne(f, "javax.jdo.annotations.Persistent", "mappedBy", foreignKeyField);
-						addAnnotationTwo(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "dependent",dependent ? "true": "false" );
-					}else{
+						addAnnotationTwo(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "dependent", dependent ? "true" : "false");
+					} else {
 						//Is column really needed?,@@@MS
-						addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", removePackageName(rightEntity).replace('.', '_').toLowerCase(), "dependent", dependent ? "true": "false");
+						addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", removePackageName(rightEntity).replace('.', '_').toLowerCase(), "dependent", dependent ? "true" : "false");
 					}
 				}
 			} else if (manyToMany) {
@@ -268,7 +274,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 			} else {
 				addEmptyAnnotation(f, "javax.jdo.annotations.Persistent");
 			}
-			if( foreignKeyField!=null){
+			if (foreignKeyField != null) {
 				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "mappedBy", foreignKeyField);
 			}
 			addGetterSetter(ctClass, leftField, rightEntity);
@@ -311,9 +317,13 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 	}
 
 	private CtField createField(CtClass ctClass, String name, String typeName) throws Exception {
+		return createField(ctClass, name, typeName, AccessFlag.PRIVATE);
+	}
+
+	private CtField createField(CtClass ctClass, String name, String typeName, int access) throws Exception {
 		final CtClass typeClass = ctClass.getClassPool().get(typeName);
 		CtField f = new CtField(typeClass, name, ctClass);
-		f.setModifiers(AccessFlag.PRIVATE);
+		f.setModifiers(access);
 		if (typeName.equals("java.util.Set")) {
 			ctClass.addField(f, CtField.Initializer.byExpr("new java.util.HashSet()"));
 		} else {
@@ -338,7 +348,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		ctClass.addMethod(nameGetMethod);
 	}
 
-	private Class getClass(String dt) {
+	private Class _getClass(String dt) {
 		Class type = String.class;
 		if (dt.equals("date")) {
 			type = Date.class;
@@ -636,9 +646,9 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 			annotation.addMemberValue("valueStrategy", emv);
 			idAttr.addAnnotation(annotation);
 			annotation = new Annotation("javax.jdo.annotations.PrimaryKey", constPool);
-			if( pkMap.get("idColumn") != null){
+			if (pkMap.get("idColumn") != null) {
 				Annotation columnAnnotation = new Annotation("javax.jdo.annotations.Column", constPool);
-				columnAnnotation.addMemberValue("name", new StringMemberValue((String)pkMap.get("idColumn"), constPool));
+				columnAnnotation.addMemberValue("name", new StringMemberValue((String) pkMap.get("idColumn"), constPool));
 				idAttr.addAnnotation(columnAnnotation);
 			}
 			idAttr.addAnnotation(annotation);
@@ -716,7 +726,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 	private AnnotationsAttribute makeField(StoreDesc sdesc, ClassPool cp, CtClass ctClass, String name, String columnName, String datatype, String edittype, String sqltype, String defaultValue, String classname, Object co, boolean withAnnotation, boolean withIndex) throws Exception {
 		name = firstToLower(name);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
-		Class type = getClass(datatype);
+		Class type = _getClass(datatype);
 		CtField f = createField(ctClass, name, type.getName());
 		AnnotationsAttribute fieldAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
 		f.getFieldInfo().addAttribute(fieldAttr);
@@ -1182,6 +1192,100 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		}
 		return def;
 	}
+
+	private class PrimaryKeyClassCreator {
+		protected void makePKClass(StoreDesc sdesc, ClassPool cp, List<String> pkNameList, String classname, List<Map> fields) throws Exception {
+			CtClass ctClass = cp.makeClass(classname);
+			System.out.println("makePKClass:" + ctClass + "/" + classname);
+			ConstPool constPool = ctClass.getClassFile().getConstPool();
+			ctClass.addInterface(cp.makeClass("java.io.Serializable"));
+			for (String pkName : pkNameList) {
+				Map<String, Object> field = getField(fields, pkName);
+				Class type = _getClass((String) field.get("datatype"));
+				CtField f = createField(ctClass, pkName, type.getName(), AccessFlag.PUBLIC);
+			}
+			ctClass.addConstructor(getConstructor1(ctClass, classname, pkNameList));
+			ctClass.addConstructor(getConstructor2(ctClass, classname, pkNameList));
+			ctClass.addMethod(getToStringMethod(ctClass, pkNameList));
+			ctClass.addMethod(getEqualsMethod(ctClass, classname, pkNameList));
+			ctClass.addMethod(getHashCodeMethod(ctClass, pkNameList));
+		}
+
+		private CtConstructor getConstructor1(CtClass ctClass, String classname, List<String> pkNameList) throws Exception {
+			int dot = classname.lastIndexOf(".");
+			String m = "public " + classname.substring(dot + 1) + "(){";
+			m += "}";
+			return CtNewConstructor.make(m, ctClass);
+		}
+
+		private CtConstructor getConstructor2(CtClass ctClass, String classname, List<String> pkNameList) throws Exception {
+			int dot = classname.lastIndexOf(".");
+			String m = "public " + classname.substring(dot + 1) + "(String  str){";
+			m += "java.util.StringTokenizer tokeniser = new java.util.StringTokenizer(str, \":\");";
+			int i = 0;
+			for (String pkName : pkNameList) {
+				m += "String token" + i + " = tokeniser.nextToken();";
+				m += "this." + pkName + " = token" + i + ";";
+				i++;
+			}
+			m += "}";
+			return CtNewConstructor.make(m, ctClass);
+		}
+
+		private CtMethod getToStringMethod(CtClass ctClass, List<String> pkNameList) throws Exception {
+			String m = "public String toString() {";
+			m += "java.lang.StringBuilder str = new java.lang.StringBuilder();";
+			boolean first = true;
+			for (String pkName : pkNameList) {
+				if (!first) {
+					m += "str.append(\":\");";
+				}
+				m += "str.append(this." + pkName + ".toString());";
+				first = false;
+			}
+			m += "return str.toString();";
+			m += "}";
+			return CtNewMethod.make(m, ctClass);
+		}
+
+		private CtMethod getEqualsMethod(CtClass ctClass, String classname, List<String> pkNameList) throws Exception {
+			int dot = classname.lastIndexOf(".");
+			String m = "public boolean equals(Object obj) {";
+			m += "if (obj == this)";
+			m += "  return true;";
+			m += "if (!(obj instanceof " + classname + "))";
+			m += "  return false;";
+			m += classname + " other = (" + classname + ")obj;";
+
+			boolean first = true;
+			m += "return ";
+			for (String pkName : pkNameList) {
+				if (!first) {
+					m += " && ";
+				}
+				m += "(this." + pkName + ".equals(other." + pkName + "))";
+				first = false;
+			}
+			m += ";}";
+			return CtNewMethod.make(m, ctClass);
+		}
+
+		private CtMethod getHashCodeMethod(CtClass ctClass, List<String> pkNameList) throws Exception {
+			boolean first = true;
+			String m = "public boolean hashCode() {";
+			m += "return ";
+			for (String pkName : pkNameList) {
+				if (!first) {
+					m += " ^ ";
+				}
+				m += "this." + pkName + ".hashCode()";
+				first = false;
+			}
+			m += ";}";
+			return CtNewMethod.make(m, ctClass);
+		}
+	}
+
 
 	@Reference
 	public void setEntityService(EntityService paramEntityService) {

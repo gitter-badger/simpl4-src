@@ -81,6 +81,9 @@ public class JDBCPersistenceManagerLoader extends AbstractPersistenceManagerLoad
 		try{
 			String vendor = m_sdesc.getVendor();
 			XADataSource xads = (XADataSource)getService(javax.sql.XADataSource.class, vendor);
+			if( xads == null){
+				throw new RuntimeException("Datasource not available:"+vendor);
+			}
 			info(this,"OpenJDBC.xa:"+xads);
 			info(this,"OpenJDBC.xa.class:"+xads.getClass());
 			info(this,"OpenJDBC:.vendor:"+vendor);
