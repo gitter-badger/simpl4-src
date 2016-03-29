@@ -137,13 +137,6 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			e.printStackTrace();
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DbMetaServiceImpl.createMetadata:", e);
 		} finally {
-			/*try {
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (Exception ee) {
-				ee.printStackTrace();
-			}*/
 		}
 	}
 

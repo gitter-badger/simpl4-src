@@ -81,6 +81,14 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	protected static String gitRepos = System.getProperty("git.repos");
 	protected static String workspace = System.getProperty("workspace");
 
+	public final List<String> simpleDataTypeList = new ArrayList<String>() {
+		{
+			add("decimal");
+			add("number");
+			add("string");
+		}
+	};
+
 	protected void buildDatanucleusMetadata(StoreDesc sdesc, String dataSourceName, Map<String, String> datanucleusConfig) throws Exception {
 		String namespace = sdesc.getNamespace();
 		final SchemaCrawlerOptions options = new SchemaCrawlerOptions();
@@ -145,6 +153,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		System.out.println("Table:" + table.getName() + "/entityName:" + entityName);
 
 		List<String> pkList = new ArrayList<String>();
+		List<String> pkListAll = new ArrayList<String>();
 		if (table.getPrimaryKey() != null) {
 			System.out.println("Table.primary:" + table.getPrimaryKey().getColumns());
 			System.out.println("Table.foreign:" + table.getForeignKeys());
@@ -156,6 +165,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		Map<String, Object> entityMap = new HashMap<String, Object>();
 		entityMap.put("pack", "data");
 		entityMap.put("enabled", true);
+		entityMap.put("maker", "dbmetaService");
 		entityMap.put("primaryKeys", pkList);
 		entityMap.put("name", entityName);
 		entityMap.put("tableName", tableName(table.getName()));
@@ -174,16 +184,31 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			String datatype = getType(columnType);
 			fieldMap.put("datatype", datatype);
 			fieldMap.put("edittype", getEditType(datatype));
-			if (pkList.contains(name)) {
-				fieldMap.put("primary_key", true);
+			if (pkList.size() == 0) {
+				if (isSimplDatatype(datatype) && !column.isNullable()) {
+					fieldMap.put("primary_key", true);
+					fieldMap.put("fakePrimaryKey", true);
+					pkListAll.add(name);
+				}
+			} else {
+				if (pkList.contains(name)) {
+					fieldMap.put("primary_key", true);
+				}
 			}
 			fieldsMap.put(name, fieldMap);
+		}
+		if( pkList.size() == 0 && pkListAll.size()> 0){
+			entityMap.put("primaryKeys", pkListAll);
 		}
 		System.out.println("Entity:" + this.js.deepSerialize(entityMap));
 		if (entityName.toLowerCase().indexOf("team") < 0) {
 			return entityMap;
 		}
 		return null;
+	}
+
+	private boolean isSimplDatatype(String dt) {
+		return simpleDataTypeList.contains(dt);
 	}
 
 	private List<Map<String, Object>> getRelations(final Table table, final Collection<? extends BaseForeignKey<?>> foreignKeys) {
@@ -320,18 +345,23 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		}
 		return getJavaName(out);
 	}
+
 	private String fieldName(String in) {
 		return getJavaName(in);
 	}
+
 	private String columnName(String in) {
 		return strip(in, "\"");
 	}
+
 	private String tableName(String in) {
 		return strip(in, "\"");
 	}
+
 	private String schemaName(String in) {
 		return strip(in, "\"");
 	}
+
 	private String entityName(String in) {
 		in = cleanName(in);
 		return m_inflector.getEntityName(in);
@@ -458,7 +488,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 		Document doc = new Document(root);
 		File out = new File(new File(gitRepos, namespace), ".etc/jooqConfig-" + dataSourceName + ".xml");
-		if( !out.getParentFile().exists()){
+		if (!out.getParentFile().exists()) {
 			out.getParentFile().mkdirs();
 		}
 		System.out.println("createJooqConfig:" + out);
