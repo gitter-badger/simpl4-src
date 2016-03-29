@@ -60,6 +60,8 @@ public class JDBCPersistenceManagerLoader extends AbstractPersistenceManagerLoad
 		m_props.put("datanucleus.metadata.validate", "true");
 		m_props.put("datanucleus.schema.autoCreateAll", "true");
 		m_props.put("datanucleus.schema.validateTables", "true");
+		m_props.put("datanucleus.useIsNullWhenEqualsNullParameter", "true");
+		m_props.put("datanucleus.schema.validateColumns", "false");
 		m_props.put("datanucleus.validateTables", "true");
 		m_props.put("datanucleus.TransactionType", "JTA");
 		m_props.put("datanucleus.identifier.case", "MixedCase");
