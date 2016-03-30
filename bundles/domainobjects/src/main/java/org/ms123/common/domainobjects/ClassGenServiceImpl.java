@@ -187,6 +187,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		String leftEntity = sdesc.insertJavaPackage((String) rel.get(LEFT_ENTITY));
 		String leftField = (String) rel.get(LEFT_FIELD);
 		String foreignKeyField = (String) rel.get("foreignKeyField");
+		String foreignKeyColumn = (String) rel.get("foreignKeyColumn");
 		String rightEntity = sdesc.insertJavaPackage((String) rel.get(RIGHT_ENTITY));
 		String rightField = (String) rel.get(RIGHT_FIELD);
 		boolean dependent = getBoolean(rel.get("dependent"), false);
@@ -250,8 +251,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 					addAnnotationOne(f, "javax.jdo.annotations.Value", "a#types", rightEntity);
 				} else {
 					if (foreignKeyField != null) {
-						addAnnotationOne(f, "javax.jdo.annotations.Persistent", "mappedBy", foreignKeyField);
-						addAnnotationTwo(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "dependent", dependent ? "true" : "false");
+						addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", foreignKeyColumn, "dependent", dependent ? "true" : "false");
 					} else {
 						//Is column really needed?,@@@MS
 						addAnnotationThree(f, "javax.jdo.annotations.Element", "a#types", rightEntity, "column", removePackageName(rightEntity).replace('.', '_').toLowerCase(), "dependent", dependent ? "true" : "false");
