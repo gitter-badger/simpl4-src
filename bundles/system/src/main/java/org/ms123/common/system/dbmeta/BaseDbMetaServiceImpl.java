@@ -153,14 +153,20 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		System.out.println("Table:" + table.getName() + "/entityName:" + entityName);
 
 		List<String> pkList = new ArrayList<String>();
+		List<String> fkList = new ArrayList<String>();
 		List<String> pkListAll = new ArrayList<String>();
 		if (table.getPrimaryKey() != null) {
-			System.out.println("Table.primary:" + table.getPrimaryKey().getColumns());
-			System.out.println("Table.foreign:" + table.getForeignKeys());
+			System.out.println("Table.primaryKeys:" + table.getPrimaryKey().getColumns());
 			for (Column col : table.getPrimaryKey().getColumns()) {
 				pkList.add(fieldName(col.getName()));
 			}
 		}
+/*		if (table.getForeignKeys() != null) {
+			System.out.println("Table.foreignKeys:" + table.getForeignKeys());
+			for (ForeignKey fk : table.getForeignKeys()) {
+				fkList.add(fieldName(col.getName()));
+			}
+		}*/
 		System.out.println("pkList:" + pkList);
 		Map<String, Object> entityMap = new HashMap<String, Object>();
 		entityMap.put("pack", "data");
@@ -272,6 +278,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 		rm.put("foreignKeyField", foreignKeyField);
 		rm.put("foreignKeyColumn", _foreignKeyColumn);
+		rm.put("foreignKeyName", fkName);
 
 		rm.put("dependent", false);
 		rm.put("relation", rel);
