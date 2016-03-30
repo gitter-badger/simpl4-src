@@ -110,25 +110,14 @@ public class Utils {
 		return null;
 	}
 
-	public static Object listContainsId(Collection list, Map map) throws Exception {
+	public static Object listContainsId(PersistenceManager pm, Collection list, Map map) throws Exception {
 		for (Object o : list) {
-			Object id = PropertyUtils.getProperty(o, "id");
-			if (id instanceof Long) {
-				Long id1 = (Long) PropertyUtils.getProperty(o, "id");
-				if (map.get("id") != null) {
-					Long id2 = getLong(map.get("id"));
-					if (id1 == id2) {
-						return o;
-					}
-				}
-			}
-			if (id instanceof String) {
-				String id1 = (String) PropertyUtils.getProperty(o, "id");
-				if (map.get("id") != null) {
-					String id2 = (String) map.get("id");
-					if (id1 == id2) {
-						return o;
-					}
+			Object id1 = pm.getObjectId(o);
+			if (map.get("id") != null) {
+				Object id2 = map.get("id");
+				if (String.valueOf(id2).equals(String.valueOf(id1))) {
+					debug("listContainsId.return:"+id1);
+					return o;
 				}
 			}
 		}

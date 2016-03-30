@@ -499,7 +499,7 @@ public class MultiOperations {
 						if (!isSimple) {
 							for (Object ol : sourceList) {
 								Map childSourceMap = (Map) ol;
-								Object childDestinationObj = Utils.listContainsId(destinationList, childSourceMap);
+								Object childDestinationObj = Utils.listContainsId(pm,destinationList, childSourceMap);
 								if (childDestinationObj != null) {
 									debug("id:" + childSourceMap + " already assigned");
 								} else {

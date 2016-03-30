@@ -956,7 +956,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 						if( !isSimple ){
 							for (Object ol : valList) {
 								Map map = (Map) ol;
-								Object o = Utils.listContainsId(toList, map);
+								Object o = Utils.listContainsId(pm, toList, map);
 								if (o != null) {
 									debug("id:" + map + " already assigned");
 								} else {
