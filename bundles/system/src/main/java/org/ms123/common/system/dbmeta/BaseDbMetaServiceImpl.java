@@ -171,6 +171,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		Map<String, Object> entityMap = new HashMap<String, Object>();
 		entityMap.put("pack", "data");
 		entityMap.put("enabled", true);
+		entityMap.put("state_fields", false);
+		entityMap.put("default_fields", false);
+		entityMap.put("team_security", false);
 		entityMap.put("maker", "dbmetaService");
 		entityMap.put("primaryKeys", pkList);
 		entityMap.put("name", entityName);
