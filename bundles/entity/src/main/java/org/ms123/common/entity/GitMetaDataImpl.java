@@ -158,6 +158,16 @@ class GitMetaDataImpl implements MetaData {
 			}
 			desc.put("fields", fields);
 		}
+
+		List pkList = new ArrayList();
+		for (Map.Entry<String,Object> entry : fields.entrySet()) {
+			Map<String,Object> field = (Map)entry.getValue();
+			Object pk = field.get("primary_key");
+			if( pk != null && Boolean.valueOf(pk.toString()) == true ){
+				pkList.add( (String)field.get("name"));
+			}
+		}
+		desc.put("primaryKeys", pkList);
 		StoreDesc sdesc = StoreDesc.get(storeId);
 		String namespace = sdesc.getNamespace();
 		String pack = sdesc.getPack();

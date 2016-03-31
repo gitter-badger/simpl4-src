@@ -587,6 +587,9 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 	}
 
 	private List sortFields(List<Map> fields, List<String> primaryKeys) {
+		if( primaryKeys == null){
+			return  fields;
+		}
 		System.out.println("fields1:" + fields);
 		List result = new ArrayList();
 		for (String pk : primaryKeys) {
