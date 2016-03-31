@@ -275,11 +275,11 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				addEmptyAnnotation(f, "javax.jdo.annotations.Persistent");
 			}
 			if (foreignKeyField != null) {
-				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "mappedBy", foreignKeyField);
+					addAnnotationOne(f, "javax.jdo.annotations.Column", "name", foreignKeyColumn);
 			}
 			addGetterSetter(ctClass, leftField, rightEntity);
 			if (oneToOneBi) {
-				createRightFieldOneToOneBi(cp, leftEntity, rightEntity, leftField, rightField, manyToMany);
+				createRightFieldOneToOneBi(cp, leftEntity, rightEntity, leftField, rightField, manyToMany,foreignKeyColumn);
 			}
 		}
 	}
@@ -312,12 +312,15 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		}
 	}
 
-	protected void createRightFieldOneToOneBi(ClassPool cp, String leftEntity, String rightEntity, String leftField, String rightField, boolean many) throws Exception {
+	protected void createRightFieldOneToOneBi(ClassPool cp, String leftEntity, String rightEntity, String leftField, String rightField, boolean many, String column) throws Exception {
 		CtClass ctClass = cp.get(rightEntity);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
 		CtField f = createField(ctClass, rightField, leftEntity);
 		addGetterSetter(ctClass, rightField, leftEntity);
 		addAnnotationOne(f, "javax.jdo.annotations.Persistent", "mappedBy", leftField);
+		if( column != null){
+			addAnnotationOne(f, "javax.jdo.annotations.Column", "name", column);
+		}
 	}
 
 	private CtField createField(CtClass ctClass, String name, String typeName) throws Exception {
