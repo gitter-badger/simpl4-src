@@ -340,6 +340,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		if ("date".equals(in)) {
 			out = "date";
 		}
+		if ("boolean".equals(in)) {
+			out = "checkbox";
+		}
 		return out;
 	}
 

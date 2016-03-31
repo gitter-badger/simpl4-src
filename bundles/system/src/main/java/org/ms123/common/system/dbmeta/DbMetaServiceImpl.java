@@ -175,6 +175,9 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			deleteDirectory(pdir);
 
 			File bdir = new File(basedir, "build/" + packageDir);
+			if( bdir.exists()){
+				deleteDirectory(bdir);
+			}
 			bdir.mkdirs();
 
 			File tdir = new File("/tmp/jooq", packageDir);
