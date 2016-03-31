@@ -239,7 +239,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				addAnnotationOne(f, "javax.jdo.annotations.Persistent", "table", getJoinTableName(leftEntity, leftField, rightEntity, rightField, isMap));
 			}
 			if (oneToManyBi || manyToMany) {
-				createRightField(cp, leftEntity, rightEntity, leftField, rightField, manyToMany);
+				createRightField(cp, leftEntity, rightEntity, leftField, rightField, manyToMany, foreignKeyColumn);
 			}
 			if (oneToMany) {
 				if (foreignKeyField == null) {
@@ -284,7 +284,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		}
 	}
 
-	protected void createRightField(ClassPool cp, String leftEntity, String rightEntity, String leftField, String rightField, boolean many) throws Exception {
+	protected void createRightField(ClassPool cp, String leftEntity, String rightEntity, String leftField, String rightField, boolean many, String column) throws Exception {
 		CtClass ctClass = cp.get(rightEntity);
 		System.out.println("createRightField:" + rightEntity + "/" + ctClass);
 		Class type = Set.class;
@@ -293,11 +293,15 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				System.out.println("ClassGenService.createRightField:" + rightEntity + " not exists");
 				throw new RuntimeException("ClassGenService.createRightField:rightEntity(" + rightEntity + ") is null");
 			}
-			if (ctClass.getField(rightField) != null) {
+			CtField f = null;
+			if ((f=ctClass.getField(rightField)) != null) {
 				// RelatedTo
+				if( column != null){
+					addAnnotationOne(f, "javax.jdo.annotations.Column", "name", column);
+				}
 				return;
 			}
-			CtField f = createField(ctClass, rightField, leftEntity);
+			f = createField(ctClass, rightField, leftEntity);
 			addEmptyAnnotation(f, "javax.jdo.annotations.Persistent");
 			addGetterSetter(ctClass, m_inflector.singularize(rightField), leftEntity);
 		} else {
