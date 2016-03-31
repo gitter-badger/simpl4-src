@@ -1102,10 +1102,11 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 											_id = Utils.extractId(s);
 										}
 										Class idClass = PropertyUtils.getPropertyType(o, "id");
-										id = (idClass.equals(Long.class)) ? Long.valueOf(_id + "") : _id;
+										id = (Long.class.equals(idClass)) ? Long.valueOf(_id + "") : _id;
 									}
 								}
 							} catch (Exception e) {
+								e.printStackTrace();
 							}
 							if (id != null && !"".equals(id) && !"null".equals(id)) {
 								debug("\tId2:"+id);

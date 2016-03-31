@@ -676,10 +676,11 @@ public class MultiOperations {
 						_id = Utils.extractId(s);
 					}
 					Class idClass = PropertyUtils.getPropertyType(propertyType.newInstance(), "id");
-					id = (idClass.equals(Long.class)) ? Long.valueOf(_id + "") : _id;
+					id = (Long.class.equals(idClass)) ? Long.valueOf(_id + "") : _id;
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		if (id != null && !"".equals(id) && !"null".equals(id)) {
 			Object relatedObject = sc.getPM().getObjectById(propertyType, id);
