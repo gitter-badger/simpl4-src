@@ -290,13 +290,13 @@ qx.Class.define('ms123.widgets.Form', {
 					fieldData.validation.filter = col.filter;
 				}
 			
-			} else if (col.edittype=="date" && col.datatype=="date") {
+			} else if (col.edittype=="date" && (col.datatype=="date" || col.datatype=="string")) {
 				fieldData.type = "DateField";
 				fieldData.value = null;
 				if (col.constraints) {
 					fieldData.validation = this._getValidations(col.constraints);
 				}
-			} else if (col.edittype=="datetime" && col.datatype=="date") {
+			} else if (col.edittype=="datetime" && (col.datatype=="date" || col.datatype=="string" )) {
 				fieldData.type = "DateTimeField";
 				fieldData.value = null;
 				if (col.constraints) {
