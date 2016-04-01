@@ -624,6 +624,15 @@ qx.Class.define('ms123.widgets.Table', {
 					ms123.form.Dialog.confirm(this.tr("table.confirm.delete"), function (e) {
 						if (e) {
 							var id = map[this._keyColumn];
+							if( this._context.primaryKeys ){
+								id =''; 
+								var colon='';
+								for( var i=0; i< this._context.primaryKeys.length;i++){
+									var pk = this._context.primaryKeys[i];
+									id = id + colon + map[pk];
+									colon=':';
+								}
+							}
 							var rpcParams = this._buildBaseRpcParams(false, id);
 							//rpcParams.id = id+"";
 							var completed = function (data) {
