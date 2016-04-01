@@ -511,7 +511,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			String from = qb.getFrom(null);
 
 			whereClause = whereClause + getAddWhere(qb,entityName, null,null);
-			String sql = "Select distinct id from " + from + " " + whereClause;
+			String sql = "Select distinct "+entityName+" from " + from + " " + whereClause;
 			debug("sql:" + sql);
 			Query q = pm.newQuery("javax.jdo.query.JPQL", sql);
 			q.declareImports(sdesc.getImports());
@@ -536,14 +536,14 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 					debug("e:" + e);
 				}
 				if (object != null) {
-					updateId = PropertyUtils.getProperty(object, "id");
+					updateId = pm.getObjectId(object);
 				} else {
 					String className = m_inflector.getClassName(entityName);
 					Class updateClazz = getClass(sdesc, className);
 					Object objectUpdate = updateClazz.newInstance();
 					pm.makePersistent(objectUpdate);
 					PropertyUtils.setProperty(objectMaster, propertyName, objectUpdate);
-					updateId = (Long) PropertyUtils.getProperty(objectUpdate, "id");
+					updateId = pm.getObjectId(objectUpdate);
 				}
 				classNameUpdate = m_inflector.getClassName(entityName);
 			} else {
@@ -569,7 +569,12 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				if (updateId == null){
 					updateId = "dummy";
 				}
-				objectUpdate = pm.getObjectById(updateClazz, updateId);
+				
+				if( row.getClass().isAssignableFrom(updateClazz)){
+					objectUpdate = row;
+				}else{
+					objectUpdate = pm.getObjectById(updateClazz, updateId);
+				}
 			} catch (javax.jdo.JDOObjectNotFoundException e) {
 				String pk = null;
 				if (permittedFields != null) {
