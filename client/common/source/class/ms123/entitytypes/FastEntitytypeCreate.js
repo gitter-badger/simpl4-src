@@ -67,7 +67,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 				validation: {
 					required: true,
 					filter: /[a-z0-9_]/,
-					validator: "/^[a-z][0-9a-z_]{2,32}$/"
+					validator: "/^[a-zA-Z][0-9a-z_A-Z]{3,64}$/"
 				},
 				'value': ""
 			},
@@ -139,6 +139,11 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 					'validation': {
 						required: false
 					},
+					'value': ""
+				},
+				"tableName": {
+					type: "TextField",
+					label: this.tr("data.field.tablename"),
 					'value': ""
 				},
 				"default_fields":{
@@ -244,6 +249,25 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 			toolbar._add(this._buttonDown);
 			this._buttonDown.setEnabled(false);
 
+			toolbar.setSpacing(5);
+			toolbar.addSpacer();
+			var buttonDel = new qx.ui.toolbar.Button(this.tr("entitytypes.delete"), "icon/16/places/user-trash.png");
+			buttonDel.addListener("execute", function () {
+				var x = this._deleteIsOk(this._classForm.getData());
+				if (x) {
+					ms123.form.Dialog.alert(this.tr("entitytypes.delete_not_possible") + ":" + x);
+					return
+				}
+				this._confirmDelete();
+			}, this);
+			toolbar._add(buttonDel);
+			if (this._isNew) {
+				buttonDel.setEnabled(false);
+			}
+			this._buttonDel = buttonDel;
+
+
+
 			toolbar.add(new qx.ui.core.Spacer(), {
 				flex: 1
 			});
@@ -323,6 +347,128 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 			});
 			win.open();
 		},
+
+		_deleteEntitytype: function (name) {
+			var failed = (function (details) {
+				ms123.form.Dialog.alert(this.tr("entitytypes.deleteEntitytype_failed")+":"+details.message);
+			}).bind(this);
+
+			try {
+				var ret = ms123.util.Remote.rpcSync("entity:deleteEntitytype", {
+					storeId: this._getStoreId(),
+					name: name
+				});
+			} catch (e) {
+				failed.call(this,e);
+			}
+		},
+		_getRelations: function () {
+			var failed = (function (details) {
+				ms123.form.Dialog.alert(this.tr("entitytypes.getRelations_failed") + ":" + details.message);
+			}).bind(this);
+
+			try {
+				var storeId = this._facade.storeDesc.getStoreId();
+				var ret = ms123.util.Remote.rpcSync("entity:getRelations", {
+					storeId: this._getStoreId()
+				});
+				return ret;
+			} catch (e) {
+				return [];
+			}
+		},
+		_deleteIsOk:function(data){
+			var relations = this._getRelations();
+			var etname = this._facade.storeDesc.getPack()+"."+data.name;
+			for( var i=0; i< relations.length;i++){
+				var rel = relations[i];
+				if( rel.leftmodule == etname || rel.rightmodule == etname){
+					return this.tr("entitytypes.entitytype_exists_in_relations");
+				}
+			}
+			return null;
+		},
+
+		_confirmDelete: function () {
+			var buttons = [{
+				'label': this.tr("entitytypes.delete_class"),
+				'icon': "icon/22/actions/dialog-ok.png",
+				'value': 1
+			},
+			{
+				'label': this.tr("composite.select_dialog.cancel"),
+				'icon': "icon/22/actions/dialog-cancel.png",
+				'value': 2
+			}];
+			var formData = {
+				delete_messages: {
+					name: "delete_messages",
+					type: "CheckBox",
+					value: true,
+					label: this.tr("entitytypes.delete_messages")
+				},
+				delete_settings: {
+					name: "delete_settings",
+					type: "CheckBox",
+					value: true,
+					label: this.tr("entitytypes.delete_settings")
+				}
+			};
+
+			var self = this;
+			var form = new ms123.form.Form({
+				"buttons": buttons,
+				"tabs": [{
+					id: "tab1",
+					layout: "single"
+				}],
+				"useScroll": false,
+				"formData": formData,
+				"hide": false,
+				"inWindow": true,
+				"callback": function (m, v) {
+					if (m !== undefined) {
+						form.hide();
+						if (v == 1) {
+							self._delete(self._classForm.getData(),m);
+							self.setEnabled(false);
+							self._buttonSave.setEnabled(false);
+							self._buttonAdd.setEnabled(false);
+						} else if (v == 2) {}
+					}
+				},
+				"context": self
+			});
+			form.show();
+		},
+		_delete:function(data,flags){
+			console.log("delete.data:"+qx.util.Serializer.toJson(data));
+			var children = this._model.parent.getChildren();
+			var len = children.getLength();
+			console.log("len:"+len);
+			for(var i=0; i < len; i++){
+				var child = children.getItem(i);
+				console.log("\tname:"+child.getId());
+				if( child.getId() == data.name){
+					children.remove(child);
+
+					var dm = flags.get("delete_messages");
+					var ds = flags.get("delete_settings");
+
+					var 	namespace= this._facade.storeDesc.getNamespace();
+					var lang= ms123.config.ConfigManager.getLanguage();
+					var ds = new ms123.entitytypes.DefaultSettings(namespace,lang);
+					
+					if (dm) ds.deleteMessages({name:data.name,fields:this._fields});
+					if (ds) ds.deleteResources(data);	
+
+					this._deleteEntitytype(data.name);
+					break;
+				}
+			}
+		},
+
+
 		_createAddForm: function () {
 			var formData = {};
 			for (var i = 0; i < this._columnModel.length; i++) {

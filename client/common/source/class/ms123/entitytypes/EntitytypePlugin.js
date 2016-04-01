@@ -47,7 +47,7 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 		 */
 		getContextMenuActions: function () {
 			var contextMenu = [
-			{
+/*			{
 				nodetypes: ["sw.entitytypes"],
 				clazz: ms123.entitytypes.FastEntitytypeCreate,
 				param: {
@@ -58,8 +58,8 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 				tabicon: "resource/ms123/classwizard.png",
 				title: this.tr("entitytypes.new_fast_entitytype_create"),
 				kind: "tab"
-			},
-			{
+			},*/
+/*			{
 				nodetypes: ["sw.entitytypes"],
 				clazz: ms123.entitytypes.EntitytypeEdit,
 				param: {
@@ -70,7 +70,7 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 				tabicon: "resource/ms123/table.png",
 				title: this.tr("entitytypes.new_entitytype"),
 				kind: "tab"
-			},
+			},*/
 			{
 				nodetypes: ["sw.entitytypes"],
 				clazz: ms123.entitytypes.DatabaseAdmin,
@@ -83,7 +83,7 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 				title: "DatabaseAdmin",
 				kind: "tab"
 			},
-			{
+/*			{
 				nodetypes: ["sw.entitytype"],
 				clazz: ms123.entitytypes.EntitytypeEdit,
 				param: {
@@ -95,7 +95,7 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 				title: this.tr("entitytypes.edit_entitytype"),
 				tabtitle: "%n",
 				kind: "tab"
-			},
+			},*/
 /*			{
 				nodetypes: ["sw.entitytypes"],
 				clazz: ms123.entitytypes.EntitytypeWizardForm,
