@@ -556,9 +556,18 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 			this._currentAliases = qx.util.Serializer.toJson(c.aliasColumns);
 			this._currentMainModule = mainModule;
 
+			var newModel = [];
+			c.columns.forEach( (function(col,ind){
+				var colNew = ms123.util.Clone.clone( col );
+				var name = c.aliasColumns[ind] || col.name;
+				colNew.name = name;
+				colNew.id = name;
+				colNew.label = name;
+				newModel.push(colNew);
+			}).bind(this));
 
 			var cm = new ms123.config.ConfigManager();
-			var cols = cm.buildColModel(c.columns, "lists", this.__storeDesc, "data");
+			var cols = cm.buildColModel(newModel, "lists", this.__storeDesc, "data");
 			var model = this._buildModel(cols, {});
 
 			var gridConfig = {};
