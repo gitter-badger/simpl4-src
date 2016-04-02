@@ -45,4 +45,5 @@ public interface CamelService {
 	public Object camelSend(String ns, String routeName,Map<String, Object> properties);
 	public Object camelSend(String ns, String routeName,Object body, Map<String, Object> headers, Map<String, Object> properties);
 	public void  createRoutesFromJson( String namespace ) throws RpcException;
+	public String evaluate(String expr, Exchange exchange);
 }

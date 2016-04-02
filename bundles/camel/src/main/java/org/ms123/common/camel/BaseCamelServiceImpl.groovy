@@ -86,6 +86,7 @@ import org.codehaus.groovy.tools.FileSystemCompiler;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import java.io.File;
 import  org.ms123.common.camel.components.*;
+import  org.ms123.common.camel.expression.GroovyExpression;
 import  org.ms123.common.camel.trace.*;
 import  org.ms123.common.camel.view.VisGenerator;
 import org.ms123.common.camel.jsonconverter.CamelRouteJsonConverter;
@@ -175,6 +176,9 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 		}
 	}
 
+	public String evaluate(String expr, Exchange exchange){
+		return GroovyExpression.evaluate( expr, exchange);
+	}
 
 	public CamelContext getCamelContext(String namespace) {
 		try{
