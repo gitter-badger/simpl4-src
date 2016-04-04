@@ -55,6 +55,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.joda.time.DateTime;
 import org.ms123.common.entity.api.EntityService;
@@ -306,6 +307,27 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		return entityName;
 	}
 
+	public void makePersistent(Object objectInsert) {
+		String namespace = null;
+		try{
+			namespace = (String)MethodUtils.invokeMethod(objectInsert, "__getNamespace", null);
+			System.out.println("makePersistent:"+namespace);
+		}catch(Exception e){
+			 throw new RuntimeException("JdoLayerImpl.makePersistent:",e);
+		}
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sessionContext = getSessionContext(sdesc);
+		PersistenceManager pm = sessionContext.getPM();
+		pm.makePersistent(objectInsert);
+	}
+
+	public void makePersistent(String namespace, Object objectInsert) {
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sessionContext = getSessionContext(sdesc);
+		PersistenceManager pm = sessionContext.getPM();
+		pm.makePersistent(objectInsert);
+	}
+
 	public void makePersistent(SessionContext sessionContext, Object objectInsert) {
 		PersistenceManager pm = sessionContext.getPM();
 		pm.makePersistent(objectInsert);
@@ -394,6 +416,18 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			cvl.get(0).put("idHitList",idHitList);
 		}
 		return cvl;
+	}
+
+	public Object createObject(String namespace, String entityName) {
+		try {
+			StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+			Class clazz = getClass(sdesc, m_inflector.getClassName(entityName));
+			Object object = clazz.newInstance();
+			setDefaultValues(clazz, object);
+			return object;
+		} catch (Exception e) {
+			throw new RuntimeException("JdoLayerImpl.createObject:", e);
+		}
 	}
 
 	public Object createObject(SessionContext sessionContext, String entityName) {
@@ -1811,6 +1845,10 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 	private String getAlias(String mod) {
 		String mn = m_inflector.getEntityName(mod);
 		return mn;
+	}
+
+	public synchronized SessionContext getSessionContext(String namespace) {
+		return getSessionContext( StoreDesc.getNamespaceData(namespace));
 	}
 
 	public synchronized SessionContext getSessionContext(StoreDesc sdesc) {

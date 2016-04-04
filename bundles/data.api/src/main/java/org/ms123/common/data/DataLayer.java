@@ -74,6 +74,7 @@ public interface DataLayer {
 	public Map query(SessionContext sessionContext, Map params, StoreDesc sdesc, String entityName, String idParent, String entityNameDetails);
 
 	public SessionContext getSessionContext(StoreDesc sdesc);
+	public SessionContext getSessionContext(String namespace);
 
 	public void populate(SessionContext sessionContext, Map from, Object to, Map hintsMap);
 
@@ -83,11 +84,14 @@ public interface DataLayer {
 	public List validateObject(SessionContext sessionContext, Object objectInsert);
 
 	public Object createObject(SessionContext sessionContext, String entityName);
+	public Object createObject(String namespace, String entityName);
 
 	public void insertIntoMaster(SessionContext sc, Object objectInsert, String entityName, Class masterClazz, String fieldName, Object masterId) throws Exception;
 
 	public void insertIntoMaster(SessionContext sc, Object objectInsert, String entityName, Object objectMaster, String fieldName) throws Exception;
 
+	public void makePersistent(Object objectInsert);
+	public void makePersistent(String namespace, Object objectInsert);
 	public void makePersistent(SessionContext sessionContext, Object objectInsert);
 
 	public String constructEntityName(SessionContext sessionContext, String entityName, String entityNameParent);
