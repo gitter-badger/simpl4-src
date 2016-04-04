@@ -111,7 +111,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 			String name = (String) entMap.get("name");
 			String classname = getFQN(sdesc, entMap);
 			List fields = getEntityMetaData(sdesc, name);
-			makeClass(sdesc, cp, fields, classname, entMap, true);
+			makeClass(sdesc, cp, fields, classname, sdesc.getNamespace(), entMap, true);
 			classnameList.add(classname);
 			List<String> pkNameList = (List) entMap.get("primaryKeys");
 			if (pkNameList != null && pkNameList.size() > 1) {
@@ -353,6 +353,12 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		ctClass.addMethod(nameSetMethod);
 		CtMethod nameGetMethod = CtNewMethod.make(getBody, ctClass);
 		ctClass.addMethod(nameGetMethod);
+	}
+
+	private void addGetNamespace(CtClass ctClass, String namespace) throws Exception {
+		String body = "public String __getNamespace(){return \"" + namespace + "\";}";
+		CtMethod nsMethod = CtNewMethod.make(body, ctClass);
+		ctClass.addMethod(nsMethod);
 	}
 
 	private Class _getClass(String dt) {
@@ -605,7 +611,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		return result;
 	}
 
-	protected void makeClass(StoreDesc sdesc, ClassPool cp, List fields, String classname, Map<String, Object> entMap, boolean withAnnotation) throws Exception {
+	protected void makeClass(StoreDesc sdesc, ClassPool cp, List fields, String classname, String namespace, Map<String, Object> entMap, boolean withAnnotation) throws Exception {
 		CtClass ctClass = cp.get(classname);
 		System.out.println("makeClass:" + ctClass + "/" + classname);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
@@ -731,6 +737,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				}
 			}
 		}
+		addGetNamespace(ctClass, namespace);
 	}
 
 	private AnnotationsAttribute makeField(StoreDesc sdesc, ClassPool cp, CtClass ctClass, String name, String columnName, String datatype, String edittype, String sqltype, String defaultValue, String classname, Object co, boolean withAnnotation, boolean withIndex) throws Exception {
