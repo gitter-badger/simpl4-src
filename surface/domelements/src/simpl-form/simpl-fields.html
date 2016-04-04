@@ -949,7 +949,7 @@
 </dom-module>
 
 
-<dom-module id="toggle-field" extends="form-field" kind="toggle" noscript>
+<dom-module id="toggle-field">
 	<style>
 		.floated-label {
 			font-size: 0.75em;
@@ -975,6 +975,12 @@
 		</div>
 		<paper-toggle-button checked="{{value}}"></paper-toggle-button>
 	</template>
+
+	<script>
+		Polymer( {
+			is: "toggle-field"
+		});
+	</script>
 </dom-module>
 
 
