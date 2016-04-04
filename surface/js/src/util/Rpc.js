@@ -128,7 +128,7 @@ clazz.construct.extend( "simpl4.util.Rpc", {
 			req.context = this;
 		} else {
 			req.success = function( data, status ) {
-				if ( data.result ) {
+				if ( data.result || data.error == null ) {
 					var result = data.result;
 					if ( typeof result == 'string' ) {
 						result = JSON.parse( result );
