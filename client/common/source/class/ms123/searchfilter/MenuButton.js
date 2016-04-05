@@ -237,7 +237,7 @@ qx.Class.define("ms123.searchfilter.MenuButton", {
 					'label': this.tr("filter.text.new_label_name"),
 					'validation': {
 						required: true,
-						validator: "/^[A-Za-z]([0-9A-Za-z_]){2,32}$/"
+						validator: "/^[A-Za-z]([0-9A-Za-z_]){1,64}$/"
 					},
 					'value': ""
 				}
