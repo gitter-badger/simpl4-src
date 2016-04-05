@@ -215,27 +215,38 @@ public class QueryBuilder {
 		m_paramCount++;
 	}
 
-	public void insertFilterParams(Map<String, Object> filter) {
-		if (m_filterParams == null || m_filterParams.size() == 0 || filter == null) {
-			return;
+	public boolean insertFilterParams(Map<String, Object> filter) {
+		if (filter == null) {
+			return false;
 		}
+		boolean ok = true;
 		String label = (String) filter.get("label");
 		if (filter.get("connector") == null && label != null) {
 			if (label.matches("^[a-zA-Z].*")) {
-				Object data = m_filterParams.get(label);
-				if( data == null){
-					label = label.toLowerCase();
-					data = m_filterParams.get(label);
-				}
-				if (data != null) {
-					filter.put("data", data);
+				if( m_filterParams != null && (m_filterParams.keySet().contains( label )|| m_filterParams.keySet().contains( label.toLowerCase() ))){
+					Object data = m_filterParams.get(label);
+					if( data == null){
+						label = label.toLowerCase();
+						data = m_filterParams.get(label);
+					}
+					if (data != null) {
+						filter.put("data", data);
+					}
+					ok = true;
+				}else{
+					ok = false;
 				}
 			}
 		}
 		List children = (List) filter.get("children");
+		List newChildren = new ArrayList();
 		for (int i = 0; i < children.size(); i++) {
 			Map c = (Map) children.get(i);
-			insertFilterParams(c);
+			if( insertFilterParams(c) ){
+				newChildren.add( c );
+			}
 		}
+		filter.put("children", newChildren);
+		return ok;
 	}
 }
