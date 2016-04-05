@@ -1212,12 +1212,21 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				Object result = Utils.eval( expression, beanMap, scriptCache);
 				try{
 					if("string".equals(datatype) && !(result instanceof String)){
-						beanMap.put(key,ConvertUtils.convert(result,String.class));
-					}else{
-						beanMap.put(key,result);
+						result = ConvertUtils.convert(result,String.class);
+					} else if("integer".equals(datatype) && !(result instanceof Integer)){
+						result = ConvertUtils.convert(result,Integer.class);
+					} else if("decimal".equals(datatype) && !(result instanceof Double)){
+						result = ConvertUtils.convert(result,Double.class);
 					}
-				}catch(Exception e){
-					info("Cannot set value for("+key+"):"+result+"/"+e.getMessage());
+					beanMap.put(key,result);
+				}catch(Throwable e){
+					e.printStackTrace();
+					String msg = e.getMessage();
+					while (e.getCause() != null) {
+						e = e.getCause();
+						msg += "\n" +e.getMessage();
+					}
+					throw new RuntimeException("Cannot set value for("+key+"):"+result+"/"+msg);
 				}
 			}
 		}
