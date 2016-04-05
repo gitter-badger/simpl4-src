@@ -269,7 +269,7 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		return null;
 	}
 
-	public List getListByFilter(Class clazz, String filter) {
+	public List getObjectsByFilter(Class clazz, String filter) {
 		List retList = new ArrayList();
 		Extent e = getPM().getExtent(clazz, true);
 		Query q = getPM().newQuery(e, filter);
@@ -368,6 +368,14 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		}
 	}
 
+	public Object getObjectByNamedFilter(String name, Map<String, Object> fparams) {
+		Map options = new HashMap();
+		options.put(GET_OBJECT, true);
+		Map<String,List> m = executeNamedFilter(name,fparams,options);
+		List l = m.get("rows");
+		if( l.size() != 1) new RuntimeException("getObjectByNamedFilter: "+(l.size()<1 ? "less" : "more")+" as one objects found:");
+		return l.get(0);
+	}
 	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams) {
 		Map options = new HashMap();
 		options.put(GET_OBJECT, true);

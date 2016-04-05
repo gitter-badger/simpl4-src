@@ -2564,11 +2564,16 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 	  Class clazz = sessionContext.getClass(sdesc, entity);
 		return sessionContext.getObjectByFilter( clazz, filter );
 	}
-	public List<Object> getListByFilter(String namespace, String entity, String filter){
+	public List<Object> getObjectsByFilter(String namespace, String entity, String filter){
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		SessionContext sessionContext = getSessionContext(sdesc);
 	  Class clazz = sessionContext.getClass(sdesc, entity);
-		return sessionContext.getListByFilter( clazz, filter );
+		return sessionContext.getObjectsByFilter( clazz, filter );
+	}
+	public Object getObjectByNamedFilter(String namespace, String name, Map<String, Object> fparams){
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sessionContext = getSessionContext(sdesc);
+		return sessionContext.getObjectByNamedFilter( name, fparams );
 	}
 	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams){
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);

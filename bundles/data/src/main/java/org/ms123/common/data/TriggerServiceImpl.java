@@ -454,7 +454,7 @@ public class TriggerServiceImpl implements TriggerService {
 		try {
 			String filter = "(active==true) && (targetmodule == '" + clazzName + "') && (applies_to.regexCI(\"" + appliesTo + "\"))";
 			debug("GetTriggers.filter:" + filter);
-			List tl = sc.getListByFilter(sc.getClass("trigger"), filter);
+			List tl = sc.getObjectsByFilter(sc.getClass("trigger"), filter);
 			for (Object o : tl) {
 				Map trigger = new HashMap();
 				List<Map> cList = new ArrayList();

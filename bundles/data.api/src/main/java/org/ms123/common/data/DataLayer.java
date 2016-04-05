@@ -103,8 +103,9 @@ public interface DataLayer {
 
 	/************************************ C O N V I N I E N T *************************************************/
 	public Object getObjectByFilter(String namespace, String entity, String filter);
-	public List getListByFilter(String namespace, String entity, String filter);
+	public List getObjectsByFilter(String namespace, String entity, String filter);
 	public Object getObjectById(String namespace, String entity, Object id);
+	public Object getObjectByNamedFilter(String namespace, String name, Map<String, Object> fparams);
 	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams);
 
 }

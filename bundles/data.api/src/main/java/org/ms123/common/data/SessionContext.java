@@ -111,7 +111,7 @@ public interface SessionContext {
 
 	public Object getObjectByFilter(Class clazz, String filter);
 
-	public List getListByFilter(Class clazz, String filter);
+	public List getObjectsByFilter(Class clazz, String filter);
 
 	public Map deleteObjectById(String entityName, String id) throws Exception;
 
@@ -133,6 +133,7 @@ public interface SessionContext {
 
 	public Map getNamedFilter(String name);
 
+	public Object getObjectByNamedFilter(String name, Map<String, Object> fparams);
 	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams);
 	public Map executeNamedFilter(String name, Map<String, Object> fparams);
 	public Map executeNamedFilter(String name, Map<String, Object> fparams,Map<String, Object> options);
