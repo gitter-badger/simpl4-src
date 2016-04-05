@@ -624,7 +624,7 @@ qx.Class.define('ms123.widgets.Table', {
 					ms123.form.Dialog.confirm(this.tr("table.confirm.delete"), function (e) {
 						if (e) {
 							var id = map[this._keyColumn];
-							if( this._context.primaryKeys ){
+							if( this._context.primaryKeys && this._context.primaryKeys.length>0 ){
 								id =''; 
 								var colon='';
 								for( var i=0; i< this._context.primaryKeys.length;i++){
@@ -926,7 +926,7 @@ qx.Class.define('ms123.widgets.Table', {
 			} else {
 				params.entity = this._context.config;
 			}
-			if( this._context.primaryKeys ){
+			if( this._context.primaryKeys && this._context.primaryKeys.length>0 ){
 				var id ='', colon='';
 				for( var i=0; i< this._context.primaryKeys.length;i++){
 					var pk = this._context.primaryKeys[i];
@@ -1292,7 +1292,7 @@ qx.Class.define('ms123.widgets.Table', {
 					if (!copy && self._currentIndex > -1) { //Edit
 						ms123.util.Clone.merge(map, self._currentRowData, m);
 						self.tableModel.setRowsAsMapArray([map], self._currentIndex, true);
-						if( self._context.primaryKeys ){
+						if( this._context.primaryKeys && this._context.primaryKeys.length>0 ){
 							id =''; 
 							var colon='';
 							for( var i=0; i< self._context.primaryKeys.length;i++){
