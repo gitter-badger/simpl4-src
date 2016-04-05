@@ -41,6 +41,7 @@ import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.domainobjects.api.DomainObjectsService;
+import org.ms123.common.namespace.NamespaceService;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
@@ -243,6 +244,12 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	public void setCompileService(CompileService paramService) {
 		this.compileService = paramService;
 		System.out.println("DbMetaServiceImpl.setCompileService:" + paramService);
+	}
+
+	@Reference(dynamic = true, optional = true)
+	public void setNamespaceService(NamespaceService paramService) {
+		this.namespaceService = paramService;
+		System.out.println("DbMetaServiceImpl.setNamespaceService:" + paramService);
 	}
 }
 

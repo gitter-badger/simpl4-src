@@ -42,6 +42,7 @@ import org.jooq.util.TableDefinition;
 import org.jooq.util.TypedElementDefinition;
 import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.libhelper.Inflector;
+import org.ms123.common.namespace.NamespaceService;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.domainobjects.api.DomainObjectsService;
 import org.ms123.common.permission.api.PermissionService;
@@ -71,6 +72,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 	protected BundleContext bc;
 	protected CompileService compileService;
+	protected NamespaceService namespaceService;
 	protected EntityService entityService;
 	protected GitService gitService;
 	protected DomainObjectsService domainobjectsService;
