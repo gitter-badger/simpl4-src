@@ -2570,13 +2570,6 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 	  Class clazz = sessionContext.getClass(sdesc, entity);
 		return sessionContext.getListByFilter( clazz, filter );
 	}
-	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams){
-		String a[] = name.split(".");
-		if( a.length != 2){
-			throw new RuntimeException("getObjectsByNamedFilter:wrong parameters");
-		}
-		return getObjectsByNamedFilter(a[0], a[1], fparams);
-	}
 	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams){
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		SessionContext sessionContext = getSessionContext(sdesc);
