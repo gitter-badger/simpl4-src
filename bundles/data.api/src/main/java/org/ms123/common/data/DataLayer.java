@@ -77,6 +77,7 @@ public interface DataLayer {
 	public SessionContext getSessionContext(String namespace);
 
 	public void populate(SessionContext sessionContext, Map from, Object to, Map hintsMap);
+	public void populate(Map from, Object to);
 
 	public List validateObject(SessionContext sessionContext, Object objectInsert, String entityName, boolean bInsert);
 	public List validateObject(SessionContext sessionContext, Object objectInsert, String entityName);
@@ -99,4 +100,12 @@ public interface DataLayer {
 	public Class getClass(SessionContext sessionContext, String entityName);
 
 	public void evaluteFormulas(SessionContext sessionContext, String entityName, Map<String, Object> map, String direction);
+
+	/************************************ C O N V I N I E N T *************************************************/
+	public Object getObjectByFilter(String namespace, String entity, String filter);
+	public List getListByFilter(String namespace, String entity, String filter);
+	public Object getObjectById(String namespace, String entity, Object id);
+	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams);
+	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams);
+
 }

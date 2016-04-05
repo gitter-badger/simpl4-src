@@ -368,6 +368,12 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		}
 	}
 
+	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams) {
+		Map options = new HashMap();
+		options.put(GET_OBJECT, true);
+		Map<String,List> m = executeNamedFilter(name,fparams,options);
+		return m.get("rows");
+	}
 	public Map executeNamedFilter(String name, Map<String, Object> fparams) {
 		return executeNamedFilter(name,fparams,new HashMap());
 	}
@@ -437,12 +443,16 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		}
 		Map<String, Object> ret = m_dataLayer.query(this, params, m_sdesc, entityName);
 		List<Map> rows = (List) ret.get("rows");
-		List<Map> retList = new ArrayList();
-		boolean isAdmin = m_permissionService.hasAdminRole();
-		if( !isAdmin || !getBoolean(options, GET_OBJECT, false) ){
+		List<Object> retList = new ArrayList();
+		if( getBoolean(options, GET_OBJECT, false) == false ){
 			for (Map row : rows) {
 				Object obj = row.get(clazzName);
 				retList.add(SojoFilterInterceptor.filterFields(obj, this, fieldList, aliasList));
+			}
+		}else if( getBoolean(options, GET_OBJECT, false) ){
+			for (Map row : rows) {
+				Object obj = row.get(clazzName);
+				retList.add(obj);
 			}
 		}
 		boolean withMeta = getBoolean(options, "withMeta", false );

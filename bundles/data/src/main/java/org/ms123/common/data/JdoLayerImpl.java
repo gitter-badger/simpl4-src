@@ -744,6 +744,16 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 	//populate 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+	public void populate(Map from, Object to) {
+		String namespace = null;
+		try{
+			namespace = (String)MethodUtils.invokeMethod(to, "__getNamespace", null);
+		}catch(Exception e){
+			 throw new RuntimeException("JdoLayerImpl.populate:",e);
+		}
+		populate(getSessionContext( StoreDesc.getNamespaceData(namespace)), from, to ,null);
+	}
+
 	public void populate(SessionContext sessionContext, Map from, Object to, Map hintsMap) {
 		PersistenceManager pm = sessionContext.getPM();
 		if (hintsMap == null) {
@@ -2539,6 +2549,40 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		m_logger.info(message);
 		System.out.println(message);
 	}
+
+	/************************************ C O N V I N I E N T *************************************************/
+	public Object getObjectById(String namespace, String entity, Object id){
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sessionContext = getSessionContext(sdesc);
+	  Class clazz = sessionContext.getClass(sdesc, entity);
+		return sessionContext.getObjectById( clazz, id );
+	}
+
+	public Object getObjectByFilter(String namespace, String entity, String filter){
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sessionContext = getSessionContext(sdesc);
+	  Class clazz = sessionContext.getClass(sdesc, entity);
+		return sessionContext.getObjectByFilter( clazz, filter );
+	}
+	public List<Object> getListByFilter(String namespace, String entity, String filter){
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sessionContext = getSessionContext(sdesc);
+	  Class clazz = sessionContext.getClass(sdesc, entity);
+		return sessionContext.getListByFilter( clazz, filter );
+	}
+	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams){
+		String a[] = name.split(".");
+		if( a.length != 2){
+			throw new RuntimeException("getObjectsByNamedFilter:wrong parameters");
+		}
+		return getObjectsByNamedFilter(a[0], a[1], fparams);
+	}
+	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams){
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		SessionContext sessionContext = getSessionContext(sdesc);
+		return sessionContext.getObjectsByNamedFilter( name, fparams );
+	}
+
 	/************************************ C O N F I G ********************************************************/
 	/*	public void setRulesService(RulesService rulesService) {
 		this.m_rulesService = rulesService;

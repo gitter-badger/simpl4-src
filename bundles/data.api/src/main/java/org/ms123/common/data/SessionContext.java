@@ -133,6 +133,7 @@ public interface SessionContext {
 
 	public Map getNamedFilter(String name);
 
+	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams);
 	public Map executeNamedFilter(String name, Map<String, Object> fparams);
 	public Map executeNamedFilter(String name, Map<String, Object> fparams,Map<String, Object> options);
 
