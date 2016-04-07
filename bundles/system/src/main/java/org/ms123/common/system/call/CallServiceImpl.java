@@ -95,6 +95,7 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 			}
 		}
 		info("Namespace/Procedure:"+namespace+"/"+methodName);
+		info("methodParams:"+methodParams);
 		String fqMethodName = namespace+"."+methodName;
 		Map shape  = this.getProcedureShape(namespace,methodName );
 		if( shape == null){
