@@ -104,7 +104,8 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 
 	/*BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")
-	public void createMetadata(@PName(StoreDesc.STORE_ID) String storeId, @PName("config") @POptional Map config) throws RpcException {
+	public void createMetadata(@PName(StoreDesc.STORE_ID) String storeId, 
+														 @PName("config") @POptional Map config) throws RpcException {
 		try {
 			System.out.println("createMetadata:" + config);
 			StoreDesc sdesc = StoreDesc.get(storeId);
@@ -142,7 +143,10 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	}
 
 	@RequiresRoles("admin")
-	public void buildJooqMetadata(@PName(StoreDesc.STORE_ID) String storeId, @PName("dataSourceName") String dataSourceName, @PName("configFile") String configFile, @PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
+	public void buildJooqMetadata(@PName(StoreDesc.STORE_ID) String storeId, 
+																@PName("dataSourceName") String dataSourceName, 
+																@PName("configFile") String configFile, 
+																@PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
 		Connection conn = null;
 		try {
 			StoreDesc sdesc = StoreDesc.get(storeId);

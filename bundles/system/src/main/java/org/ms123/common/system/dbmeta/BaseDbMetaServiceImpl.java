@@ -351,17 +351,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		return out;
 	}
 
-	private String cleanName(String in) {
-		in = strip(in, "\"");
-		int dollar = in.indexOf("$");
-		String out = in;
-		if (dollar >= 0) {
-			out = in.substring(dollar + 1);
-		}
-		return getJavaName(out);
-	}
 
 	private String fieldName(String in) {
+		in = strip(in, "\"");
 		return getJavaName(in);
 	}
 
@@ -378,14 +370,39 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	}
 
 	private String entityName(String in) {
+		in = strip(in, "\"");
 		in = cleanName(in);
-		return m_inflector.getEntityName(in);
+		//return m_inflector.getEntityName(in);
+		return getJavaName(in);
+	}
+
+	private String cleanName(String in) {
+		int dollar = in.indexOf("$");
+		String out = in;
+		if (dollar >= 0) {
+			out = in.substring(dollar + 1);
+		}
+		return out;
 	}
 
 	private String getJavaName(String name) {
-		String columnMember = strip(name, "\"");
-		return m_inflector.lowerCamelCase(columnMember, ' ', '_', '-').replaceAll("_", "");
+		System.out.print("getJavaName:"+name + " -> " );
+		StringBuilder sb = new StringBuilder();
+		if(!Character.isJavaIdentifierStart(name.charAt(0))) {
+			sb.append("_");
+		}
+		for (char c : name.toCharArray()) {
+			if(!Character.isJavaIdentifierPart(c)) {
+				sb.append("_");
+			} else {
+				sb.append(c);
+			}
+		}
+		name = m_inflector.lowerCamelCase(sb.toString(), ' ', '_', '-').replaceAll("_", "");
+		System.out.println( name );
+		return name;
 	}
+
 
 	private List<Map> removeExistingRelations(List<Map> relations, List<Map> entityList) {
 		List<Map> newRelations = new ArrayList();
