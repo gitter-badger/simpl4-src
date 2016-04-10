@@ -344,7 +344,7 @@ class BaseDocbookServiceImpl {
 		debug(this,"loadPaths:"+loadPaths);
 		sc.setLoadPaths(loadPaths);
 		m_asciidoctor = create(sc.getProvider().getRuntime());
-		new AsciidoctorX().register();
+		new AsciidoctorX(m_asciidoctor).register();
 		new GroovyExtensionRegistry().register(m_asciidoctor);
 		return m_asciidoctor;
 	}

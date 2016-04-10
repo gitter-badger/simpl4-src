@@ -26,34 +26,71 @@ import org.asciidoctor.Asciidoctor
 
 //@groovy.transform.CompileStatic
 public class AsciidoctorX{
-	public AsciidoctorX(){
+	private Asciidoctor asciidoctor;
+	public AsciidoctorX(Asciidoctor ad){
+		asciidoctor = ad;
 	}
 
-	def ext1 = {  
-			block(name: 'BIG', contexts: [':paragraph']) {
-					parent, reader, attributes ->
-					def upperLines = reader.readLines()
-					.collect {it.toUpperCase()}
-					.inject('') {a, b -> a + '\n' + b}
+	def ext1 = {
+		block(name: 'BIG', contexts: [':paragraph', ':open']) { parent, reader, attributes ->
+			def upperLines = reader.readLines()
+				.collect {it.toUpperCase()}
+				.inject('') {a, b -> a + '\n' + b}
 
-					createBlock(parent, 'paragraph', [upperLines], attributes, [:])
+			System.out.println("upperLines:"+upperLines);
+			createBlock(parent, 'paragraph', [upperLines], attributes, [:])
+		}
+	}
+
+	def ext2 = {
+		blockmacro (name: 'imagezoom') { parent, target, attributes ->
+			def classes= attributes.get(1);
+			if( classes == null ){
+				classes="";
 			}
+			classes= classes.replace('.', ' ');
+			String content = "<simpl-zoom class=\""+classes+"\" image=\"${target}\"></simpl-zoom>"
+			createBlock(parent, "pass", [content], attributes, config);
+		}
 	}
-
-	def ext2 = {  
-			blockmacro (name: 'imagezoom') {
-						parent, target, attributes ->
-						def classes= attributes.get(1);
-						if( classes == null ){
-							classes="";
-						}
-						classes= classes.replace('.', ' ');
-						String content = "<simpl-zoom class=\""+classes+"\" image=\"${target}\"></simpl-zoom>"
-						createBlock(parent, "pass", [content], attributes, config);
+	def extCollapseItem = {
+		block(name: 'CI', contexts: [':paragraph', ':open']) { parent, reader, attributes ->
+			try{
+				def text = reader.readLines().join('\n');
+				def opened = false;
+				def icon= "image:lens";
+				def header= '';
+				attributes.each{ k, v ->
+					if( v == "opened" && (k+"").isNumber()){
+						opened = true;
+					}else if( k == "icon"){
+						icon = v;
+					}else if( k == "header"){
+						header = v;
+					}
 				}
+				def content = '<paper-collapse-item class="asciidoctor"  icon="'+icon+'" header="'+header+'" '+(opened ? 'opened' : '')+'>' + adocToHtml(text) + '</paper-collapse-item>';
+				createBlock(parent, 'pass', [content], attributes, [:])
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
 	}
 	public void register(){
-			AsciidoctorExtensions.extensions(ext1);
-			AsciidoctorExtensions.extensions(ext2);
+		AsciidoctorExtensions.extensions(ext1);
+		AsciidoctorExtensions.extensions(ext2);
+		AsciidoctorExtensions.extensions(extCollapseItem);
+	}
+	private String adocToHtml( String adoc) throws Exception {
+		Map<String, Object> options = new HashMap();
+		Map<String, Object> attributes = new HashMap();
+		attributes.put("icons", org.asciidoctor.Attributes.FONT_ICONS);
+		options.put("attributes", attributes);
+		options.put("safe", 0);
+		return asciidoctor.convert( adoc, options);
 	}
 }
+
+
+
+
