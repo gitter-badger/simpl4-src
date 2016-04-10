@@ -56,20 +56,37 @@ public class AsciidoctorX{
 	def extCollapseItem = {
 		block(name: 'CI', contexts: [':paragraph', ':open']) { parent, reader, attributes ->
 			try{
-				def text = reader.readLines().join('\n');
+				def lines = reader.readLines();
+				def text = '';
+				if( lines != null ){
+					text = lines.join('\n');
+				}
+				if( text == "-"){
+					text = '';
+				}
 				def opened = false;
 				def icon= "image:lens";
+				def eicon = null;
 				def header= '';
 				attributes.each{ k, v ->
 					if( v == "opened" && (k+"").isNumber()){
 						opened = true;
 					}else if( k == "icon"){
 						icon = v;
+					}else if( k == "eicon"){
+						eicon = v;
 					}else if( k == "header"){
 						header = v;
 					}
 				}
-				def content = '<paper-collapse-item class="asciidoctor"  icon="'+icon+'" header="'+header+'" '+(opened ? 'opened' : '')+'>' + adocToHtml(text) + '</paper-collapse-item>';
+				def classes = "asciidoctor";
+				if( text == ''){
+					classes += " empty";
+					if( eicon != null ){
+						icon = eicon;
+					}
+				}
+				def content = '<paper-collapse-item class="'+classes+'"  icon="'+icon+'" header="'+header+'" '+(opened ? 'opened' : '')+'>' + adocToHtml(text) + '</paper-collapse-item>';
 				createBlock(parent, 'pass', [content], attributes, [:])
 			}catch(Exception e){
 				e.printStackTrace();
