@@ -109,7 +109,7 @@
 			}
 		},
 		tapAction:function( row, doubleTap){
-			this.currentRowIndex = row._DT_RowIndex;
+			this.currentRowIndex = row.index();
 			if ( this.multiSelect ) {
 				this.tapActionMulti( row, doubleTap );
 			} else {

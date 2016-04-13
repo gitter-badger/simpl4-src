@@ -1,5 +1,5 @@
 				if( browser.name != 'ie' || browser.major != "9" ){
-					target.insertBefore( style, afterNode && afterNode.nextSibling || target.firstChild );
+					target.insertBefore( style, contextNode && contextNode.nextSibling || target.firstChild );
 				} else {
 					function countSelectors(sheet) {
 						var count = 0;

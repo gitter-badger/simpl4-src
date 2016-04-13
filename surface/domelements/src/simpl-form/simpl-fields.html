@@ -1400,7 +1400,12 @@
 				var $select = $(field).selectize(options);
 				this.selectize = $select[0].selectize;
 			},
-			attached: function() {
+			attached:function(){
+				this.async( function() {
+					this._attached();
+				});
+			},
+			_attached: function() {
 				this.alwaysFloatLabel = true;
 				console.log( "select-field(" + this.name + ").attached" );
 				this.isDomReady = true;
