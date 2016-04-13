@@ -33,6 +33,8 @@ import static org.ms123.common.entity.api.Constants.STATE_NEW;
 import static org.ms123.common.entity.api.Constants.DISABLE_STATESELECT;
 import static org.ms123.common.setting.api.Constants.STATESELECT;
 import static org.ms123.common.setting.api.Constants.GLOBAL_SETTINGS;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 
 @SuppressWarnings("unchecked")
 public class QueryBuilder {
@@ -223,6 +225,7 @@ public class QueryBuilder {
 		String label = (String) filter.get("label");
 		if (filter.get("connector") == null && label != null) {
 			if (label.matches("^[a-zA-Z].*")) {
+				info(this,"insertFilterParams:"+m_filterParams+"/"+label);
 				if( m_filterParams != null && (m_filterParams.keySet().contains( label )|| m_filterParams.keySet().contains( label.toLowerCase() ))){
 					Object data = m_filterParams.get(label);
 					if( data == null){
