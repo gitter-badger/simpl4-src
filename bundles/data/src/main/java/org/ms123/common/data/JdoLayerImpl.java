@@ -1501,6 +1501,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			info("sql:" + sql);
 			info("=========================================================================================");
 			info("Imports:"+sdesc.getImports());
+			info("Params:"+qb.getQueryParams());
 			Query q = pm.newQuery("javax.jdo.query.JPQL", sql);
 			q.declareImports(sdesc.getImports());
 			int offset = getInt(params, "offset", 0);
