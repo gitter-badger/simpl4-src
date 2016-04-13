@@ -443,6 +443,7 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		Map filter = (Map)filterDesc.get("filter");
 		filter = addExclusionFilter(filter,(List)filterDesc.get("exclusion"));
 		debug("FilterWith:"+m_js.deepSerialize(filter));
+		debug("filterParams:"+fparams);
 		params.put("filter", filter);
 		params.put("orderby", orderby);
 		params.put("filterParams", fparams);
