@@ -297,7 +297,10 @@ qx.Class.define("ms123.form.TimeChooser", {
 				// ... then there's no need to update the spinners
 				return;
 			}
-
+console.log("_applyValue:",value);
+			if( isNaN( value)){
+				value = 0;
+			}
 			// Set the seconds spinner
 			this.__seconds.setValue(value % 60);
 
