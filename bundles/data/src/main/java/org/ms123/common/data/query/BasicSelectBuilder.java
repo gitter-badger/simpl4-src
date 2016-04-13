@@ -435,6 +435,9 @@ debug("\t:"+getTeamUserWhere(sel));
 		List<String> sortedUniqueList = orderByCountDollars.sortedCopy(uniqueList);
 		m_sortedUniqueList = sortedUniqueList;
 		sortedUniqueList = checkAndCorrectList(sortedUniqueList);
+		if( sortedUniqueList.size() == 0){
+			sortedUniqueList.add( m_entityName);
+		}
 		String main = sortedUniqueList.get(0);
 		String clazz = m_inflector.getClassName(main);
 		String from = "\"" + clazz + "\" " + main;
