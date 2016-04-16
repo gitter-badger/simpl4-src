@@ -423,7 +423,7 @@
 			</template>
 		</paper-tabs>
 
-		<neon-animated-pages style="[[pagesStyle]]" selected="[[tabsId]]" attr-for-selected="tabs-id">
+		<neon-animated-pages style$="[[pagesStyle]]" selected="[[tabsId]]" attr-for-selected="tabs-id">
 			<template is="dom-repeat" as="i" items="[[item.childShapes]]">
 				<simpl-animatable-page tabs-id$="[[i.xf_id]]" style$="[[getPageStyle()]]">
 					<template is="dom-repeat" as="j" items="[[i.childShapes]]">
@@ -466,7 +466,7 @@
 					}
 					maxHeight = Math.max( maxHeight, h );
 				}
-				return "min-height:" + ( maxHeight - 60 ) + "px;";
+				return "min-height:" + ( maxHeight - 30 ) + "px;";
 			},
 			attached: function() {
 				var tab = this.item.selected;
