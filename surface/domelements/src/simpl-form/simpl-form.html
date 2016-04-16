@@ -409,35 +409,29 @@
 			padding-right: 3px;
 			min-width: 250px;
 		}
-		mat-pages /deep/ xp-pages {
-			position: relative;
-		}
-		mat-pages {
-			position: relative;
-		}
 
 	</style>
 	<template>
-		<mat-tabs target="tabsid">
+		<paper-tabs selected="{{tabsId}}" selectables="paper-tab" attr-for-selected="tabs-id" scrollable>
 			<template is="dom-repeat" as="i" items="[[item.childShapes]]">
 				<template is="dom-if" if="[[i.title]]" restamp>
-					<mat-tab name$="[[i.xf_id]]" label$="[[tabTitle(i.title)]]"></mat-tab>
+					<paper-tab tabs-id$="[[i.xf_id]]" >[[tabTitle(i.title)]]</paper-tab>
 				</template>
 				<template is="dom-if" if="[[!i.title]]" restamp>
-					<mat-tab name$="[[i.xf_id]]" label$="[[tabTitle(i.xf_id)]]"></mat-tab>
+					<paper-tab tabs-id$="[[i.xf_id]]" >[[tabTitle(i.xf_id)]]</paper-tab>
 				</template>
 			</template>
-		</mat-tabs>
+		</paper-tabs>
 
-		<mat-pages id="tabsid" style$="{{pagesStyle}}">
+		<neon-animated-pages style="[[pagesStyle]]" selected="[[tabsId]]" attr-for-selected="tabs-id">
 			<template is="dom-repeat" as="i" items="[[item.childShapes]]">
-				<mat-page name$="[[i.xf_id]]" style$="[[getPageStyle()]]">
+				<simpl-animatable-page tabs-id$="[[i.xf_id]]" style$="[[getPageStyle()]]">
 					<template is="dom-repeat" as="j" items="[[i.childShapes]]">
 						<form-element-renderer style$="[[getElementStyle()]]" class="flex" item="[[j]]" />
 					</template>
-				</mat-page>
+				</simpl-animatable-page>
 			</template>
-		</mat-pages>
+		</neon-animated-pages>
 	</template>
 	<script>
 		Polymer( {
@@ -475,13 +469,11 @@
 				return "min-height:" + ( maxHeight - 60 ) + "px;";
 			},
 			attached: function() {
-				this.async( function() {
-					var tab = this.item.selected;
-					if ( !tab && this.item.childShapes.length > 0 ) {
-						tab = this.item.childShapes[ 0 ].xf_id;
-					}
-					//		this.tabSelected = tab;
-				}, 1 );
+				var tab = this.item.selected;
+				if ( !tab && this.item.childShapes.length > 0 ) {
+					tab = this.item.childShapes[ 0 ].xf_id;
+				}
+				this.tabsId = tab;
 			}
 		} );
 
