@@ -1201,7 +1201,7 @@ public class GitServiceImpl implements GitService {
 			return "image/jpg";
 		}else if( file.toString().endsWith(".png")){
 			return "image/png";
-		}else if( file.toString().endsWith(".svg")){
+		}else if( file.toString().endsWith(".svg") || file.toString().endsWith(".svgz") ){
 			return "image/svg+xml";
 		}else if( file.toString().endsWith(".xml")){
 			return "text/xml";
