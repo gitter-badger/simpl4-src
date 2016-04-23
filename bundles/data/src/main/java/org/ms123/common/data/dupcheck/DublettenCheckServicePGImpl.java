@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.regex.*;
+import java.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.jdo.PersistenceManager;
@@ -73,8 +74,20 @@ public class DublettenCheckServicePGImpl implements DublettenCheckService {
 	// OsgiActivate 
 	public void activate() {
 		System.out.println("DublettenCheckServicePGImpl.activate");
+		//@@@MS Hack, in the moment the very first service
+		System.setOut(outputFile("stdout.log"));
 	}
 
+	protected PrintStream outputFile(String name) {
+		String simpl4Dir = System.getProperty("simpl4.dir");
+		File out = new File( simpl4Dir, "log/"+name);
+		try{
+			return new PrintStream(new BufferedOutputStream(new FileOutputStream(out)));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return System.out;
+	}
 	public DupCheckContext getContext() {
 		return new DupCheckContext();
 	}
