@@ -266,6 +266,7 @@ public class LoginFilter implements Filter {
 				|| pathInfo.endsWith(".json.gz") || pathInfo.endsWith(".yaml") || pathInfo.endsWith(".yml")
 				|| pathInfo.endsWith(".png") || pathInfo.endsWith(".jpg") || pathInfo.endsWith(".gif")
 				|| pathInfo.endsWith(".odt") || pathInfo.endsWith(".svg") || pathInfo.endsWith(".xml")
+				|| pathInfo.endsWith(".svgz") 
 				|| pathInfo.endsWith(".jpeg") || pathInfo.endsWith(".txt") || pathInfo.endsWith(".woff")
 				|| pathInfo.endsWith(".woff.gz")) {
 			return true;
