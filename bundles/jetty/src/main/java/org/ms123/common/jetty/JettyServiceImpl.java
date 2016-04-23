@@ -211,17 +211,17 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			m_server.start();
 			info("JettyServer.startet");
 
-			System.err.println("\n\n******************************************************************************");
+			System.err.println("\n\n********************************************************************");
 			String localAddress = getLocalHostLANAddress();
-			System.err.println("* address: "+localAddress);
+			System.err.println("* address:   "+localAddress);
 			String port = getInt(System.getProperty("jetty.port"), 8075)+"";
-			System.err.println("* port: "+port);
+			System.err.println("* port:      "+port);
 			if( "80".equals(port)){
 				System.err.println("* simpl4Url: "+"http://"+localAddress+"/sw/start.html");
 			}else{
 				System.err.println("* simpl4Url: "+"http://"+localAddress+":"+port+"/sw/start.html");
 			}
-			System.err.println("******************************************************************************\n\n");
+			System.err.println("********************************************************************\n\n");
 
 		}catch(Exception e){
 			error("JettyServer.start.error",e);
