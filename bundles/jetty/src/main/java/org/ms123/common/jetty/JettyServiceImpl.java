@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -146,6 +147,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 		result.put("woff", "application/x-font-woff");
 		result.put("woff.gz", "application/x-font-woff");
 		result.put("svg", "image/svg+xml");
+		result.put("svgz", "image/svg+xml");
 		result.put("odt", "application/vnd.oasis.opendocument.text");
 		return Collections.unmodifiableMap(result);
 	}
@@ -200,7 +202,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 	public void frameworkEvent(FrameworkEvent event) {
 		info("JettyServiceImpl.frameworkEvent:"+event);
 		if( event.getType() != FrameworkEvent.STARTED){
-			 return; 
+			return; 
 		}
 		ClassLoader save = Thread.currentThread().getContextClassLoader();
 		try{
@@ -208,6 +210,19 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			Thread.currentThread().setContextClassLoader(clw);
 			m_server.start();
 			info("JettyServer.startet");
+
+			System.err.println("\n\n******************************************************************************");
+			String localAddress = getLocalHostLANAddress();
+			System.err.println("* address: "+localAddress);
+			String port = getInt(System.getProperty("jetty.port"), 8075)+"";
+			System.err.println("* port: "+port);
+			if( "80".equals(port)){
+				System.err.println("* simpl4Url: "+"http://"+localAddress+"/sw/start.html");
+			}else{
+				System.err.println("* simpl4Url: "+"http://"+localAddress+":"+port+"/sw/start.html");
+			}
+			System.err.println("******************************************************************************\n\n");
+
 		}catch(Exception e){
 			error("JettyServer.start.error",e);
 		}finally{
@@ -576,6 +591,16 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			response.setContentType("image/svg+xml;charset=UTF-8");
 			setHeaders(response);
 			fr.writeTo(response.getOutputStream(), 0, -1);
+		} else if (target.endsWith(".svgz")) {
+			target = removeFirstSegmentInCaseWebsite(target);
+			FileResource fr = getFileResource(m_basedir, target);
+			if(!isModified(fr, request, response)){
+				return true;
+			}
+			response.setContentType("image/svg+xml;charset=UTF-8");
+			response.setHeader("Content-Encoding","gzip");
+			setHeaders(response);
+			fr.writeTo(response.getOutputStream(), 0, -1);
 		} else {
 			handled = false;
 		}
@@ -912,6 +937,9 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				if( name.endsWith(".gz")){
 					response.setHeader("Content-Encoding","gzip");
 				}
+				if( name.endsWith(".svgz")){
+					response.setHeader("Content-Encoding","gzip");
+				}
 				setHeaders(response);
 				response.setStatus(HttpServletResponse.SC_OK);
 				if( "adoc".equals(ext)){
@@ -962,6 +990,34 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				}
 			}
 		}
+	}
+	private String getLocalHostLANAddress() {
+		try{
+			for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+				NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
+				for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
+					InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
+					if (!inetAddr.isLoopbackAddress()) {
+						if (inetAddr.isSiteLocalAddress()) {
+							String s = inetAddr.toString();
+							if( s.startsWith("/")){
+								return s.substring(1);
+							}else{
+								return s;
+							}
+						}
+					}
+				}
+			}
+			InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
+			if (jdkSuppliedAddress == null) {
+				return "The JDK InetAddress.getLocalHost() method unexpectedly returned null.";
+			}
+			return jdkSuppliedAddress.toString();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return "unknown";
 	}
 
 	private int getInt(String s, int def) {
