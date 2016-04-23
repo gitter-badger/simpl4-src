@@ -176,11 +176,11 @@ System.out.println("isPersistent:"+isPersistent);
 		return roomSpec;
 	}
 	protected static void debug(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 	protected static void info(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	private static final Logger m_logger = LoggerFactory.getLogger(BaseXmppServiceImpl.class);

@@ -48,11 +48,11 @@ class BaseCassandraServiceImpl {
 	protected JSONSerializer m_js = new JSONSerializer();
 
 	protected static void debug(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 	protected static void info(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	private static final Logger m_logger = LoggerFactory.getLogger(BaseCassandraServiceImpl.class);

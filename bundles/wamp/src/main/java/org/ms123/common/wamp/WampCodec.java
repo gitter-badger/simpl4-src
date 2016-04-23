@@ -81,12 +81,12 @@ public class WampCodec {
 	}
 
 	protected static void debug(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	protected static void info(String msg) {
-		System.err.println(msg);
+		System.out.println(msg);
 		m_logger.info(msg);
 	}
 
