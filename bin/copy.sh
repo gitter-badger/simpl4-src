@@ -128,6 +128,7 @@ cp $SRCTOPDIR/bin/prunsrv.exe $BINDIRECTORY/Simpl4Service.exe
 cp $SRCTOPDIR/bin/installservice.bat $BINDIRECTORY
 cp $SRCTOPDIR/bin/uninstallservice.bat $BINDIRECTORY
 cp $SRCTOPDIR/bin/abspath.sh $BINDIRECTORY
+cp $SRCTOPDIR/bin/simpl4-update.sh $BINDIRECTORY
 
 #cp -r $TOPDIR/simpleworkflow/etc/ea $ETCDIRECTORY/
 cp    $SRCTOPDIR/etc/shell.init.script $ETCDIRECTORY/
