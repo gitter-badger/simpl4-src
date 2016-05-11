@@ -59,7 +59,7 @@ public class AsciidoctorX{
 				def lines = reader.readLines();
 				def text = '';
 				if( lines != null ){
-					text = lines.join('\n');
+					text = ':linkattrs:\n\n' + lines.join('\n');
 				}
 				if( text == "-"){
 					text = '';
