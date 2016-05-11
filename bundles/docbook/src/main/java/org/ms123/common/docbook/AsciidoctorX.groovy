@@ -59,10 +59,12 @@ public class AsciidoctorX{
 				def lines = reader.readLines();
 				def text = '';
 				if( lines != null ){
-					text = ':linkattrs:\n\n' + lines.join('\n');
+					text = lines.join('\n');
 				}
 				if( text == "-"){
 					text = '';
+				}else if(text != null && !text.empty){
+					text = ':linkattrs:\n\n' + text;
 				}
 				def opened = false;
 				def icon= "image:lens";
