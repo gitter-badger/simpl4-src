@@ -83,8 +83,7 @@ qx.Class.define("ms123.settings.views.SelectedItems", {
 					name: "tags",
 					type: "TextField",
 					width: 30,
-					header: "Tags",
-				  filter:/[a-zA-Z0-9_ ]/
+					header: "Tags"
 				},
 				{
 					name: "readonly",
@@ -113,8 +112,7 @@ qx.Class.define("ms123.settings.views.SelectedItems", {
 					name: "tags",
 					type: "TextField",
 					width: 30,
-					header: "Tags",
-				  filter:/[a-zA-Z0-9_ ]/
+					header: "Tags"
 				},
 				{
 					name: "enabled",
