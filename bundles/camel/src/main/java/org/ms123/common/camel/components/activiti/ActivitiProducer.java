@@ -515,7 +515,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			info(this,"getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
 			hasCriteria=true;
 		}
-		String businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
+		String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
 		if (!isEmpty(businessKey)) {
 			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)),childProcesses);
 			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
