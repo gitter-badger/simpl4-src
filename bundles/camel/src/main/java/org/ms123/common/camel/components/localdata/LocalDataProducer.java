@@ -29,14 +29,14 @@ import org.apache.camel.util.MessageHelper;
 import org.apache.camel.impl.DefaultProducer;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.CamelContextHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.system.thread.ThreadContext;
+import static com.jcabi.log.Logger.info;
 
 /**
  * The LocalData producer.
@@ -65,10 +65,9 @@ public class LocalDataProducer extends DefaultProducer {
 
 	private Map m_options;
 	private PermissionService m_permissionService;
+	private CamelService camelService;
 
 	DataLayer m_dataLayer = null;
-
-	private static final transient Logger LOG = LoggerFactory.getLogger(LocalDataProducer.class);
 
 	public LocalDataProducer(LocalDataEndpoint endpoint) {
 		super(endpoint);
@@ -96,7 +95,7 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 		String[] path = endpointKey.split(":");
 		m_operation = LocalDataOperation.valueOf(path[1].replace("//", ""));
-		info("m_operation:" + m_operation);
+		info(this,"m_operation:" + m_operation);
 		if (path.length > 2) {
 			m_filterName = path[2].split("\\?")[0];
 		}
@@ -104,6 +103,7 @@ public class LocalDataProducer extends DefaultProducer {
 			m_namespace = (String)CamelContextHelper.mandatoryLookup(camelContext, "namespace");
 		}
 		m_permissionService = CamelContextHelper.mandatoryLookup(camelContext, PermissionService.class.getName(), PermissionService.class);
+		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 	}
 
 	public void process(Exchange exchange) throws Exception {
@@ -153,9 +153,20 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 	}
 
+	private String evaluate( String def, Exchange e ){
+		if( def != null && def.indexOf("${") >= 0){
+			String res = this.camelService.evaluate( def, e );
+			info(this,"evaluate.result:" + res);
+			return res;
+		}
+		return null;
+	}
+
 	private String getStringCheck(Exchange e, String key, String def) {
+		String res = evaluate( def, e );
+		if( res != null) return res;
 		String value = e.getIn().getHeader(key, String.class);
-		info("getStringCheck:"+key+"="+value+"/def:"+def);
+		info(this,"getStringCheck:"+key+"="+value+"/def:"+def);
 		if (value == null){
 			value = e.getProperty(key, String.class);
 		}
@@ -165,11 +176,13 @@ public class LocalDataProducer extends DefaultProducer {
 		return value != null ? value : def;
 	}
 	private String getString(Exchange e, String key, String def) {
+		String res = evaluate( def, e );
+		if( res != null) return res;
 		String value = e.getIn().getHeader(key, String.class);
 		if (value == null){
 			value = e.getProperty(key, String.class);
 		}
-		info("getString:"+key+"="+value+"/def:"+def);
+		info(this,"getString:"+key+"="+value+"/def:"+def);
 		return value != null ? value : def;
 	}
 	private boolean getBoolean(Exchange e, String key, boolean def) {
@@ -177,7 +190,7 @@ public class LocalDataProducer extends DefaultProducer {
 		if (value == null){
 			value = e.getProperty(key, Boolean.class);
 		}
-		info("getString:"+key+"="+value+"/def:"+def);
+		info(this,"getString:"+key+"="+value+"/def:"+def);
 		return value != null ? value : def;
 	}
 	private void doMultiInsertUpdate(Exchange exchange) {
@@ -339,10 +352,4 @@ public class LocalDataProducer extends DefaultProducer {
 		Message answer = exchange.getIn();
 		return answer;
 	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(LocalDataProducer.class);
 }

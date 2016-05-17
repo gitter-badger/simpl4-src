@@ -23,27 +23,39 @@ import org.apache.camel.Exchange;
 import org.apache.camel.CamelContext;
 import org.ms123.common.camel.components.repo.RepoConfiguration;
 import org.ms123.common.camel.components.repo.RepoEndpoint;
-import org.slf4j.Logger;
+import org.ms123.common.camel.api.CamelService;
 import java.io.File;
 import org.slf4j.LoggerFactory;
 import org.ms123.common.git.GitService;
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import org.apache.camel.util.FileUtil;
+import static com.jcabi.log.Logger.info;
 
 public class RepoGetProducer extends RepoProducer {
-
-	private static final transient Logger LOG = LoggerFactory.getLogger(RepoGetProducer.class);
+	private CamelService camelService;
 
 	public RepoGetProducer(RepoEndpoint endpoint, RepoConfiguration configuration) {
 		super(endpoint, configuration);
+		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
+	}
+
+	private String evaluate( String def, Exchange e ){
+		if( def != null && def.indexOf("${") >= 0){
+			String res = this.camelService.evaluate( def, e );
+			info(this,"evaluate.result:" + res);
+			return res;
+		}
+		return null;
 	}
 
 	private String getString(Exchange e, String key, String def) {
+		String res = evaluate( def, e );
+		if( res != null) return res;
 		String value = e.getIn().getHeader(key, String.class);
 		if (value == null) {
 			value = e.getProperty(key, String.class);
 		}
-		info("getString:" + key + "=" + value + "/def:" + def);
+		info(this, "getString:" + key + "=" + value + "/def:" + def);
 		return value != null ? value : def;
 	}
 
@@ -58,7 +70,7 @@ public class RepoGetProducer extends RepoProducer {
 		GitService gitService = getGitService();
 		File file = gitService.searchFile(repo, path, type);
 		String fileType = gitService.getFileType(file);
-		info("producer --> get:repo: " + repo + ",path:" + path + ",type:" + type + "/target:" + target+"/realtype:"+fileType);
+		info(this, "producer --> get:repo: " + repo + ",path:" + path + ",type:" + type + "/target:" + target+"/realtype:"+fileType);
 		if( fileType.startsWith("sw.")){
 			 String content = gitService.getFileContent(file);
 			if ("body".equals(target)) {
@@ -73,11 +85,6 @@ public class RepoGetProducer extends RepoProducer {
 				exchange.getIn().setHeader(header, file);
 			}
 		}
-	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		LOG.info(msg);
 	}
 }
 

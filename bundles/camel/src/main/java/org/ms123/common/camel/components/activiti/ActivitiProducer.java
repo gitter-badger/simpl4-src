@@ -87,6 +87,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private RepositoryService repositoryService;
 	private PermissionService permissionService;
 	private WorkflowService workflowService;
+	private CamelService camelService;
 
 	private ActivitiOperation operation;
 	private ActivitiEndpoint endpoint;
@@ -112,6 +113,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.workflowService = workflowService;
 		this.runtimeService = workflowService.getProcessEngine().getRuntimeService();
 		this.repositoryService = workflowService.getProcessEngine().getRepositoryService();
+		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
+		info(this,"ActivitiProducer.camelService:" + this.camelService);
 		setRuntimeService(this.runtimeService);
 		String[] path = endpoint.getEndpointKey().split(":");
 		this.operation = ActivitiOperation.valueOf(path[1].replace("//", ""));
@@ -635,7 +638,18 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		return camelMap;
 	}
 
+	private String evaluate( String def, Exchange e ){
+		if( def != null && def.indexOf("${") >= 0){
+			String res = this.camelService.evaluate( def, e );
+			info(this,"evaluate.result:" + res);
+			return res;
+		}
+		return null;
+	}
+
 	private String getStringCheck(Exchange e, String key, String def) {
+		String res = evaluate( def, e );
+		if( res != null) return res;
 		String value = e.getIn().getHeader(key, String.class);
 		debug(this,"getStringCheck:" + key + "=" + value + "/def:" + def);
 		if (value == null) {
@@ -648,6 +662,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private String getString(Exchange e, String key, String def) {
+		String res = evaluate( def, e );
+		if( res != null) return res;
 		String value = e.getIn().getHeader(key, String.class);
 		if (value == null) {
 			value = e.getProperty(key, String.class);

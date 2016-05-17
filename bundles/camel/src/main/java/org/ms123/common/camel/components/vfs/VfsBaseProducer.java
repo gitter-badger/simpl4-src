@@ -54,8 +54,9 @@ import org.ms123.common.camel.components.vfs.result.VfsSearchResult;
 import org.ms123.common.camel.components.vfs.result.VfsResult;
 import org.ms123.common.camel.components.vfs.result.VfsResultCode;
 import org.ms123.common.utils.IOUtils;
-import static com.jcabi.log.Logger.error;
+import org.ms123.common.camel.api.CamelService;
 import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 /**
  * The Vfs base producer.
@@ -68,6 +69,7 @@ class VfsBaseProducer extends DefaultProducer {
 	protected VfsConfiguration configuration;
 	protected StandardFileSystemManager fileSystemManager;
 	protected FileObject remoteRootDirectory;
+	protected CamelService camelService;
 
 
 	public VfsBaseProducer(VfsEndpoint endpoint, VfsConfiguration conf) {
@@ -76,6 +78,7 @@ class VfsBaseProducer extends DefaultProducer {
 		this.endpoint = endpoint;
 		String endpointKey = endpoint.getEndpointKey();
 		this.operation = VfsOperation.valueOf(this.configuration.getOperation());
+		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 	}
 
 	public void process(Exchange exchange) throws Exception {
@@ -465,7 +468,18 @@ class VfsBaseProducer extends DefaultProducer {
 		}
 	}
 
+	private String evaluate( String def, Exchange e ){
+		if( def != null && def.indexOf("${") >= 0){
+			String res = this.camelService.evaluate( def, e );
+			info(this,"evaluate.result:" + res);
+			return res;
+		}
+		return null;
+	}
+
 	protected String getStringCheck(Exchange e, String key, String def) {
+		String res = evaluate( def, e );
+		if( res != null) return res;
 		String value = e.getIn().getHeader(key, String.class);
 		info(this, "getStringCheck:" + key + "=" + value + "/def:" + def);
 		if (value == null) {
@@ -478,6 +492,8 @@ class VfsBaseProducer extends DefaultProducer {
 	}
 
 	protected String getString(Exchange e, String key, String def) {
+		String res = evaluate( def, e );
+		if( res != null) return res;
 		String value = e.getIn().getHeader(key, String.class);
 		if (value == null) {
 			value = e.getProperty(key, String.class);
