@@ -415,6 +415,9 @@
 				var page = e.detail.page;
 				if ( e.detail.isSelected && page.url ) {
 					console.debug( "menuItemSelected:", e );
+					channel.publish( "menuItem.selected", 
+						e.detail
+					 );
 					this.selectedPage = page;
 					this.route = page.hash;
 					if ( this.pageCache[ page.url ] !== true ) {
