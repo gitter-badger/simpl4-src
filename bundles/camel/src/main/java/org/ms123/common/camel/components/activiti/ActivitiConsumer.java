@@ -33,6 +33,7 @@ import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.delegate.event.ActivitiEventListener;
 import org.activiti.engine.delegate.event.ActivitiActivityEvent;
 import org.activiti.engine.delegate.event.ActivitiCancelledEvent;
+import org.activiti.engine.delegate.event.ActivitiEntityEvent;
 import org.activiti.engine.delegate.event.ActivitiErrorEvent;
 import org.activiti.engine.delegate.event.ActivitiMessageEvent;
 import org.activiti.engine.delegate.event.ActivitiSignalEvent;
@@ -132,7 +133,7 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		if( event instanceof ActivitiVariableEvent ){
 			ActivitiVariableEvent a = (ActivitiVariableEvent)event;
 			result.put( "variableName", a.getVariableName());
-			result.put( "variableType", String.valueOf(a.getVariableType()));
+			result.put( "variableType", getVariableType(String.valueOf(a.getVariableType())));
 			result.put( "variableValue", ser.deepSerialize(a.getVariableValue()));
 		}
 		if( event instanceof ActivitiSequenceFlowTakenEvent ){
@@ -202,5 +203,13 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 	}
 	private boolean isEmpty(String s) {
 		return (s == null || "".equals(s.trim()));
+	}
+	private String getVariableType(String s) {
+		int lastIndexDot = s.lastIndexOf(".");
+		int lastIndexAt = s.lastIndexOf("@");
+		if( lastIndexAt == -1){
+			lastIndexDot = s.length();
+		}
+		return s.substring(lastIndexDot+1,lastIndexAt);
 	}
 }
