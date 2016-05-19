@@ -28,6 +28,7 @@ public interface ActivitiConstants {
 	public static final String ACTIVITY_ID = "activityId";
 	public static final String EXECUTION_ID = "executionId";
 	public static final String PROCESSVARIABLE = "processVariable";
+	public static final String EVENTS = "events";
 
 	public static final String LAST_ERROR = "lastError";
 }

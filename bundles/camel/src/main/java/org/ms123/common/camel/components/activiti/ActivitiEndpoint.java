@@ -45,6 +45,7 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private Map m_options;
 	private Map<String, String> processCriteria = new HashMap<String, String>();
 	private String namespace;
+	private String events;
 	private String signalName;
 	private boolean isSendSignal;
 	private boolean isSendMessage;
@@ -103,6 +104,14 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 			return null;
 		}
 		return this.namespace;
+	}
+
+	public void setEvents(String data) {
+		this.events = data;
+	}
+
+	public String getEvents() {
+		return this.events;
 	}
 
 	public void setSendSignal(Boolean data) {

@@ -18,6 +18,7 @@
  */
 package org.ms123.common.camel.components.activiti;
 
+import flexjson.*;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
@@ -30,6 +31,13 @@ import java.util.Arrays;
 import org.activiti.engine.delegate.event.ActivitiEvent;
 import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.delegate.event.ActivitiEventListener;
+import org.activiti.engine.delegate.event.ActivitiActivityEvent;
+import org.activiti.engine.delegate.event.ActivitiCancelledEvent;
+import org.activiti.engine.delegate.event.ActivitiErrorEvent;
+import org.activiti.engine.delegate.event.ActivitiMessageEvent;
+import org.activiti.engine.delegate.event.ActivitiSignalEvent;
+import org.activiti.engine.delegate.event.ActivitiVariableEvent;
+import org.activiti.engine.delegate.event.ActivitiSequenceFlowTakenEvent;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.runtime.ProcessInstanceQuery;
@@ -46,11 +54,26 @@ import static com.jcabi.log.Logger.warn;
 @SuppressWarnings({"unchecked","deprecation"})
 public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventListener {
 
+	private JSONDeserializer ds = new JSONDeserializer();
+	private JSONSerializer ser = new JSONSerializer();
 	private final ActivitiEndpoint endpoint;
+	ActivitiEventType[]  events = null;
 
 	public ActivitiConsumer(ActivitiEndpoint endpoint, Processor processor) {
 		super(endpoint, processor);
 		this.endpoint = endpoint;
+		String _events = endpoint.getEvents();
+		if( _events != null && _events.trim().length() > 0){
+			info(this,"_Events:"+_events);
+			String[] arr  = _events.toUpperCase().split(",");
+			this.events = new ActivitiEventType[arr.length];
+			int i=0;
+			for( String elem : arr ){
+				this.events[i++] = ActivitiEventType.valueOf( elem );
+			}
+		}
+			
+		info(this,"Events:"+this.events);
 	}
 
 	public boolean isFailOnException() {
@@ -58,7 +81,10 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 	}
 
 	public void onEvent(ActivitiEvent event){
+		info(this, "onEvent:"+event);
+		info(this, "onEvent:"+event.getClass());
 		final boolean reply = false;
+		ActivitiEventType type = event.getType();
 		final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
 		Map result = new HashMap();
 		result.put( "executionId", event.getExecutionId());
@@ -69,11 +95,56 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		ExecutionEntity ee=				commandContext.getExecutionEntityManager().findExecutionById(event.getExecutionId());
 		info(this, "ActivitiConsumer.onEvent:"+ ee.getProcessDefinitionId()+"/tasks:"+ ee.getTasks()+"/aid:"+ ee.getCurrentActivityName());
 		result.put( "businessKey", ee.getProcessBusinessKey());
-		List<TaskEntity> tasks = ee.getTasks();
-		result.put( "formKey", tasks.get(0).getFormKey());
-		result.put( "taskId", tasks.get(0).getId());
-		result.put( "owner", tasks.get(0).getOwner());
-		result.put( "assignee", tasks.get(0).getAssignee());
+
+		if( event instanceof ActivitiEntityEvent ){
+			List<TaskEntity> tasks = ee.getTasks();
+			if( tasks != null && tasks.size() > 0 ){
+				result.put( "formKey", tasks.get(0).getFormKey());
+				result.put( "taskId", tasks.get(0).getId());
+				result.put( "owner", tasks.get(0).getOwner());
+				result.put( "assignee", tasks.get(0).getAssignee());
+			}
+		}
+		if( event instanceof ActivitiActivityEvent ){
+			ActivitiActivityEvent a = (ActivitiActivityEvent)event;
+			result.put( "activityId", a.getActivityId());
+			result.put( "activityName", a.getActivityName());
+			result.put( "activityType", a.getActivityType());
+		}
+		if( event instanceof ActivitiCancelledEvent ){
+			ActivitiCancelledEvent a = (ActivitiCancelledEvent)event;
+			result.put( "cause", String.valueOf(a.getCause()));
+		}
+		if( event instanceof ActivitiErrorEvent ){
+			ActivitiErrorEvent a = (ActivitiErrorEvent)event;
+			result.put( "errorCode", a.getErrorCode());
+		}
+		if( event instanceof ActivitiMessageEvent ){
+			ActivitiMessageEvent a = (ActivitiMessageEvent)event;
+			result.put( "messageName", a.getMessageName());
+			result.put( "messageData", ser.deepSerialize(a.getMessageData()));
+		}
+		if( event instanceof ActivitiSignalEvent ){
+			ActivitiSignalEvent a = (ActivitiSignalEvent)event;
+			result.put( "signalName", a.getSignalName());
+			result.put( "signalData", ser.deepSerialize(a.getSignalData()));
+		}
+		if( event instanceof ActivitiVariableEvent ){
+			ActivitiVariableEvent a = (ActivitiVariableEvent)event;
+			result.put( "variableName", a.getVariableName());
+			result.put( "variableType", String.valueOf(a.getVariableType()));
+			result.put( "variableValue", ser.deepSerialize(a.getVariableValue()));
+		}
+		if( event instanceof ActivitiSequenceFlowTakenEvent ){
+			ActivitiSequenceFlowTakenEvent a = (ActivitiSequenceFlowTakenEvent)event;
+			result.put( "id", a.getId());
+			result.put( "sourceActivityId", a.getSourceActivityId());
+			result.put( "sourceActivityName", a.getSourceActivityName());
+			result.put( "sourceActivityType", a.getSourceActivityType());
+			result.put( "targetActivityId", a.getTargetActivityId());
+			result.put( "targetActivityName", a.getTargetActivityName());
+			result.put( "targetActivityType", a.getTargetActivityType());
+		}
 
 		final ProcessInstanceQuery processInstanceQuery = event.getEngineServices().getRuntimeService().createProcessInstanceQuery().processInstanceId(event.getProcessInstanceId()).includeProcessVariables();
 		final ProcessInstance processInstance = processInstanceQuery.singleResult();
@@ -113,7 +184,12 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 	protected void doStart() throws Exception {
 		info(this, "Add EventListener");
 		RuntimeService rs = this.endpoint.getRuntimeService();
-		rs.addEventListener( this, ActivitiEventType.TASK_CREATED);
+		if( this.events != null){
+			for( ActivitiEventType a : this.events){
+				info(this,"ActivitiEvent.register:"+a);
+			}
+			rs.addEventListener( this, this.events);
+		}
 		super.doStart();
 	}
 
