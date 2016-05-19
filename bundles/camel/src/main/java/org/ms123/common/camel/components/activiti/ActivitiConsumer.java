@@ -86,7 +86,6 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		info(this, "onEvent:"+event.getClass());
 		final boolean reply = false;
 		ActivitiEventType type = event.getType();
-		final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
 		Map result = new HashMap();
 		result.put( "executionId", event.getExecutionId());
 		result.put( "processInstanceId", event.getProcessInstanceId());
@@ -170,6 +169,7 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		}
 
 		info(this, "ActivitiConsumer.onEvent.result:"+ result);
+		final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
 		exchange.getIn().setBody(result);
 		try {
 			getAsyncProcessor().process(exchange, new AsyncCallback() {
