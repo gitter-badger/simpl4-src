@@ -123,22 +123,28 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.MultiSelectWindow", 
 		},
 
 		_getSelectables: function (selectablesDesc) {
-			var p = selectablesDesc.split(":");
-			var t = ms123.util.Remote.rpcSync(p[0] + ":" + p[1]);
-			if( t.rows != null){
-				t = t.rows;
-			}
-			var list = [];
-			for (var i = 0; i < t.length; i++) {
-				var value = t[i][p[2]];
-				var o = {
-					value: value,
-					label: value
+			var list=null;
+			if( typeof selectablesDesc == "string" ){
+				var p = selectablesDesc.split(":");
+				var t = ms123.util.Remote.rpcSync(p[0] + ":" + p[1]);
+				if( t.rows != null){
+					t = t.rows;
 				}
-				list.push(o);
+				list = [];
+				for (var i = 0; i < t.length; i++) {
+					var value = t[i][p[2]];
+					var o = {
+						value: value,
+						label: value
+					}
+					list.push(o);
+				}
+				this._selectables = list;
+			}else{
+				list = selectablesDesc;
+				this._selectables = list;
 			}
 			console.log("list:" + qx.util.Serializer.toJson(list));
-			this._selectables = list;
 			return list;
 		},
 
