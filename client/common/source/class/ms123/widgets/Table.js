@@ -1292,7 +1292,7 @@ qx.Class.define('ms123.widgets.Table', {
 					if (!copy && self._currentIndex > -1) { //Edit
 						ms123.util.Clone.merge(map, self._currentRowData, m);
 						self.tableModel.setRowsAsMapArray([map], self._currentIndex, true);
-						if( this._context.primaryKeys && this._context.primaryKeys.length>0 ){
+						if( self._context.primaryKeys && self._context.primaryKeys.length>0 ){
 							id =''; 
 							var colon='';
 							for( var i=0; i< self._context.primaryKeys.length;i++){
