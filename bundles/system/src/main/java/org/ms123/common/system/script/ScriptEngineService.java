@@ -16,24 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.camel;
+package org.ms123.common.system.script;
 
-public interface Constants {
-	public final String GROOVY_TYPE = "sw.groovy";
-	public final String JAVA_TYPE = "sw.java";
-	public final String NJS_TYPE = "sw.njs";
-	public final String DIRECTORY_TYPE = "sw.directory";
-	public final String CAMEL_CONTEXT = "context";
-	public final String CAMEL_DSL_MD5 = "dsl_md5";
-	public final String PATH = "path";
-	public final String AUTOSTART = "autostart";
-	public final String ENABLED = "enabled";
-	public final String CAMELCONTEXT = "camelcontext";
-	public final String RESOURCEID = "resourceId";
-	public final String OVERRIDEID = "overrideid";
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
-	public final String STARTTIME = "startTime";
-	public final String ENDTIME = "endTime";
-	public final String STATUS = "status";
-
+public interface ScriptEngineService {
+	public ScriptEngine getEngineByName(String name);
+	public ScriptEngineManager getScriptEngineManager();
 }

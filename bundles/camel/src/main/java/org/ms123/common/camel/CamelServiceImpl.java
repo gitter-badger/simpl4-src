@@ -161,46 +161,6 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 	}
 
 	@RequiresRoles("admin")
-	public void  saveGroovyScript(
-			@PName(StoreDesc.NAMESPACE) String namespace,
-			@PName("path") String path,
-			@PName("content") String content
-		 ) throws RpcException {
-		try {
-			m_gitService.putContent(namespace,path, GROOVY_TYPE, content);
-			_compileGroovyScripts(namespace, path,content);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			String msg = e.getMessage();
-			while (e.getCause() != null) {
-				e = e.getCause();
-				msg += "\n"+e.getMessage();
-			}
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "CamelServiceImpl.saveGroovyScript:"+msg);
-		}
-	}
-
-	@RequiresRoles("admin")
-	public void  saveJava(
-			@PName(StoreDesc.NAMESPACE) String namespace,
-			@PName("path") String path,
-			@PName("content") String content
-		 ) throws RpcException {
-		try {
-			m_gitService.putContent(namespace,path, JAVA_TYPE, content);
-			_compileJava(namespace, path,content);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			String msg = e.getMessage();
-			while (e.getCause() != null) {
-				e = e.getCause();
-				msg += "\n"+e.getMessage();
-			}
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "CamelServiceImpl.saveJava:"+msg);
-		}
-	}
-
-	@RequiresRoles("admin")
 	public List<String> getContextNames(
 			@PName(StoreDesc.NAMESPACE) @POptional String namespace ) throws RpcException {
 		try {

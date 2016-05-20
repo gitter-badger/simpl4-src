@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.utils;
+package org.ms123.common.system.script;
 
 
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ import javax.script.*;
  */
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true)
 public class ScriptEngineServiceImpl implements ScriptEngineService {
-	private ScriptEngineManager m_scriptEngineManager;
+	private OSGiScriptEngineManager m_scriptEngineManager;
 
 	public ScriptEngineServiceImpl() {
 	}
@@ -62,4 +62,7 @@ public class ScriptEngineServiceImpl implements ScriptEngineService {
 		return m_scriptEngineManager.getEngineByName(name);
 	}
 
+	public ScriptEngine getEngineByName(String namespace, String name) {
+		return m_scriptEngineManager.getEngineByName(namespace, name);
+	}
 }

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.utils;
+package org.ms123.common.system.script;
 
 
 import java.io.Reader;
@@ -26,9 +26,12 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
+import javax.script.Compilable;
+import javax.script.Invocable;
+import javax.script.CompiledScript;
 
 
-public class OSGiScriptEngine implements ScriptEngine {
+public class OSGiScriptEngine implements ScriptEngine, Compilable, Invocable {
 	private ScriptEngine engine;
 	private OSGiScriptEngineFactory factory;
 	public OSGiScriptEngine(ScriptEngine engine, OSGiScriptEngineFactory factory) {
@@ -90,6 +93,25 @@ public class OSGiScriptEngine implements ScriptEngine {
 
 	public void setContext(ScriptContext context) {
 		engine.setContext(context);
+	}
+
+	public CompiledScript	compile(Reader script) throws ScriptException{
+		return ((Compilable)engine).compile(script);
+	}
+	public CompiledScript	compile(String script) throws ScriptException{
+		return ((Compilable)engine).compile(script);
+	}
+	public <T> T	getInterface(Class<T> clasz){
+		return ((Invocable)engine).getInterface(clasz);
+	}
+	public 	<T> T	getInterface(Object thiz, Class<T> clasz){
+		return ((Invocable)engine).getInterface(thiz, clasz);
+	}
+	public 	Object	invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException{
+		return ((Invocable)engine).invokeFunction(name, args);
+	}
+	public 	Object	invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException{
+		return ((Invocable)engine).invokeMethod(thiz, name, args);
 	}
 
 }

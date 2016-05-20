@@ -16,12 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.utils;
+package org.ms123.common.system.script;
+import java.util.List;
+import java.util.Map;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
-public interface ScriptEngineService {
-	public ScriptEngine getEngineByName(String name);
-	public ScriptEngineManager getScriptEngineManager();
+public interface ScriptService {
+	public void compileScript(String namespace, String path, String code, String type) throws Exception;
 }

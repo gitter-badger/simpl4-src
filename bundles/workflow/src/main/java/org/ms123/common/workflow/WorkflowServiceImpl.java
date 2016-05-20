@@ -63,7 +63,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.annotation.component.*;
-import org.ms123.common.utils.ScriptEngineService;
+import org.ms123.common.system.script.ScriptEngineService;
 import org.ms123.common.libhelper.FileSystemClassLoader;
 import org.ms123.common.utils.Utils;
 import org.ms123.common.git.GitService;

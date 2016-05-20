@@ -169,7 +169,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 						context.facade = this.facade;
 						context.helper = this.config.helper;
 						context.toolbarAddon = this.config.toolbarAddon;
-						context.mode = (this.config && this.config.mode) ? this.config.mode : "text/x-groovy";
+						context.mode = (this.config && this.config.mode) ? this.getMode(this.config.mode) : "text/x-groovy";
 						this.textArea = this.createTextArea(context);
 						if( !this.data ) this.data = "";
 						this.textArea.setValue( this.data);
@@ -202,6 +202,17 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 				break;
 			}
 			return control;
+		},
+		getMode: function (type) {
+			if( type == "njs"){
+				return "application/x-javascript"
+			}else if( type == "java"){
+				return "text/x-java"
+			}else if( type == "groovy"){
+				return "text/x-groovy"
+			}else{
+				return type;
+			}
 		},
 		createTextArea: function (context) {
 			var textAreaMax = new ms123.codemirror.CodeMirror(context);//new qx.ui.form.TextArea();

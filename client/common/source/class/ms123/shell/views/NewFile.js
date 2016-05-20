@@ -92,6 +92,9 @@ qx.Class.define("ms123.shell.views.NewFile", {
 			if( nt.match("^"+ms123.shell.Config.GROOVY_FT)){
 				return this._handleGroovy(name,nt);
 			}
+			if( nt.match("^"+ms123.shell.Config.NJS_FT)){
+				return this._handleNJS(name,nt);
+			}
 			if( nt.match("^"+ms123.shell.Config.JAVA_FT)){
 				return this._handleGroovy(name,nt);
 			}
@@ -117,6 +120,15 @@ qx.Class.define("ms123.shell.views.NewFile", {
 		},
 		_endsWith:function(str, suffix) {
 				return str.indexOf(suffix, str.length - suffix.length) !== -1;
+		},
+		//NJS specific ------------------------------------
+		_handleNJS:function(name, nt){
+			var maintype = nt.split("/")[0].toLowerCase();
+			return  {
+				name:this._addExtension(name,maintype),
+				nt:maintype,
+				content:null
+			}
 		},
 		//Groovy specific ------------------------------------
 		_handleGroovy:function(name, nt){

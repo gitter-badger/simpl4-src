@@ -53,6 +53,8 @@ qx.Class.define("ms123.shell.views.Editor", {
 			widget = this._handleDatasource(model);
 		}else if( model.getType() == ms123.shell.Config.GROOVY_FT ){
 			widget = this._handleGroovy(model);
+		}else if( model.getType() == ms123.shell.Config.NJS_FT ){
+			widget = this._handleNJS(model);
 		}else if( model.getType() == ms123.shell.Config.JAVA_FT ){
 			widget = this._handleJava(model);
 		}else if( model.getType() == ms123.shell.Config.RULE_FT ){
@@ -137,7 +139,22 @@ qx.Class.define("ms123.shell.views.Editor", {
 			this._realEditor = ge;
 			ge.addListener("save", function(e){
 				var content = e.getData();
-				this._saveGroovy( model, type.substring(3), content);
+				this._saveGroovy( model, type, content);
+			}, this);
+			return ge;
+		},
+		_handleNJS:function(model){
+			var type = model.getType();
+			var config = {};
+			config.storeDesc = this.facade.storeDesc;
+			config.facade = this.facade;
+			config.mode="application/x-javascript";
+			var content = this._getContentRaw(model.getPath());
+			var ge = new ms123.shell.views.TextEditor(config,content);
+			this._realEditor = ge;
+			ge.addListener("save", function(e){
+				var content = e.getData();
+				this._saveNJS( model, type, content);
 			}, this);
 			return ge;
 		},
@@ -152,7 +169,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 			this._realEditor = ge;
 			ge.addListener("save", function(e){
 				var content = e.getData();
-				this._saveJava( model, type.substring(3), content);
+				this._saveJava( model, type, content);
 			}, this);
 			return ge;
 		},
@@ -321,40 +338,89 @@ qx.Class.define("ms123.shell.views.Editor", {
 			}
 			ms123.util.Remote.rpcAsync(params);
 		},
-		_saveGroovy: function (model, what, content) {
-			this._saveCamel(model,what,content);
+		_saveGroovy: function (model, type, content) {
+			this._saveScript(model,type,content);
 		},
-		_saveJava: function (model, what, content) {
-			this._saveCamel(model,what,content);
+		_saveNJS: function (model, type, content) {
+			this._saveScript(model,type,content);
 		},
-		_saveCamel: function (model, what, content) {
-			var methods = {
-				"camel":"saveRoutesJson",
-				"java":"saveJava",
-				"groovy":"saveGroovyScript"
-			}
+		_saveJava: function (model, type, content) {
+			this._saveScript(model,type,content);
+		},
+		_saveScript: function (model, type, content) {
 			var path = model.getPath();
 			var completed = (function (e) {
-				ms123.form.Dialog.alert(this.tr("shell."+what+"_saved"));
+				ms123.form.Dialog.alert(this.tr("shell."+type.substring(3)+"_saved"));
 				var eventBus = qx.event.message.Bus;
 				eventBus.getInstance().dispatchByName("camelroutes.deployed", {});
 			}).bind(this);
 
 			var failed = (function (ret) {
 				ret = ret.toString();
-				var msg = ret.replace(/\|/g, "<br/>");
-				var msg = msg.replace(/Script.*groovy: [0-9]{0,4}:/g, "<br/><br/>");
-				var msg = msg.replace(/ for class: Script[0-9]{1,2}/g, "");
-				var msg = msg.replace(/Script[0-9]{1,2}/g, "");
-				var msg = msg.replace(/Application error 500:/g, "");
-				var msg = msg.replace(/:java.lang.RuntimeException/g, "");
-				var msg = msg.replace(/:Line:/g, "<br/>Line:");
-				var msg = ms123.util.Text.explode( msg, 90 );
+				var msg = null;
+				msg = ret.replace(/\|/g, "<br/>");
+				msg = msg.replace(/Script.*groovy: [0-9]{0,4}:/g, "<br/><br/>");
+				msg = msg.replace(/ for class: Script[0-9]{1,2}/g, "");
+				msg = msg.replace(/Script[0-9]{1,2}/g, "");
+				msg = msg.replace(/Application error 500:/g, "");
+				msg = msg.replace(/:java.lang.RuntimeException/g, "");
+				msg = msg.replace(/:Line:/g, "<br/>Line:");
+				msg = msg.replace(/<eval>/g, path);
+			//	msg = ms123.util.Text.explode( msg, 90 );
 
-				var message = "<b>" + this.tr("shell."+what+"_save_failed")+":</b><pre style='font-size:10px'>" + msg + "</pre></div>";
+				var message = "<b>" + this.tr("shell."+type.substring(3)+"_save_failed")+":</b><pre style='font-size:10px'>" + msg + "</pre></div>";
 				var alert = new ms123.form.Alert({
 					"message": message,
-					"windowWidth": 600,
+					"windowWidth": 700,
+					"windowHeight": 400,
+					"useHtml": true,
+					"inWindow": true
+				});
+				alert.show();
+			}).bind(this);
+
+			var rpcParams = {
+				namespace:this.facade.storeDesc.getNamespace(),
+				path:path,
+				content: content,
+				type:type
+			};
+
+			var params = {
+				method:"compileScript",
+				service:"script",
+				parameter:rpcParams,
+				async: false,
+				context: this,
+				completed: completed,
+				failed: failed
+			}
+			ms123.util.Remote.rpcAsync(params);
+		},
+		_saveCamel: function (model, what, content) {
+			var path = model.getPath();
+			var completed = (function (e) {
+				ms123.form.Dialog.alert(this.tr("shell.camel_saved"));
+				var eventBus = qx.event.message.Bus;
+				eventBus.getInstance().dispatchByName("camelroutes.deployed", {});
+			}).bind(this);
+
+			var failed = (function (ret) {
+				ret = ret.toString();
+				var msg = null;
+				msg = ret.replace(/\|/g, "<br/>");
+				msg = msg.replace(/Script.*groovy: [0-9]{0,4}:/g, "<br/><br/>");
+				msg = msg.replace(/ for class: Script[0-9]{1,2}/g, "");
+				msg = msg.replace(/Script[0-9]{1,2}/g, "");
+				msg = msg.replace(/Application error 500:/g, "");
+				msg = msg.replace(/:java.lang.RuntimeException/g, "");
+				msg = msg.replace(/:Line:/g, "<br/>Line:");
+				msg = ms123.util.Text.explode( msg, 90 );
+
+				var message = "<b>" + this.tr("shell.camel_save_failed")+":</b><pre style='font-size:10px'>" + msg + "</pre></div>";
+				var alert = new ms123.form.Alert({
+					"message": message,
+					"windowWidth": 700,
 					"windowHeight": 400,
 					"useHtml": true,
 					"inWindow": true
@@ -369,7 +435,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 			};
 
 			var params = {
-				method:methods[what],
+				method:"saveRoutesJson",
 				service:"camel",
 				parameter:rpcParams,
 				async: false,

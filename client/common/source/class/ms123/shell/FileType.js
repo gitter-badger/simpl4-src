@@ -49,6 +49,8 @@ qx.Class.define("ms123.shell.FileType", {
 					return "resource/ms123/stencil.png";
 				}else if (type == ms123.shell.Config.GROOVY_FT) {
 					return "resource/ms123/groovy.png";
+				}else if (type == ms123.shell.Config.NJS_FT) {
+					return "resource/ms123/njs.png";
 				}else if (type == ms123.shell.Config.JAVA_FT) {
 					return "resource/ms123/java.png";
 				}else if (type == ms123.shell.Config.DATAMAPPER_FT) {
@@ -80,7 +82,7 @@ qx.Class.define("ms123.shell.FileType", {
 			return "resource/ms123/file.png";
 		},
 		getAllEditables:function(){
-				return  ["sw.rule","sw.process","sw.filter", "sw.form", "sw.camel", "sw.groovy", "sw.java", "sw.datamapper", "sw.datasource", "sw.document"];
+				return  ["sw.rule","sw.process","sw.filter", "sw.form", "sw.camel", "sw.groovy", "sw.njs", "sw.java", "sw.datamapper", "sw.datasource", "sw.document"];
 		},
 		getAllJsonEditables:function(){
 				return  ["sw.rule","sw.process","sw.filter", "sw.form","sw.camel",  "sw.datamapper", "sw.document"];
@@ -113,6 +115,7 @@ qx.Class.define("ms123.shell.FileType", {
 			iconMap[ms123.shell.Config.CAMEL_FT]= "resource/ms123/camel.png";
 			iconMap[ms123.shell.Config.STENCIL_FT]= "resource/ms123/stencil.png";
 			iconMap[ms123.shell.Config.GROOVY_FT]= "resource/ms123/groovy.png";
+			iconMap[ms123.shell.Config.NJS_FT]= "resource/ms123/njs.png";
 			iconMap[ms123.shell.Config.JAVA_FT]= "resource/ms123/java.png";
 			iconMap[ms123.shell.Config.DATAMAPPER_FT]= "resource/ms123/datamapper.png";
 			iconMap[ms123.shell.Config.DATASOURCE_FT]= "resource/ms123/datasource.png";
@@ -131,6 +134,7 @@ qx.Class.define("ms123.shell.FileType", {
 				{ label: qx.locale.Manager.tr("shell.nt_camel"),   value: ms123.shell.Config.CAMEL_FT},
 				{ label: qx.locale.Manager.tr("Stencil"),   value: ms123.shell.Config.STENCIL_FT},
 				{ label: qx.locale.Manager.tr("Groovy"),   value: ms123.shell.Config.GROOVY_FT},
+				{ label: qx.locale.Manager.tr("Nashorn/Javascript"),   value: ms123.shell.Config.NJS_FT},
 				{ label: qx.locale.Manager.tr("Groovy/Bean"),   value: ms123.shell.Config.GROOVY_FT+"/Bean"},
 				{ label: qx.locale.Manager.tr("Groovy/Processor"),   value: ms123.shell.Config.GROOVY_FT+"/Processor"},
 				{ label: qx.locale.Manager.tr("Java"),   value: ms123.shell.Config.JAVA_FT},

@@ -107,6 +107,10 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_ACTIVITY_NA
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.debug;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptEngine;
+import javax.script.CompiledScript;
+import javax.script.Compilable;
 
 /**
  *
@@ -535,45 +539,8 @@ info(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 		return routesJsonMap;
 	}
 
-	protected void	_compileGroovyScripts(String namespace,String path,String code){
-		List<String> classpath = new ArrayList<String>();
-		classpath.add(System.getProperty("workspace") + "/" + "jooq/build");
-		classpath.add(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
-		classpath.add(System.getProperty("workspace") + "/groovy/" + namespace);
-		classpath.add(System.getProperty("workspace") + "/java/" + namespace);
-		String destDir = System.getProperty("workspace")+"/"+ "groovy"+"/"+namespace;
-		String srcDir = System.getProperty("git.repos")+"/"+namespace;
-		CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", false);
-		CompilerConfiguration config = new CompilerConfiguration();
-		config.getOptimizationOptions().put("indy", false);
-		config.setClasspathList( classpath );
-		config.setTargetDirectory( destDir);
-		FileSystemCompiler fsc = new FileSystemCompiler(config);
 
-		File[] files = new File[1];
-		files[0] = new File(srcDir, path);
-		try {
-			fsc.compile(files);
-		} catch (Throwable e) {
-			String msg = formatGroovyException(e,code);
-			throw new RuntimeException(msg);
-		}
-		newGroovyClassLoader();
-	}
-
-	protected void	_compileJava(String namespace,String path,String code){
-		String destDir = System.getProperty("workspace")+"/"+ "java"+"/"+namespace;
-		String srcDir = System.getProperty("git.repos")+"/"+namespace;
-		try{
-			JavaCompiler.compile(namespace, m_bundleContext.getBundle(), FilenameUtils.getBaseName(path), code,new File(destDir));
-		}catch(Exception e){
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
-		}
-		newGroovyClassLoader();
-	}
-
-	private void newGroovyClassLoader(){
+	public void newGroovyClassLoader(){
 		for( String key : m_contextCache.keySet()){
 			GroovyRegistry gr = m_contextCache.get(key).groovyRegistry;
 			gr.newClassLoader();
@@ -582,14 +549,6 @@ info(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 			co.start();
 		}
 	}
-/*	protected static void debug(String msg) {
-		System.out.println(msg);
-		m_logger.debug(msg);
-	}
-	protected static void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}*/
 
 
 	private void toFlatList(Map<String,Object> fileMap,List<String> types,List<Map> result){

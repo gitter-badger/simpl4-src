@@ -88,6 +88,7 @@ qx.Class.define("ms123.shell.Config", {
 		STENCIL_FT: "sw.stencil",
 		GROOVY_FT: "sw.groovy",
 		JAVA_FT: "sw.java",
+		NJS_FT: "sw.njs",
 		DATAMAPPER_FT: "sw.datamapper",
 		DATASOURCE_FT: "sw.datasource",
 		DOCUMENT_FT: "sw.document"

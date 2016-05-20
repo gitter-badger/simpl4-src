@@ -1223,6 +1223,8 @@ public class GitServiceImpl implements GitService {
 			return "application/vnd.oasis.opendocument.text";
 		}else if( file.toString().endsWith(".groovy")){
 			return "sw.groovy";
+		}else if( file.toString().endsWith(".njs")){
+			return "sw.njs";
 		}else if( file.toString().endsWith(".java")){
 			return "sw.java";
 		}

@@ -45,6 +45,7 @@ import java.util.Collection;
 import javax.xml.namespace.QName;
 import org.ms123.common.system.compile.java.JavaCompiler;
 import org.osgi.framework.BundleContext;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 class JsonConverterVisitor {
 	def m_ctx;
@@ -427,6 +428,28 @@ abstract class JsonConverterImpl implements JsonConverter{
 			}
 		}
 	}
+	def getRepoFile(namespace,name,type){
+		def gitService=null;
+		def sr = bundleContext.getServiceReference("org.ms123.common.git.GitService");
+		if (sr != null) {
+			gitService = bundleContext.getService(sr);
+		}
+		if (gitService == null) {
+			throw new RuntimeException("JsonConverter.Cannot resolve GitService");
+		}
+		return gitService.searchFile(namespace, name, type);
+	}
+	def getScriptEngine(namespace, name){
+		def scriptEngineService=null;
+		def sr = bundleContext.getServiceReference("org.ms123.common.system.script.ScriptEngineService");
+		if (sr != null) {
+			scriptEngineService = bundleContext.getService(sr);
+		}
+		if (scriptEngineService == null) {
+			throw new RuntimeException("JsonConverter.Cannot resolve scriptEngineService");
+		}
+		return scriptEngineService.getEngineByName(namespace, name);
+	}
 }
 
 class OnExceptionJsonConverter extends JsonConverterImpl{
@@ -806,32 +829,45 @@ class SetPropertyJsonConverter extends JsonConverterImpl{
 }
 class ProcessorJsonConverter extends JsonConverterImpl{
 	void convertToCamel(ctx){
-		def code = shapeProperties.code;
 		def addImport = shapeProperties.addImport;
 		def codeLanguage = shapeProperties.codeLanguage;
 		def codeKind = shapeProperties.codeKind;
 		def isEndpoint = shapeProperties.isEndpoint;
 		def ref = shapeProperties.ref;
-		if( isNotEmpty(ref)){
-			if( isEndpoint){
-				ctx.current = ctx.current.to(ref);
-			}else{
-				ctx.current = ctx.current.processRef(ref);
+		if( codeLanguage == "java" || codeLanguage == "groovy"){
+			def code = shapeProperties.code;
+			if( isNotEmpty(ref)){
+				if( isEndpoint){
+					ctx.current = ctx.current.to(ref);
+				}else{
+					ctx.current = ctx.current.processRef(ref);
+				}
+			}else if( code != null && code.length()> 10){
+				def codeImport = "";
+				if( addImport != null && addImport.size()> 0){
+					codeImport = buildImport(addImport);	
+				}
+				def namespace = ctx.modelCamelContext.getRegistry().lookup("namespace");
+				def processor=null;
+				if( "java".equals(codeLanguage)){
+					processor = createProcessorJava(code,codeImport,codeKind=="completeClass");
+				}else{
+					processor = createProcessorGroovy(code,codeImport,namespace, codeKind=="completeClass");
+				}
+				println("processor:"+processor);
+				ctx.current = ctx.current.process(processor);
 			}
-		}else if( code != null && code.length()> 10){
-			def codeImport = "";
-			if( addImport != null && addImport.size()> 0){
-				codeImport = buildImport(addImport);	
-			}
+		}else{
 			def namespace = ctx.modelCamelContext.getRegistry().lookup("namespace");
-			def processor=null;
-			if( "java".equals(codeLanguage)){
-				processor = createProcessorJava(code,codeImport,codeKind=="completeClass");
-			}else{
-				processor = createProcessorGroovy(code,codeImport,namespace, codeKind=="completeClass");
+			def script = shapeProperties.script;
+			def srcFile = shapeProperties.srcFile;
+			def file = null;
+			if( srcFile ){
+				file  = getRepoFile(namespace, srcFile, "sw."+codeLanguage);
+				script = readFileToString(file);
 			}
-			println("processor:"+processor);
-			ctx.current = ctx.current.process(processor);
+			def sp = new ScriptProcessor(script,file, getScriptEngine(namespace,"nashorn"));
+			ctx.current = ctx.current.process(sp);
 		}
 		ctx.current.id(resourceId);
 	}
@@ -859,3 +895,41 @@ class DatamapperJsonConverter extends JsonConverterImpl{
 		}
 	}
 }
+
+class ScriptProcessor implements Processor {
+	def file;
+	def lastMod = null;
+	def scriptEngine;
+	def compiledScript;
+	public ScriptProcessor(script, f, se ){
+		this.file = f;
+		this.lastMod = file.lastModified();
+		this.scriptEngine = se;
+		compiledScript = se.compile(script);
+	}
+
+	def testModified(){
+		if( this.file == null) return;
+		def curMod = file.lastModified();
+		if( curMod > this.lastMod){
+			def script = readFileToString(this.file);
+			compiledScript = this.scriptEngine.compile(script);
+			this.lastMod = curMod;
+		}
+	}
+	public void process(Exchange ex) {
+		testModified();
+
+		def params = this.scriptEngine.createBindings();
+		params.put("exchange", ex);
+		params.put("headers", ex.in.headers);
+		params.put("h", ex.in.headers);
+		params.put("min", ex.in);
+		params.put("properties", ex.properties);
+		params.put("p", ex.properties);
+		compiledScript.eval(params);
+	}
+}
+
+
+
