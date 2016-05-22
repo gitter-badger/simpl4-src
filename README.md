@@ -3,8 +3,10 @@
 [![alt text](https://raw.githubusercontent.com/ms123s/simpl4-deployed/master/etc/images/simpl4_logo.png  "simpl4 logo")] (http://www.simpl4.org) building
 =================
 
-If you're only interested in a installation, go to [*simpl4-deployed*](https://github.com/ms123s/simpl4-deployed)
+If you're only interested in a installation, go to [*simpl4-deployed*](https://github.com/ms123s/simpl4-deployed) or [*see here*] (http://web.simpl4.org/repo/webdemo/start.html#links)
 
+
+##Building simpl4##
 
 ####Requirement
 * java jdk1.8.0  
