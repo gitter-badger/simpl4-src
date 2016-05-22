@@ -16,6 +16,7 @@
     "polymer": "Polymer/polymer",
     "iron-elements": "PolymerElements/iron-elements",
     "paper-elements": "PolymerElements/paper-elements",
+    "app-elements": "PolymerElements/app-elements",
     "neon-animation": "PolymerElements/neon-animation",
     "paper-fullscreen": "bendavis78/paper-fullscreen-dialog"
   }
