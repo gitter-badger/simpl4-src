@@ -9,7 +9,7 @@ If you're only interested in a installation, go to [*simpl4-deployed*](https://g
 ##Building simpl4##
 
 ####Requirement
-* java jdk1.8.0  
+* java jdk1.8.0  or openjdk 8
 * git
 
 ----
