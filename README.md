@@ -25,7 +25,7 @@ $ git clone https://github.com/ms123s/simpl4-src.git simpl4-src
 $ cd simpl4-src
 $ gradlew
 ```
-clone *simpl4-deploy*, parallel to *simpl4-src*   
+clone *simpl4-deploy*, parallel to *simpl4-src*   directory
 Directory arrangment:  
 simpl4-src  
 simpl4-deploy
@@ -37,5 +37,23 @@ $ gradlew deploy
 ```
 ----
 
+####Setup 
+```bash
+$ cd simpl4-deployed
+$ bin/setup.sh -p port
+```
+----
+####Start 
+```bash
+$ cd simpl4-deployed
+$ bin/start.sh start
+```
+----
+####Stop 
+```bash
+$ cd simpl4-deployed
+$ bin/start.sh stop
+```
+----
 ####[*Website*](http://www.simpl4.org) and [*Demo-applications*](https://github.com/simpl4-apps?tab=repositories)
 
