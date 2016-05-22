@@ -3,8 +3,6 @@
 [![alt text](https://raw.githubusercontent.com/ms123s/simpl4-deployed/master/etc/images/simpl4_logo.png  "simpl4 logo")] (http://www.simpl4.org) building
 =================
 
-These steps are only required if you modify the source
-
 If you're only interested in a installation, go to [*simpl4-deployed*](https://github.com/ms123s/simpl4-deployed)
 
 
