@@ -99,6 +99,8 @@ public class StoreServiceImpl implements StoreService {
 			String pack = fbc.getString("store", storeId, "pack");
 			String ns = fbc.getString("store", storeId, "namespace");
 			String db = fbc.getString("store", storeId, "database");
+			String sro = fbc.getString("store", storeId, "schemareadonly");
+			String sva = fbc.getString("store", storeId, "schemavalidate");
 			String dbn = fbc.getString("store", storeId, "databasename");
 			String dbh = fbc.getString("store", storeId, "databasehost");
 			String repo = fbc.getString("store", storeId, "repository");
@@ -112,6 +114,8 @@ public class StoreServiceImpl implements StoreService {
 			m.put(StoreDesc.REPOSITORY, repo);
 			m.put(StoreDesc.DATABASENAME, dbn);
 			m.put(StoreDesc.DATABASEHOST, dbh);
+			m.put(StoreDesc.SCHEMAREADONLY, sro);
+			m.put(StoreDesc.SCHEMAVALIDATE, sva);
 			m.put(StoreDesc.STORE_ID, namespace + "_" + storeId);
 			storeMap.put(namespace + "_" + storeId, m);
 		}

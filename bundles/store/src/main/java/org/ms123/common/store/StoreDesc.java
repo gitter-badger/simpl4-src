@@ -45,6 +45,8 @@ public class StoreDesc {
 	public static final String REPOSITORY = "repository";
 	public static final String DATABASENAME = "databasename";
 	public static final String DATABASEHOST = "databasehost";
+	public static final String  SCHEMAREADONLY = "schemaReadonly";
+	public static final String  SCHEMAVALIDATE = "schemaValidate";
 
 	public static final String PACK_DATA = "data";
 
@@ -70,6 +72,8 @@ public class StoreDesc {
 	private String m_namespace;
 	private String m_databaseName;
 	private String m_databaseHost;
+	private boolean m_schemaReadonly;
+	private boolean m_schemaValidate;
 
 	private String m_package;
 
@@ -81,7 +85,7 @@ public class StoreDesc {
 
 	private String m_storeId;
 
-	private StoreDesc(String storeId, String namespace, String pack, String store, String repo, String dbName, String dbHost) {
+	private StoreDesc(String storeId, String namespace, String pack, String store, String repo, String dbName, String dbHost, String schemaReadonly, String schemaValidate) {
 		m_package = assign(pack, PACK_DATA);
 		m_namespace = namespace;
 		int colon = store.indexOf(":");
@@ -95,6 +99,8 @@ public class StoreDesc {
 		m_repository = repo != null ? repo : m_namespace;
 		m_databaseName = dbName != null ? dbName : m_namespace;
 		m_databaseHost = dbHost != null ? dbHost : "localhost";
+		m_schemaReadonly = getBoolean(schemaReadonly,false);
+		m_schemaValidate = getBoolean(schemaValidate,true);
 	}
 
 	public String getNamespace() {
@@ -111,6 +117,12 @@ public class StoreDesc {
 
 	public String getDatabaseHost() {
 		return m_databaseHost;
+	}
+	public boolean isSchemaReadonly() {
+		return m_schemaReadonly;
+	}
+	public boolean isSchemaValidate() {
+		return m_schemaValidate;
 	}
 
 	public String getStore() {
@@ -263,6 +275,16 @@ public class StoreDesc {
 		return s1;
 	}
 
+	private boolean getBoolean(String val, boolean def) {
+		if (val == null || val.length() == 0) {
+			return def;
+		}
+		val = val.toLowerCase();
+		if ("false".equals(val)) {
+			return false;
+		}
+		return true;
+	}
 	@Override
 	public boolean equals(Object other) {
 		if (other == this) {
@@ -336,7 +358,9 @@ public class StoreDesc {
 							m.get(STORE), 
 							m.get(REPOSITORY),
 							m.get(DATABASENAME),
-							m.get(DATABASEHOST)
+							m.get(DATABASEHOST),
+							m.get(SCHEMAREADONLY),
+							m.get(SCHEMAVALIDATE)
 							);
 					m_storeIds.put(m.get(STORE_ID), sdesc);
 				}

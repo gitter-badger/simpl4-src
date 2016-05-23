@@ -144,6 +144,16 @@ qx.Class.define( "ms123.datasource.Datasource", {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.is_main_db" ),
 					'value': true
+				},
+				"datasource_is_schema_readonly": {
+					'type': "Checkbox",
+					'label': this.tr( "datasource.is_schema_readonly" ),
+					'value': false
+				},
+				"datasource_is_schema_validate": {
+					'type': "Checkbox",
+					'label': this.tr( "datasource.is_schema_validate" ),
+					'value': true
 				}
 			}
 			this._form = new ms123.form.Form( {

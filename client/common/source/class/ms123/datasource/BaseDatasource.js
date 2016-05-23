@@ -86,7 +86,9 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 					'password': data.password,
 					'port': port,
 					'dataSourceName': data.datasourcename,
-					'is_main_db': data.datasource_is_main_db
+					'is_main_db': data.datasource_is_main_db,
+					'is_schema_readonly': data.datasource_is_schema_readonly,
+					'is_schema_validate': data.datasource_is_schema_validate
 				};
 				var jooq = {
 					'create_jooq_metadata': data.create_jooq_metadata,
