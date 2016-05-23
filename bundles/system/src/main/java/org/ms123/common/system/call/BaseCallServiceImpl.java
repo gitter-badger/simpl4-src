@@ -223,7 +223,7 @@ abstract class BaseCallServiceImpl {
 			if (ns == null) {
 				ns = (String) pmap.get(StoreDesc.STORE_ID);
 				if (ns != null) {
-					ns = ns.substring(0, ns.indexOf("_"));
+					ns = ns.substring(0, ns.lastIndexOf("_"));
 				}
 			}
 		}
