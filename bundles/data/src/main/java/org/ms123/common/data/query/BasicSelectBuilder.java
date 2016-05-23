@@ -351,28 +351,27 @@ debug("\t:"+getTeamUserWhere(sel));
 		Object o = null;
 		try {
 			Class c = m_queryBuilder.getClass(clazz);
-			o = c.newInstance();
-			BeanMap beanMap = new BeanMap(o);
-			Iterator itv = beanMap.keyIterator();
-			String komma = "";
-			while (itv.hasNext()) {
-				String prop = (String) itv.next();
+			for( Field f : c.getDeclaredFields()){
+				String prop = f.getName();
 				boolean isRelatedTo = false;
 				try {
-					Field field = o.getClass().getDeclaredField(prop);
-					if (field != null) {
-						isRelatedTo = field.isAnnotationPresent(RelatedTo.class);
-					}
+					isRelatedTo = f.isAnnotationPresent(RelatedTo.class);
 				} catch (Exception e) {
 				}
-				debug("\tName:" + prop + " -> " + beanMap.getType(prop) + "," + isRelatedTo); 
 				if (clazz.equals("Document") && prop.equals("text")) {
 					continue;
 				}
 				if( !isAdmin() && STATE_FIELD.equals(prop)){
 					continue;
 				}
-				Class type = beanMap.getType(prop);				
+				if(Modifier.isStatic(f.getModifiers())){
+					continue;
+				}
+				if(Modifier.isTransient(f.getModifiers())){
+					continue;
+				}
+				debug("\tName:" + prop + " -> " + f.getType() + "," + isRelatedTo); 
+				Class type = f.getType();				
 				if ((TypeUtils.isPrimitiveType(type) && !type.equals(byte[].class)) || isRelatedTo ) {
 					if (alias != null) {
 						list.add(alias + "." + prop);
