@@ -129,7 +129,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 					'validation': {
 						required: true,
 						filter: /[a-z0-9]/,
-						validator: "/^[a-z][0-9a-z]{2,32}$/"
+						validator: "/^[a-z][0-9a-z_]{2,64}$/"
 					},
 					'value': ""
 				},
