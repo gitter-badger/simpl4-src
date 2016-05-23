@@ -374,8 +374,8 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	private String entityName(String in) {
 		in = strip(in, "\"");
 		in = cleanName(in);
-		//return m_inflector.getEntityName(in);
-		return getJavaName(in);
+		return m_inflector.getEntityName(in).replaceAll(" ","_");
+		//return getJavaName(in);
 	}
 
 	private String cleanName(String in) {
