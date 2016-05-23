@@ -551,7 +551,13 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 					System.out.println("primary_key:" + m.get("name"));
 					idField = (String) m.get("name");
 					idColumn = (String) m.get("columnName");
-					idClass = ("number".equals(m.get("datatype")) ? Long.class : String.class);
+					if( "number".equals(m.get("datatype"))){
+						idClass = Long.class;
+					}else if( "date".equals(m.get("datatype"))){
+						idClass = Date.class;
+					}else{
+						idClass = String.class;
+					}
 					idConstraint = m.get("constraints");
 					Map pkMap = new HashMap();
 					pkMap.put("idClass", idClass);
