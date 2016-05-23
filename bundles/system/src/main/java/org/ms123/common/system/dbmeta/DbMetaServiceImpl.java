@@ -107,7 +107,7 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	public void createMetadata(@PName(StoreDesc.STORE_ID) String storeId, 
 														 @PName("config") @POptional Map config) throws RpcException {
 		try {
-			System.out.println("createMetadata:" + config);
+			info(this,"createMetadata:" + config);
 			StoreDesc sdesc = StoreDesc.get(storeId);
 			String namespace = sdesc.getNamespace();
 

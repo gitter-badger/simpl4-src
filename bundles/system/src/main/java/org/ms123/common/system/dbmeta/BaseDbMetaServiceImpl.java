@@ -97,9 +97,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		this.js.prettyPrint(true);
 		options.setRoutineTypes(null);
 
-		System.out.println("InputSchema:" + datanucleusConfig.get("datanucleus_inputschema"));
-		System.out.println("Include:" + datanucleusConfig.get("datanucleus_includes"));
-		System.out.println("Exclude:" + datanucleusConfig.get("datanucleus_excludes"));
+		info(this, "InputSchema:" + datanucleusConfig.get("datanucleus_inputschema"));
+		info(this, "Include:" + datanucleusConfig.get("datanucleus_includes"));
+		info(this, "Exclude:" + datanucleusConfig.get("datanucleus_excludes"));
 		if (!isEmpty(datanucleusConfig.get("datanucleus_inputschema"))) {
 			options.setSchemaInclusionRule(new RegularExpressionInclusionRule(datanucleusConfig.get("datanucleus_inputschema")));
 		}
@@ -120,7 +120,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			List<Map> newRelationList = new ArrayList<Map>();
 			List<Map> entityList = new ArrayList<Map>();
 			for (final Schema schema : catalog.getSchemas()) {
-				System.out.println("++++++++++++++++++++++:" + schema);
+				info(this, "++++++++++++++++++++++:" + schema);
 				for (final Table table : catalog.getTables(schema)) {
 					Map entityMap = buildEntity(namespace, table);
 					if (entityMap != null) {
@@ -152,24 +152,24 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 	private Map buildEntity(String namespace, Table table) {
 		String entityName = entityName(table.getName());
-		System.out.println("Table:" + table.getName() + "/entityName:" + entityName);
+		info(this, "Table:" + table.getName() + "/entityName:" + entityName);
 
 		List<String> pkList = new ArrayList<String>();
 		List<String> fkList = new ArrayList<String>();
 		List<String> pkListAll = new ArrayList<String>();
 		if (table.getPrimaryKey() != null) {
-			System.out.println("Table.primaryKeys:" + table.getPrimaryKey().getColumns());
+			info(this, "Table.primaryKeys:" + table.getPrimaryKey().getColumns());
 			for (Column col : table.getPrimaryKey().getColumns()) {
 				pkList.add(fieldName(col.getName()));
 			}
 		}
 /*		if (table.getForeignKeys() != null) {
-			System.out.println("Table.foreignKeys:" + table.getForeignKeys());
+			info(this, "Table.foreignKeys:" + table.getForeignKeys());
 			for (ForeignKey fk : table.getForeignKeys()) {
 				fkList.add(fieldName(col.getName()));
 			}
 		}*/
-		System.out.println("pkList:" + pkList);
+		info(this, "pkList:" + pkList);
 		Map<String, Object> entityMap = new HashMap<String, Object>();
 		entityMap.put("pack", "data");
 		entityMap.put("enabled", true);
@@ -183,7 +183,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		entityMap.put("schemaName", schemaName(table.getSchema().getName()));
 		Map<String, Object> fieldsMap = new HashMap<String, Object>();
 		entityMap.put("fields", fieldsMap);
+		info(this,"Columns:"+table.getColumns());
 		for (Column column : table.getColumns()) {
+			info(this,"\tColumn:"+column);
 			String columnType = column.getColumnDataType().getTypeMappedClass().toString();
 			String name = fieldName(column.getName());
 			Map<String, Object> fieldMap = new HashMap<String, Object>();
@@ -211,7 +213,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		if( pkList.size() == 0 && pkListAll.size()> 0){
 			entityMap.put("primaryKeys", pkListAll);
 		}
-		System.out.println("Entity:" + this.js.deepSerialize(entityMap));
+		info(this, "Entity:" + this.js.deepSerialize(entityMap));
 		if (entityName.toLowerCase().indexOf("team") < 0) {
 			return entityMap;
 		}
@@ -262,7 +264,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		String primaryKeyField = fieldName(primaryKeyColumn.getName());
 		String _primaryKeyColumn = columnName(primaryKeyColumn.getName());
 
-		System.out.println("--->>> fkName:" + fkName + "\t/primaryKeyColumn(" + leftEntity + "):" + _primaryKeyColumn + "\t/foreignKeyColumn(" + rightEntity + "):" + _foreignKeyColumn + "\t/fkCardinality:" + fkCardinality);
+		info(this, "--->>> fkName:" + fkName + "\t/primaryKeyColumn(" + leftEntity + "):" + _primaryKeyColumn + "\t/foreignKeyColumn(" + rightEntity + "):" + _foreignKeyColumn + "\t/fkCardinality:" + fkCardinality);
 		String rel = null;
 		if (fkCardinality == ForeignKeyCardinality.zero_one) {
 			rel = "one-to-one";
@@ -386,7 +388,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	}
 
 	private String getJavaName(String name) {
-		System.out.print("getJavaName:"+name + " -> " );
+		info(this,"getJavaName:"+name + " -> " );
 		StringBuilder sb = new StringBuilder();
 		if(!Character.isJavaIdentifierStart(name.charAt(0))) {
 			sb.append("_");
@@ -398,11 +400,25 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 				sb.append(c);
 			}
 		}
-		name = m_inflector.lowerCamelCase(sb.toString(), ' ', '_', '-').replaceAll("_", "");
-		System.out.println( name );
+		name = sb.toString();
+		info(this,  "Name1:"+name );
+		if( checkAllUpper(name)){
+			name = name.toLowerCase();
+		}
+		name = m_inflector.lowerCamelCase(name, ' ', '_', '-').replaceAll("_", "");
+		info(this,  "Name2:"+name );
 		return name;
 	}
 
+	private boolean checkAllUpper(String value){
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			if (Character.isLetter(c) && !Character.isUpperCase(c)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	private List<Map> removeExistingRelations(List<Map> relations, List<Map> entityList) {
 		List<Map> newRelations = new ArrayList();
@@ -443,7 +459,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 	protected void createDatasource(String namespace, Map<String, String> config) throws Exception {
 		JDBCUrl jdbcUrl = JDBCUrl.parse(config.get("url"));
-		System.out.println("createDatasource.Host:" + jdbcUrl.getHostname() + "/database:" + jdbcUrl.getDatabase());
+		info(this, "createDatasource.Host:" + jdbcUrl.getHostname() + "/database:" + jdbcUrl.getDatabase());
 
 		String dataSourceName = (String) config.get("dataSourceName");
 		String dsBaseText = "osgi.jdbc.driver.name=" + config.get("osgi.jdbc.driver.name") + "\n";
@@ -523,7 +539,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		if (!out.getParentFile().exists()) {
 			out.getParentFile().mkdirs();
 		}
-		System.out.println("createJooqConfig:" + out);
+		info(this, "createJooqConfig:" + out);
 		Serializer serializer = new Serializer(new FileOutputStream(out), "UTF-8");
 		serializer.setIndent(2);
 		serializer.setMaxLength(4096);
@@ -607,7 +623,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		while (ds == null && count > 0) {
 			Thread.sleep(1000);
 			ds = (DataSource) getService(javax.sql.DataSource.class, dataSourceName);
-			System.out.println("ds:" + ds);
+			info(this, "ds:" + ds);
 			count--;
 		}
 		return ds;
