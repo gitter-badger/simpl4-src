@@ -122,6 +122,13 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 				gitService.setStoreProperty( namespace, "store", "data", "database", "jdbc:"+(String)dsConfig.get("dataSourceName"));
 				nucleusService.close(sdesc);
 			}
+			Boolean isSchemaReadonly = (Boolean) ((Map)dsConfig).get("is_schema_readonly");
+			gitService.setStoreProperty( namespace, "store", "data", "schemareadonly", isSchemaReadonly == null ? "false" : String.valueOf(isSchemaReadonly) );
+			nucleusService.close(sdesc);
+
+			Boolean isSchemaValidate = (Boolean) ((Map)dsConfig).get("is_schema_validate");
+			gitService.setStoreProperty( namespace, "store", "data", "schemavalidate", isSchemaValidate == null ? "true" : String.valueOf(isSchemaValidate) );
+			nucleusService.close(sdesc);
 
 			Boolean generate = (Boolean) jooqConfig.get("create_jooq_metadata");
 			if (generate == true) {
