@@ -38,8 +38,8 @@ public interface LuceneSession {
 	public void deleteFromIndex(Object obj);
 
 	public void setSessionContext(SessionContext sc);
-
-	public String getPrimaryKey();
+ 
+	public SessionContext  getSessionContext();
 
 	public IndexWriter getIndexWriter();
 

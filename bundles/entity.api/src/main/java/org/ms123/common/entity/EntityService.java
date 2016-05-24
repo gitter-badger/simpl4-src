@@ -26,6 +26,7 @@ import org.ms123.common.rpc.RpcException;
 public interface EntityService {
 	public Map getPermittedFields(StoreDesc sdesc, String entityName, String actions);
 	public Map getPermittedFields(StoreDesc sdesc, String entityName);
+	public List<Map> getPrimaryKeyFields(StoreDesc sdesc, String entityName);
 	public List getEntities(StoreDesc sdesc, Boolean withChilds, String mappingstr) throws Exception;
 	public Map getEntityTree( StoreDesc sdesc, String mainEntity, int maxlevel, Boolean pathid, String type, Boolean listResolved) throws Exception;
 	public List<Map> getFields( StoreDesc  sdesc, String entityName,Boolean withAutoGen) throws Exception;

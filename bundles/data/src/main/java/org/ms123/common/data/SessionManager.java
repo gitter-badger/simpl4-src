@@ -19,6 +19,7 @@
 package org.ms123.common.data;
 
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
 import javax.jdo.PersistenceManager;
 import javax.transaction.UserTransaction;
@@ -36,6 +37,7 @@ public class SessionManager implements org.ms123.common.system.thread.ThreadFina
 
 	private Map<StoreDesc, PersistenceManager> m_pmMap = new HashMap();
 	private Map<String, Map> m_permittedFieldsMap = new HashMap();
+	private Map<String, List<Map>> m_primaryKeyFieldsMap = new HashMap<String, List<Map>>();
 
 	public SessionManager(NucleusService ns){
 		m_nucleusService = ns;
@@ -132,6 +134,13 @@ public class SessionManager implements org.ms123.common.system.thread.ThreadFina
 			m_pmMap.put(sdesc, pm);
 		}
 		return pm;
+	}
+	protected List<Map> getPrimaryKeyFields(String entityName){
+		return m_primaryKeyFieldsMap.get(entityName);
+	}
+
+	protected void  setPrimaryKeyFields(String entityName, List<Map> pkList){
+		m_primaryKeyFieldsMap.put(entityName,pkList);
 	}
 	protected Map<String,Map> getPermittedFieldsMap(String entityName){
 		return m_permittedFieldsMap.get(entityName);

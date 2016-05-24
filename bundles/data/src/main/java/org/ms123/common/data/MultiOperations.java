@@ -139,8 +139,8 @@ public class MultiOperations {
 			if (resultList.size() > 0) {
 				Class clazz = resultList.iterator().next().getClass();
 				mainEntity = m_inflector.getEntityName(clazz.getSimpleName());
-				String pk = TypeUtils.getPrimaryKey(clazz);
-				sc.setPrimaryKey(pk);
+				/* @@@MS ??? String pk = TypeUtils.getPrimaryKey(clazz);
+				sc.setPrimaryKey(pk);*/
 			}
 			for (Object object : resultList) {
 				if (max != -1 && num >= max) {

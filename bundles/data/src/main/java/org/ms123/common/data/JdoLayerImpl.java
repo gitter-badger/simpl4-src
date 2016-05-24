@@ -254,8 +254,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			Object masterId = null;
 			if (masterClazz != null) {
 				if (row == null) {
-					Map permittedFields = sessionContext.getPermittedFields(entityNameParent);
-					masterId = getIdObject(idParent, sdesc, permittedFields);
+					masterId = getIdObject(idParent, sessionContext.getPrimaryKeyFields( entityNameParent));
 				} else {
 					masterId = row;
 					debug("masterId:" + masterId);
@@ -278,7 +277,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			if( bypassTrigger ==null || bypassTrigger==false){
 				m_triggerService.applyInsertRules(sessionContext, entityName, objectInsert);
 			}
-			ids.add(PropertyUtils.getProperty(objectInsert, getPrimaryKey(objectInsert.getClass())));
+			Object id = pm.getObjectById( objectInsert);
+			ids.add(id);
 		}
 		if (retMap.get("constraintViolations") == null) {
 			if (filterMap != null) {
@@ -372,50 +372,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				return constructConstraitViolationList(cv);
 			}
 		}
-		if( true) return null; //@@@ NO DublettenCheck online
-		StoreDesc sdesc= sessionContext.getStoreDesc();
-		String vendor = sdesc.getVendor();
-		DublettenCheckService dcs = m_dublettenCheckService.get(vendor);
-		if( dcs == null){
-			dcs = m_dublettenCheckService.get("default");
-		}
-		debug("DublettenCheckService:"+dcs);
-		Map ret = dcs.dublettenCheck(dcs.getContext(sessionContext,entityName), objectInsert);
-		debug("ret:" + ret);
-		String primKey = sessionContext.getPrimaryKey();
-		List<Map> cvl = (List) ret.get("constraintViolations");
-		List idHitList = (List) ret.get("idHitList");
-		debug("idHitList:" + idHitList);
-		if (idHitList != null && idHitList.size() == 1) {
-			try {
-				if (!(objectInsert instanceof Map)) {
-					primKey = getPrimaryKey(objectInsert.getClass());
-				}
-				Object _hit = idHitList.get(0);
-				if (_hit instanceof Long) {
-					Long hit = (Long) idHitList.get(0);
-					Long updateId = (Long) PropertyUtils.getProperty(objectInsert, primKey);
-					if (updateId != null && hit == updateId) {
-						debug("self bei update");
-						return null;
-					}
-				}
-				if (_hit instanceof String) {
-					String hit = (String) idHitList.get(0);
-					String updateId = (String) PropertyUtils.getProperty(objectInsert, primKey);
-					if (!bInsert && updateId != null && updateId.equals(hit)) {
-						debug("self bei update");
-						return null;
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		if(idHitList != null && cvl!=null && cvl.size()>0){
-			cvl.get(0).put("idHitList",idHitList);
-		}
-		return cvl;
+		return null; //@@@ NO DublettenCheck online
 	}
 
 	public Object createObject(String namespace, String entityName) {
@@ -562,7 +519,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				Object object = null;
 				String classNameMaster = m_inflector.getClassName(entityNameParent);
 				Class masterClazz = getClass(sdesc, classNameMaster);
-				Object masterId = getIdObject(id, sdesc, null);
+				Object masterId = getIdObject(id, sessionContext.getPrimaryKeyFields(entityNameParent));
 				Object objectMaster = pm.getObjectById(masterClazz, masterId);
 				try {
 					object = PropertyUtils.getProperty(objectMaster, propertyName);
@@ -582,7 +539,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				classNameUpdate = m_inflector.getClassName(entityName);
 			} else {
 				permittedFields = sessionContext.getPermittedFields(entityName);
-				updateId = getIdObject(id, sdesc, permittedFields);
+				updateId = getIdObject(id, sessionContext.getPrimaryKeyFields( entityName));
 				classNameUpdate = m_inflector.getClassName(entityName);
 			}
 			entityName = m_inflector.getEntityName(entityName);
@@ -610,20 +567,28 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 					objectUpdate = pm.getObjectById(updateClazz, updateId);
 				}
 			} catch (javax.jdo.JDOObjectNotFoundException e) {
-				String pk = null;
+				List<Map> pkList = null;
 				if (permittedFields != null) {
-					pk = getPrimaryKey(updateClazz);
-					debug("pk:" + pk);
+					pkList = sessionContext.getPrimaryKeyFields( entityName);
+					debug("pk:" + pkList);
 				}
-				debug("pk:" + pk);
 				Boolean create=true;
 				if( hintsMap != null && hintsMap.get("create")!=null){
 					create = (Boolean)hintsMap.get("create");
 				}
 				fCreated = create;
 				if( create){
+					int i = 0;
 					objectUpdate = createObject(sessionContext, entityName);
-					PropertyUtils.setProperty(objectUpdate, pk, updateId);
+					if( updateId instanceof String && updateId.toString().indexOf(":") != -1){
+						String[] vals = updateId.toString().split(":");
+						for( Map<String,String> pk : pkList){
+							PropertyUtils.setProperty(objectUpdate, pk.get("name"), vals[i++]);
+						}
+					}else{
+						Map<String,String> pk = pkList.get(0);
+						PropertyUtils.setProperty(objectUpdate, pk.get("name"), updateId);
+					}
 					dataMap.put("_isnew", true);
 				}
 			}
@@ -704,9 +669,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		Object objId = null;
 		if (sdesc.isDataPack()) {
 			Map permittedFields = sessionContext.getPermittedFields(m_inflector.getEntityName(entityName));
-			objId = getIdObject(id, sdesc, permittedFields);
+			objId = getIdObject(id, sessionContext.getPrimaryKeyFields(entityName));
 		} else {
-			objId = getIdObject(id, sdesc, null);
+			objId = getIdObject(id, null);
 		}
 		Class deleteClazz = getClass(sdesc, classNameDelete);
 		Object objectDelete = pm.getObjectById(deleteClazz, objId);
@@ -1258,10 +1223,11 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			String className = m_inflector.getClassName(entityName);
 			Map permittedFields = sessionContext.getPermittedFields(entityName);
 			hasTeamSecurity = hasTeamSecurity(sessionContext,entityName,null);
-			Object objId = getIdObject(id, sdesc, permittedFields);
+			Object objId = getIdObject(id, sessionContext.getPrimaryKeyFields(entityName));
+			info("objId.id:" + id);
 			Class clazz = getClass(sdesc, className);
 			Object objectMaster = pm.getObjectById(clazz, objId);
-			debug("getObject.master1:" + objectMaster);
+			info("getObject.master1:" + objectMaster);
 			String oldEntityName = entityName;
 			if (entityNameDetails == null) {
 				entityName = m_inflector.getEntityName(entityName);
@@ -1400,17 +1366,18 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				jointype = "join";
 				Class mainClass = sessionContext.getClass(entityName);
 				Map permittedFields = sessionContext.getPermittedFields(entityName);
-				String pk = getPrimaryKey(mainClass);
-				Map c = (Map) permittedFields.get(pk);
-				if (c != null && c.get("datatype") != null && "string".equals(c.get("datatype"))) {
-					whereClause += andStr + " (" + getAlias(entityName) + "." + pk + " = '" + idParent + "')";
-				} else if (c != null && c.get("datatype") != null && "number".equals(c.get("datatype"))) {
-					whereClause += andStr + " (" + getAlias(entityName) + "." + pk + " = " + idParent + ")";
-				} else {
-					//Default id = string 
-					whereClause += andStr + " (" + getAlias(entityName) + "." + pk + " = '" + idParent + "')";
+				List<Map> pkList = sessionContext.getPrimaryKeyFields(entityName);
+
+				String[]	vals = idParent.split(":");
+				int i=0;
+				for( Map<String,String> pk : pkList){
+					String pkName = pk.get("name");
+					String q = "string".equals(pk.get("datatype")) ? "'" : "" ;
+					whereClause += andStr + " (" + getAlias(entityName) + "." + pkName + " = "+q+ vals[i] + q +")";
+					andStr = " and";
+					i++;
 				}
-				andStr = " and";
+
 				if (fieldsArray == null) {
 					String alias = entityNameDetails;
 					if (joinFields.size() > 0) {
@@ -1437,14 +1404,17 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			List<String> projList = null;
 			if (fieldsArray != null) {
 				projList = fieldsArray;
-				String pk = null;
+				List<Map> pkList = null;
 				if (entityNameDetails != null) {
-					pk = getPrimaryKey(sessionContext.getClass(entityNameDetails));
+					pkList = sessionContext.getPrimaryKeyFields(entityNameDetails);
 				} else {
-					pk = getPrimaryKey(sessionContext.getClass(entityName));
+					pkList = sessionContext.getPrimaryKeyFields(entityName);
 				}
-				if (!Utils.containsId(projList, pk)) {
-					projList.add(pk);
+				for( Map<String,String> pk : pkList){
+					String pkName = pk.get("name");
+					if (!Utils.containsId(projList, pkName)) {
+						projList.add(pkName);
+					}
 				}
 				qb.addSelectors(fieldsArray);
 			} else {
@@ -1569,13 +1539,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 						}
 						if (isRelatedTo[col]) {
 							if (row[col] != null) {
-								Class clazz = row[col].getClass();
-								if( primKeyNameMap.get(clazz) == null){
-									primKeyNameMap.put( clazz, getPrimaryKey(clazz));
-								}
-								Object id = PropertyUtils.getProperty(row[col], primKeyNameMap.get(clazz));
+								Object id = pm.getObjectId(row[col]);
 								rowMap.put(colName, id + "");
-								//rowMap.put(colName,getTitle(sessionContext, m_inflector.getEntityName(clazz.getSimpleName()),new BeanMap(row[col]), id));
 							} else {
 								rowMap.put(colName, "");
 							}
@@ -1760,7 +1725,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		try {
 			String className = m_inflector.getClassName(entityName);
 			Map permittedFields = sessionContext.getPermittedFields(entityName);
-			Object objId = getIdObject(id, sdesc, permittedFields);
+			Object objId = getIdObject(id, sessionContext.getPrimaryKeyFields(entityName));
 			Class clazz = getClass(sdesc, className);
 			Object objectMaster = pm.getObjectById(clazz, objId);
 			debug("getObject.master1:" + objectMaster);
@@ -2224,27 +2189,6 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		}
 	}
 
-	private String getPrimaryKey(Class clazz) throws Exception {
-		debug("----->getPrimaryKey.clazz:" + clazz + " -> ");
-		Field[] fields = clazz.getDeclaredFields();
-		for (int i = 0; i < fields.length; i++) {
-			java.lang.annotation.Annotation[] anns = fields[i].getDeclaredAnnotations();
-			for (int j = 0; j < anns.length; j++) {
-				try {
-					Class atype = anns[j].annotationType();
-					if (!(anns[j] instanceof javax.jdo.annotations.PrimaryKey)) {
-						continue;
-					}
-					debug(fields[i].getName());
-					return fields[i].getName();
-				} catch (Exception e) {
-					debug("getPrimaryKey.e:" + e);
-				}
-			}
-		}
-		throw new RuntimeException("JdoLayerImpl.getPrimaryKey(" + clazz + "):no_primary_key");
-	}
-
 	private String getRecordValidation(SessionContext sc, String entityName) {
 	  Map m = m_settingService.getPropertiesForEntityView( sc.getStoreDesc().getNamespace(), GLOBAL_SETTINGS, entityName, null);
 		String val = (String)m.get(RECORDVALIDATION);
@@ -2391,21 +2335,28 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		return orderBy;
 	}
 
-	private Object getIdObject(String id, StoreDesc sdesc, Map config) {
-		if (sdesc.getIdType().equals("string")) {
+	private Object getIdObject(String id, List<Map> pkList) {
+		if( pkList.size() > 1 ){
+			info("getIdObject.ret:"+id);
 			return id;
-		} else if (sdesc.getIdType().equals("long")) {
-			return Long.valueOf(id);
 		}
-		if (config != null) {
-			Map c = (Map) config.get("id");
-			if (c != null && c.get("datatype") != null && "string".equals(c.get("datatype"))) {
-				return id;
-			} else {
-				return Long.valueOf(id);
-			}
+		Map<String,String> pk = pkList.get(0);
+		String dt = pk.get("datatype");
+		info("getIdObject.datatype:"+dt+"/id:"+id);
+		Object ret = id;
+		if (  "long".equals(dt)) {
+			ret = Long.valueOf(id);
+		}else if (  "number".equals(dt)) {
+			ret = Long.valueOf(id);
+		}else if (  "decimal".equals(dt)) {
+			ret = Double.valueOf(id);
+		}else if (  "double".equals(dt)) {
+			ret = Double.valueOf(id);
+		}else if (  "date".equals(dt)) {
+			ret = new java.util.Date(Long.valueOf(id));
 		}
-		return id;
+		info("getIdObject.ret:"+ret);
+		return ret;
 	}
 
 	private String getLastElement(String path) {

@@ -170,9 +170,7 @@ public interface SessionContext {
 
 	public void setConfigName(String data);
 
-	public String getPrimaryKey();
-
-	public void setPrimaryKey(String data);
+	public List<Map> getPrimaryKeyFields(String entity);
 
 	public List<Object> persistObjects(Object objs, Map<String,Object> persistenceSpecification);
 

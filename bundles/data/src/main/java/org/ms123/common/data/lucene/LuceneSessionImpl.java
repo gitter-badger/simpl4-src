@@ -76,12 +76,15 @@ public class LuceneSessionImpl implements XAResource, org.ms123.common.data.api.
 	public void setSessionContext(SessionContext sc) {
 		m_sc = sc;
 	}
+	public SessionContext  getSessionContext() {
+		return m_sc;
+	}
 
-	public String getPrimaryKey() {
+/*	public String getPrimaryKey() {
 		if (m_sc != null)
 			return m_sc.getPrimaryKey();
 		return "id";
-	}
+	}*/
 
 	public IndexWriter getIndexWriter() {
 		if (m_iw == null) {

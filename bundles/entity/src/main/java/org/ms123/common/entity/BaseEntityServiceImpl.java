@@ -311,6 +311,22 @@ System.out.println("className:"+className);
 		}
 		return node;
 	}
+	public List<Map> getPrimaryKeyFields(StoreDesc sdesc, String entityName) {
+		List<Map> ret = new ArrayList<Map>();
+		try {
+			List<Map> allFields = getFields(sdesc, entityName, true, true);
+			for( Map<String,String> field : allFields){
+				boolean hasPrimary = GitMetaDataImpl.getBoolean(field, "primary_key", false);
+				if( hasPrimary ){
+					ret.add( field );
+				}
+			}
+			} catch (Exception e) {
+				throw new RuntimeException("BaseEntityServiceImpl.getPrimaryKeyFields", e);
+			} finally {
+		}
+		return ret;
+	}
 
 	public Map getPermittedFields(StoreDesc sdesc, String entityName) {
 		return getPermittedFields(sdesc, entityName, "read");

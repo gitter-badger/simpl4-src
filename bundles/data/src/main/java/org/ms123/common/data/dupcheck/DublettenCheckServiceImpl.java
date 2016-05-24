@@ -158,7 +158,14 @@ public class DublettenCheckServiceImpl implements DublettenCheckService {
 			projection += komma + field;
 			komma = ",";
 		}
-		String sql = "Select distinct " + projection + "," + sc.getPrimaryKey() + " from " + className + " " + plural;
+		List<Map> pkList = sc.getPrimaryKeyFields( entityName);
+		komma = "";
+		StringBuilder pkProjection = new StringBuilder();
+		for( Map<String,String> pk : pkList){
+			pkProjection.append( komma + pk.get("name") );
+			komma = ",";
+		}
+		String sql = "Select distinct " + projection + "," + pkProjection.toString() + " from " + className + " " + plural;
 		System.out.println("dublettenCheck.sql:" + sql);
 		Query q = sc.getPM().newQuery("javax.jdo.query.JPQL", sql);
 		q.declareImports(sdesc.getImports());

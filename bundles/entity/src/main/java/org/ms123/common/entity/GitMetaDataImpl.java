@@ -268,7 +268,7 @@ class GitMetaDataImpl implements MetaData {
 		}
 		return retList;
 	}
-	protected boolean getBoolean(Map m, String key, boolean def) {
+	public static boolean getBoolean(Map m, String key, boolean def) {
 		try {
 			Object val = m.get(key);
 			if (val == null){

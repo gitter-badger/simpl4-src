@@ -273,13 +273,14 @@ public class LuceneServiceImpl implements org.ms123.common.data.api.LuceneServic
 		}
 	}
 
-	public synchronized void addToIndex(LuceneSession session, Object obj) {
+	public synchronized void addToIndex( LuceneSession session, Object obj) {
+		SessionContext sc = session.getSessionContext();
 		IndexWriter iw = session.getIndexWriter();
 		StoreDesc sdesc = session.getStoreDesc();
 		String namespace = sdesc.getNamespace();
 		try {
 			String entityName = getEntityName(obj);
-			Object id = getId(obj, session.getPrimaryKey());
+			Object id = sc.getPM().getObjectId(obj);
 			//System.out.println("addToIndex:"+id+"/iw:"+iw); 
 			Map p = new HashMap();
 			p.put("view", "global-search");
@@ -315,12 +316,14 @@ public class LuceneServiceImpl implements org.ms123.common.data.api.LuceneServic
 	}
 
 	public synchronized void deleteFromIndex(LuceneSession session, Object obj) {
+		SessionContext sc = session.getSessionContext();
 		StoreDesc sdesc = session.getStoreDesc();
 		String namespace = sdesc.getNamespace();
 		IndexWriter iw = getRealIndexWriter(namespace);
 		try {
 			String entityName = getEntityName(obj);
-			Object id = PropertyUtils.getProperty(obj, session.getPrimaryKey());
+			//Object id = PropertyUtils.getProperty(obj, session.getPrimaryKey());
+			Object id = sc.getPM().getObjectId(obj);
 			Term term1 = new Term("id", id.toString());
 			Term term2 = new Term(ENTITY, entityName);
 			TermQuery query1 = new TermQuery(term1);

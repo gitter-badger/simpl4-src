@@ -523,6 +523,15 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		return true;
 	}
 
+	public List<Map> getPrimaryKeyFields(String entityName) {
+		List<Map> pkFields = m_sessionManager.getPrimaryKeyFields(entityName);
+		if (pkFields == null) {
+			pkFields = m_entityService.getPrimaryKeyFields(getStoreDesc(), entityName);
+			m_sessionManager.setPrimaryKeyFields(entityName, pkFields);
+		}
+		return pkFields;
+	}
+
 	public Map getPermittedFields(String entityName) {
 		return getPermittedFields(entityName, "read");
 	}
@@ -530,7 +539,6 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		Map permittedFields = m_sessionManager.getPermittedFieldsMap(entityName.toLowerCase()+"/"+actions);
 		if (permittedFields == null) {
 			permittedFields = m_entityService.getPermittedFields(getStoreDesc(), entityName.toLowerCase(),actions);
-			setPrimaryKey(permittedFields);
 			m_sessionManager.setPermittedFieldsMap(entityName.toLowerCase()+"/"+actions, permittedFields);
 		}
 		return permittedFields;
@@ -580,22 +588,6 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		m_configName = data;
 	}
 
-	public String getPrimaryKey() {
-		return m_primaryKey;
-	}
-
-	public void setPrimaryKey(String data) {
-		m_primaryKey = data;
-	}
-
-	private void setPrimaryKey(Map<String, Map> configMap) {
-		for (String key : configMap.keySet()) {
-			Map cm = configMap.get(key);
-			if (cm != null && cm.get("primary_key") != null &&  ((Boolean)cm.get("primary_key"))) {
-				setPrimaryKey(key);
-			}
-		}
-	}
 	private String getName(String s){
 		int i = s.lastIndexOf("/");
 		if( i == -1){
