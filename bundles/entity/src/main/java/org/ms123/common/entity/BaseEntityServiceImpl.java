@@ -321,9 +321,14 @@ System.out.println("className:"+className);
 					ret.add( field );
 				}
 			}
-			} catch (Exception e) {
-				throw new RuntimeException("BaseEntityServiceImpl.getPrimaryKeyFields", e);
-			} finally {
+		} catch (Exception e) {
+			throw new RuntimeException("BaseEntityServiceImpl.getPrimaryKeyFields", e);
+		}
+		if( ret.size() == 0){
+			Map<String,String> idMap = new HashMap();
+			idMap.put("name", "id");
+			idMap.put("datatype", "string");
+			ret.add( idMap);
 		}
 		return ret;
 	}
