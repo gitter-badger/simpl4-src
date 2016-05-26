@@ -265,7 +265,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			setDefaultValues(insertClazz, objectInsert);
 			populate(sessionContext, dataMap, objectInsert, hintsMap);
 			m_js.prettyPrint(true);
-			//debug("IO:"+m_js.deepSerialize(objectInsert));
+//			info("DM:"+m_js.deepSerialize(dataMap));
+//			info("IO:"+m_js.deepSerialize(objectInsert));
 			List constraintViolations = validateObject(sessionContext, objectInsert, entityName, true);
 			if (constraintViolations != null) {
 				retMap.put("constraintViolations", constraintViolations);
@@ -277,8 +278,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			if( bypassTrigger ==null || bypassTrigger==false){
 				m_triggerService.applyInsertRules(sessionContext, entityName, objectInsert);
 			}
-			Object id = pm.getObjectById( objectInsert);
-			ids.add(id);
+			Object id = pm.getObjectId( objectInsert);
+			ids.add(String.valueOf(id));
 		}
 		if (retMap.get("constraintViolations") == null) {
 			if (filterMap != null) {
@@ -1999,7 +2000,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 
 	private void setRelatedToFields(Map targetMap, String[] colNames, BeanMap beanMap, Object value) {
 		BeanMap relatedTo = new BeanMap(value);
-		Iterator<String> it = relatedTo.keySet().iterator();
+		Iterator<String> it = relatedTo.keyIterator();
 		while (it.hasNext()) {
 			String key = it.next();
 			if (key.startsWith("_"))
@@ -2339,6 +2340,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		if( pkList.size() > 1 ){
 			info("getIdObject.ret:"+id);
 			return id;
+		}
+		if( pkList.size() == 0 ){
+			throw new RuntimeException("No primaryKey:" + id);
 		}
 		Map<String,String> pk = pkList.get(0);
 		String dt = pk.get("datatype");
