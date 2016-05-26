@@ -157,8 +157,8 @@ public class BaseImportingServiceImpl implements Constants {
 			if( resultList.size() > 0){
 				Class clazz = resultList.iterator().next().getClass();
 				mainEntity = m_inflector.getEntityName(clazz.getSimpleName());
-				String pk = getPrimaryKey(clazz);
-				sc.setPrimaryKey(pk);
+				//String pk = getPrimaryKey(clazz);
+				//sc.setPrimaryKey(pk);
 			}
 			for (Object object : resultList) {
 				if (max != -1 && num >= max){
@@ -551,7 +551,7 @@ public class BaseImportingServiceImpl implements Constants {
 				int num = 0;
 				if( resultList.size() > 0){
 					String pk = getPrimaryKey(resultList.iterator().next().getClass());
-					sessionContext.setPrimaryKey(pk);
+					//sessionContext.setPrimaryKey(pk);
 				}
 				for (Object o : resultList) {
 					if (max != -1 && num >= max)

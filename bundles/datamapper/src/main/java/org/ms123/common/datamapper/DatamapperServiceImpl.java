@@ -63,6 +63,7 @@ import org.ms123.common.libhelper.Base64;
 
 /** DatamapperService implementation
  */
+@SuppressWarnings({"unchecked","deprecation"})
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=datamapper" })
 public class DatamapperServiceImpl extends BaseDatamapperServiceImpl implements DatamapperService {
 

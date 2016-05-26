@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 class BasePermissionServiceImpl implements Constants {
 
 	protected AuthService m_authService;
