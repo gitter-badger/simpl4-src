@@ -104,6 +104,13 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 				label: this.tr("data.field.selectable_items")
 			},*/
 			{
+				name: "primary_key",
+				type: "CheckBox",
+				value: false,
+				width: 30,
+				label: this.tr("data.field.primary_key")
+			},
+			{
 				name: "enabled",
 				type: "CheckBox",
 				value: true,
