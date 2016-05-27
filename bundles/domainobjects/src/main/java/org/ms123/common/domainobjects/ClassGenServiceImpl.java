@@ -80,6 +80,9 @@ import org.ms123.common.store.StoreDesc;
 import javassist.*;
 import javassist.bytecode.*;
 import javassist.bytecode.annotation.*;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 
 /**
  */
@@ -98,12 +101,12 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 
 	public List<String> generate(StoreDesc sdesc, List<Map> entities, String outDir) throws Exception {
 		ClassPool cp = new ClassPool(true);
-		System.out.println("--->generate:" + sdesc.getString());
+		info(this,"--->generate:" + sdesc.getString());
 		List<String> classnameList = new ArrayList();
 		for (int i = 0; i < entities.size(); i++) { //Make empty classes to resolve relations
 			Map m = entities.get(i);
 			String classname = getFQN(sdesc, m);
-			System.out.println("\tmakeClass:" + classname);
+			info(this,"\tmakeClass:" + classname);
 			cp.makeClass(classname);
 		}
 		for (int i = 0; i < entities.size(); i++) {
@@ -130,6 +133,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 			boolean genDefFields = getBoolean(entMap.get("default_fields"), false);
 			boolean genStateFields = getBoolean(entMap.get("state_fields"), false);
 			boolean team_security = getBoolean(entMap.get("team_security"), false);
+info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 			if (genDefFields) {
 				CtClass ctClass = cp.get(classname);
 				List<Map> defaultFields = m_entityService.getDefaultFields();
@@ -180,7 +184,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 	protected void addRelations(ClassPool cp, Map<String, Object> rel, StoreDesc sdesc) throws Exception {
 		String app = sdesc.getNamespace();
 		if (rel.get(LEFT_ENTITY) == null) {
-			System.out.println("addRelations.leftEntity is null");
+			info(this,"addRelations.leftEntity is null");
 			return;
 		}
 		String relation = (String) rel.get(RELATION);
@@ -191,7 +195,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		String rightEntity = sdesc.insertJavaPackage((String) rel.get(RIGHT_ENTITY));
 		String rightField = (String) rel.get(RIGHT_FIELD);
 		boolean dependent = getBoolean(rel.get("dependent"), false);
-		System.out.println("addRelations:" + leftEntity + "/" + rightEntity + "/" + dependent + "/" + relation);
+		info(this,"addRelations:" + leftEntity + "/" + rightEntity + "/" + dependent + "/" + relation);
 		boolean manyToMany = "many-to-many".equals(relation);
 		boolean oneToMany = "one-to-many".equals(relation) || "one-to-many-map".equals(relation);
 		boolean isMap = "one-to-many-map".equals(relation);
@@ -221,14 +225,14 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		}
 		rightField = removePackageName(rightField);
 		leftField = removePackageName(leftField);
-		System.out.println("rightField:" + rightField + "/" + leftField + "/" + oneToMany + "/" + oneToOneBi + "/" + manyToMany + "/" + oneToOne + "/" + oneToOneBi);
+		info(this,"rightField:" + rightField + "/" + leftField + "/" + oneToMany + "/" + oneToOneBi + "/" + manyToMany + "/" + oneToOne + "/" + oneToOneBi);
 		CtClass ctClass = cp.get(leftEntity);
-		System.out.println("ctClass:" + ctClass);
+		info(this,"ctClass:" + ctClass);
 		if (ctClass == null) {
 			throw new RuntimeException("ClassGenService.addRelations:leftEntity(" + leftEntity + ") is null");
 		}
 		if (oneToMany || oneToManyBi || manyToMany) {
-			System.out.println("relation:" + relation + ",lm:" + leftEntity + "/" + leftField + ",rm:" + rightEntity + "/" + rightField);
+			info(this,"relation:" + relation + ",lm:" + leftEntity + "/" + leftField + ",rm:" + rightEntity + "/" + rightField);
 			Class type = isMap ? Map.class : Set.class;
 			CtField f = createField(ctClass, leftField, type.getName());
 			if (oneToManyBi) {
@@ -286,11 +290,11 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 
 	protected void createRightField(ClassPool cp, String leftEntity, String rightEntity, String leftField, String rightField, boolean many, String column) throws Exception {
 		CtClass ctClass = cp.get(rightEntity);
-		System.out.println("createRightField:" + rightEntity + "/" + ctClass);
+		info(this,"createRightField:" + rightEntity + "/" + ctClass);
 		Class type = Set.class;
 		if (!many) {
 			if (ctClass == null) {
-				System.out.println("ClassGenService.createRightField:" + rightEntity + " not exists");
+				info(this,"ClassGenService.createRightField:" + rightEntity + " not exists");
 				throw new RuntimeException("ClassGenService.createRightField:rightEntity(" + rightEntity + ") is null");
 			}
 			CtField f = null;
@@ -347,8 +351,8 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		}
 		String setBody = "public void " + setName + " (" + typeName + " " + name + "){this." + name + "=" + name + ";}";
 		String getBody = "public " + typeName + " " + getName + "(){return " + name + ";}";
-		//System.out.println("setBody:"+setBody);
-		//System.out.println("getBody:"+getBody);
+		//info(this,"setBody:"+setBody);
+		//info(this,"getBody:"+getBody);
 		CtMethod nameSetMethod = CtNewMethod.make(setBody, ctClass);
 		ctClass.addMethod(nameSetMethod);
 		CtMethod nameGetMethod = CtNewMethod.make(getBody, ctClass);
@@ -548,7 +552,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				Map m = (Map) it.next();
 				boolean hasPrimaryKey = getBoolean(m.get("primary_key"), false);
 				if (hasPrimaryKey) {
-					System.out.println("primary_key:" + m.get("name"));
+					info(this,"primary_key:" + m.get("name"));
 					idField = (String) m.get("name");
 					idColumn = (String) m.get("columnName");
 					if( "number".equals(m.get("datatype"))){
@@ -602,7 +606,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 		if( primaryKeys == null){
 			return  fields;
 		}
-		System.out.println("fields1:" + fields);
+		info(this,"fields1:" + fields);
 		List result = new ArrayList();
 		for (String pk : primaryKeys) {
 			Map field = getField(fields, pk);
@@ -613,13 +617,13 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				result.add(field);
 			}
 		}
-		System.out.println("fields2:" + result);
+		info(this,"fields2:" + result);
 		return result;
 	}
 
 	protected void makeClass(StoreDesc sdesc, ClassPool cp, List fields, String classname, String namespace, Map<String, Object> entMap, boolean withAnnotation) throws Exception {
 		CtClass ctClass = cp.get(classname);
-		System.out.println("makeClass:" + ctClass + "/" + classname);
+		info(this,"makeClass:" + ctClass + "/" + classname);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
 		ctClass.addInterface(cp.makeClass("java.io.Serializable"));
 		AnnotationsAttribute classAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
@@ -690,7 +694,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 			Map m = (Map) it.next();
 			String[] val = new String[2];
 			if (m.get("enabled") != null && ((Boolean) m.get("enabled") == false)) {
-				System.out.println("ClassGenService.makeClass(" + classname + "," + m.get("name") + "):disabled");
+				info(this,"ClassGenService.makeClass(" + classname + "," + m.get("name") + "):disabled");
 				continue;
 			}
 			val[0] = (String) (m.get("name"));
@@ -711,8 +715,8 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 					datatype = val[1].substring(first + 1, last);
 					relatedToField = val[1].substring(last + 1);
 				}
-				System.out.println("\tdatatype2:" + datatype);
-				System.out.println("\tdatatype2.relatedToField:" + relatedToField);
+				info(this,"\tdatatype2:" + datatype);
+				info(this,"\tdatatype2.relatedToField:" + relatedToField);
 				String fieldName = relatedToField != null ? relatedToField : val[0];
 				CtField f = createField(ctClass, fieldName, datatype);
 				AnnotationsAttribute fieldAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
@@ -732,7 +736,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 				addGetterSetter(ctClass, fieldName, datatype);
 			} else {
 				if ("decimalnumber".equals(val[0])) {
-					System.out.println("m:" + m);
+					info(this,"m:" + m);
 				}
 				boolean withIndex = getBoolean(m.get("index"), true);
 				AnnotationsAttribute fieldAttr = makeField(sdesc, cp, ctClass, val[0], (String) m.get("columnName"), val[1], edittype, (String) m.get("sqltype"), defaultValue, classname, m.get("constraints"), withAnnotation, withIndex);
@@ -876,7 +880,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 	}
 
 	protected void generateConstraints(CtField f, List<Map> constraints) {
-		System.out.println("generateConstraints:" + f + "/" + constraints);
+		info(this,"generateConstraints:" + f + "/" + constraints);
 		if (constraints == null) {
 			return;
 		}
@@ -890,7 +894,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 			if (cl.size() == 0) {
 				break;
 			}
-			System.out.println("cl:" + cl);
+			info(this,"cl:" + cl);
 			if (cl.size() == 1) {
 				Map<String, Object> c = cl.get(0);
 				String a = (String) c.get("annotation");
@@ -1171,7 +1175,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 
 	protected List getRelations(StoreDesc sdesc) throws Exception {
 		List list = m_entityService.getRelations(sdesc);
-		System.out.println("getRelations:" + list);
+		info(this,"getRelations:" + list);
 		return list;
 	}
 
@@ -1325,7 +1329,7 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 	@Reference
 	public void setEntityService(EntityService paramEntityService) {
 		m_entityService = paramEntityService;
-		System.out.println("ClassGenServiceImpl.setEntityService:" + paramEntityService);
+		info(this,"ClassGenServiceImpl.setEntityService:" + paramEntityService);
 	}
 
 }

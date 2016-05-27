@@ -467,8 +467,9 @@ qx.Class.define("ms123.util.BaseFieldSelector", {
 				this._tableModel.setValue(colnum, rownum, true);
 			}
 		},
-		createFieldsWindow: function (treePath, treeModel, fields) {
+		createFieldsWindow: function (treePath, treeModel, fields, pack) {
 			var f = qx.util.Serializer.toJson(treeModel);
+			if( pack == null) pack = "data";
 			console.log("treeModel:" + f);
 			console.log("path:" + treePath);
 			var path = treePath.join("$");
@@ -489,8 +490,8 @@ qx.Class.define("ms123.util.BaseFieldSelector", {
 			var namefunc = this._context.getName;
 			var _this = this;
 			fields.sort(function (a, b) {
-				a = namefunc ? namefunc(treeSelector, a.id) : _this.tr("data." + treeSelector + "." + a.id);
-				b = namefunc ? namefunc(treeSelector, b.id) : _this.tr("data." + treeSelector + "." + b.id);
+				a = namefunc ? namefunc(treeSelector, a.id) : _this.tr(pack+"." + treeSelector + "." + a.id);
+				b = namefunc ? namefunc(treeSelector, b.id) : _this.tr(pack+"." + treeSelector + "." + b.id);
 				if (a < b) return -1;
 				if (a > b) return 1;
 				return 0;
@@ -500,7 +501,7 @@ qx.Class.define("ms123.util.BaseFieldSelector", {
 				var dt = field.datatype;
 				if (field.hidden) continue;
 				if (dt != undefined && (dt.match("^list") || dt.match("^relat") || dt.match("^object"))) continue;
-				var name = namefunc ? namefunc(treeSelector, field.id) : this.tr("data." + treeSelector + "." + field.id);
+				var name = namefunc ? namefunc(treeSelector, field.id) : this.tr(pack+"." + treeSelector + "." + field.id);
 				//var name = field.id;
 				var cb = new qx.ui.form.CheckBox(name);
 				cb.setUserData("selector", treeSelector);

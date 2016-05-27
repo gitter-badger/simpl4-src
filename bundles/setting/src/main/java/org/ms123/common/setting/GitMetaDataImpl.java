@@ -121,23 +121,23 @@ class GitMetaDataImpl implements MetaData, Constants {
 		List<Map> retList = new ArrayList();
 		String resourceid = format("settings/entities.{0}.views.{1}.fields", entity, view);
 		String settingStr = getResource(namespace, settingsid, resourceid);
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,StoreDesc.getPackName(entity));
 		if (settingStr != null) {
 			Map m = (Map) m_ds.deserialize(settingStr);
 			debug("m:" + m);
-			Map<String, Map> allFields = _listToMap(m_ssi.m_entityService.getFields(sdesc, entity, true), "name");
+			Map<String, Map> allFields = _listToMap(m_ssi.m_entityService.getFields(sdesc, StoreDesc.getSimpleEntityName(entity), true), "name");
 			retList = _mergeProperties((List) m.get(FIELDS), allFields);
 			printList("\tAftermerge:", retList);
 		} else {
 			if (!"duplicate-check".equals(view)) {
-				retList = m_ssi.m_entityService.getFields(sdesc, entity, false);
+				retList = m_ssi.m_entityService.getFields(sdesc, StoreDesc.getSimpleEntityName(entity), false);
 			}
 		}
-		retList = m_ssi.m_permissionService.permissionFieldListFilter(sdesc, entity, retList, "name", "read");
+		retList = m_ssi.m_permissionService.permissionFieldListFilter(sdesc, StoreDesc.getSimpleEntityName(entity), retList, "name", "read");
 		SessionContext sc = m_ssi.m_dataLayer.getSessionContext(sdesc);
 		for (Map m : retList) {
 			boolean rd = getBoolean(m,"readonly",false);
-			boolean readonly = !sc.isFieldPermitted((String) m.get("name"), entity, "write");
+			boolean readonly = !sc.isFieldPermitted((String) m.get("name"), StoreDesc.getSimpleEntityName(entity), "write");
 			if( rd) readonly = true;
 			debug("\tisReadOnly(" + m.get("name") + "," + entity + ")" + readonly);
 			m.put("readonly", readonly);

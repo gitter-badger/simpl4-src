@@ -217,6 +217,9 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 
 	public synchronized void close(StoreDesc sdesc) {
 		debug("CLOSE:sd1:"+sdesc);
+		if( sdesc == null){
+			return;
+		}
 		Iterator<StoreDesc> it = m_loaders.keySet().iterator();
 		while (it.hasNext()) {
 			StoreDesc sd = it.next();

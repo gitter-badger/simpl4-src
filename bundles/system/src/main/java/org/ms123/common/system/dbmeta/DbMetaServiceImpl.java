@@ -104,40 +104,44 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 
 	/*BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")
-	public void createMetadata(@PName(StoreDesc.STORE_ID) String storeId, 
+	public void createMetadata(@PName(StoreDesc.NAMESPACE) String namespace, 
 														 @PName("config") @POptional Map config) throws RpcException {
 		try {
 			info(this,"createMetadata:" + config);
-			StoreDesc sdesc = StoreDesc.get(storeId);
-			String namespace = sdesc.getNamespace();
 
 			Map<String, Object> jooqConfig = (Map) config.get("jooq");
 			Map<String, String> datanucleusConfig = (Map) config.get("datanucleus");
 			Map<String, String> dsConfig = (Map) config.get("datasource");
+			String pack = dsConfig.get("packageName");
+
 
 			createDatasource(namespace, dsConfig);
 
-			Boolean isMainDb = (Boolean) ((Map)dsConfig).get("is_main_db");
-			if (isMainDb == true) {
-				gitService.setStoreProperty( namespace, "store", "data", "database", "jdbc:"+(String)dsConfig.get("dataSourceName"));
-				nucleusService.close(sdesc);
-			}
+			gitService.setStoreProperty( namespace, "store", pack, "database", "jdbc:"+(String)dsConfig.get("dataSourceName"));
+			gitService.setStoreProperty( namespace, "store", pack, "pack", pack);
+			gitService.setStoreProperty( namespace, "store", pack, "namespace", namespace);
+			gitService.setStoreProperty( namespace, "store", pack, "repository", namespace+"_data");
+
 			Boolean isSchemaReadonly = (Boolean) ((Map)dsConfig).get("is_schema_readonly");
-			gitService.setStoreProperty( namespace, "store", "data", "schemareadonly", isSchemaReadonly == null ? "false" : String.valueOf(isSchemaReadonly) );
-			nucleusService.close(sdesc);
+			gitService.setStoreProperty( namespace, "store", pack, "schemareadonly", isSchemaReadonly == null ? "false" : String.valueOf(isSchemaReadonly) );
 
 			Boolean isSchemaValidate = (Boolean) ((Map)dsConfig).get("is_schema_validate");
-			gitService.setStoreProperty( namespace, "store", "data", "schemavalidate", isSchemaValidate == null ? "true" : String.valueOf(isSchemaValidate) );
+			gitService.setStoreProperty( namespace, "store", pack, "schemavalidate", isSchemaValidate == null ? "true" : String.valueOf(isSchemaValidate) );
+
+			StoreDesc sdesc = StoreDesc.getNamespaceData(namespace, pack);
 			nucleusService.close(sdesc);
 
 			Boolean generate = (Boolean) jooqConfig.get("create_jooq_metadata");
 			if (generate == true) {
-				File jooqConfigFile = createJooqConfig(namespace, (String) dsConfig.get("dataSourceName"), jooqConfig);
-				buildJooqMetadata(storeId, (String) dsConfig.get("dataSourceName"), jooqConfigFile.toString(), false);
+				File jooqConfigFile = createJooqConfig(namespace, pack,(String) dsConfig.get("dataSourceName"), jooqConfig);
+				buildJooqMetadata(namespace, pack, (String) dsConfig.get("dataSourceName"), jooqConfigFile.toString(), false);
 			}
 
 			generate = (Boolean) ((Map)datanucleusConfig).get("create_datanucleus_metadata");
 			if (generate == true) {
+				StoreDesc.init();
+				sdesc = StoreDesc.getNamespaceData(namespace, pack);
+				info(this,"createMetadata.sdesc:" + sdesc);
 				buildDatanucleusMetadata(sdesc, (String) dsConfig.get("dataSourceName"), datanucleusConfig);
 				domainobjectsService.createClasses(sdesc);
 			}
@@ -150,21 +154,20 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	}
 
 	@RequiresRoles("admin")
-	public void buildJooqMetadata(@PName(StoreDesc.STORE_ID) String storeId, 
+	public void buildJooqMetadata(@PName(StoreDesc.NAMESPACE) String namespace, 
+																@PName("pack") String pack, 
 																@PName("dataSourceName") String dataSourceName, 
 																@PName("configFile") String configFile, 
 																@PName("toWorkspace") @POptional @PDefaultBool(false) Boolean toWorkspace) throws RpcException {
 		Connection conn = null;
 		try {
-			StoreDesc sdesc = StoreDesc.get(storeId);
-			String namespace = sdesc.getNamespace();
 			File f = new File(configFile);
 			if (!f.exists()) {
 				if (configFile != null) {
 					if (configFile.indexOf("/") > 0) {
-						f = new File(new File(gitRepos, sdesc.getNamespace()), configFile);
+						f = new File(new File(gitRepos, namespace), configFile);
 					} else {
-						f = new File(new File(gitRepos, sdesc.getNamespace()), ".etc/" + configFile);
+						f = new File(new File(gitRepos, namespace), ".etc/" + configFile);
 					}
 				} else {
 					f = new File(configFile);
@@ -204,7 +207,7 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 				File parent = new File(basedir, "gen/" + packageDir).getParentFile();
 				if( tdir.exists()){
 					moveDirectoryToDirectory(tdir, parent, true);
-					compileMetadata(toWorkspace, sdesc.getNamespace());
+					compileMetadata(toWorkspace, namespace);
 				}
 			}
 		} catch (Exception e) {

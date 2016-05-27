@@ -241,6 +241,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 			}, this);
 			var content = this._getContent(model.getPath());
 			var modulename = null;	
+			var pack = null;	
 			var filter = null;	
 			var fields = null;	
 			var exclusion = null;	
@@ -249,10 +250,11 @@ qx.Class.define("ms123.shell.views.Editor", {
 				json = qx.lang.Json.parse(json);
 				modulename = json.modulename;	
 				filter = json.filter;	
+				pack = json.pack;	
 				fields = json.fields;	
 				exclusion = json.exclusion;	
 			}
-			fe.init.call(fe,model.getValue(), model.getPath(), modulename, fields, filter, exclusion);
+			fe.init.call(fe,model.getValue(), model.getPath(), modulename, pack, fields, filter, exclusion);
 			return fe;
 		},
 		getEditor:function(){

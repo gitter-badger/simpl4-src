@@ -240,8 +240,9 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 				var fields = null;
 				try {
 					var entity = item.getId();
+					var storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(item.getPack());
 					var data = ms123.util.Remote.rpcSync("entity:getEntitytype", {
-						storeId: this._getStoreId(item.getPack()),
+						storeId: storeDesc.getStoreId(item.getPack()),
 						name: entity
 					});
 					fields = this._toArray(data["fields"]);

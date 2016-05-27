@@ -27,5 +27,33 @@ qx.Class.define("ms123.settings.Config", {
 	 STATICS
 	 ******************************************************************************/
 	statics: {
+		PACK_DELIM: ":",
+		DEFAULT_PACK: "data",
+		AID_PACK: "aid",
+		getPackName:function(entity){
+			if( entity.indexOf(ms123.settings.Config.PACK_DELIM) >=0){
+				return entity.split(ms123.settings.Config.PACK_DELIM)[0];	
+			}
+			return this.DEFAULT_PACK;
+		},
+		getEntityName:function(entity){
+			if( entity.indexOf(ms123.settings.Config.PACK_DELIM) >=0){
+				return entity.split(ms123.settings.Config.PACK_DELIM)[1];	
+			}
+			return entity;
+		},
+		getFqEntityName:function(entity,sdesc){
+			if( entity.indexOf(ms123.settings.Config.PACK_DELIM) >=0){
+				return entity;	
+			}
+			var pack = sdesc.getPack ? sdesc.getPack() : sdesc;
+			if( pack == this.DEFAULT_PACK){
+				return entity;
+			}
+			if( pack == this.AID_PACK){
+				return entity;
+			}
+			return pack + this.PACK_DELIM + entity;
+		}
 	}
 });

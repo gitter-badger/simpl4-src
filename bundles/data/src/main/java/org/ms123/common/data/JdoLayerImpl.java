@@ -2191,13 +2191,13 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 	}
 
 	private String getRecordValidation(SessionContext sc, String entityName) {
-	  Map m = m_settingService.getPropertiesForEntityView( sc.getStoreDesc().getNamespace(), GLOBAL_SETTINGS, entityName, null);
+	  Map m = m_settingService.getPropertiesForEntityView( sc.getStoreDesc().getNamespace(), GLOBAL_SETTINGS, StoreDesc.getFqEntityName(entityName,sc.getStoreDesc()), null);
 		String val = (String)m.get(RECORDVALIDATION);
 		return val;
 	}
 
 	private String getTitle(SessionContext sc, String entityName, Map<String,Object> map, Object id,String def) {
-	  Map m = m_settingService.getPropertiesForEntityView( sc.getStoreDesc().getNamespace(), GLOBAL_SETTINGS, entityName, null);
+	  Map m = m_settingService.getPropertiesForEntityView( sc.getStoreDesc().getNamespace(), GLOBAL_SETTINGS, StoreDesc.getFqEntityName(entityName,sc.getStoreDesc()), null);
 		String te = (String)m.get(TITLEEXPRESSION);
 		if( isEmpty(te)){
 			 return def;
@@ -2209,7 +2209,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		if( entityNameDetails!=null){
 			en = entityNameDetails;
 		}
-	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, en, null);
+	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, StoreDesc.getFqEntityName(en,sdesc), null);
 		return m.get(STATESELECT) != null ? (Boolean)m.get(STATESELECT) : false;
 	}
 	private boolean noSelectDistinct(StoreDesc sdesc, String entityName, String entityNameDetails) {
@@ -2217,7 +2217,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		if( entityNameDetails!=null){
 			en = entityNameDetails;
 		}
-	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, en, null);
+	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, StoreDesc.getFqEntityName(en,sdesc), null);
 		return m.get(SELECTDISTINCT) != null ? (Boolean)m.get(SELECTDISTINCT) : false;
 	}
 	private boolean noResultSetCount(StoreDesc sdesc, String entityName, String entityNameDetails) {
@@ -2225,7 +2225,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		if( entityNameDetails!=null){
 			en = entityNameDetails;
 		}
-	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, en, null);
+	  Map m = m_settingService.getPropertiesForEntityView( sdesc.getNamespace(), GLOBAL_SETTINGS, StoreDesc.getFqEntityName(en,sdesc), null);
 		return m.get(NORESULTSETCOUNT) != null ? (Boolean)m.get(NORESULTSETCOUNT) : false;
 	}
 

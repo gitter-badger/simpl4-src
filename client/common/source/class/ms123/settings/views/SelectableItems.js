@@ -26,9 +26,10 @@ qx.Class.define("ms123.settings.views.SelectableItems", {
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
-	construct: function (facade) {
+	construct: function (facade,pack) {
 		this.base(arguments);
 		this.facade = facade;
+		this.pack = pack;
 		this.setLayout(new qx.ui.layout.Dock());
 		this._selectedMap = {};
 
@@ -84,8 +85,8 @@ qx.Class.define("ms123.settings.views.SelectableItems", {
 				var dt = field.datatype;
 				if (dt != undefined && (dt.match("^set") || dt.match("^list") || /*dt.match("^relat") ||*/ dt.match("^object"))) continue;
 				var displayname = field.name.match("^_") ?
-						this.tr("data." + field.name) :
-						this.tr("data." + entity + "." + field.name);
+						this.tr(this.pack+"." + field.name) :
+						this.tr(this.pack+"." + entity + "." + field.name);
 				var cb = new qx.ui.form.CheckBox(displayname);
 				cb.setUserData("name", field.name);
 				cb.setUserData("displayname", displayname);

@@ -69,12 +69,12 @@ qx.Class.define("ms123.permissions.ResourceSelector", {
 
 
 	members: {
-		__createEntitiesNode:function(id){
+		__createEntitiesNode:function(id, packarray){
 			var entitiesNode = {
 				id: id,
 				title: this.tr("permissions.entities"),
 				type: ms123.util.BaseResourceSelector.ENTITIES_TYPE,
-				children: []
+				children: packarray
 			};
 			return entitiesNode;
 		},
@@ -95,34 +95,51 @@ qx.Class.define("ms123.permissions.ResourceSelector", {
 			};
 
 			var namespace = this.facade.storeDesc.getNamespace();
-			var entitiesId = namespace+":entities";
-			var dataPackId = namespace+":entities:data";
-			var entityId   = namespace+":entities:data:{entity}";
 
-			var entitiesNode = this.__createEntitiesNode( entitiesId);
+
+
+			var entitiesId = namespace+":entities";
+			var packId = namespace+":entities:{pack}";
+			var entityId   = namespace+":entities:{pack}:{entity}";
+
+			var packarray = [];
+			var entitiesNode = this.__createEntitiesNode( entitiesId,packarray);
 
 			var root = {}
 			root.id = "ROOT";
 			root.title = "ROOT";
 			root.children = [entitiesNode];
 
-			var cm = new ms123.config.ConfigManager();
-			var entities = cm.getEntities(this.facade.storeDesc);
-			this._sortByName(entities);
-			for (var i = 0; i < entities.length; i++) {
-				var entityName = entities[i].name;
-				var id = entityId.replace("{entity}", entityName);
-				var fieldsNode = fielddummyNode;
+			var packs = ms123.StoreDesc.getNamespacePacks();
+			for( var p=0; p < packs.length; p++){
+				var pack = packs[p];
 
-
+				var entityarray = [];
 				var m = {}
-				m.id = id;
-				m.title = entityName;
+				m.id = packId.replace("{pack}", pack);
+				m.title = pack;
 				m.type = ms123.util.BaseResourceSelector.ENTITY_TYPE;
-				m.children = [fieldsNode];
-				entitiesNode.children.push(m);
-			}
+				m.children = entityarray;
+				packarray.push(m);
 
+				var packStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
+				var cm = new ms123.config.ConfigManager();
+				var entities = cm.getEntities(packStoreDesc);
+				this._sortByName(entities);
+				for (var i = 0; i < entities.length; i++) {
+					var entityName = entities[i].name;
+					var id = entityId.replace("{entity}", entityName);
+					id = id.replace("{pack}", pack);
+
+					var m = {}
+					m.id = id;
+					m.title = entityName;
+					m.pack = pack;
+					m.type = ms123.util.BaseResourceSelector.ENTITY_TYPE;
+					m.children = [fielddummyNode];
+					entityarray.push(m);
+				}
+			}
 			return root;
 		},
 		_onOpenNode: function (e) {
@@ -131,7 +148,8 @@ qx.Class.define("ms123.permissions.ResourceSelector", {
 			if (childs.getLength() == 1 && childs.getItem(0).getId() == "fielddummy") {
 				var cm = new ms123.config.ConfigManager();
 				var entity = item.getTitle();
-				var fields = cm.getFields(this.facade.storeDesc,entity, false, true);
+				var packStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(item.getPack());
+				var fields = cm.getFields(packStoreDesc,entity, false, true);
 				var idPrefix = item.getId();
 				this._sortByName(fields);
 				var fieldarray = [];

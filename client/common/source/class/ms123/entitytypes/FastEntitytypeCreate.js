@@ -35,6 +35,9 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 		this._model = model;
 		this._isNew = param.isNew;
 		this._etdata = null;
+		var pack = model.getPack();
+		this._pack = model.getPack();
+		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 		if (!this._isNew) {
 			this._etdata = this._getEntitytype(this._model.getId());
 			var value = qx.lang.Json.stringify(this._etdata, null, 4);
@@ -331,7 +334,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 			f.entitytype = this._etdata.name;
 			f.title = this._etdata.name;
 			f.type = "sw.field";
-			f.pack = this._facade.storeDesc.getPack();
+			f.pack = this.storeDesc.getPack();
 			f.children = [];
 			var fmodel = qx.data.marshal.Json.createModel(f, true);
 			var param = {
@@ -362,7 +365,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:deleteEntitytype", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					name: name
 				});
 			} catch (e) {
@@ -375,9 +378,8 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 			}).bind(this);
 
 			try {
-				var storeId = this._facade.storeDesc.getStoreId();
 				var ret = ms123.util.Remote.rpcSync("entity:getRelations", {
-					storeId: this._getStoreId()
+					storeId: this.storeDesc.getStoreId()
 				});
 				return ret;
 			} catch (e) {
@@ -386,7 +388,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 		},
 		_deleteIsOk:function(data){
 			var relations = this._getRelations();
-			var etname = this._facade.storeDesc.getPack()+"."+data.name;
+			var etname = this.storeDesc.getPack()+"."+data.name;
 			for( var i=0; i< relations.length;i++){
 				var rel = relations[i];
 				if( rel.leftmodule == etname || rel.rightmodule == etname){
@@ -462,9 +464,9 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 					var dm = flags.get("delete_messages");
 					var ds = flags.get("delete_settings");
 
-					var 	namespace= this._facade.storeDesc.getNamespace();
+					var 	namespace= this.storeDesc.getNamespace();
 					var lang= ms123.config.ConfigManager.getLanguage();
-					var ds = new ms123.entitytypes.DefaultSettings(namespace,lang);
+					var ds = new ms123.entitytypes.DefaultSettings(namespace,this._pack, lang);
 					
 					if (dm) ds.deleteMessages({name:data.name,fields:this._fields});
 					if (ds) ds.deleteResources(data);	
@@ -531,11 +533,6 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 			}
 			return fdata;
 		},
-		_getStoreId: function () {
-			var storeId = this._facade.storeDesc.getStoreId();
-			return storeId;
-		},
-
 		_createDatatypeList: function () {
 			this._dataTypeList = [{
 				"value": "string",
@@ -685,9 +682,9 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 					children.insertAt(0, fmodel);
 				}
 			}
-			var 	namespace= this._facade.storeDesc.getNamespace();
+			var 	namespace= this.storeDesc.getNamespace();
 			var lang= ms123.config.ConfigManager.getLanguage();
-			var ds = new ms123.entitytypes.DefaultSettings(namespace,lang);
+			var ds = new ms123.entitytypes.DefaultSettings(namespace,this._pack, lang);
 			if (cm) ds.createMessages(data);
 			ds.createResources(data,cm,sf,st,ss);	
 
@@ -703,7 +700,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 		_getEntitytype: function (name) {
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:getEntitytype", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					name: name
 				});
 				return ret;
@@ -715,7 +712,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 		_saveEntitytype: function (data) {
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:saveEntitytype", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					name: data.name,
 					data: data
 				});
@@ -729,7 +726,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 		_createClasses:function(mess){
 			try {
 				ms123.util.Remote.rpcSync("domainobjects:createClasses", {
-					storeId: this._getStoreId()
+					storeId: this.storeDesc.getStoreId()
 				});
 				if( mess ) ms123.form.Dialog.alert(this.tr("entitytypes.update_db_successfull"));
 			} catch (e) {
@@ -743,8 +740,9 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 			}).bind(this);
 
 			try {
+				entity =  ms123.settings.Config.getFqEntityName(entity,this.storeDesc);
 				var ret = ms123.util.Remote.rpcSync("setting:setResourceSetting", {
-					namespace: this._facade.storeDesc.getNamespace(),
+					namespace: this.storeDesc.getNamespace(),
 					settingsid: "global",
 					resourceid: "entities."+entity+".properties",
 					overwrite:false,
@@ -765,7 +763,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 		},
 		_assetExists: function (name, type) {
 			var rpcParams = {
-				reponame: this._facade.storeDesc.getNamespace(),
+				reponame: this.storeDesc.getNamespace(),
 				name: name,
 				type: type
 			};

@@ -51,6 +51,7 @@ qx.Class.define("ms123.StoreDesc", {
 		__namespaceDataStoreDesc: {},
 		__namespaceMetaStoreDesc: {},
 		__namespaceConfigStoreDesc: {},
+		__namespacePacks: {},
 		__globalMetaStoreDesc: null,
 		__globalDataStoreDesc: null,
 
@@ -62,13 +63,16 @@ qx.Class.define("ms123.StoreDesc", {
 		},
 
 		setNamespaceDataStoreDesc: function (sdesc) {
-			ms123.StoreDesc.__namespaceDataStoreDesc[ms123.StoreDesc.__currentNamespace] = sdesc;
+			ms123.StoreDesc.__namespaceDataStoreDesc[ms123.StoreDesc.__currentNamespace+"_"+sdesc.getPack()] = sdesc;
 		},
 		setNamespaceMetaStoreDesc: function (sdesc) {
 			ms123.StoreDesc.__namespaceMetaStoreDesc[ms123.StoreDesc.__currentNamespace] = sdesc;
 		},
 		setNamespaceConfigStoreDesc: function (sdesc) {
 			ms123.StoreDesc.__namespaceConfigStoreDesc[ms123.StoreDesc.__currentNamespace] = sdesc;
+		},
+		setNamespacePacks: function (packs) {
+			ms123.StoreDesc.__namespacePacks[ms123.StoreDesc.__currentNamespace] = packs;
 		},
 		setGlobalMetaStoreDesc: function (sdesc) {
 			ms123.StoreDesc.__globalMetaStoreDesc = sdesc;
@@ -77,18 +81,23 @@ qx.Class.define("ms123.StoreDesc", {
 		setGlobalDataStoreDesc: function (sdesc) {
 			ms123.StoreDesc.__globalDataStoreDesc = sdesc;
 		},
-		getNamespaceDataStoreDescForNS: function (ns) {
-			return ms123.StoreDesc.__namespaceDataStoreDesc[ns];
+		getNamespaceDataStoreDescForNS: function (ns,pack) {
+			if( pack == null) pack = "data";
+			return ms123.StoreDesc.__namespaceDataStoreDesc[ns+"_"+pack];
 		},
 
-		getNamespaceDataStoreDesc: function () {
-			return ms123.StoreDesc.__namespaceDataStoreDesc[ms123.StoreDesc.__currentNamespace];
+		getNamespaceDataStoreDesc: function (pack) {
+			if( pack == null) pack = "data";
+			return ms123.StoreDesc.__namespaceDataStoreDesc[ms123.StoreDesc.__currentNamespace+"_"+pack];
 		},
 		getNamespaceConfigStoreDesc: function () {
 			return ms123.StoreDesc.__namespaceConfigStoreDesc[ms123.StoreDesc.__currentNamespace];
 		},
 		getNamespaceMetaStoreDesc: function () {
 			return ms123.StoreDesc.__namespaceMetaStoreDesc[ms123.StoreDesc.__currentNamespace];
+		},
+		getNamespacePacks: function () {
+			return ms123.StoreDesc.__namespacePacks[ms123.StoreDesc.__currentNamespace];
 		},
 		getGlobalMetaStoreDesc: function (sdesc) {
 			return ms123.StoreDesc.__globalMetaStoreDesc;
@@ -108,8 +117,9 @@ qx.Class.define("ms123.StoreDesc", {
 	 MEMBERS
 	 ******************************************************************************/
 	members: {
-		getNamespaceDataStoreDesc: function () {
-			return ms123.StoreDesc.__namespaceDataStoreDesc[this.__namespace];
+		getNamespaceDataStoreDesc: function (pack) {
+			if( pack == null) pack = "data";
+			return ms123.StoreDesc.__namespaceDataStoreDesc[this.__namespace+"_"+pack];
 		},
 		getNamespaceMetaStoreDesc: function () {
 			return ms123.StoreDesc.__namespaceMetaStoreDesc[this.__namespace];

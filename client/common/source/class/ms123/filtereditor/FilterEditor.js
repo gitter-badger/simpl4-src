@@ -64,7 +64,8 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 	 MEMBERS
 	 ******************************************************************************/
 	members: {
-		init: function (name, path, modulename, fields, filter, exclusion) {
+		init: function (name, path, modulename, pack, fields, filter, exclusion) {
+			this.__storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 			this._filterProps = {
 				id: name,
 				name: name,
@@ -73,6 +74,7 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 				type: "jcr",
 				storeId: this.__storeDesc.getStoreId(),
 				modulename: modulename,
+				pack:pack,
 				description: null,
 				fields: fields,
 				filter: filter,
@@ -81,47 +83,17 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 			this._createJsonWindow();
 
 			if (!modulename) {
-				var modulesMenu = [];
-
-				var _modules = this._cm.getEntities(this.__storeDesc);;
-				for (var i = 0; i < _modules.length; i++) {
-					var module = _modules[i];
-					var modname = module.name;
-					var o = {};
-					o.label = this.tr("data." + modname);
-					o.value = modname;
-					modulesMenu.push(o);
-				}
-				var formData = {
-					"modulename": {
-						'type': "SelectBox",
-						'label': this.tr("filtereditor.mainmodule"),
-						'value': 1,
-						'options': modulesMenu
-					}
-				};
-
-				var self = this;
-				var form = new ms123.form.Form({
-					"formData": formData,
-					"allowCancel": true,
-					"inWindow": true,
-					"callback": function (m) {
-						if (m !== undefined) {
-							var val = m.get("modulename");
-							self._filterProps.modulename = val;
-							self._init();
-						}
-					},
-					"context": self
-				});
-				form.show();
+				this._createConfigWindow("");
 			} else {
 				this._init();
 			}
 		},
 		_init: function () {
+			console.log("_inint.modulename:", this._filterProps.modulename);
+			console.log("_inint.pack:", this._filterProps.pack);
 			if (!this._filterProps.modulename) return;
+			this.__storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(this._filterProps.pack);
+			this._filterProps.__storeDesc = this.__storeDesc;
 
 			this._user = ms123.config.ConfigManager.getUserProperties();
 			this._fieldmap = {};
@@ -177,7 +149,7 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 				var model = e.getData().selectionModel;
 				var path = e.getData().treePath;
 				var fields = this._getSelectableFields(model.getEntity());
-				this._fieldSelector.createFieldsWindow(path, model, fields);
+				this._fieldSelector.createFieldsWindow(path, model, fields,this._filterProps.pack);
 			}, this);
 
 			this._mainTabs.addListener("changeSelection", function (e) {
@@ -351,6 +323,7 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 			var filterProps = {
 				id: this._filterProps.id,
 				modulename: this._filterProps.modulename,
+				pack: this._filterProps.pack,
 				storeId: this._filterProps.storeId,
 				user: this._filterProps.user,
 				type: (!this._filterProps.type ? "report" : this._filterProps.type),
@@ -665,6 +638,102 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 			this._jsonWindow = win;
 			return win;
 		},
+		_createConfigWindow: function (name) {
+			var win = new qx.ui.window.Window(name).set({
+				resizable: false,
+				useMoveFrame: true,
+				useResizeFrame: false
+			});
+			var dock = null;
+			win.setLayout(dock=new qx.ui.layout.Dock);
+			win.setWidth(400);
+			win.setHeight(200);
+			win.setAllowMaximize(false);
+			win.setAllowMinimize(false);
+			win.setModal(true);
+			win.setActive(false);
+			win.minimize();
+			win.center();
+
+				
+			dock.setSpacingY(30);
+
+			this._configWindow = win;
+			var c1 = this._createPackSelector();
+			var packs = ms123.StoreDesc.getNamespacePacks();
+			var c2 = this._createEntitySelector(packs[0]);
+
+			win.add(c1, { edge: "north" });
+			win.setActive(true);
+			win.open();
+			return win;
+		},
+		_createPackSelector: function () {
+			var container = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+			container.add(new qx.ui.basic.Label(this.tr("filtereditor.pack")+":"));
+
+			var selectBox = new qx.ui.form.SelectBox();
+			var packs = ms123.StoreDesc.getNamespacePacks();
+			for( var i=0; i < packs.length;i++){
+				var pack = packs[i];
+				var item = new qx.ui.form.ListItem(pack, null, pack);
+				selectBox.add(item);
+			}
+
+			selectBox.addListener("changeSelection",function(e){
+				var pack = selectBox.getSelection()[0].getModel();
+				this._createEntitySelector(pack);
+			},this);
+			container.add(selectBox);
+			return container;
+		},
+		_createEntitySelector:function(pack){
+			this._filterProps.pack =pack;
+			var packStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
+			var modulesMenu = [];
+
+			var _modules = this._cm.getEntities(packStoreDesc);;
+			for (var i = 0; i < _modules.length; i++) {
+				var module = _modules[i];
+				var modname = module.name;
+				var o = {};
+				o.label = this.tr(pack+"." + modname);
+				o.value = modname;
+				modulesMenu.push(o);
+			}
+			var formData = {
+				"modulename": {
+					'type': "SelectBox",
+					'label': this.tr("filtereditor.mainmodule"),
+					'value': 1,
+					'options': modulesMenu
+				}
+			};
+
+			var self = this;
+			var form = new ms123.form.Form({
+				"formData": formData,
+				"allowCancel": true,
+				"inWindow": false,
+				"callback": function (m) {
+					if (m !== undefined) {
+						var val = m.get("modulename");
+						self._filterProps.modulename = val;
+						self._configWindow.close();
+						self._init();
+					}
+				},
+				"context": self
+			});
+			var container = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+			container.add(form);
+			if( this._currentEntitySelector){
+				this._configWindow.remove(this._currentEntitySelector);
+			}
+			this._configWindow.add(container, { edge: "center" });
+			this._currentEntitySelector = container;
+			return container;
+		},
 		_createExclusionWindow: function (mwidget, parent, filterProps) {
 			var win = new qx.ui.window.Window(this.tr("composite.exclusion_list"), "").set({
 				resizable: true,
@@ -790,8 +859,10 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 			if (colModel === undefined) {
 				try {
 					var cm = new ms123.config.ConfigManager();
+console.log("_getSelectableFields:",entity+"/"+this.__storeDesc.getPack());
 					var data = cm.getEntityViewFields(entity,this.__storeDesc,"report",false);
-					colModel = cm.buildColModel(data, entity, this.__storeDesc, "data", "search");
+					colModel = cm.buildColModel(data, entity, this.__storeDesc, this.__storeDesc.getPack(), "search");
+console.log("_getSelectableFields.colModel:",colModel);
 					this._fieldmap[entity] = colModel;
 				} catch (e) {
 					ms123.form.Dialog.alert("FilterEditor._getSelectableFields:" + e);

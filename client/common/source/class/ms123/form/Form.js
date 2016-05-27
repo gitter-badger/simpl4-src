@@ -823,11 +823,7 @@ qx.Class.define("ms123.form.Form", {
 								}
 							}
 						} else {
-							if( isString && fieldData.defaultValue.indexOf("now") != -1){ //'now' only in Webclient known
-								formElement.setValue(new Date());
-							}else{
-								formElement.setValue(new Date(fieldData.defaultValue));
-							}
+							formElement.setValue(fieldData.defaultValue);
 						}
 					}
 					break;

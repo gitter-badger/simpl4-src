@@ -49,7 +49,9 @@ qx.Class.define("ms123.settings.views.DupCheckPropertyEdit", {
 			var id = this._model.getId();
 			var namespace = this.facade.storeDesc.getNamespace();
 			var p = id.split(".");
-			var entity = p[1];
+			var entity = ms123.settings.Config.getEntityName(p[1]);
+			var pack = ms123.settings.Config.getPackName(p[1]);
+			this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 			console.log("entity:" + entity);
 
 			try {
@@ -58,10 +60,10 @@ qx.Class.define("ms123.settings.views.DupCheckPropertyEdit", {
 				};
 				var filter = 'datatype=="string"||datatype=="text"';
 				var cm = new ms123.config.ConfigManager();
-				this._selectableFields = cm.getFields(this.facade.storeDesc,entity, false, false,filter,mapping);
+				this._selectableFields = cm.getFields(this.storeDesc,entity, false, false,filter,mapping);
 				for (var i = 0; i < this._selectableFields.length; i++) {
 					var field = this._selectableFields[i];
-					field.label = this.tr("data." + entity + "." + field.value);
+					field.label = this.tr(pack+"." + entity + "." + field.value);
 				}
 
 			} catch (e) {

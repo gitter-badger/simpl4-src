@@ -317,6 +317,7 @@ qx.Class.define("ms123.config.ConfigManager", {
 			if (!storeDesc) console.trace();
 			var namespace = storeDesc.getNamespace();
 			if (!namespace) console.trace();
+			entity= ms123.settings.Config.getFqEntityName( entity, storeDesc);
 			var props = ms123.config.ConfigManager.__fieldcache["mvcf-" + entity + "-" + storeDesc.toString() + "-" + view ];
 			if (!props) {
 				try {
@@ -339,6 +340,7 @@ qx.Class.define("ms123.config.ConfigManager", {
 		},
 		getFieldsetsForEntity: function (sdesc, entity) {
 			var fieldsets = ms123.config.ConfigManager.__fieldcache["fsetf-" + sdesc.toString()+"-"+entity];
+			entity= ms123.settings.Config.getFqEntityName( entity, sdesc);
 			if (fieldsets === undefined) {
 				fieldsets = this.__getFieldsetsForEntity(sdesc,entity);
 				if( !fieldsets){
@@ -354,6 +356,7 @@ qx.Class.define("ms123.config.ConfigManager", {
 			return fieldsets;
 		},
 		getPropertiesForEntity: function (sdesc, entity) {
+			entity= ms123.settings.Config.getFqEntityName( entity, sdesc);
 			var properties = ms123.config.ConfigManager.__fieldcache["eprops-" + sdesc.toString()+"-"+entity];
 			if (properties === undefined) {
 				properties = this.__getPropertiesForEntity(sdesc,entity);
@@ -374,6 +377,7 @@ qx.Class.define("ms123.config.ConfigManager", {
 			if (!storeDesc) console.trace();
 			var namespace = storeDesc.getNamespace();
 			if (!namespace) console.trace();
+			entity= ms123.settings.Config.getFqEntityName( entity, storeDesc);
 			var fields = ms123.config.ConfigManager.__fieldcache["vf-" + entity + "-" + storeDesc.toString() + "-" + view+"-"+buildstr];
 			if (fields===undefined) {
 				try {
@@ -390,7 +394,7 @@ qx.Class.define("ms123.config.ConfigManager", {
 					ms123.form.Dialog.alert("ConfigManager.getEntityViewFields:" + e);
 				}
 				if( build!==false ){
-					fields = this.buildColModel(fields, entity, storeDesc, this.getCategory(entity), view);
+					fields = this.buildColModel(fields, entity, storeDesc, storeDesc.getPack(), view);
 				}
 				ms123.config.ConfigManager.__fieldcache["vf-" + entity + "-" + storeDesc.toString() + "-" + view+"-"+buildstr] = fields;
 			} 
@@ -427,6 +431,12 @@ qx.Class.define("ms123.config.ConfigManager", {
 				}
 			}
 			if(!ok){
+				for(var i=0; i< entityList.length; i++){
+					var entity = entityList[i];
+					entity= ms123.settings.Config.getFqEntityName( entity, sdesc);
+					entityList[i] = entity;
+				}
+console.log("entityList:",entityList);
 				var settingList = ms123.util.Remote.rpcSync("setting:getAllSettingsForEntityList", {
 					namespace: sdesc.getNamespace(),
 					settingsid: "global",
@@ -570,7 +580,7 @@ qx.Class.define("ms123.config.ConfigManager", {
 				if( gridfield.name.match(/^_/)){
 					col.label = gridfield.label || this.tr(category + "." + gridfield.name);
 				}else{
-					col.label = gridfield.label || this.tr(category + "." + entity + "." + gridfield.name);
+					col.label = gridfield.label || this.tr(category + "." + ms123.settings.Config.getEntityName(entity) + "." + gridfield.name);
 				}
 
 				for (var prop in gridfield) {

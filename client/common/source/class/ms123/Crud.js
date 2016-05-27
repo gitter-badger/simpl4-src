@@ -222,10 +222,11 @@ qx.Class.define("ms123.Crud", {
 
 				widget.configMaster = self._configMaster;
 				if (widget.type == "table") {
+					var pack = mwidget.storeDesc.getPack();
 					widget.model = self.__configManager.getEntityModel(widget.config, mwidget.storeDesc, "main-grid", "properties");
 					widget.modelForm = self.__configManager.getEntityModel(widget.config, mwidget.storeDesc, "main-form", "properties");
 					widget.user = self._user;
-					widget.title=self.tr("data."+widget.config);
+					widget.title=self.tr(pack+"."+widget.config);
 					widget.appid = self._appid;
 					if (widget.disable) {
 						widget.disable = widget.disable.concat(["import", "export"]);
@@ -326,6 +327,7 @@ qx.Class.define("ms123.Crud", {
 		__createSearchFilter: function (mwidget, filterModel) {
 			var self = this;
 			var sdesc = mwidget.storeDesc;
+			var pack = mwidget.storeDesc.getPack();
 			var f1 = this._getSearchFilterFieldSets(this._configMaster, sdesc);
 			var fsids = [];
 			f1.each(function (e) {
@@ -338,7 +340,7 @@ qx.Class.define("ms123.Crud", {
 			if (moduleList && moduleList.childs != null) {
 				for (var j = 0; j < moduleList.childs.length; j++) {
 					var child = moduleList.childs[j];
-					child.title = this.tr("data." + moduleList.name + "." + child.name);
+					child.title = this.tr(pack+"." + moduleList.name + "." + child.name);
 					var fs = this._getSearchFilterFieldSets(child.modulename, sdesc);
 					var ff = this._getSearchFilterFields(child.modulename, sdesc);
 					child.fields = fs.concat(ff);
@@ -912,10 +914,11 @@ qx.Class.define("ms123.Crud", {
 		},
 		_createMultiAddWindow: function (mwidget, widget) {
 			var win = this._createWindow(widget.config, 400, 650, false);
+			var pack = mwidget.storeDesc.getPack();
 			this._mainContainer.getApplicationRoot().add(win);
 			var self = this;
 			var buttons = [{
-				'label': this.tr("data." + widget.config + ".multiadd"),
+				'label': this.tr(pack+"." + widget.config + ".multiadd"),
 				'icon': "icon/22/actions/dialog-ok.png",
 				'callback': function (formData) {
 					var state= "ok";
@@ -956,7 +959,7 @@ qx.Class.define("ms123.Crud", {
 							ms123.form.Dialog.alert(message);
 							widget.multiAddForm.setErrors(cv.constraintViolations);
 						} else {
-							ms123.form.Dialog.alert(self.tr("data." + widget.config + ".created"));
+							ms123.form.Dialog.alert(self.tr(pack+"." + widget.config + ".created"));
 							this.fillForm({});
 						}
 
@@ -1061,6 +1064,7 @@ qx.Class.define("ms123.Crud", {
 		_contextMenuHandlerDetails: function (col, row, table, dataModel, contextMenu) {
 			var entityName = table.getUserData("entityName");
 			var storeDesc = table.getUserData("storeDesc");
+			var pack = storeDesc.getPack();
 			var dunitmap = table.getUserData("dunitmap");
 			var menuEntry = new qx.ui.menu.Button(this.tr("composite.open_record_in_window"), "icon/16/actions/window-new.png");
 			menuEntry.addListener("execute", function (e) {
@@ -1078,7 +1082,7 @@ qx.Class.define("ms123.Crud", {
 						storeDesc: storeDesc,
 						unit_id: ms123.util.IdGen.nextId(),
 						config: ms123.Crud,
-						window_title: this.tr("data." + entityName),
+						window_title: this.tr(pack+"." + entityName),
 						widgets: widgetList
 					}
 					var dt = new ms123.DesktopWindow(context);

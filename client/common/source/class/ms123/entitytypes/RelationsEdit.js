@@ -31,6 +31,8 @@ qx.Class.define("ms123.entitytypes.RelationsEdit", {
 	construct: function (model, param, facade) {
 		this._facade = facade;
 		this._model = model;
+		var pack = model.getPack();
+		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 		this._createEntitytypeList();
 		this._createRelationList();
 		this.base(arguments, facade);
@@ -90,7 +92,7 @@ qx.Class.define("ms123.entitytypes.RelationsEdit", {
 			buttonUpdateDb.addListener("execute", function () {
 				try{
 					ms123.util.Remote.rpcSync("domainobjects:createClasses", {
-						storeId: this._getStoreId()
+						storeId: this.storeDesc.getStoreId()
 					});
 					ms123.form.Dialog.alert(this.tr("entitytypes.update_db_successfull"));
 				}catch(e){
@@ -275,10 +277,6 @@ qx.Class.define("ms123.entitytypes.RelationsEdit", {
 			}];
 
 		},
-		_getStoreId:function(){
-			var storeId = this._facade.storeDesc.getStoreId();
-			return storeId;
-		},
 		_saveRelations: function (data) {
 			var completed = (function (data) {
 				ms123.form.Dialog.alert(this.tr("entitytypes.relations_saved"));
@@ -289,9 +287,8 @@ qx.Class.define("ms123.entitytypes.RelationsEdit", {
 			}).bind(this);
 
 			try {
-				var storeId = this._facade.storeDesc.getStoreId();
 				var ret = ms123.util.Remote.rpcSync("entity:saveRelations", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					relations: data
 				});
 				completed.call(this, ret);
@@ -309,9 +306,8 @@ qx.Class.define("ms123.entitytypes.RelationsEdit", {
 			}).bind(this);
 
 			try {
-				var storeId = this._facade.storeDesc.getStoreId();
 				var ret = ms123.util.Remote.rpcSync("entity:getRelations", {
-					storeId: this._getStoreId()
+					storeId: this.storeDesc.getStoreId()
 				});
 				completed.call(this, ret);
 				return ret;
@@ -329,14 +325,14 @@ qx.Class.define("ms123.entitytypes.RelationsEdit", {
 
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:getEntitytypes", {
-					storeId: this._getStoreId()
+					storeId: this.storeDesc.getStoreId()
 				});
 				completed.call(this, ret);
 				var retList = [];
 				for (var i = 0; i < ret.length; i++) {
 					var o = {};
-					o.value = this._facade.storeDesc.getPack() + "." + ret[i].name;
-					o.label = this.tr(this._facade.storeDesc.getPack() + "." + ret[i].name);
+					o.value = this.storeDesc.getPack() + "." + ret[i].name;
+					o.label = this.tr(this.storeDesc.getPack() + "." + ret[i].name);
 					retList.push(o);
 				}
 

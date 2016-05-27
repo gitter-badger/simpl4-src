@@ -96,7 +96,7 @@ qx.Class.define("ms123.Application", {
 						self.__desktops[nsList[i]].init();
 					}catch(e){
 						console.log("ns:"+nsList[i]);
-						console.log("e:"+e);
+						console.log("e:",e.stack);
 					}
 				}
 			});
@@ -182,14 +182,37 @@ qx.Class.define("ms123.Application", {
 			ms123.StoreDesc.setCurrentNamespace(ns);
 			var sdmap = this._getStoreDesc(ns);
 
-			//var value = qx.lang.Json.stringify(sdmap, null, 4); console.log("sdmap:" + value);
+			var value = qx.lang.Json.stringify(sdmap, null, 4); console.log("sdmap:" + value);
+			var keys = Object.keys(sdmap);
+			var packs = [];
+			for (var i = 0; i < keys.length; i++) {
+				var key = keys[i];
+				var ind = key.lastIndexOf('_');
+				var pack = key.substring(ind+1);
+				var sd = sdmap[key];
+				if( pack != "config" && pack != "meta" ){
+					packs.push(pack);
+					var sdescData = new ms123.StoreDesc({
+						namespace: sd["namespace"],
+						pack: sd["pack"],
+						repository: sd["repository"],
+						storeId: sd["storeId"]
+					});
+					if (ns == "global") {
+						ms123.StoreDesc.setGlobalDataStoreDesc(sdescData);
+					} else {
+						ms123.StoreDesc.setNamespaceDataStoreDesc(sdescData);
+					}
+				}
+			}
+			ms123.StoreDesc.setNamespacePacks( packs );
 
-			var sdescData = new ms123.StoreDesc({
+/*			var sdescData = new ms123.StoreDesc({
 				namespace: sdmap[ns + "_data"]["namespace"],
 				pack: sdmap[ns + "_data"]["pack"],
 				repository: sdmap[ns + "_data"]["repository"],
 				storeId: sdmap[ns + "_data"]["storeId"]
-			});
+			});*/
 			var sdescMeta = new ms123.StoreDesc({
 				namespace: sdmap[ns + "_meta"]["namespace"],
 				pack: sdmap[ns + "_meta"]["pack"],
@@ -210,10 +233,8 @@ qx.Class.define("ms123.Application", {
 
 
 			if (ns == "global") {
-				ms123.StoreDesc.setGlobalDataStoreDesc(sdescData);
 				ms123.StoreDesc.setGlobalMetaStoreDesc(sdescMeta);
 			} else {
-				ms123.StoreDesc.setNamespaceDataStoreDesc(sdescData);
 				ms123.StoreDesc.setNamespaceMetaStoreDesc(sdescMeta);
 				ms123.StoreDesc.setNamespaceConfigStoreDesc(sdescConfig);
 			}

@@ -75,7 +75,7 @@ qx.Mixin.define("ms123.searchfilter.MSearchFilter",
 			if (moduleList && moduleList.childs != null) {
 				for (var j = 0; j < moduleList.childs.length; j++) {
 					var child = moduleList.childs[j];
-					child.title = this.tr("data." + moduleList.name + "." + child.name);
+					child.title = this.tr(sdesc.getPack()+"." + moduleList.name + "." + child.name);
 					var fs = this._getSearchFilterFieldSets(child.modulename, sdesc);
 					var ff = this._getSearchFilterFields(child.modulename, sdesc);
 					child.fields = fs.concat(ff);
@@ -192,7 +192,7 @@ qx.Mixin.define("ms123.searchfilter.MSearchFilter",
 				var col = cols[i];
 				if (col.hidden !== true && col.edittype != "relatedto") {
 					var field = {};
-					field.text = this.tr(category + "." + modulename + "." + col.name);
+					field.text = this.tr(storeDesc.getPack() + "." + modulename + "." + col.name);
 					field.itemval = col.name;
 
 					var sopt = this._setDefaultSearchOptions(col);

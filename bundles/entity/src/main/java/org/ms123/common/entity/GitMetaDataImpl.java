@@ -134,10 +134,7 @@ class GitMetaDataImpl implements MetaData {
 		try{
 			ret = m_gitService.getContent(namespace, format(RELATIONS_PATH,pack));
 		}catch(Exception e){
-			String ns = StoreDesc.getGlobalMeta().getNamespace();
-			String pa = StoreDesc.getGlobalMeta().getPack();
-			debug("getRelations.ns:"+ns);
-			ret = m_gitService.getContent(ns, format(RELATIONS_PATH,pa));
+			return new ArrayList<Map>();
 		}
 		return (List)m_ds.deserialize(ret );
 	}

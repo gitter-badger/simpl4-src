@@ -213,37 +213,54 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 			var namespace = this.facade.storeDesc.getNamespace();
 
 
-			var entityarray = [];
-			var entitiesNode = this.__createEntitiesNode("entities", entityarray);
+			var packarray = [];
+			var entitiesNode = this.__createEntitiesNode("entities", packarray);
 
 			var root = {}
 			root.id = "ROOT";
 			root.title = "ROOT";
 			root.children = [entitiesNode];
 
-			var cm = new ms123.config.ConfigManager();
-			var entities = cm.getEntities(this.facade.storeDesc);
 
-			this._sortByName(entities);
-			for (var i = 0; i < entities.length; i++) {
-				var entityName = entities[i].name;
-				var idPrefix = "entities." + entityName;
-				var fieldsNode = this.__createFieldsNode(idPrefix, [fielddummyNode]);
-				//var fieldsetsNode = this.__createFieldSetsNode( idPrefix, [fieldsetdummyNode]);
-				var fieldsetsNode = this.__createFieldSetsNode(idPrefix, []);
-				var commonPropertyNode = this.__createCommonPropertiesNode(idPrefix);
-				var viewsNode = this.__createViewsNode(idPrefix);
-
-
+			var packs = ms123.StoreDesc.getNamespacePacks();
+			for( var p=0; p < packs.length; p++){
+				var pack = packs[p];
+				var entityarray = [];
 				var m = {}
-				m.id = "entities." + entityName;
-				m.title = entityName;
-				m.type = ms123.util.BaseResourceSelector.ENTITY_TYPE;
+				m.id = "entities." + pack;
+				m.title = pack;
+				m.type = ms123.util.BaseResourceSelector.PACK_TYPE;
 				m.namespace = namespace;
-				m.children = [ /*fieldsNode,*/ viewsNode, commonPropertyNode,fieldsetsNode];
-				entityarray.push(m);
-			}
+				m.children = entityarray;
+				packarray.push(m);
 
+				var packStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
+				var cm = new ms123.config.ConfigManager();
+				var entities = cm.getEntities(packStoreDesc);
+
+				this._sortByName(entities);
+				for (var i = 0; i < entities.length; i++) {
+					var entityName = entities[i].name;
+					var idPrefix = "entities." + pack +ms123.settings.Config.PACK_DELIM + entityName;
+					if( pack == "data"){
+						idPrefix = "entities." + entityName;
+					}
+					var fieldsNode = this.__createFieldsNode(idPrefix, [fielddummyNode]);
+					//var fieldsetsNode = this.__createFieldSetsNode( idPrefix, [fieldsetdummyNode]);
+					var fieldsetsNode = this.__createFieldSetsNode(idPrefix, []);
+					var commonPropertyNode = this.__createCommonPropertiesNode(idPrefix);
+					var viewsNode = this.__createViewsNode(idPrefix);
+
+
+					var m = {}
+					m.id = idPrefix;
+					m.title = entityName;
+					m.type = ms123.util.BaseResourceSelector.ENTITY_TYPE;
+					m.namespace = namespace;
+					m.children = [ /*fieldsNode,*/ viewsNode, commonPropertyNode,fieldsetsNode];
+					entityarray.push(m);
+				}
+			}
 			return root;
 		},
 		_onOpenNode: function (e) {

@@ -52,6 +52,7 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"name": {
 					'type': "SelectBox",
 					'label': this.tr( "datasource.database" ),
+					'exclude': 'url==null || url.length==0',
 					'value': "string",
 					'options': this._getDbList()
 				},
@@ -59,23 +60,34 @@ qx.Class.define( "ms123.datasource.Datasource", {
 					'type': "TextField",
 					'label': this.tr( "datasource.url" ),
 					'validation': {
-						required: true
+						required: false
 					},
 					'value': null
 				},
 				"username": {
 					'type': "TextField",
 					'label': this.tr( "datasource.username" ),
+					'exclude': 'url==null || url.length==0',
 					'validation': {
-						required: true
+						required: false
 					},
 					'value': null
 				},
 				"password": {
 					'type': "TextField",
 					'label': this.tr( "datasource.password" ),
+					'exclude': 'url==null || url.length==0',
 					'validation': {
-						required: true
+						required: false
+					},
+					'value': null
+				},
+				"databasename": {
+					'type': "TextField",
+					'label': this.tr( "datasource.databasename" ),
+					'exclude': 'url==null || url.length==0',
+					'validation': {
+						required: false
 					},
 					'value': null
 				},
@@ -87,9 +99,10 @@ qx.Class.define( "ms123.datasource.Datasource", {
 					},
 					'value': null
 				},
-				"databasename": {
+				"packagename": {
 					'type': "TextField",
-					'label': this.tr( "datasource.databasename" ),
+					'label': this.tr( "datasource.packagename" ),
+					'defaultValue': "data",
 					'validation': {
 						required: true
 					},
@@ -98,7 +111,8 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"create_jooq_metadata": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.create_jooq_metadata" ),
-					'value': true
+					'defaultValue': true,
+					'value': null
 				},
 				"jooq_inputschema": {
 					'type': "TextField",
@@ -115,15 +129,11 @@ qx.Class.define( "ms123.datasource.Datasource", {
 					'label': this.tr( "datasource.jooq_excludes" ),
 					'value': null
 				},
-				"jooq_packagename": {
-					'type': "TextField",
-					'label': this.tr( "datasource.jooq_packagename" ),
-					'value': null
-				},
 				"create_datanucleus_metadata": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.create_datanucleus_metadata" ),
-					'value': true
+					'defaultValue': true,
+					'value': null
 				},
 				"datanucleus_inputschema": {
 					'type': "TextField",
@@ -140,11 +150,6 @@ qx.Class.define( "ms123.datasource.Datasource", {
 					'label': this.tr( "datasource.datanucleus_excludes" ),
 					'value': null
 				},
-				"datasource_is_main_db": {
-					'type': "Checkbox",
-					'label': this.tr( "datasource.is_main_db" ),
-					'value': true
-				},
 				"datasource_is_schema_readonly": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.is_schema_readonly" ),
@@ -153,22 +158,17 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"datasource_is_schema_validate": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.is_schema_validate" ),
-					'value': true
+					'defaultValue': true,
+					'value': null
 				}
 			}
-			this._form = new ms123.form.Form( {
-				"tabs": [ {
-					id: "tab1",
-					layout: "single",
-					lineheight: 20
-				} ],
-				"formData": formData,
-				"allowCancel": true,
-				"inWindow": false,
-				"buttons": [],
-				"callback": function( m, v ) {},
-				"context": null
-			} );
+			var context = {};
+			context.formData = formData;
+			context.buttons = [];
+			context.formLayout = [{
+				id: "tab1", lineheight:-1
+			}];
+			this._form = new ms123.widgets.Form(context);
 			return this._form;
 		}
 	}

@@ -41,8 +41,11 @@ qx.Class.define("ms123.settings.views.FieldsEdit", {
 		var id = this._model.getId();
 		var namespace = facade.storeDesc.getNamespace();
 		var p = id.split(".");
-		var entity = p[1];
+		var entity = ms123.settings.Config.getEntityName(p[1]);
+		var pack = ms123.settings.Config.getPackName(p[1]);
+		this.pack = pack;
 		var view = p[3];
+		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 		console.log("entity:" + entity);
 		console.log("view:" + view);
 
@@ -55,7 +58,7 @@ qx.Class.define("ms123.settings.views.FieldsEdit", {
 		this.facade.selected = this._removeUnusedFields(selected, this.facade.selectables);
 
 		var viewSelectedItems = new ms123.settings.views.SelectedItems(facade);
-		var viewSelectableItems = new ms123.settings.views.SelectableItems(facade);
+		var viewSelectableItems = new ms123.settings.views.SelectableItems(facade,pack);
 		viewSelectableItems.addListener("change", function (event) {
 			console.log("change:" + qx.util.Serializer.toJson(event.getData()));
 			var data = event.getData();
@@ -93,7 +96,7 @@ qx.Class.define("ms123.settings.views.FieldsEdit", {
 			}
 			console.error("_getSelectableFields.Path:" + this._model.getId());
 			var cm = new ms123.config.ConfigManager();
-			return cm.getFields(this.facade.storeDesc,entity, true, false,filter);
+			return cm.getFields(this.storeDesc,entity, true, false,filter);
 		},
 		_getSelectedFields: function (namespace, entity, view) {
 			var filter = null;
@@ -105,7 +108,7 @@ qx.Class.define("ms123.settings.views.FieldsEdit", {
 				var resourceid = this._model.getId();
 				f = ms123.util.Remote.rpcSync("setting:getResourceSetting", {
 					namespace: namespace,
-					storeId: this.facade.storeDesc.getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					resourceid: resourceid,
 					settingsid: this.facade.settingsid,
 					entity: entity,
@@ -141,7 +144,7 @@ qx.Class.define("ms123.settings.views.FieldsEdit", {
 		_setDisplayName: function (entity, selected) {
 			if (selected == null) return null;
 			for (var i = 0; i < selected.length; i++) {
-				selected[i].displayname = this.tr("data." + entity + "." + selected[i].name).toString();
+				selected[i].displayname = this.tr(this.pack+"." + entity + "." + selected[i].name).toString();
 			}
 			return selected;
 		},

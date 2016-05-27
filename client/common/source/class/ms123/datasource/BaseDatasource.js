@@ -86,7 +86,7 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 					'password': data.password,
 					'port': port,
 					'dataSourceName': data.datasourcename,
-					'is_main_db': data.datasource_is_main_db,
+					'packageName': data.packagename,
 					'is_schema_readonly': data.datasource_is_schema_readonly,
 					'is_schema_validate': data.datasource_is_schema_validate
 				};
@@ -94,8 +94,7 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 					'create_jooq_metadata': data.create_jooq_metadata,
 					'jooq_inputschema': data.jooq_inputschema,
 					'jooq_includes': data.jooq_includes,
-					'jooq_excludes': data.jooq_excludes,
-					'jooq_packagename': data.jooq_packagename
+					'jooq_excludes': data.jooq_excludes
 				};
 				var datanucleus = {
 					'create_datanucleus_metadata': data.create_datanucleus_metadata,
@@ -116,7 +115,7 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 		createMetadata: function (config) {
 			try {
 				ms123.util.Remote.rpcSync("dbmeta:createMetadata", {
-					storeId: this._facade.storeDesc.getStoreId(),
+					namespace: this._facade.storeDesc.getNamespace(),
 					config: config
 				});
 				ms123.form.Dialog.alert(this.tr("datasource.create_metadata_ok"));

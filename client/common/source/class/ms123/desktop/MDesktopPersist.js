@@ -56,8 +56,10 @@ qx.Mixin.define("ms123.desktop.MDesktopPersist", {
 			for (var i = 0; i < windowList.length; i++) {
 				var c = windowList[i].getContext();
 				var entityName = null;
+				var pack = null;
 				if (c.widgets && c.widgets.length > 0) {
 					entityName = c.widgets[0].config;
+					pack = c.widgets[0].storeDesc.getPack();
 				}
 				var state = null;
 				if (windowList[i].getDesktopUnit() && qx.Class.hasInterface(windowList[i].getDesktopUnit().constructor, ms123.IState)) {
@@ -67,6 +69,7 @@ qx.Mixin.define("ms123.desktop.MDesktopPersist", {
 				var so = {
 					clazz: c.config,
 					entityName: entityName,
+					pack: pack,
 					state: state
 				}
 				stateList.push(qx.util.Serializer.toJson(so));
@@ -75,7 +78,7 @@ qx.Mixin.define("ms123.desktop.MDesktopPersist", {
 		},
 
 		_restoreDesktopWindow: function (namespace, state) {
-			var storeDesc = ms123.StoreDesc.getNamespaceDataStoreDescForNS(namespace);
+			var storeDesc = ms123.StoreDesc.getNamespaceDataStoreDescForNS(namespace, state.pack);
 			var m = new ms123.config.ConfigManager().getEntity(state.entityName, storeDesc);
 			var widgetList = ms123.MainMenu.createWidgetList(m, storeDesc, this);
 			widgetList[0].loadSync = true;
@@ -83,7 +86,7 @@ qx.Mixin.define("ms123.desktop.MDesktopPersist", {
 				storeDesc: storeDesc,
 				unit_id: ms123.util.IdGen.nextId(),
 				config: ms123.Crud,
-				window_title: this.tr("data." + state.entityName),
+				window_title: this.tr(state.pack+"." + state.entityName),
 				widgets: widgetList
 			}
 			var dw = new ms123.DesktopWindow(context);

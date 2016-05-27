@@ -29,6 +29,9 @@ qx.Class.define("ms123.entitytypes.EntitytypeEdit", {
 
 	construct: function (model,param,facade) {
 		this.base(arguments,model,param,facade);
+		var pack = model.getPack();
+		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
+		this.pack = pack;
 	},
 
 	/**
@@ -54,7 +57,7 @@ qx.Class.define("ms123.entitytypes.EntitytypeEdit", {
 
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:saveEntitytype", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					data:data,
 					name: name
 				});
@@ -75,7 +78,7 @@ qx.Class.define("ms123.entitytypes.EntitytypeEdit", {
 
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:getEntitytype", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					name: name
 				});
 				completed.call(this,ret);
@@ -92,7 +95,7 @@ qx.Class.define("ms123.entitytypes.EntitytypeEdit", {
 
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:deleteEntitytype", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					name: name
 				});
 			} catch (e) {
@@ -105,9 +108,8 @@ qx.Class.define("ms123.entitytypes.EntitytypeEdit", {
 			}).bind(this);
 
 			try {
-				var storeId = this._facade.storeDesc.getStoreId();
 				var ret = ms123.util.Remote.rpcSync("entity:getRelations", {
-					storeId: this._getStoreId()
+					storeId: this.storeDesc.getStoreId()
 				});
 				return ret;
 			} catch (e) {
@@ -116,7 +118,7 @@ qx.Class.define("ms123.entitytypes.EntitytypeEdit", {
 		},
 		_deleteIsOk:function(data){
 			var relations = this._getRelations();
-			var etname = this._facade.storeDesc.getPack()+"."+data.name;
+			var etname = this.storeDesc.getPack()+"."+data.name;
 			for( var i=0; i< relations.length;i++){
 				var rel = relations[i];
 				if( rel.leftmodule == etname || rel.rightmodule == etname){
@@ -196,9 +198,9 @@ qx.Class.define("ms123.entitytypes.EntitytypeEdit", {
 					var dm = flags.get("delete_messages");
 					var ds = flags.get("delete_settings");
 
-					var 	namespace= this._facade.storeDesc.getNamespace();
+					var 	namespace= this.storeDesc.getNamespace();
 					var lang= ms123.config.ConfigManager.getLanguage();
-					var ds = new ms123.entitytypes.DefaultSettings(namespace,lang);
+					var ds = new ms123.entitytypes.DefaultSettings(namespace,this.pack, lang);
 					
 					if (dm) ds.deleteMessages({name:data.name,fields:this._fields});
 					if (ds) ds.deleteResources(data);	

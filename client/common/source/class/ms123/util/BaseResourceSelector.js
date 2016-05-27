@@ -64,6 +64,7 @@ qx.Class.define("ms123.util.BaseResourceSelector", {
 		NAMESPACE_TYPE: "namespace_type",
 		PROCESS_TYPE: "process_type",
 		PROCESSES_TYPE: "processes_type",
+		PACK_TYPE: "pack_type",
 		FIELD_TYPE: "field_type",
 		FIELDS_TYPE: "fields_type",
 		FIELDSET_TYPE: "fieldset_type",
@@ -106,6 +107,7 @@ qx.Class.define("ms123.util.BaseResourceSelector", {
 			var PROCESS_ICON = "resource/ms123/sequence.png";
 			var PROCESSES_ICON = "resource/ms123/folder_link.png";
 			var FIELD_ICON = "resource/ms123/column.png";
+			var PACK_ICON = "resource/ms123/folder_schema.png";
 			var FIELDS_ICON = "resource/ms123/attribute.png";
 			var FIELDSET_ICON = "resource/ms123/sequence.png";
 			var FIELDSETS_ICON = "resource/ms123/folder_link.png";
@@ -128,6 +130,9 @@ qx.Class.define("ms123.util.BaseResourceSelector", {
 			};
 			this._iconMapping[ms123.util.BaseResourceSelector.FIELD_TYPE] = {
 				icon: FIELD_ICON
+			};
+			this._iconMapping[ms123.util.BaseResourceSelector.PACK_TYPE] = {
+				icon: PACK_ICON
 			};
 			this._iconMapping[ms123.util.BaseResourceSelector.FIELDS_TYPE] = {
 				icon: FIELDS_ICON

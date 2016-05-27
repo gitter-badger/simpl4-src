@@ -25,8 +25,9 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
-	construct: function (namespase,language) {
+	construct: function (namespase,pack, language) {
 		this._namespace = namespase;
+		this._pack = pack;
 		this._language = language;
 	},
 
@@ -54,7 +55,7 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 				for (var j = 0; j < keys.length; j++) {
 					var key = keys[j];
 					var f = fields[key];
-					var msgid = "data." + et.name + "." + f.name;
+					var msgid = this._pack+"." + et.name + "." + f.name;
 
 					var sfield = {
 						enabled: true,
@@ -65,9 +66,10 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 					fieldSettings.fields.push(sfield);
 				}
 
-				if (sf) this._setResourceSetting("entities." + et.name + ".views.main-form.fields", fieldSettings);
-				if (st) this._setResourceSetting("entities." + et.name + ".views.main-grid.fields", fieldSettings);
-				if (ss) this._setResourceSetting("entities." + et.name + ".views.search.fields", fieldSettings);
+				var enName =  ms123.settings.Config.getFqEntityName(et.name,this._pack);
+				if (sf) this._setResourceSetting("entities." + enName + ".views.main-form.fields", fieldSettings);
+				if (st) this._setResourceSetting("entities." + enName + ".views.main-grid.fields", fieldSettings);
+				if (ss) this._setResourceSetting("entities." + enName + ".views.search.fields", fieldSettings);
 			}
 		},
 		deleteResources: function (_etList) {
@@ -108,16 +110,16 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 			for( var i=0; i< etList.length;i++){
 				var et = etList[i];
 				var fields = et.fields;
-				var msgid = "data." + et.name;
+				var msgid = this._pack+"." + et.name;
 				messages.push(msgid);
 				var keys = Object.keys(fields);
 				for (var j = 0; j < keys.length; j++) {
 					var key = keys[j];
 					var f = fields[key];
-					msgid = "data." + et.name + "." + f.name;
+					msgid = this._pack+"." + et.name + "." + f.name;
 					messages.push(msgid);
 				}
-				this._deleteMessage(messages,  "data."+et.name+"._team_list");
+				this._deleteMessage(messages,  this._pack+"."+et.name+"._team_list");
 			}
 			var failed = (function (details) {
 				ms123.form.Dialog.alert("DeleteMessages:" + details.message);
@@ -144,12 +146,12 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 				var et = etList[i];
 				var fields = et.fields;
 				var msg = {
-					msgid: "data."+et.name,
+					msgid: this._pack+"."+et.name,
 					msgstr: this._capitaliseFirstLetter(et.name)
 				}
 				messages.push(msg);
 				msg = {
-					msgid: "data." + et.name + ".id",
+					msgid: this._pack+"." + et.name + ".id",
 					msgstr: "Id"
 				}
 				messages.push(msg);
@@ -158,7 +160,7 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 				for (var j = 0; j < keys.length; j++) {
 					var key = keys[j];
 					var f = fields[key];
-					var msgid = "data." + et.name + "." + f.name;
+					var msgid = this._pack+"." + et.name + "." + f.name;
 
 					var msg = {
 						msgid: msgid,
@@ -166,7 +168,7 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 					}
 					messages.push(msg);
 				}
-				this._createMessage(messages,  "data."+et.name+"._team_list", "Teams");
+				this._createMessage(messages,  this._pack+"."+et.name+"._team_list", "Teams");
 			}
 			var failed = (function (details) {
 				ms123.form.Dialog.alert("entitytypes.createMessages:" + details.message);

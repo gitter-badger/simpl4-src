@@ -154,7 +154,10 @@ qx.Class.define("ms123.MainMenu", {
 			}
 		},
 		createWidgetList: function (_module, sdesc, _this) {
+console.log("sdesc:",sdesc);
+if( _module == null) console.trace();
 			var cm = new ms123.config.ConfigManager();
+			var pack = sdesc.getPack();
 			var widgetList = new Array();
 			var mwidget = {};
 			mwidget.config = _module.name;
@@ -199,7 +202,7 @@ qx.Class.define("ms123.MainMenu", {
 					widget.fieldname = child.name;
 					widget.dependent = child.dependent;
 					widget.primaryKeys = child.primaryKeys;
-					widget.tab_title = _this.tr("data." + _module.name + "." + child.name);
+					widget.tab_title = _this.tr(pack+"." + _module.name + "." + child.name);
 					widgetList.push(widget);
 				}
 			}
@@ -223,12 +226,19 @@ qx.Class.define("ms123.MainMenu", {
 				var extraButtons = this._createGlobalExtraButtons(globalMetaStoreDesc, globalDataStoreDesc);
 				this._createGlobalMenu(menu, extraButtons);
 			} else {
-				var namespaceDataStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc();
 				var namespaceMetaStoreDesc = ms123.StoreDesc.getNamespaceMetaStoreDesc();
 
-				var modules = new ms123.config.ConfigManager().getEntities(namespaceDataStoreDesc);
-				var entityButtons = this._createEntityButtons(modules, namespaceDataStoreDesc, null);
+					var namespaceDataStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc("data");
 				var extraButtons = this._createExtraButtons(namespaceDataStoreDesc, namespaceMetaStoreDesc);
+
+				var entityButtons = {};
+				var packs = ms123.StoreDesc.getNamespacePacks();
+				for (var i = 0; i < packs.length; i++) {
+					var pack = packs[i];
+					var namespaceDataStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
+					var modules = new ms123.config.ConfigManager().getEntities(namespaceDataStoreDesc);
+					entityButtons[pack]  = this._createEntityButtons(modules, namespaceDataStoreDesc, null);
+				}
 				this._createMenu(menu, entityButtons, extraButtons);
 			}
 		},
@@ -338,6 +348,7 @@ qx.Class.define("ms123.MainMenu", {
 			});
 		},
 		_createEntityButtons: function (modules, sdesc, exclusions) {
+console.log("modules:",modules);
 			var cm = new ms123.config.ConfigManager();
 			var entityButtons = new Array();
 			var entityList = [];
@@ -345,6 +356,7 @@ qx.Class.define("ms123.MainMenu", {
 				entityList.push(modules[i].name);
 			}
 			cm.getAllSettingsForEntityList(sdesc, entityList);
+			var pack = sdesc.getPack();
 			for (var i = 0; i < modules.length; i++) {
 				var module = modules[i];
 
@@ -353,7 +365,7 @@ qx.Class.define("ms123.MainMenu", {
 
 				var modname = module.name;
 				if (exclusions && exclusions.contains(modname)) continue;
-				var moduleButton = new qx.ui.menu.Button(this.tr("data." + modname), this._me["crud"].icon);
+				var moduleButton = new qx.ui.menu.Button(this.tr(pack+"." + modname), this._me["crud"].icon);
 
 				if (!module.childs) module.childs = [];
 				var add_self_to_subpanel = (module.add_self_to_subpanel != null && module.add_self_to_subpanel == true);
@@ -377,7 +389,7 @@ qx.Class.define("ms123.MainMenu", {
 							storeDesc: _sdesc,
 							//							dataAccess: new ms123.widgets.DefaultDataAccess(),
 							config: ms123.Crud,
-							window_title: this.tr("data." + _module.name),
+							window_title: this.tr(_sdesc.getPack()+"." + _module.name),
 							widgets: widgetList
 						};
 						context.me = self._me["crud"];
@@ -413,7 +425,7 @@ qx.Class.define("ms123.MainMenu", {
 			}, this);
 			return logout;
 		},
-		_createMenu: function (menu, entityButtons, extraButtons) {
+		_createMenu: function (menu, entityButtonsMap, extraButtons) {
 			menu.add(extraButtons[this._me["team"].name]);
 			if (this._user.admin) {
 				menu.add(extraButtons[this._me["importing"].name]);
@@ -438,12 +450,34 @@ qx.Class.define("ms123.MainMenu", {
 			menu.add(extraButtons[this._me["report"].name]);
 			menu.addSeparator();
 
-			for (var i = 0; i < entityButtons.length; i++) {
-				var eb = entityButtons[i];
-				if (!eb.getUserData("not_in_menu")) {
-					menu.add(entityButtons[i]);
+			var packs = ms123.StoreDesc.getNamespacePacks();
+			if( packs.length == 1){
+				var entityButtons = entityButtonsMap[packs[0]];
+				for (var i = 0; i < entityButtons.length; i++) {
+					var eb = entityButtons[i];
+					if (!eb.getUserData("not_in_menu")) {
+						menu.add(entityButtons[i]);
+					}
+				}
+			}else{
+				for (var p = 0; p < packs.length; p++) {
+					var pack = packs[p];
+					var packMenu = new qx.ui.menu.Menu;
+
+					var entityButtons = entityButtonsMap[pack];
+					if( entityButtons.length==0) continue;
+					for (var b = 0; b < entityButtons.length; b++) {
+						var eb = entityButtons[b];
+						if (!eb.getUserData("not_in_menu")) {
+							packMenu.add(entityButtons[b]);
+						}
+					}
+
+				 	var packButton = new qx.ui.menu.Button(pack, null, null, packMenu);
+					menu.add(packButton);
 				}
 			}
+
 			menu.addSeparator();
 			menu.add(this._getLogout());
 			if (ms123.config.ConfigManager.isTest()) {

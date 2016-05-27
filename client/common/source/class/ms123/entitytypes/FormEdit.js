@@ -32,6 +32,7 @@ qx.Class.define("ms123.entitytypes.FormEdit", {
 	construct: function (model, param, facade) {
 		this.base(arguments);
 		this._model = model;
+console.log("model:",model);
 		this._facade = facade;
 		this._isNew = param.isNew;
 		this._mode = param.mode;

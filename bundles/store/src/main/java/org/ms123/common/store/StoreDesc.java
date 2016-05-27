@@ -24,6 +24,8 @@ import java.io.FilenameFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.ms123.common.libhelper.Inflector;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 
 @SuppressWarnings("unchecked")
 public class StoreDesc {
@@ -37,6 +39,7 @@ public class StoreDesc {
 	public static final String NAMESPACE_GLOBAL = "global";
 
 	public static final String PACK = "pack";
+	public static final String PACK_DELIM = ":";
 
 	public static final String STORE = "store";
 
@@ -328,6 +331,15 @@ public class StoreDesc {
 		}
 		return m_storeIds.get(namespace + "_data");
 	}
+	public static StoreDesc getNamespaceData(String namespace,String pack) {
+		if( isEmpty(pack) ){
+			return getNamespaceData(namespace);
+		}
+		if (m_storeIds == null || (m_storeIds.get(namespace + "_"+ pack) == null)) {
+			init();
+		}
+		return m_storeIds.get(namespace + "_"+pack);
+	}
 
 	public static StoreDesc getGlobalData() {
 		if (m_storeIds == null) {
@@ -372,6 +384,30 @@ public class StoreDesc {
 
 	public static Map<String, StoreDesc> m_storeIds = null;
 
+	public static String getPackName(String entity){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity.substring(0,colon);
+		}
+		return "data";
+	}
+	public static String getSimpleEntityName(String entity){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity.substring(colon+1);
+		}
+		return entity;
+	}
+	public static String getFqEntityName(String entity, StoreDesc sdesc){
+		return getFqEntityName( entity, sdesc.getPack());
+	}
+	public static String getFqEntityName(String entity, String pack){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity;
+		}
+		return pack + PACK_DELIM +entity;
+	}
 	@Override
 	public int hashCode() {
 		return 9999;

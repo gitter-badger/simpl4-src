@@ -28,6 +28,8 @@ qx.Class.define("ms123.entitytypes.EntitytypeFieldEdit", {
 	 */
 
 	construct: function (model,param,facade,data) {
+		var pack = model.getPack();
+		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 		if( data ){
 			this.__noLoad = true;
 		}
@@ -60,9 +62,8 @@ qx.Class.define("ms123.entitytypes.EntitytypeFieldEdit", {
 			}).bind(this);
 
 			try {
-				var storeId = this._facade.storeDesc.getStoreId();
 				var ret = ms123.util.Remote.rpcSync("entity:saveEntitytypeField", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					data:data,
 					entitytype:entitytype,
 					name: name
@@ -83,10 +84,9 @@ qx.Class.define("ms123.entitytypes.EntitytypeFieldEdit", {
 			}).bind(this);
 
 			try {
-				var storeId = this._facade.storeDesc.getStoreId();
 				var ret = ms123.util.Remote.rpcSync("entity:getEntitytypeField", {
-					storeId: this._getStoreId(),
-					entitytype:entitytype,
+					storeId: this.storeDesc.getStoreId(),
+					entitytype: entitytype,
 					name: name
 				});
 				completed.call(this,ret);
@@ -101,9 +101,8 @@ qx.Class.define("ms123.entitytypes.EntitytypeFieldEdit", {
 				ms123.form.Dialog.alert(this.tr("entitytypeFields.deleteEntitytypeField_failed")+":"+details.message);
 			}).bind(this);
 			try {
-				var storeId = this._facade.storeDesc.getStoreId();
 				var ret = ms123.util.Remote.rpcSync("entity:deleteEntitytypeField", {
-					storeId: this._getStoreId(),
+					storeId: this.storeDesc.getStoreId(),
 					entitytype:entitytype,
 					name: name
 				});
