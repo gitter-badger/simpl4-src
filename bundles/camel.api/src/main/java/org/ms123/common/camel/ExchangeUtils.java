@@ -27,6 +27,7 @@ import org.apache.camel.Exchange;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.apache.camel.util.ObjectHelper;
 import flexjson.*;
+import static com.jcabi.log.Logger.info;
 
 /**
  * 
@@ -132,7 +133,16 @@ public class ExchangeUtils {
 	public static <T> T getParameter(String expr, Exchange exchange, Class<T> type, String name) {
 		T value = null;
 		if (!isEmpty(expr)) {
+			try{
 			value = type.cast(evaluateExpr(expr, exchange, type));
+			}catch(Throwable e){
+				info( ExchangeUtils.class, "getParameter("+expr+","+type+"):"+ e.getMessage());
+				if( type.equals( String.class )){
+					info( ExchangeUtils.class, "\tExpr("+expr+") casted to:\""+ type.cast(expr)+"\"");
+					return type.cast(expr);
+				}
+				throw e;
+			}
 		}
 		if (ObjectHelper.isEmpty(value) && !isEmpty(name)) {
 			throw new RuntimeException("ExchangeUtils.getParameter(" + name + "):" + expr + " evaluates to empty");
