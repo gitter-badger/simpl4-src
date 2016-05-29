@@ -86,7 +86,7 @@ import org.codehaus.groovy.tools.FileSystemCompiler;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import java.io.File;
 import  org.ms123.common.camel.components.*;
-import  org.ms123.common.camel.expression.GroovyExpression;
+import  org.ms123.common.camel.api.GroovyExpression;
 import  org.ms123.common.camel.trace.*;
 import  org.ms123.common.camel.view.VisGenerator;
 import org.ms123.common.camel.jsonconverter.CamelRouteJsonConverter;
