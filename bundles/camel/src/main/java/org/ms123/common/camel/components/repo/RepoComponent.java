@@ -33,8 +33,7 @@ public class RepoComponent extends DefaultComponent {
 		RepoConfiguration configuration = new RepoConfiguration();
 		// set options from component
 		configuration.setPath((String) parameters.get("path"));
-		configuration.setTarget((String) parameters.get("target"));
-		configuration.setHeader((String) parameters.get("header"));
+		configuration.setDestination((String) parameters.get("destination"));
 		configuration.setRepo((String) parameters.get("repo"));
 		configuration.setNewPath((String) parameters.get("newpath"));
 		configuration.setOperation(RepoOperation.valueOf(remaining));

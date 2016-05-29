@@ -33,8 +33,7 @@ public class RepoConfiguration {
 	private String newpath;
 
 	private String repo;
-	private String target;
-	private String header;
+	private String destination;
 
 	private RepoOperation operation;
 
@@ -46,20 +45,12 @@ public class RepoConfiguration {
 		this.repo = repo;
 	}
 
-	public String getTarget() {
-		return target;
+	public String getDestination() {
+		return destination;
 	}
 
-	public void setTarget(String target) {
-		this.target = target;
-	}
-
-	public String getHeader() {
-		return header;
-	}
-
-	public void setHeader(String header) {
-		this.header = header;
+	public void setDestination(String d) {
+		this.destination = d;
 	}
 
 	public String getType() {

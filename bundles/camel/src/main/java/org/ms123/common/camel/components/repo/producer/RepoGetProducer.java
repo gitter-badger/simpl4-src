@@ -30,6 +30,7 @@ import org.ms123.common.git.GitService;
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import org.apache.camel.util.FileUtil;
 import static com.jcabi.log.Logger.info;
+import org.ms123.common.camel.api.ExchangeUtils;
 
 public class RepoGetProducer extends RepoProducer {
 	private CamelService camelService;
@@ -39,51 +40,22 @@ public class RepoGetProducer extends RepoProducer {
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 	}
 
-	private String evaluate( String def, Exchange e ){
-		if( def != null && def.indexOf("${") >= 0){
-			String res = this.camelService.evaluate( def, e );
-			info(this,"evaluate.result:" + res);
-			return res;
-		}
-		return null;
-	}
-
-	private String getString(Exchange e, String key, String def) {
-		String res = evaluate( def, e );
-		if( res != null) return res;
-		String value = e.getIn().getHeader(key, String.class);
-		if (value == null) {
-			value = e.getProperty(key, String.class);
-		}
-		info(this, "getString:" + key + "=" + value + "/def:" + def);
-		return value != null ? value : def;
-	}
-
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		String path = getString(exchange, "path", configuration.getPath());
-		String repo = getString(exchange, "repo", configuration.getRepo());
+		String path = ExchangeUtils.getParameter(configuration.getPath(),exchange, String.class, "Path");
+		String repo = configuration.getRepo();
 		if( repo == null || "-".equals(repo)) repo = exchange.getProperty("_namespace", String.class);
-		String type = getString(exchange, "type", configuration.getType());
-		String target = getString(exchange, "target", configuration.getTarget());
-		String header = getString(exchange, "header", configuration.getHeader());
+		String type = configuration.getType();
 		GitService gitService = getGitService();
 		File file = gitService.searchFile(repo, path, type);
 		String fileType = gitService.getFileType(file);
-		info(this, "producer --> get:repo: " + repo + ",path:" + path + ",type:" + type + "/target:" + target+"/realtype:"+fileType);
+		String destination = configuration.getDestination();
+		info(this, "producer --> get:repo: " + repo + ",path:" + path + ",type:" + type + "/destination:" + destination+"/realtype:"+fileType);
 		if( fileType.startsWith("sw.")){
-			 String content = gitService.getFileContent(file);
-			if ("body".equals(target)) {
-				exchange.getIn().setBody(content);
-			} else {
-				exchange.getIn().setHeader(header, content);
-			}
+			String content = gitService.getFileContent(file);
+			ExchangeUtils.setDestination(destination,content , exchange);
 		}else{
-			if ("body".equals(target)) {
-				exchange.getIn().setBody(file);
-			} else {
-				exchange.getIn().setHeader(header, file);
-			}
+			ExchangeUtils.setDestination(destination,file , exchange);
 		}
 	}
 }
