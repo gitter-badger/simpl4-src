@@ -18,7 +18,7 @@
  */
 package org.ms123.common.camel.components.localdata;
 
-public final class LocalDataConstants {
+public interface LocalDataConstants {
 
 	public static final String FILTER_NAME = "filterName";
 	public static final String DESTINATION = "destination";
@@ -41,6 +41,4 @@ public final class LocalDataConstants {
 	public static final String LOOKUP_RELATION_OBJECT_EXPR = "lookupRelationObjectExpr";
 	public static final String LOOKUP_UPDATE_OBJECT_EXPR = "lookupUpdateObjectExpr";
 
-	private LocalDataConstants() {
-	}
 }

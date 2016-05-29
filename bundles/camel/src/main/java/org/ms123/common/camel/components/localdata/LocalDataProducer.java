@@ -18,31 +18,32 @@
  */
 package org.ms123.common.camel.components.localdata;
 
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
+import java.util.Map;
 import org.apache.camel.CamelContext;
-import org.apache.camel.util.MessageHelper;
+import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultProducer;
-import org.apache.camel.util.ObjectHelper;
+import org.apache.camel.Message;
 import org.apache.camel.util.CamelContextHelper;
+import org.apache.camel.util.MessageHelper;
+import org.apache.camel.util.ObjectHelper;
+import org.ms123.common.camel.api.CamelService;
+import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.permission.api.PermissionService;
-import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.store.StoreDesc;
-import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.system.thread.ThreadContext;
 import static com.jcabi.log.Logger.info;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * The LocalData producer.
  */
-@SuppressWarnings({"unchecked","deprecation"})
-public class LocalDataProducer extends DefaultProducer {
+@SuppressWarnings({ "unchecked", "deprecation" })
+public class LocalDataProducer extends DefaultProducer implements LocalDataConstants {
 
 	private String m_filterName = null;
 	private String m_destination = null;
@@ -97,12 +98,12 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 		String[] path = endpointKey.split(":");
 		m_operation = LocalDataOperation.valueOf(path[1].replace("//", ""));
-		info(this,"m_operation:" + m_operation);
+		info(this, "m_operation:" + m_operation);
 		if (path.length > 2) {
 			m_filterName = path[2].split("\\?")[0];
 		}
-		if( m_namespace == null){
-			m_namespace = (String)CamelContextHelper.mandatoryLookup(camelContext, "namespace");
+		if (m_namespace == null) {
+			m_namespace = (String) CamelContextHelper.mandatoryLookup(camelContext, "namespace");
 		}
 		m_permissionService = CamelContextHelper.mandatoryLookup(camelContext, PermissionService.class.getName(), PermissionService.class);
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
@@ -110,7 +111,7 @@ public class LocalDataProducer extends DefaultProducer {
 
 	public void process(Exchange exchange) throws Exception {
 		String ns = m_namespace;
-		if( ThreadContext.getThreadContext() == null){
+		if (ThreadContext.getThreadContext() == null) {
 			System.out.println("getThreadContext");
 			ThreadContext.loadThreadContext(ns, "admin");
 			m_permissionService.loginInternal(ns);
@@ -125,96 +126,62 @@ public class LocalDataProducer extends DefaultProducer {
 	 * @throws Exception
 	 */
 	protected void invokeOperation(LocalDataOperation operation, Exchange exchange) throws Exception {
-		switch(operation) {
-			case findOneByFilter:
-				doFindOneByFilter(exchange);
-				break;
-			case findByFilter:
-				doFindByFilter(exchange);
-				break;
-			case findById:
-				doFindById(exchange);
-				break;
-			case insert:
-				doInsert(exchange);
-				break;
-			case update:
-				doUpdate(exchange);
-				break;
-			case delete:
-				doDelete(exchange);
-				break;
-			case multiInsertUpdate:
-				doMultiInsertUpdate(exchange);
-				break;
-			/*case aggregate:
-				doAggregate(exchange);
-				break;*/
-			default:
-				throw new RuntimeException("LocalDataProducer.Operation not supported. Value: " + operation);
+		switch (operation) {
+		case findOneByFilter:
+			doFindOneByFilter(exchange);
+			break;
+		case findByFilter:
+			doFindByFilter(exchange);
+			break;
+		case findById:
+			doFindById(exchange);
+			break;
+		case insert:
+			doInsert(exchange);
+			break;
+		case update:
+			doUpdate(exchange);
+			break;
+		case delete:
+			doDelete(exchange);
+			break;
+		case multiInsertUpdate:
+			doMultiInsertUpdate(exchange);
+			break;
+		/*case aggregate:
+			doAggregate(exchange);
+			break;*/
+		default:
+			throw new RuntimeException("LocalDataProducer.Operation not supported. Value: " + operation);
 		}
 	}
 
-	private String evaluate( String def, Exchange e ){
-		if( def != null && def.indexOf("${") >= 0){
-			String res = this.camelService.evaluate( def, e );
-			info(this,"evaluate.result:" + res);
-			return res;
-		}
-		return null;
-	}
-
-	private String getStringCheck(Exchange e, String key, String def) {
-		String res = evaluate( def, e );
-		if( res != null) return res;
-		String value = e.getIn().getHeader(key, String.class);
-		info(this,"getStringCheck:"+key+"="+value+"/def:"+def);
-		if (value == null){
-			value = e.getProperty(key, String.class);
-		}
-		if (value == null && def == null){
+	private String getStringCheck(String key, String def) {
+		if (isEmpty(def)) {
 			throw new RuntimeException("LocalDataProducer." + key + "_is_null");
 		}
-		return value != null ? value : def;
+		info(this, "getStringCheck:" + key + "=" + def);
+		return def;
 	}
-	private String getString(Exchange e, String key, String def) {
-		String res = evaluate( def, e );
-		if( res != null) return res;
-		String value = e.getIn().getHeader(key, String.class);
-		if (value == null){
-			value = e.getProperty(key, String.class);
-		}
-		info(this,"getString:"+key+"="+value+"/def:"+def);
-		return value != null ? value : def;
-	}
-	private boolean getBoolean(Exchange e, String key, boolean def) {
-		Boolean value = e.getIn().getHeader(key, Boolean.class);
-		if (value == null){
-			value = e.getProperty(key, Boolean.class);
-		}
-		info(this,"getString:"+key+"="+value+"/def:"+def);
-		return value != null ? value : def;
-	}
+
 	private void doMultiInsertUpdate(Exchange exchange) {
-		String lookupUpdateObjectExpr = getString(exchange, LocalDataConstants.LOOKUP_UPDATE_OBJECT_EXPR, m_lookupUpdateObjectExpr);
-		String lookupRelationObjectExpr = getString(exchange, LocalDataConstants.LOOKUP_RELATION_OBJECT_EXPR, m_lookupRelationObjectExpr);
-		String relation = getString(exchange, LocalDataConstants.RELATION, m_relation);
-		if( "-".equals(relation))relation=null;
-		Boolean no_update = getBoolean(exchange, LocalDataConstants.NO_UPDATE, m_noUpdate);
-		Map<String,Object> persistenceSpecification = new HashMap();
-		persistenceSpecification.put(LocalDataConstants.LOOKUP_RELATION_OBJECT_EXPR,lookupRelationObjectExpr);
-		persistenceSpecification.put(LocalDataConstants.LOOKUP_UPDATE_OBJECT_EXPR,lookupUpdateObjectExpr);
-		persistenceSpecification.put(LocalDataConstants.RELATION,relation);
-		persistenceSpecification.put(LocalDataConstants.NO_UPDATE,no_update);
-		System.out.println("persistenceSpecification:"+persistenceSpecification);
-		//String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
+		String relation = m_relation;
+		if ("-".equals(relation)){
+			relation = null;
+		}
+		Map<String, Object> persistenceSpecification = new HashMap();
+		persistenceSpecification.put(LocalDataConstants.LOOKUP_RELATION_OBJECT_EXPR, m_lookupRelationObjectExpr);
+		persistenceSpecification.put(LocalDataConstants.LOOKUP_UPDATE_OBJECT_EXPR, m_lookupUpdateObjectExpr);
+		persistenceSpecification.put(LocalDataConstants.RELATION, relation);
+		persistenceSpecification.put(LocalDataConstants.NO_UPDATE, m_noUpdate);
+		info(this, "persistenceSpecification:" + persistenceSpecification);
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		List<Object> result = null;
-		Object obj = ExchangeUtils.getSource( m_source, exchange, Object.class); 
-		info(this,"doMultiInsertUpdate:"+obj);
+		Object obj = ExchangeUtils.getSource(m_source, exchange, Object.class);
+		info(this, "doMultiInsertUpdate:" + obj);
 		try {
-			result = sc.persistObjects(obj,persistenceSpecification);
+			result = sc.persistObjects(obj, persistenceSpecification);
 		} catch (Exception e) {
 			ex = e;
 		}
@@ -223,8 +190,9 @@ public class LocalDataProducer extends DefaultProducer {
 	}
 
 	private void doDelete(Exchange exchange) {
-		String objectId = getStringCheck(exchange, LocalDataConstants.OBJECT_ID, m_objectId);
-		String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
+		String objectId = ExchangeUtils.getParameter(m_objectId, exchange, String.class, OBJECT_ID);
+		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
+		info(this, "doDelete(" + entityType + "):" + objectId);
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		Map result = null;
@@ -238,10 +206,9 @@ public class LocalDataProducer extends DefaultProducer {
 	}
 
 	private void doInsert(Exchange exchange) {
-		String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
-//		Map insert = exchange.getIn().getBody(Map.class);
-		Map insert = ExchangeUtils.getSource( m_source, exchange, Map.class); 
-		info(this,"doInsert("+entityType+"):"+insert);
+		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
+		Map insert = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		info(this, "doInsert(" + entityType + "):" + insert);
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		Map result = null;
@@ -256,11 +223,10 @@ public class LocalDataProducer extends DefaultProducer {
 	}
 
 	private void doUpdate(Exchange exchange) {
-		String objectId = getStringCheck(exchange, LocalDataConstants.OBJECT_ID, m_objectId);
-		String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
-	//	Map update = exchange.getIn().getBody(Map.class);
-		Map update = ExchangeUtils.getSource( m_source, exchange, Map.class); 
-		info(this,"doUpdate("+entityType+"):"+update);
+		String objectId = ExchangeUtils.getParameter(m_objectId, exchange, String.class, OBJECT_ID);
+		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
+		Map update = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		info(this, "doUpdate(" + entityType+","+objectId + "):" + update);
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		Map result = null;
@@ -274,28 +240,24 @@ public class LocalDataProducer extends DefaultProducer {
 	}
 
 	private void doFindById(Exchange exchange) {
-		String objectId = getStringCheck(exchange, LocalDataConstants.OBJECT_ID, m_objectId);
-		String destination = getString(exchange, LocalDataConstants.DESTINATION, m_destination);
-		String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
+		String objectId = ExchangeUtils.getParameter(m_objectId, exchange, String.class, OBJECT_ID);
+		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
 		SessionContext sc = getSessionContext(exchange);
 		Object ret = sc.getObjectMapById(entityType, objectId);
 		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findById);
-		ExchangeUtils.setDestination(destination, ret, exchange);
+		ExchangeUtils.setDestination(m_destination, ret, exchange);
 	}
 
 	private void doFindByFilter(Exchange exchange) {
-		String filterName = getStringCheck(exchange, LocalDataConstants.FILTER_NAME, m_filterName);
-		String destination = getString(exchange, LocalDataConstants.DESTINATION, m_destination);
-		String paramHeaders = getString(exchange, LocalDataConstants.PARAM_HEADERS, m_paramHeaders);
-		Boolean disableStateSelect = getBoolean(exchange, LocalDataConstants.DISABLE_STATESELECT, m_disableStateSelect);
+		String filterName = getStringCheck(LocalDataConstants.FILTER_NAME, m_filterName);
 		Map options = m_options != null ? new HashMap(m_options) : new HashMap();
-		if( disableStateSelect){
+		if (m_disableStateSelect) {
 			options.put(LocalDataConstants.DISABLE_STATESELECT, true);
 		}
 		SessionContext sc = getSessionContext(exchange);
 		List result = null;
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true,paramHeaders,false,null,false);
-		Map retMap = sc.executeNamedFilter(filterName, exVars,options);
+		Map exVars = ExchangeUtils.prepareVariables(exchange, true, m_paramHeaders, false, null, false);
+		Map retMap = sc.executeNamedFilter(filterName, exVars, options);
 		if (retMap == null) {
 			result = new ArrayList();
 		} else {
@@ -303,17 +265,15 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findByFilter);
 		resultMessage.setHeader(LocalDataConstants.ROW_COUNT, result.size());
-		ExchangeUtils.setDestination(destination, result, exchange);
+		ExchangeUtils.setDestination(m_destination, result, exchange);
 	}
 
 	private void doFindOneByFilter(Exchange exchange) {
-		String filterName = getStringCheck(exchange, LocalDataConstants.FILTER_NAME, m_filterName);
-		String destination = getString(exchange, LocalDataConstants.DESTINATION, m_destination);
-		String paramHeaders = getString(exchange, LocalDataConstants.PARAM_HEADERS, m_paramHeaders);
+		String filterName = getStringCheck(LocalDataConstants.FILTER_NAME, m_filterName);
 		SessionContext sc = getSessionContext(exchange);
 		Map result = null;
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true,paramHeaders,false,null,false);
-		Map retMap = sc.executeNamedFilter(filterName, exVars,m_options);
+		Map exVars = ExchangeUtils.prepareVariables(exchange, true, m_paramHeaders, false, null, false);
+		Map retMap = sc.executeNamedFilter(filterName, exVars, m_options);
 		if (retMap == null) {
 		} else {
 			List rows = (List) retMap.get("rows");
@@ -323,13 +283,16 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findOneByFilter);
 		resultMessage.setHeader(LocalDataConstants.ROW_COUNT, 1);
-		ExchangeUtils.setDestination(destination, result, exchange);
+		ExchangeUtils.setDestination(m_destination, result, exchange);
 	}
 
 	private SessionContext getSessionContext(Exchange exchange) {
-		String namespace = getString(exchange, LocalDataConstants.NAMESPACE, m_namespace);
+		String namespace = m_namespace;
+		if ("-".equals(namespace)) {
+			namespace = exchange.getProperty("_namespace",String.class);
+		}
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
-		if (sdesc == null){
+		if (sdesc == null) {
 			throw new RuntimeException("LocalDataProducer.namespace:" + namespace + " not found");
 		}
 		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
@@ -349,3 +312,4 @@ public class LocalDataProducer extends DefaultProducer {
 		return answer;
 	}
 }
+
