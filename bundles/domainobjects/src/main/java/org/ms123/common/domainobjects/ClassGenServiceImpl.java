@@ -557,6 +557,8 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 					idColumn = (String) m.get("columnName");
 					if( "number".equals(m.get("datatype"))){
 						idClass = Long.class;
+					}else if( "decimal".equals(m.get("datatype"))){
+						idClass = Double.class;
 					}else if( "date".equals(m.get("datatype"))){
 						idClass = Date.class;
 					}else{
