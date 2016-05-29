@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import org.apache.camel.Exchange;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import flexjson.*;
 
 /**
@@ -111,4 +112,42 @@ public class ExchangeUtils {
 		} 
 		return (String)camelBody;
 	}
+	public static String evaluate(String expr, Exchange exchange){
+		return GroovyExpression.evaluate( expr, exchange);
+	}
+	public static <T> T  evaluateExpr(String expr, Exchange exchange, Class<T> type){
+		return GroovyExpression.evaluate( expr, exchange, type);
+	}
+
+	public static <T> T getSource(String expr, Exchange exchange, Class<T> type) {
+		if( isEmpty(expr)){
+			expr = "body";
+		}
+		return type.cast(evaluateExpr(expr, exchange, type));
+	}
+	public static void setDestination(String expr, Object result, Exchange exchange) {
+		if( isEmpty(expr)){
+			expr = "body";
+		}
+		if( expr.equals("body")){
+			exchange.getIn().setBody(result);
+		}else if( expr.equals("b")){
+			exchange.getIn().setBody(result);
+		}else if( expr.startsWith("header.")){
+			exchange.getIn().setHeader(expr.substring(7), result);
+		}else if( expr.startsWith("headers.")){
+			exchange.getIn().setHeader(expr.substring(8), result);
+		}else if( expr.startsWith("h.")){
+			exchange.getIn().setHeader(expr.substring(2), result);
+		}else if( expr.startsWith("property.")){
+			exchange.setProperty(expr.substring(9), result);
+		}else if( expr.startsWith("properties.")){
+			exchange.setProperty(expr.substring(10), result);
+		}else if( expr.startsWith("p.")){
+			exchange.setProperty(expr.substring(2), result);
+		}else{
+			exchange.getIn().setHeader(expr, result);
+		}
+	}
+
 }
