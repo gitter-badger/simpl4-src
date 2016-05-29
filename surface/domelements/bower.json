@@ -18,6 +18,7 @@
     "paper-elements": "PolymerElements/paper-elements",
     "app-elements": "PolymerElements/app-elements",
     "neon-animation": "PolymerElements/neon-animation",
-    "paper-fullscreen": "bendavis78/paper-fullscreen-dialog"
+    "paper-fullscreen": "bendavis78/paper-fullscreen-dialog",
+    "paper-multidrawer-panel": "WoodyWoodsta/paper-multidrawer-panel"
   }
 }

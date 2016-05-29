@@ -38,11 +38,11 @@
 				left: 0vw;
 			}
 		}
-		[drawer] {
+		[left-drawer] {
 			box-shadow: 1px 0 1px rgba(0, 0, 0, 0.1);
 		}
 		#drawerPanel:not([narrow]) #menuButton {
-			display: none;
+			//display: none;
 		}
 		:host /deep/ paper-button {
 			min-width: 3em !important;
@@ -144,8 +144,8 @@
 		<!--iron-a11y-keys id="keys" target="[[target]]" keys="up down left right space space+shift" on-keys-pressed="keyHandler"></iron-a11y-keys-->
 
 		<simpl-dispatcher id="dispatcherId" on-mmenu-selected="menuItemSelected" selected="{{route}}" pages="{{getPages()}}">
-			<paper-drawer-panel id="drawerPanel" drawer-width="230px" responsive-width="[[responsiveWidth]]" disable-swipe="false">
-				<div class="column grid" drawer>
+			<paper-multidrawer-panel id="drawerPanel" drawer-width="230px" responsive-width="[[responsiveWidth]]" disable-swipe="false">
+				<div class="column grid" left-drawer>
 					<div class="grid column brand_drawer_panel fit">
 						<div class="brand__area">
 							<a href="[[logoLinkLang]]" target="_blank">
@@ -164,7 +164,7 @@
 				<paper-scroll-header-panel header-height="64" main>
 					<template is="dom-if" if="[[!toolbarProvided]]">
 						<paper-toolbar class="main__toolbar" id="mainToolbar">
-							<paper-icon-button id="menuButton" icon="menu" on-tap="togglePanel"></paper-icon-button>
+							<paper-icon-button id="menuButton" icon="menu" paper-multidrawer-toggle-left on-tap="togglePanel"></paper-icon-button>
 							<div id="headlineId" class="flex">[[selectedPage.name]]</div>
 							<template is="dom-if" if="[[selectedPage.help]]">
 								<span>
@@ -199,7 +199,7 @@
 					</neon-animated-pages>
 				</paper-scroll-header-panel>
 
-			</paper-drawer-panel>
+			</paper-multidrawer-panel>
 		</simpl-dispatcher>
 
 		<paper-dialog with-backdrop id="helpDialog">
