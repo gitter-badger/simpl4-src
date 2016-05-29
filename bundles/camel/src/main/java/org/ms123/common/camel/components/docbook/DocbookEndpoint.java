@@ -36,6 +36,7 @@ import org.apache.camel.component.ResourceEndpoint;
 import org.apache.camel.util.ExchangeHelper;
 import org.apache.commons.io.IOUtils;
 import org.ms123.common.docbook.DocbookService;
+import org.ms123.common.camel.api.ExchangeUtils;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -45,6 +46,8 @@ public class DocbookEndpoint extends ResourceEndpoint {
 
 	private String namespace = null ;
 	private String output = null ;
+	private String source = null ;
+	private String destination = null ;
 	private String input = "docbook" ;
 	private Map<String,String> parameters;
 	private String headerFields;
@@ -73,12 +76,28 @@ public class DocbookEndpoint extends ResourceEndpoint {
 		 return this.output;
 	}
 
+	public void setDestination(String o){
+		 this.destination = o;
+	}
+
+	public String getDestination(){
+		 return this.destination;
+	}
+
 	public void setInput(String in){
 		 this.input = in;
 	}
 
 	public String getInput(){
 		 return this.input;
+	}
+
+	public void setSource(String o){
+		 this.source = o;
+	}
+
+	public String getSource(){
+		 return this.source;
 	}
 
 	public void setHeaderfields(String t) {
@@ -112,16 +131,16 @@ public class DocbookEndpoint extends ResourceEndpoint {
 
 	@Override
 	protected void onExchange(Exchange exchange) throws Exception {
-		String text = exchange.getIn().getHeader(DocbookConstants.DOCBOOK_SRC, String.class);
+	/*	String text = exchange.getIn().getHeader(DocbookConstants.DOCBOOK_SRC, String.class);
 		if (text != null) {
 			exchange.getIn().removeHeader(DocbookConstants.DOCBOOK_SRC);
 		}
 		if( text == null){
 			text = exchange.getIn().getBody(String.class);
-		}
+		}*/
 
+		String text = ExchangeUtils.getSource(this.source, exchange, String.class);
 		DocbookService ds = getDocbookService();
-		Message out = exchange.getIn();
 		ByteArrayOutputStream  bos = new ByteArrayOutputStream();
 		InputStream is = null;
 		try{
@@ -141,7 +160,9 @@ public class DocbookEndpoint extends ResourceEndpoint {
 				is.close();
 			}
 		}
-		out.setBody(bos.toByteArray());
+		ExchangeUtils.setDestination(this.destination,bos.toByteArray() , exchange);
+		//Message out = exchange.getIn();
+		//out.setBody(bos.toByteArray());
 	}
 	private Map<String,Object> getVariablenMap(Exchange exchange){
 		List<String> headerList=null;

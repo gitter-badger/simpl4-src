@@ -32,12 +32,15 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.component.ResourceEndpoint;
 import org.apache.camel.util.ExchangeHelper;
+import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.docbook.DocbookService;
 
 @SuppressWarnings("unchecked")
 public class AsciidoctorEndpoint extends ResourceEndpoint {
 
 	private String output = "html";
+	private String source = null ;
+	private String destination = null ;
 
 	public AsciidoctorEndpoint() {
 	}
@@ -55,6 +58,22 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 		 return this.output;
 	}
 
+	public void setDestination(String o){
+		 this.destination = o;
+	}
+
+	public String getDestination(){
+		 return this.destination;
+	}
+
+	public void setSource(String o){
+		 this.source = o;
+	}
+
+	public String getSource(){
+		 return this.source;
+	}
+
 	@Override
 	public boolean isSingleton() {
 		return true;
@@ -67,23 +86,26 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 
 	@Override
 	protected void onExchange(Exchange exchange) throws Exception {
-		String text = exchange.getIn().getHeader(AsciidoctorConstants.ASCIIDOCTOR_SRC, String.class);
+		/*String text = exchange.getIn().getHeader(AsciidoctorConstants.ASCIIDOCTOR_SRC, String.class);
 		if (text != null) {
 			exchange.getIn().removeHeader(AsciidoctorConstants.ASCIIDOCTOR_SRC);
 		}
 		if( text == null){
 			text = exchange.getIn().getBody(String.class);
-		}
+		}*/
 
+		String text = ExchangeUtils.getSource(this.source, exchange, String.class);
 		DocbookService ds = getDocbookService();
 
 		Message out = exchange.getIn();
 		if( "html".equals(this.output)){
 			String html = ds.adocToHtml( text);
-			out.setBody(html);
+			//out.setBody(html);
+		  ExchangeUtils.setDestination(this.destination,html , exchange);
 		}else{
 			String docbook = ds.adocToDocbook( text);
-			out.setBody(docbook);
+			//out.setBody(docbook);
+		  ExchangeUtils.setDestination(this.destination,docbook , exchange);
 		}
 
 	}
