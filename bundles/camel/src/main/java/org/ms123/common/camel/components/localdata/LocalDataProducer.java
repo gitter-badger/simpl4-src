@@ -41,16 +41,17 @@ import static com.jcabi.log.Logger.info;
 /**
  * The LocalData producer.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 public class LocalDataProducer extends DefaultProducer {
 
 	private String m_filterName = null;
-	private String m_resultHeader = null;
+	private String m_destination = null;
 	private String m_paramHeaders = null;
 
 	private String m_namespace = null;
 
 	private String m_objectId = null;
+	private String m_source = null;
 	private String m_lookupUpdateObjectExpr = null;
 	private String m_lookupRelationObjectExpr = null;
 	private String m_relation = null;
@@ -77,9 +78,10 @@ public class LocalDataProducer extends DefaultProducer {
 		m_options = endpoint.getOptions();
 		m_namespace = endpoint.getNamespace();
 		m_filterName = endpoint.getFilterName();
-		m_resultHeader = endpoint.getResultHeader();
+		m_destination = endpoint.getDestination();
 		m_paramHeaders = endpoint.getParamHeaders();
 		m_objectId = endpoint.getObjectId();
+		m_source = endpoint.getSource();
 		m_entityType = endpoint.getEntityType();
 		m_lookupRelationObjectExpr = endpoint.getLookupRelationObjectExpr();
 		m_lookupUpdateObjectExpr = endpoint.getLookupUpdateObjectExpr();
@@ -209,8 +211,10 @@ public class LocalDataProducer extends DefaultProducer {
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		List<Object> result = null;
+		Object obj = ExchangeUtils.getSource( m_source, exchange, Object.class); 
+		info(this,"doMultiInsertUpdate:"+obj);
 		try {
-			result = sc.persistObjects(exchange.getIn().getBody(),persistenceSpecification);
+			result = sc.persistObjects(obj,persistenceSpecification);
 		} catch (Exception e) {
 			ex = e;
 		}
@@ -235,7 +239,9 @@ public class LocalDataProducer extends DefaultProducer {
 
 	private void doInsert(Exchange exchange) {
 		String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
-		Map insert = exchange.getIn().getBody(Map.class);
+//		Map insert = exchange.getIn().getBody(Map.class);
+		Map insert = ExchangeUtils.getSource( m_source, exchange, Map.class); 
+		info(this,"doInsert("+entityType+"):"+insert);
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		Map result = null;
@@ -252,7 +258,9 @@ public class LocalDataProducer extends DefaultProducer {
 	private void doUpdate(Exchange exchange) {
 		String objectId = getStringCheck(exchange, LocalDataConstants.OBJECT_ID, m_objectId);
 		String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
-		Map update = exchange.getIn().getBody(Map.class);
+	//	Map update = exchange.getIn().getBody(Map.class);
+		Map update = ExchangeUtils.getSource( m_source, exchange, Map.class); 
+		info(this,"doUpdate("+entityType+"):"+update);
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		Map result = null;
@@ -267,21 +275,17 @@ public class LocalDataProducer extends DefaultProducer {
 
 	private void doFindById(Exchange exchange) {
 		String objectId = getStringCheck(exchange, LocalDataConstants.OBJECT_ID, m_objectId);
-		String resultHeader = getString(exchange, LocalDataConstants.RESULT_HEADER, m_resultHeader);
+		String destination = getString(exchange, LocalDataConstants.DESTINATION, m_destination);
 		String entityType = getStringCheck(exchange, LocalDataConstants.ENTITY_TYPE, m_entityType);
 		SessionContext sc = getSessionContext(exchange);
 		Object ret = sc.getObjectMapById(entityType, objectId);
 		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findById);
-		if( resultHeader != null && resultHeader.length()>0){
-			resultMessage.setHeader(resultHeader, ret);
-		}else{
-			resultMessage.setBody(ret);
-		}
+		ExchangeUtils.setDestination(destination, ret, exchange);
 	}
 
 	private void doFindByFilter(Exchange exchange) {
 		String filterName = getStringCheck(exchange, LocalDataConstants.FILTER_NAME, m_filterName);
-		String resultHeader = getString(exchange, LocalDataConstants.RESULT_HEADER, m_resultHeader);
+		String destination = getString(exchange, LocalDataConstants.DESTINATION, m_destination);
 		String paramHeaders = getString(exchange, LocalDataConstants.PARAM_HEADERS, m_paramHeaders);
 		Boolean disableStateSelect = getBoolean(exchange, LocalDataConstants.DISABLE_STATESELECT, m_disableStateSelect);
 		Map options = m_options != null ? new HashMap(m_options) : new HashMap();
@@ -299,16 +303,12 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findByFilter);
 		resultMessage.setHeader(LocalDataConstants.ROW_COUNT, result.size());
-		if( resultHeader != null && resultHeader.length()>0){
-			resultMessage.setHeader(resultHeader, result);
-		}else{
-			resultMessage.setBody(result);
-		}
+		ExchangeUtils.setDestination(destination, result, exchange);
 	}
 
 	private void doFindOneByFilter(Exchange exchange) {
 		String filterName = getStringCheck(exchange, LocalDataConstants.FILTER_NAME, m_filterName);
-		String resultHeader = getString(exchange, LocalDataConstants.RESULT_HEADER, m_resultHeader);
+		String destination = getString(exchange, LocalDataConstants.DESTINATION, m_destination);
 		String paramHeaders = getString(exchange, LocalDataConstants.PARAM_HEADERS, m_paramHeaders);
 		SessionContext sc = getSessionContext(exchange);
 		Map result = null;
@@ -323,11 +323,7 @@ public class LocalDataProducer extends DefaultProducer {
 		}
 		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findOneByFilter);
 		resultMessage.setHeader(LocalDataConstants.ROW_COUNT, 1);
-		if( resultHeader != null && resultHeader.length()>0){
-			resultMessage.setHeader(resultHeader, result);
-		}else{
-			resultMessage.setBody(result);
-		}
+		ExchangeUtils.setDestination(destination, result, exchange);
 	}
 
 	private SessionContext getSessionContext(Exchange exchange) {

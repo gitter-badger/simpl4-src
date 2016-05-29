@@ -21,10 +21,11 @@ package org.ms123.common.camel.components.localdata;
 public final class LocalDataConstants {
 
 	public static final String FILTER_NAME = "filterName";
-	public static final String RESULT_HEADER = "resultHeader";
+	public static final String DESTINATION = "destination";
 	public static final String PARAM_HEADERS = "paramHeaders";
 
 	public static final String OBJECT_ID = "objectId";
+	public static final String SOURCE = "source";
 
 	public static final String ENTITY_TYPE = "entityType";
 	public static final String NAMESPACE = "namespace";

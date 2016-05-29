@@ -39,10 +39,11 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	private String m_namespace;
 
 	private String m_filterName;
-	private String m_resultHeader;
+	private String m_destination;
 	private String m_paramHeaders;
 
 	private String m_objectId;
+	private String m_source;
 
 	private String m_entityType;
 
@@ -93,12 +94,12 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 		return m_filterName;
 	}
 
-	public void setResultHeader(String data) {
-		this.m_resultHeader = data;
+	public void setDestination(String data) {
+		this.m_destination = data;
 	}
 
-	public String getResultHeader() {
-		return m_resultHeader;
+	public String getDestination() {
+		return m_destination;
 	}
 
 	public void setParamHeaders(String data) {
@@ -153,6 +154,14 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 
 	public String getObjectId() {
 		return m_objectId;
+	}
+
+	public void setSource(String data) {
+		this.m_source = data;
+	}
+
+	public String getSource() {
+		return m_source;
 	}
 
 	public void setNamespace(String namespace) {
