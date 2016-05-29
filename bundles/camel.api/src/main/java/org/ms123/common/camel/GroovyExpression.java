@@ -18,7 +18,6 @@
  */
 package org.ms123.common.camel.api;
 
-
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -86,6 +85,7 @@ public class GroovyExpression {
 	public static <T> T evaluate(String expr, Exchange exchange, Class<T> type) {
 		Script script = instantiateScript(exchange, expr);
 		script.setBinding(createBinding(exchange));
+		script.setProperty(expr, expr); //@@@MS  a expr thats a simple 'name' needs no ""
 		Object value = script.run();
 
 		return exchange.getContext().getTypeConverter().convertTo(type, value);
@@ -119,7 +119,6 @@ public class GroovyExpression {
 			throw new RuntimeCamelException(e);
 		}
 	}
-
 
 	private static Binding createBinding(Exchange exchange) {
 		Map<String, Object> variables = new HashMap<String, Object>();

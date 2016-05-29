@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import org.apache.camel.Exchange;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import org.apache.camel.util.ObjectHelper;
 import flexjson.*;
 
 /**
@@ -38,18 +39,19 @@ public class ExchangeUtils {
 	/**
 	 */
 	public static Map<String, Object> prepareVariables(Exchange exchange, boolean shouldCopyVariablesFromHeader, boolean shouldCopyVariablesFromProperties, boolean shouldCopyCamelBodyToBodyAsString) {
-		return prepareVariables(exchange,shouldCopyVariablesFromHeader,(List<String>)null, shouldCopyVariablesFromProperties , (List<String>)null, shouldCopyCamelBodyToBodyAsString);
+		return prepareVariables(exchange, shouldCopyVariablesFromHeader, (List<String>) null, shouldCopyVariablesFromProperties, (List<String>) null, shouldCopyCamelBodyToBodyAsString);
 	}
+
 	public static Map<String, Object> prepareVariables(Exchange exchange, boolean shouldCopyVariablesFromHeader, String headerNames, boolean shouldCopyVariablesFromProperties, String propertyNames, boolean shouldCopyCamelBodyToBodyAsString) {
-		List<String> headerList=null;
-		if( headerNames != null){
+		List<String> headerList = null;
+		if (headerNames != null) {
 			headerList = Arrays.asList(headerNames.split("\\s*,\\s*"));
 		}
-		List<String> propertyList=null;
-		if( propertyNames != null){
+		List<String> propertyList = null;
+		if (propertyNames != null) {
 			propertyList = Arrays.asList(propertyNames.split("\\s*,\\s*"));
 		}
-		return prepareVariables(exchange,shouldCopyVariablesFromHeader, headerList, shouldCopyVariablesFromProperties, propertyList, shouldCopyCamelBodyToBodyAsString);
+		return prepareVariables(exchange, shouldCopyVariablesFromHeader, headerList, shouldCopyVariablesFromProperties, propertyList, shouldCopyCamelBodyToBodyAsString);
 	}
 
 	public static Map<String, Object> prepareVariables(Exchange exchange, boolean shouldCopyVariablesFromHeader, List<String> headerList, boolean shouldCopyVariablesFromProperties, List<String> propertyList, boolean shouldCopyCamelBodyToBodyAsString) {
@@ -59,15 +61,15 @@ public class ExchangeUtils {
 			Map<String, Object> newCamelVarMap = new HashMap<String, Object>();
 			for (String s : camelVarMap.keySet()) {
 				if (IGNORE_MESSAGE_PROPERTY.equalsIgnoreCase(s) == false) {
-					if( propertyList==null || propertyList.indexOf(s)>-1){
+					if (propertyList == null || propertyList.indexOf(s) > -1) {
 						newCamelVarMap.put(s, camelVarMap.get(s));
 					}
 				}
 			}
 			camelVarMap = newCamelVarMap;
-		} 
-		if( true ) {
-			if( camelVarMap == null){
+		}
+		if (true) {
+			if (camelVarMap == null) {
 				camelVarMap = new HashMap<String, Object>();
 			}
 			Object camelBody = null;
@@ -77,7 +79,8 @@ public class ExchangeUtils {
 				camelBody = exchange.getIn().getBody();
 			if (camelBody instanceof Map<?, ?>) {
 				Map<?, ?> camelBodyMap = (Map<?, ?>) camelBody;
-				for (@SuppressWarnings("rawtypes") Map.Entry e : camelBodyMap.entrySet()) {
+				for (@SuppressWarnings("rawtypes")
+				Map.Entry e : camelBodyMap.entrySet()) {
 					if (e.getKey() instanceof String) {
 						camelVarMap.put((String) e.getKey(), e.getValue());
 					}
@@ -91,7 +94,7 @@ public class ExchangeUtils {
 			if (shouldCopyVariablesFromHeader) {
 				for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
 					String key = header.getKey();
-					if( headerList==null || headerList.indexOf(key)>-1){
+					if (headerList == null || headerList.indexOf(key) > -1) {
 						camelVarMap.put(header.getKey(), header.getValue());
 					}
 				}
@@ -99,55 +102,75 @@ public class ExchangeUtils {
 		}
 		return camelVarMap;
 	}
+
 	public static String prepareBody(Exchange exchange) {
-		Map<String,Object> camelBodyMap = new HashMap<String, Object>();
+		Map<String, Object> camelBodyMap = new HashMap<String, Object>();
 		Object camelBody = null;
-		if (exchange.hasOut()){
+		if (exchange.hasOut()) {
 			camelBody = exchange.getOut().getBody();
-		}else{
+		} else {
 			camelBody = exchange.getIn().getBody();
 		}
 		if (camelBody != null && !(camelBody instanceof String)) {
 			camelBody = m_js.deepSerialize(camelBody);
-		} 
-		return (String)camelBody;
+		}
+		return (String) camelBody;
 	}
-	public static String evaluate(String expr, Exchange exchange){
-		return GroovyExpression.evaluate( expr, exchange);
+
+	public static String evaluate(String expr, Exchange exchange) {
+		return GroovyExpression.evaluate(expr, exchange);
 	}
-	public static <T> T  evaluateExpr(String expr, Exchange exchange, Class<T> type){
-		return GroovyExpression.evaluate( expr, exchange, type);
+
+	public static <T> T evaluateExpr(String expr, Exchange exchange, Class<T> type) {
+		return GroovyExpression.evaluate(expr, exchange, type);
+	}
+
+	public static <T> T getParameter(String expr, Exchange exchange, Class<T> type) {
+		return getParameter(expr, exchange, type, null);
+	}
+
+	public static <T> T getParameter(String expr, Exchange exchange, Class<T> type, String name) {
+		T value = null;
+		if (!isEmpty(expr)) {
+			value = type.cast(evaluateExpr(expr, exchange, type));
+		}
+		if (ObjectHelper.isEmpty(value) && !isEmpty(name)) {
+			throw new RuntimeException("ExchangeUtils.getParameter(" + name + "):" + expr + " evaluates to empty");
+		}
+		return value;
 	}
 
 	public static <T> T getSource(String expr, Exchange exchange, Class<T> type) {
-		if( isEmpty(expr)){
+		if (isEmpty(expr)) {
 			expr = "body";
 		}
 		return type.cast(evaluateExpr(expr, exchange, type));
 	}
+
 	public static void setDestination(String expr, Object result, Exchange exchange) {
-		if( isEmpty(expr)){
+		if (isEmpty(expr)) {
 			expr = "body";
 		}
-		if( expr.equals("body")){
+		if (expr.equals("body")) {
 			exchange.getIn().setBody(result);
-		}else if( expr.equals("b")){
+		} else if (expr.equals("b")) {
 			exchange.getIn().setBody(result);
-		}else if( expr.startsWith("header.")){
+		} else if (expr.startsWith("header.")) {
 			exchange.getIn().setHeader(expr.substring(7), result);
-		}else if( expr.startsWith("headers.")){
+		} else if (expr.startsWith("headers.")) {
 			exchange.getIn().setHeader(expr.substring(8), result);
-		}else if( expr.startsWith("h.")){
+		} else if (expr.startsWith("h.")) {
 			exchange.getIn().setHeader(expr.substring(2), result);
-		}else if( expr.startsWith("property.")){
+		} else if (expr.startsWith("property.")) {
 			exchange.setProperty(expr.substring(9), result);
-		}else if( expr.startsWith("properties.")){
+		} else if (expr.startsWith("properties.")) {
 			exchange.setProperty(expr.substring(10), result);
-		}else if( expr.startsWith("p.")){
+		} else if (expr.startsWith("p.")) {
 			exchange.setProperty(expr.substring(2), result);
-		}else{
+		} else {
 			exchange.getIn().setHeader(expr, result);
 		}
 	}
 
 }
+
