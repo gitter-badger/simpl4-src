@@ -46,6 +46,7 @@ import org.ms123.common.camel.components.docbook.*;
 import org.ms123.common.camel.components.xdocreport.*;
 import org.ms123.common.camel.components.repo.*;
 import org.ms123.common.camel.components.direct.*;
+import org.ms123.common.camel.components.hazelcast.*;
 import org.ms123.common.camel.trace.*;
 import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.data.api.DataLayer;
@@ -109,6 +110,7 @@ public class CamelContextBuilder {
 		sr.put("template", new TemplateComponent());
 		sr.put("asciidoctor", new AsciidoctorComponent());
 		sr.put("docbook", new DocbookComponent());
+		sr.put("hazelcast", new HazelcastComponent());
 		sr.put("jndiContext", jndiContext);
 		TransactionService ts = (TransactionService) or.lookupByName(TransactionService.class.getName());
 		sr.put(org.springframework.transaction.PlatformTransactionManager.class.getName(), ts.getPlatformTransactionManager());
