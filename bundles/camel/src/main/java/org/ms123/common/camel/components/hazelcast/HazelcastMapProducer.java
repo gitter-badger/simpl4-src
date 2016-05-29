@@ -111,9 +111,10 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 	 * update an object in your cache (the whole object will be replaced)
 	 */
 	private void update(Object oid, Exchange exchange) {
-		Object body = exchange.getIn().getBody();
+		Object obj = ExchangeUtils.getSource(this.source, exchange, Object.class);
+		info(this,"Update("+oid+").obj:"+obj);
 		this.cache.lock(oid);
-		this.cache.replace(oid, body);
+		this.cache.replace(oid, obj);
 		this.cache.unlock(oid);
 	}
 
