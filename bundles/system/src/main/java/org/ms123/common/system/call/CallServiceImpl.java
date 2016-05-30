@@ -56,6 +56,9 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_PROCESS_KEY;
 import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_ACTIVITY_KEY;
 import static org.ms123.common.system.history.HistoryService.CAMEL_ROUTE_DEFINITION_KEY;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /** CallService implementation
  */
@@ -94,29 +97,29 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 				throw new RpcException(JsonRpcServlet.ERROR_FROM_SERVER, JsonRpcServlet.PARAMETER_MISMATCH, "Method("+methodName+"):Namespace not found");
 			}
 		}
-		info("Namespace/Procedure:"+namespace+"/"+methodName);
-		info("methodParams:"+methodParams);
+		info(this,"Namespace/Procedure:"+namespace+"/"+methodName);
+		info(this,"methodParams:"+methodParams);
 		String fqMethodName = namespace+"."+methodName;
 		Map shape  = this.getProcedureShape(namespace,methodName );
 		if( shape == null){
-			info("getProcedureShape is null:"+fqMethodName);
+			info(this,"getProcedureShape is null:"+fqMethodName);
 			shape = getRootShape(namespace, methodName);
 		}
 		if (shape == null) {
 			throw new RpcException(JsonRpcServlet.ERROR_FROM_SERVER, JsonRpcServlet.METHOD_NOT_FOUND, "Method \"" + fqMethodName + "\" not found");
 		}
 		if(!isRPC(shape)){
-			info("Shape.isRPC:"+shape);
+			info(this,"Shape.isRPC:"+shape);
 			throw new RpcException(JsonRpcServlet.ERROR_FROM_SERVER, JsonRpcServlet.METHOD_NOT_FOUND, "RPC in \"" + fqMethodName + "\" not enabled");
 		}
 		List<String> permittedRoleList = getStringList(shape, "startableGroups");
 		List<String> permittedUserList = getStringList(shape, "startableUsers");
 		String userName = getUserName();
 		List<String> userRoleList = getUserRoles(userName);
-		debug("userName:" + userName);
-		info("userRoleList:" + userRoleList);
-		info("permittedRoleList:" + permittedRoleList);
-		info("permittedUserList:" + permittedUserList);
+		debug(this,"userName:" + userName);
+		info(this,"userRoleList:" + userRoleList);
+		info(this,"permittedRoleList:" + permittedRoleList);
+		info(this,"permittedUserList:" + permittedUserList);
 		if (!isPermitted(userName, userRoleList, permittedUserList, permittedRoleList)) {
 			throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.PERMISSION_DENIED, "Method("+fqMethodName+"):User(" + userName + ") has no permission");
 		}
@@ -135,6 +138,7 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 				destname = name;
 			}	
 			Object def = param.get("defaultvalue");
+			def = deserializeDefaultvalue( def, param.get("type"));
 			Class type = m_types.get((String) param.get("type"));
 			Boolean opt = (Boolean) param.get("optional");
 			if ("property".equals(destination)) {
@@ -161,10 +165,10 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 		properties.put("__logExceptionsOnly", getBoolean(shape, "logExceptionsOnly", false));
 		properties.put("_namespace",namespace);
 		properties.put("_method",methodName);
-		info("methodParams:" + methodParams);
-		debug("paramList:" + paramList);
-		debug("properties:" + properties);
-		debug("headers:" + headers);
+		info(this,"methodParams:" + methodParams);
+		debug(this,"paramList:" + paramList);
+		debug(this,"properties:" + properties);
+		debug(this,"headers:" + headers);
 
 
 		String returnSpec = getString(shape, "rpcReturn", "body");
@@ -186,13 +190,13 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 			}
 		}
 		properties.put(CAMEL_ROUTE_DEFINITION_KEY, namespace+"/"+routeId );
-		debug("Endpoint:" + route.getEndpoint());
+		debug(this,"Endpoint:" + route.getEndpoint());
 		Object answer = null;
 		try {
 			answer = m_camelService.camelSend(namespace, route.getEndpoint(), bodyObj, headers, properties,returnSpec, returnHeaderList);
-			debug("CallServiceImpl.Answer:" + answer);
+			debug(this,"CallServiceImpl.Answer:" + answer);
 			if( answer != null){
-				debug("CallServiceImpl.Answer.type:" + answer.getClass());
+				debug(this,"CallServiceImpl.Answer.type:" + answer.getClass());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -256,13 +260,13 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 				String preCondition = (String) call.get(PRECONDITION);
 				if (preCondition != null) {
 					boolean isok = isHookPreConditionOk(preCondition, methodParams);
-					info("preCondition:" + preCondition + ":" + isok);
+					info(this,"preCondition:" + preCondition + ":" + isok);
 					if (!isok)
 						return;
 				}
 				String action = (String) call.get(ACTION);
 				Boolean sync = (Boolean) call.get(SYNC);
-				info("CallServiceImpl.camelAction: service:" + serviceName + ",Method:" + methodName + "/params:" + methodParams);
+				info(this,"CallServiceImpl.camelAction: service:" + serviceName + ",Method:" + methodName + "/params:" + methodParams);
 				try {
 					camelHook(ns, getUserName(), serviceName, methodName, action, sync, methodParams, result);
 				} catch (Exception e) {

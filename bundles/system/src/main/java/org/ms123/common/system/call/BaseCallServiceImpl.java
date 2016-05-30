@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.ms123.common.libhelper.Inflector;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.ExchangePattern;
@@ -52,6 +50,9 @@ import static org.ms123.common.camel.api.CamelService.OVERRIDEID;
 import static org.ms123.common.camel.api.CamelService.RPC;
 import groovy.lang.*;
 import org.apache.commons.beanutils.ConvertUtils;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /**
  *
@@ -109,7 +110,7 @@ abstract class BaseCallServiceImpl {
 		propMap.put("methodResult", result);
 		if (sync) {
 			Object answer =m_camelService.camelSend(ns, routeId, propMap);
-			info("CallServiceImpl.CamelSend.sync.answer:" + answer);
+			info(this,"CallServiceImpl.CamelSend.sync.answer:" + answer);
 		} else {
 			new CamelThread(routeId, execUser, propMap).start();
 		}
@@ -166,13 +167,13 @@ abstract class BaseCallServiceImpl {
 				String ns = (String) propMap.get("namespace");
 				ThreadContext.loadThreadContext(ns, execUser); //@@@MS Maybe can removed
 				m_permissionService.loginInternal(ns);
-				info("CallServiceImpl.ThreadContext:" + ThreadContext.getThreadContext());
+				info(this,"CallServiceImpl.ThreadContext:" + ThreadContext.getThreadContext());
 				Object answer = m_camelService.camelSend(ns, routeId, propMap);
-				info("CallServiceImpl.CamelSend.async.answer:" + answer);
+				info(this,"CallServiceImpl.CamelSend.async.answer:" + answer);
 			} catch (Exception e) {
 				e.printStackTrace();
 				ThreadContext.getThreadContext().finalize(e);
-				m_logger.error("BaseCallServiceImpl.CamelThread:", e);
+				error(this,"BaseCallServiceImpl.CamelThread:%[exception]s", e);
 			} finally {
 				ThreadContext.getThreadContext().finalize(null);
 			}
@@ -187,6 +188,13 @@ abstract class BaseCallServiceImpl {
 			}
 		}
 		return shape;
+	}
+
+	protected Object deserializeDefaultvalue(Object obj, Object type){
+		if( obj instanceof String && ("map".equals(type) || "list".equals(type))){
+			obj = m_ds.deserialize( (String)obj);
+		}
+		return obj;
 	}
 
 	protected String getId(Map shape) {
@@ -205,7 +213,7 @@ abstract class BaseCallServiceImpl {
 		for( int i = 1; i < 25; i++){
 			Route route = cc.getRoute(getRouteId(baseRouteId,i));
 			if( route != null ){
-				info(".getRouteWithDirectConsumer.Route:"+route);
+				info(this,".getRouteWithDirectConsumer.Route:"+route);
 				Endpoint ep = route.getConsumer().getEndpoint();
 				String epUri = ep.getEndpointUri();
 				if( epUri.startsWith("direct")){
@@ -249,12 +257,12 @@ abstract class BaseCallServiceImpl {
 	}
 	protected boolean isPermitted(String userName, List<String> userRoleList, List<String> permittedUserList, List<String> permittedRoleList) {
 		if (permittedUserList.contains(userName)) {
-			info("userName(" + userName + " is allowed:" + permittedUserList);
+			info(this,"userName(" + userName + " is allowed:" + permittedUserList);
 			return true;
 		}
 		for (String userRole : userRoleList) {
 			if (permittedRoleList.contains(userRole)) {
-				info("userRole(" + userRole + " is allowed:" + permittedRoleList);
+				info(this,"userRole(" + userRole + " is allowed:" + permittedRoleList);
 				return true;
 			}
 		}
@@ -345,19 +353,4 @@ abstract class BaseCallServiceImpl {
 		return getThreadContext().getUserName();
 	}
 
-	protected static void debug(String msg) {
-		m_logger.debug(msg);
-	}
-
-	protected static void error(String msg) {
-		System.out.println(msg);
-		m_logger.error(msg);
-	}
-
-	protected static void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final Logger m_logger = LoggerFactory.getLogger(BaseCallServiceImpl.class);
 }
