@@ -34,6 +34,7 @@ import org.apache.camel.component.ResourceEndpoint;
 import org.apache.camel.util.ExchangeHelper;
 import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.docbook.DocbookService;
+import static com.jcabi.log.Logger.info;
 
 @SuppressWarnings("unchecked")
 public class AsciidoctorEndpoint extends ResourceEndpoint {
@@ -47,7 +48,7 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 
 	public AsciidoctorEndpoint(String endpointUri, Component component, String resourceUri) {
 		super(endpointUri, component, resourceUri);
-		info("AsciidoctorEndpoint:endpointUri:" + endpointUri + "/resourceUri:" + resourceUri);
+		info(this,"AsciidoctorEndpoint:endpointUri:" + endpointUri + "/resourceUri:" + resourceUri);
 	}
 
 	public void setOutput(String type){
@@ -86,25 +87,15 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 
 	@Override
 	protected void onExchange(Exchange exchange) throws Exception {
-		/*String text = exchange.getIn().getHeader(AsciidoctorConstants.ASCIIDOCTOR_SRC, String.class);
-		if (text != null) {
-			exchange.getIn().removeHeader(AsciidoctorConstants.ASCIIDOCTOR_SRC);
-		}
-		if( text == null){
-			text = exchange.getIn().getBody(String.class);
-		}*/
-
 		String text = ExchangeUtils.getSource(this.source, exchange, String.class);
 		DocbookService ds = getDocbookService();
 
 		Message out = exchange.getIn();
 		if( "html".equals(this.output)){
 			String html = ds.adocToHtml( text);
-			//out.setBody(html);
 		  ExchangeUtils.setDestination(this.destination,html , exchange);
 		}else{
 			String docbook = ds.adocToDocbook( text);
-			//out.setBody(docbook);
 		  ExchangeUtils.setDestination(this.destination,docbook , exchange);
 		}
 
@@ -118,15 +109,4 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 		return kls.cast(getCamelContext().getRegistry().lookupByName(kls.getName()));
 	}
 
-	private void debug(String msg) {
-		System.out.println(msg);
-		m_logger.debug(msg);
-	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(AsciidoctorEndpoint.class);
 }

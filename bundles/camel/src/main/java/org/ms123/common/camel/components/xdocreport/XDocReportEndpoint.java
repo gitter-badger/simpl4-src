@@ -34,6 +34,7 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.component.ResourceEndpoint;
 import org.apache.camel.util.ExchangeHelper;
+import org.ms123.common.camel.api.ExchangeUtils;
 import fr.opensagres.xdocreport.core.XDocReportException;
 import fr.opensagres.xdocreport.document.IXDocReport;
 import fr.opensagres.xdocreport.document.registry.XDocReportRegistry;
@@ -44,21 +45,24 @@ import fr.opensagres.xdocreport.core.document.DocumentKind;
 import fr.opensagres.xdocreport.template.TemplateEngineKind;
 import fr.opensagres.xdocreport.template.formatter.FieldsMetadata;
 import java.security.MessageDigest;
+import static com.jcabi.log.Logger.info;
 
 @SuppressWarnings("unchecked")
 public class XDocReportEndpoint extends ResourceEndpoint {
 
 
-	private TemplateEngineKind m_templateEngineKind = TemplateEngineKind.Freemarker;
-	private String m_headerFields;
-	private String m_outputformat;
+	private TemplateEngineKind templateEngineKind = TemplateEngineKind.Freemarker;
+	private String headerFields;
+	private String outputformat;
+	private String source = null ;
+	private String destination = null ;
 
 	public XDocReportEndpoint() {
 	}
 
 	public XDocReportEndpoint(String endpointUri, Component component, String resourceUri) {
 		super(endpointUri, component, resourceUri);
-		info("XDocReportEndpoint:endpointUri:" + endpointUri + "/resourceUri:" + resourceUri);
+		info(this,"XDocReportEndpoint:endpointUri:" + endpointUri + "/resourceUri:" + resourceUri);
 	}
 
 	@Override
@@ -72,34 +76,49 @@ public class XDocReportEndpoint extends ResourceEndpoint {
 	}
 
 	public TemplateEngineKind getTemplateEngineKind() {
-		return m_templateEngineKind;
+		return this.templateEngineKind;
 	}
 	public void setTemplateEngineKind(TemplateEngineKind t) {
-		m_templateEngineKind = t;
+		this.templateEngineKind = t;
 	}
 
 	public void setHeaderfields(String t) {
-		m_headerFields = t;
+		this.headerFields = t;
 	}
 
 	public String getHeaderfields() {
-		return m_headerFields;
+		return this.headerFields;
 	}
 
 	public void setOutputformat(String t) {
-		m_outputformat = t;
+		this.outputformat = t;
 	}
 
 	public String getOutputformat() {
-		return m_outputformat;
+		return this.outputformat;
 	}
 
+	public void setDestination(String o){
+		 this.destination = o;
+	}
+
+	public String getDestination(){
+		 return this.destination;
+	}
+
+	public void setSource(String o){
+		 this.source = o;
+	}
+
+	public String getSource(){
+		 return this.source;
+	}
 
 	@Override
 	protected void onExchange(Exchange exchange) throws Exception {
 		List<String> headerList=null;	
-		if( m_headerFields!=null){
-			headerList = Arrays.asList(m_headerFields.split(","));
+		if( this.headerFields!=null){
+			headerList = Arrays.asList(this.headerFields.split(","));
 		}else{
 			headerList = new ArrayList();
 		}
@@ -117,17 +136,11 @@ public class XDocReportEndpoint extends ResourceEndpoint {
 				}
 			}
 		}
-		byte[] bytes = exchange.getIn().getHeader(XDocReportConstants.XDOCREPORT_ODT, byte[].class);
-		if (bytes != null) {
-			exchange.getIn().removeHeader(XDocReportConstants.XDOCREPORT_ODT);
-		}
-		if (bytes == null) {
-			bytes = exchange.getIn().getBody(byte[].class);
-		}
-		info("variableMap:"+ variableMap);
+		info(this,"variableMap:"+ variableMap);
+		byte[] bytes = ExchangeUtils.getSource(this.source, exchange, byte[].class);
 
 		InputStream in = new ByteArrayInputStream(bytes);
-		IXDocReport report = XDocReportRegistry.getRegistry().loadReport(in, m_templateEngineKind);
+		IXDocReport report = XDocReportRegistry.getRegistry().loadReport(in, this.templateEngineKind);
 		IContext context = report.createContext();
 		context.putMap(variableMap);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -137,22 +150,6 @@ public class XDocReportEndpoint extends ResourceEndpoint {
 		}else{
 			report.process(context, out);
 		}
-		Message mout = exchange.getOut();
-		out.close();
-		mout.setBody(out.toByteArray());
-		mout.setHeaders(exchange.getIn().getHeaders());
-		mout.setAttachments(exchange.getIn().getAttachments());
+		ExchangeUtils.setDestination(this.destination,out.toByteArray() , exchange);
 	}
-
-	private void debug(String msg) {
-		System.out.println(msg);
-		m_logger.debug(msg);
-	}
-
-	private void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(XDocReportEndpoint.class);
 }

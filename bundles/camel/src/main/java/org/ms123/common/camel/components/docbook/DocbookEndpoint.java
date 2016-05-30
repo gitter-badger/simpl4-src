@@ -131,14 +131,6 @@ public class DocbookEndpoint extends ResourceEndpoint {
 
 	@Override
 	protected void onExchange(Exchange exchange) throws Exception {
-	/*	String text = exchange.getIn().getHeader(DocbookConstants.DOCBOOK_SRC, String.class);
-		if (text != null) {
-			exchange.getIn().removeHeader(DocbookConstants.DOCBOOK_SRC);
-		}
-		if( text == null){
-			text = exchange.getIn().getBody(String.class);
-		}*/
-
 		String text = ExchangeUtils.getSource(this.source, exchange, String.class);
 		DocbookService ds = getDocbookService();
 		ByteArrayOutputStream  bos = new ByteArrayOutputStream();
@@ -161,8 +153,6 @@ public class DocbookEndpoint extends ResourceEndpoint {
 			}
 		}
 		ExchangeUtils.setDestination(this.destination,bos.toByteArray() , exchange);
-		//Message out = exchange.getIn();
-		//out.setBody(bos.toByteArray());
 	}
 	private Map<String,Object> getVariablenMap(Exchange exchange){
 		List<String> headerList=null;

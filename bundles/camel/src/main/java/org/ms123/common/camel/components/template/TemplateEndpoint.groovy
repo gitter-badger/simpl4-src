@@ -32,6 +32,7 @@ import org.apache.camel.Message;
 import org.apache.camel.component.ResourceEndpoint;
 import org.apache.camel.util.ExchangeHelper;
 import java.security.MessageDigest;
+import org.ms123.common.camel.api.ExchangeUtils;
 
 @SuppressWarnings("unchecked")
 @groovy.transform.CompileStatic
@@ -41,7 +42,9 @@ public class TemplateEndpoint extends ResourceEndpoint {
 	private Engine m_engine;
 
 	private String m_engineType = "groovy";
-	private String m_headerFields;
+	private String headerFields;
+	private String source = null ;
+	private String destination = null ;
 
 	public TemplateEndpoint() {
 	}
@@ -85,18 +88,35 @@ public class TemplateEndpoint extends ResourceEndpoint {
 	}
 
 	public void setHeaderfields(String t) {
-		m_headerFields = t;
+		this.headerFields = t;
 	}
 
 	public String getHeaderfields() {
-		return m_headerFields;
+		return this.headerFields;
 	}
+
+	public void setDestination(String o){
+		 this.destination = o;
+	}
+
+	public String getDestination(){
+		 return this.destination;
+	}
+
+	public void setSource(String o){
+		 this.source = o;
+	}
+
+	public String getSource(){
+		 return this.source;
+	}
+
 
 	@Override
 	protected void onExchange(Exchange exchange) throws Exception {
 		List<String> headerList=null;
-		if( m_headerFields!=null){
-			headerList = Arrays.asList(m_headerFields.split(","));
+		if( this.headerFields!=null){
+			headerList = Arrays.asList(this.headerFields.split(","));
 		}else{
 			headerList = new ArrayList();
 		}
@@ -115,12 +135,11 @@ public class TemplateEndpoint extends ResourceEndpoint {
 			}
 		}
 
-		String text = exchange.getIn().getBody(String.class);
+		String text = ExchangeUtils.getSource(this.source, exchange, String.class);
 
 		String answer = m_engine.convert(text,variableMap);
 
-		Message out = exchange.getIn();
-		out.setBody(answer);
+		ExchangeUtils.setDestination(this.destination,answer , exchange);
 	}
 
 	private void debug(String msg) {
