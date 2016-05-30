@@ -586,13 +586,30 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 							var items = pair.items();
 							var options = [];
 							formElement = new qx.ui.form.ComboBox();
-							items.each((function (value) {
-								var option = [value.title(), null, value.value()];
-								//if (value.value() == attribute) attribute = value.title();
-								if (value.refToView()[0]) refToViewFlag = true;
-								var item = new qx.ui.form.ListItem(value.title(), this.__getResourceUrl(value.icon()), value.value());
-								formElement.add(item);
-							}).bind(this));
+							if( !jQuery.isEmptyObject(config) ){
+								items.each((function (value) {
+									if (value.refToView()[0]) refToViewFlag = true;
+									var title = this._notEmpty(value.title()) ?  value.title() : value.value();
+									var item = new qx.ui.form.ListItem(title, this.__getResourceUrl(value.icon()), value.value());
+									formElement.add(item);
+								}).bind(this));
+								try{
+									var obj = window;
+									var parts = config.type.split("\.");
+									for(var i=0; i< parts.length;i++){
+										obj = obj[parts[i]];
+									}
+									new obj( this.facade, formElement, config );								
+								}catch(e){
+									console.error("Editor.Ex:"+e.stack);
+								}
+							}else{
+								items.each((function (value) {
+									if (value.refToView()[0]) refToViewFlag = true;
+									var item = new qx.ui.form.ListItem(value.title(), this.__getResourceUrl(value.icon()), value.value());
+									formElement.add(item);
+								}).bind(this));
+							}
 							formElement.addListener('changeSelection', (function (e) {
 								this.editDirectly(key, formElement.getValue());
 							}).bind(this))
@@ -606,7 +623,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 									if (value.refToView()[0]) refToViewFlag = true;
 									var title = this._notEmpty(value.title()) ?  value.title() : value.value();
 									var item = new qx.ui.form.ListItem(title, this.__getResourceUrl(value.icon()), value.value());
-									//this._createTooltip(item,"Shit");
 									formElement.add(item);
 								}).bind(this));
 								try{

@@ -35,7 +35,11 @@ console.log("RepoList");
 		for(var i=0; i < repoList.length; i++){
 			var repoName = repoList[i];
 			var listItem = new qx.ui.form.ListItem(repoName,null,repoName);
-			formElement.addItem(listItem);
+			if( formElement.addItem){
+				formElement.addItem(listItem);
+			}else{
+				formElement.add(listItem);
+			}
 		}
 	},
 
