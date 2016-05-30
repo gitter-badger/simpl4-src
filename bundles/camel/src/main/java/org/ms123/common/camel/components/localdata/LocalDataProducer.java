@@ -288,8 +288,10 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 
 	private SessionContext getSessionContext(Exchange exchange) {
 		String namespace = m_namespace;
-		if ("-".equals(namespace)) {
+		if (namespace == null || "".equals(namespace) || "-".equals(namespace) ) {
 			namespace = exchange.getProperty("_namespace",String.class);
+		}else{
+			namespace = ExchangeUtils.getParameter(m_namespace, exchange, String.class, NAMESPACE);
 		}
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		if (sdesc == null) {

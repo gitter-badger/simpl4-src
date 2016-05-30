@@ -43,8 +43,8 @@ public class RepoGetProducer extends RepoProducer {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		String path = ExchangeUtils.getParameter(configuration.getPath(),exchange, String.class, "Path");
-		String repo = configuration.getRepo();
-		if( repo == null || "-".equals(repo)) repo = exchange.getProperty("_namespace", String.class);
+		String repo = ExchangeUtils.getParameter(configuration.getRepo(),exchange, String.class, "Repo");
+		if( repo == null || repo == "" || "-".equals(repo)) repo = exchange.getProperty("_namespace", String.class);
 		String type = configuration.getType();
 		GitService gitService = getGitService();
 		File file = gitService.searchFile(repo, path, type);
