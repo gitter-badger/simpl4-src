@@ -516,6 +516,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			hasCriteria=true;
 		}
 		String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
+		if (isEmpty(businessKey)) {
+			businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
+		}
 		if (!isEmpty(businessKey)) {
 			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)),childProcesses);
 			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
@@ -638,38 +641,10 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		return camelMap;
 	}
 
-	private String evaluate( String def, Exchange e ){
-		if( def != null && def.indexOf("${") >= 0){
-			String res = this.camelService.evaluate( def, e );
-			info(this,"evaluate.result:" + res);
-			return res;
-		}
-		return null;
-	}
-
-	private String getStringCheck(Exchange e, String key, String def) {
-		String res = evaluate( def, e );
-		if( res != null) return res;
-		String value = e.getIn().getHeader(key, String.class);
-		debug(this,"getStringCheck:" + key + "=" + value + "/def:" + def);
-		if (value == null) {
-			value = e.getProperty(key, String.class);
-		}
-		if (value == null && def == null) {
-			throw new RuntimeException("ActivitiProducer." + key + "_is_null");
-		}
-		return value != null ? value : def;
-	}
-
 	private String getString(Exchange e, String key, String def) {
-		String res = evaluate( def, e );
-		if( res != null) return res;
-		String value = e.getIn().getHeader(key, String.class);
-		if (value == null) {
-			value = e.getProperty(key, String.class);
-		}
-		debug(this,"getString:" + key + "=" + value + "/def:" + def);
-		return value != null ? trimToEmpty(value) : trimToEmpty(def);
+		String value = ExchangeUtils.getParameter(def,e, String.class);
+		info(this,"getString("+key+","+def+"):"+value);
+		return value;
 	}
 
 	private boolean getBoolean(Exchange e, String key, boolean def) {
