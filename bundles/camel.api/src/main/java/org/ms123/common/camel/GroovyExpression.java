@@ -32,6 +32,7 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.support.ExpressionSupport;
 import org.apache.camel.util.ExchangeHelper;
 import org.apache.camel.util.LRUSoftCache;
+import static com.jcabi.log.Logger.info;
 
 /**
  * @version 
@@ -85,7 +86,6 @@ public class GroovyExpression {
 	public static <T> T evaluate(String expr, Exchange exchange, Class<T> type) {
 		Script script = instantiateScript(exchange, expr);
 		script.setBinding(createBinding(exchange));
-		script.setProperty(expr, expr); //@@@MS  a expr thats a simple 'name' needs no ""
 		Object value = script.run();
 
 		return exchange.getContext().getTypeConverter().convertTo(type, value);
