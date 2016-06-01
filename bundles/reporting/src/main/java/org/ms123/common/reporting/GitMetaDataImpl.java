@@ -33,6 +33,8 @@ import org.ms123.common.git.GitService;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.store.StoreDesc;
 import static java.text.MessageFormat.format;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.info;
 
 /**
  *
@@ -85,7 +87,7 @@ class GitMetaDataImpl implements MetaData {
 	public void saveReport(String namespace, String name, Map<String,List> desc) throws Exception{
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		String user = getUserName();
-		m_gitService.putContentInternal(sdesc.getRepository(), format(REPORT_USER_PATH,user,name), REPORT_TYPE, m_js.deepSerialize(desc));
+		m_gitService.putContentInternal(sdesc.getRepository(), format(REPORT_USER_PATH,user,name), m_js.deepSerialize(desc), REPORT_TYPE);
 	}
 
 	public void deleteReport(String namespace, String name) throws Exception{

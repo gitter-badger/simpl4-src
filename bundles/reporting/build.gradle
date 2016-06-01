@@ -19,4 +19,5 @@ dependencies {
  	compile files("${repository}/shiro-aspectj-1.2.0.jar")
  	compile files("${repository}/shiro-core-1.2.0.jar")
 	compile files("${repository}/slf4j-api-1.6.1.jar")
+ 	compile files("${repository}/jcabi-1.0.jar")
 }
