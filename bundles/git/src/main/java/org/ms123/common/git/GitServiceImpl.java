@@ -18,77 +18,76 @@
  */
 package org.ms123.common.git;
 
-import java.io.FileInputStream;
-import java.io.File;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.HashSet;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.TimeZone;
-import java.text.SimpleDateFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.Event;
-import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.annotation.component.*;
-import static org.apache.commons.io.FileUtils.forceDelete;
-import static org.apache.commons.io.FileUtils.moveDirectory;
-import static org.apache.commons.io.FileUtils.moveDirectoryToDirectory;
-import static org.apache.commons.io.FileUtils.moveFileToDirectory;
-import static org.apache.commons.io.FileUtils.moveToDirectory;
-import static org.apache.commons.io.FileUtils.moveFile;
-import static org.apache.commons.io.FileUtils.copyFile;
-import static org.apache.commons.io.FileUtils.copyFileToDirectory;
-import static org.apache.commons.io.FileUtils.deleteQuietly;
-import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.apache.commons.io.FileUtils.write;
-import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.ms123.common.rpc.PName;
-import org.ms123.common.rpc.POptional;
-import org.ms123.common.rpc.PDefaultBool;
-import org.ms123.common.rpc.PDefaultInt;
-import org.ms123.common.rpc.RpcException;
-import org.apache.commons.lang.StringUtils;
-import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
-import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
-import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
-import org.apache.shiro.authz.annotation.RequiresRoles;
-import org.eclipse.jgit.api.*;
-import org.eclipse.jgit.util.*;
-import org.eclipse.jgit.lib.*;
-import org.eclipse.jgit.treewalk.*;
-import org.eclipse.jgit.treewalk.filter.*;
-import org.eclipse.jgit.revwalk.*;
-import org.eclipse.jgit.storage.file.*;
-import org.eclipse.jgit.util.*;
-import flexjson.JSONSerializer;
-import org.mvel2.*;
-import java.util.Scanner;
+import aQute.bnd.annotation.metatype.*;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import org.eclipse.jgit.transport.*;
+import flexjson.JSONSerializer;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.TimeZone;
+import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.tika.Tika;
+import org.eclipse.jgit.api.*;
+import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.*;
+import org.eclipse.jgit.storage.file.*;
+import org.eclipse.jgit.transport.*;
+import org.eclipse.jgit.treewalk.*;
+import org.eclipse.jgit.treewalk.filter.*;
+import org.eclipse.jgit.util.*;
+import org.ms123.common.rpc.PDefaultBool;
+import org.ms123.common.rpc.PDefaultInt;
+import org.ms123.common.rpc.PName;
+import org.ms123.common.rpc.POptional;
+import org.ms123.common.rpc.RpcException;
+import org.mvel2.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.info;
+import static org.apache.commons.io.FileUtils.copyFile;
+import static org.apache.commons.io.FileUtils.copyFileToDirectory;
+import static org.apache.commons.io.FileUtils.deleteQuietly;
+import static org.apache.commons.io.FileUtils.forceDelete;
+import static org.apache.commons.io.FileUtils.moveDirectory;
+import static org.apache.commons.io.FileUtils.moveDirectoryToDirectory;
+import static org.apache.commons.io.FileUtils.moveFile;
+import static org.apache.commons.io.FileUtils.moveFileToDirectory;
+import static org.apache.commons.io.FileUtils.moveToDirectory;
+import static org.apache.commons.io.FileUtils.readFileToString;
+import static org.apache.commons.io.FileUtils.write;
+import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
+import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
+import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 
 /** GitService implementation
  */
@@ -115,6 +114,7 @@ public class GitServiceImpl implements GitService {
 			add("sw.form");
 			add("sw.camel");
 			add("sw.stencil");
+			add("sw.report");
 			add("sw.datamapper");
 			add("sw.document");
 			add("sw.entitytype");
@@ -131,7 +131,7 @@ public class GitServiceImpl implements GitService {
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		info("GitServiceImpl.activate.props:" + props);
+		info(this,"GitServiceImpl.activate.props:" + props);
 	}
 
 	public void update(Map<String, Object> props) {
@@ -139,7 +139,7 @@ public class GitServiceImpl implements GitService {
 	}
 
 	protected void deactivate() throws Exception {
-		info("deactivate");
+		info(this,"deactivate");
 		System.out.println("GitServiceImpl deactivate");
 	}
 
@@ -353,12 +353,12 @@ public class GitServiceImpl implements GitService {
 					map.put("isModified", isModified(gitObject));
 					gitObject.close();
 				}
-				debug(fileName);
+				debug(this,fileName);
 				FileBasedConfig fbc = new FileBasedConfig(new File(gitSpace + "/" + fileName + "/.git/config"), fs);
 				fbc.load();
-				debug("FBC:" + fbc);
-				debug("FBC:" + fbc.getSections());
-				debug("FBC:" + fbc.toText());
+				debug(this,"FBC:" + fbc);
+				debug(this,"FBC:" + fbc.getSections());
+				debug(this,"FBC:" + fbc.toText());
 				String created = fbc.getString("sw", null, "created");
 				SimpleDateFormat sdf = new SimpleDateFormat(m_datePattern, Locale.GERMAN);
 				map.put("name", fileName);
@@ -404,7 +404,7 @@ public class GitServiceImpl implements GitService {
 				newTree = new FileTreeIterator(gitObject.getRepository());
 			} else {
 				File f = new File(gitObject.getRepository().getDirectory().getParentFile(), path);
-				debug("f:" + f);
+				debug(this,"f:" + f);
 				newTree = new FileTreeIterator(f, FS.detect(), gitObject.getRepository().getConfig().get(WorkingTreeOptions.KEY));
 				rootPath = path;
 				type = "sw.directory";
@@ -456,7 +456,7 @@ public class GitServiceImpl implements GitService {
 			}
 			// m_js.prettyPrint(true);
 			// String ser = m_js.deepSerialize(parentMap.get("root"));
-			// debug("Tree" + ser);
+			// debug(this,"Tree" + ser);
 			return parentMap.get("root");
 		} catch (Exception e) {
 			if( e instanceof RpcException) throw (RpcException)e;
@@ -479,18 +479,18 @@ public class GitServiceImpl implements GitService {
 			}
 			List<String> pathList = null;
 			File f = new File(gitDir,name);
-			info("searchFile.name:"+name+"\twantedType:"+type+"\tfile:"+f);
+			info(this,"searchFile.name:"+name+"\twantedType:"+type+"\tfile:"+f);
 			if( f.exists() && (isEmpty(type) || getFileType(f).equals(type))){
-				info("searchFile.found:"+f);
+				info(this,"searchFile.found:"+f);
 				return f;
 			}
 			File cachedFile = m_fileCache.get(repoName+"/"+name+"/"+type);
 			if( cachedFile != null && cachedFile.exists()){
-				info("searchFile.cachedFile("+repoName+"/"+name+") exists.searchTime"+(new Date().getTime() - startTime));
+				info(this,"searchFile.cachedFile("+repoName+"/"+name+") exists.searchTime"+(new Date().getTime() - startTime));
 				return cachedFile;
 			}
 			pathList = assetList(repoName, name, type, true);
-			info("searchFile.searchTime:" + (new Date().getTime() - startTime));
+			info(this,"searchFile.searchTime:" + (new Date().getTime() - startTime));
 			if (pathList.size() == 0) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.searchFile:File \"" + name + "\" exists not in " + repoName);
 			}
@@ -522,22 +522,22 @@ public class GitServiceImpl implements GitService {
 			List<String> pathList = null;
 			File f = new File(gitDir,name);
 			if( f.exists() && (isEmpty(type) || getFileType(f).equals(type))){
-				info("searchContent.found:"+f);
+				info(this,"searchContent.found:"+f);
 				FileHolder fr = new FileHolder(f);
 				return fr.getContent();
 			}
 			File cachedFile = m_fileCache.get(repoName+"/"+name+"/"+type);
 			if( cachedFile != null && cachedFile.exists()){
-				info("searchContent.cachedFile("+repoName+"/"+name+") exists.searchTime:"+(new Date().getTime() - startTime));
+				info(this,"searchContent.cachedFile("+repoName+"/"+name+") exists.searchTime:"+(new Date().getTime() - startTime));
 				long _startTime = new Date().getTime();
 				FileHolder fr = new FileHolder(cachedFile);
 				String c = fr.getContent();
-				info("searchContent.loadtime("+repoName+"/"+name+"):"+(new Date().getTime() - _startTime));
+				info(this,"searchContent.loadtime("+repoName+"/"+name+"):"+(new Date().getTime() - _startTime));
 				return c;
 			}
 
 			pathList = assetList(repoName, name, type, true);
-			info("searchContent.searchTime:" + (new Date().getTime() - startTime));
+			info(this,"searchContent.searchTime:" + (new Date().getTime() - startTime));
 			if (pathList.size() == 0) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.searchContent:File \"" + name + "\" exists not in " + repoName);
 			}
@@ -560,13 +560,13 @@ public class GitServiceImpl implements GitService {
 			@PName("path")             String path) throws RpcException {
 		try {
 			String gitSpace = System.getProperty("git.repos");
-			debug("getContent.gitSpace:"+gitSpace+"/repo:"+repoName+"/path:"+path);
+			debug(this,"getContent.gitSpace:"+gitSpace+"/repo:"+repoName+"/path:"+path);
 			File gitDir = new File(gitSpace, repoName);
 			if (!gitDir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.getContent:Repo(" + repoName + ") not exists");
 			}
 			File file = new File(gitDir, path);
-			debug("getContent.file:"+file.toString()+"/exists:"+file.exists()+"/gitDir:"+gitDir);
+			debug(this,"getContent.file:"+file.toString()+"/exists:"+file.exists()+"/gitDir:"+gitDir);
 			if (!file.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 101, "GitService.getContent:File(" + repoName + "/" + path + ") not exists");
 			}
@@ -584,13 +584,13 @@ public class GitServiceImpl implements GitService {
 			@PName("path")             String path) throws RpcException {
 		try {
 			String gitSpace = System.getProperty("git.repos");
-			debug("getContent.gitSpace:"+gitSpace+"/repo:"+repoName+"/path:"+path);
+			debug(this,"getContent.gitSpace:"+gitSpace+"/repo:"+repoName+"/path:"+path);
 			File gitDir = new File(gitSpace, repoName);
 			if (!gitDir.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 100, "GitService.getContent:Repo(" + repoName + ") not exists");
 			}
 			File file = new File(gitDir, path);
-			debug("getContent.file:"+file.toString()+"/exists:"+file.exists()+"/gitDir:"+gitDir);
+			debug(this,"getContent.file:"+file.toString()+"/exists:"+file.exists()+"/gitDir:"+gitDir);
 			if (!file.exists()) {
 				throw new RpcException(ERROR_FROM_METHOD, 101, "GitService.getContent:File(" + repoName + "/" + path + ") not exists");
 			}
@@ -770,7 +770,7 @@ public class GitServiceImpl implements GitService {
 			@PName("regex")             String regex
 			) throws RpcException {
 		try {
-			debug("Git.deleteObjects:"+repoName+","+directory+","+regex);
+			debug(this,"Git.deleteObjects:"+repoName+","+directory+","+regex);
 			String gitSpace = System.getProperty("git.repos");
 			File gitDir = new File(gitSpace, repoName);
 			if (!gitDir.exists()) {
@@ -782,12 +782,12 @@ public class GitServiceImpl implements GitService {
 			}
 			FileFilter fileFilter = new RegexFileFilter(regex);
 			File[] files = dir.listFiles(fileFilter);
-			debug("Git.deleteObjects.files:"+files.length);
+			debug(this,"Git.deleteObjects.files:"+files.length);
 			for (int i = 0; i < files.length; i++) {
 				File file = files[i];
 				deleteQuietly(file);
 				String[] segs = file.toString().split("/");
-				debug("Git.deleteObject:"+file+","+directory+"|"+segs[segs.length-1]);
+				debug(this,"Git.deleteObject:"+file+","+directory+"|"+segs[segs.length-1]);
 				rm(repoName, directory+segs[segs.length-1]);
 			} 
 		} catch (Exception e) {
@@ -830,7 +830,7 @@ public class GitServiceImpl implements GitService {
 				}
 				if (typeList.contains("all") || typeList.contains(getFileType(file))) {
 					if (name == null || name.equals(getBasename(pathString))) {
-						debug("\tTreffer:" + pathString);
+						debug(this,"\tTreffer:" + pathString);
 						hitList.add(pathString);
 						if (onlyFirst) {
 							return hitList;
@@ -889,7 +889,7 @@ public class GitServiceImpl implements GitService {
 				result = push.call();
 			}catch(org.eclipse.jgit.api.errors.TransportException e){
 				if( e.getCause() instanceof org.eclipse.jgit.errors.NoRemoteRepositoryException){
-					info("Push:"+e.getCause().getMessage());
+					info(this,"Push:"+e.getCause().getMessage());
 					return;
 				}else{
 					throw e;
@@ -897,7 +897,7 @@ public class GitServiceImpl implements GitService {
 			}
 			for (PushResult pushResult : result) {
 				if (StringUtils.isNotBlank(pushResult.getMessages())) {
-					debug(pushResult.getMessages());
+					debug(this,pushResult.getMessages());
 				}
 			}
 			return;
@@ -920,7 +920,7 @@ public class GitServiceImpl implements GitService {
 			git = Git.open(dir);
 			PullCommand pull = git.pull();
 			PullResult result = pull.call();
-			debug(result.toString());
+			debug(this,result.toString());
 			return;
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "GitService.pull:", e);
@@ -1108,7 +1108,7 @@ public class GitServiceImpl implements GitService {
 					try {
 						val = MVEL.evalToString(val, props);
 					} catch (Exception e) {
-						debug("TreeNodeVisitor.getNodeMap.MVEL(" + val + "):" + e);
+						debug(this,"TreeNodeVisitor.getNodeMap.MVEL(" + val + "):" + e);
 					}
 					nodeMap.put(key, val);
 				} else {
@@ -1132,21 +1132,21 @@ public class GitServiceImpl implements GitService {
 			e.printStackTrace();
 			return false;
 		}
-		debug("getAdvertisedRefs:" + fr.getAdvertisedRefs());
-		debug("getTrackingRefUpdates:" + fr.getTrackingRefUpdates());
+		debug(this,"getAdvertisedRefs:" + fr.getAdvertisedRefs());
+		debug(this,"getTrackingRefUpdates:" + fr.getTrackingRefUpdates());
 		return !fr.getTrackingRefUpdates().isEmpty();
 	}
 
 	private Boolean isModified(Git git) throws Exception {
 		StatusCommand sc = git.status();
 		Status st = sc.call();
-		debug("Status.getModified:" + st.getModified());
-		debug("Status.getAdded:" + st.getAdded());
-		debug("Status.getChanged:" + st.getChanged());
-		debug("Status.getMissing:" + st.getMissing());
-		debug("Status.getUntracked:" + st.getUntracked());
+		debug(this,"Status.getModified:" + st.getModified());
+		debug(this,"Status.getAdded:" + st.getAdded());
+		debug(this,"Status.getChanged:" + st.getChanged());
+		debug(this,"Status.getMissing:" + st.getMissing());
+		debug(this,"Status.getUntracked:" + st.getUntracked());
 		boolean clean = st.getAdded().isEmpty() && st.getChanged().isEmpty() && st.getRemoved().isEmpty() && st.getMissing().isEmpty() && st.getModified().isEmpty() && st.getConflicting().isEmpty();
-		debug("Status.clean:" + clean + "/" + st.isClean());
+		debug(this,"Status.clean:" + clean + "/" + st.isClean());
 		return !clean;
 	}
 
@@ -1362,22 +1362,13 @@ System.out.println("File:"+file+"="+ftype);
 	private void sendEvent(String topic, String repo) {
 		Map props = new HashMap();
 		props.put("repository", repo);
-		debug("GitService.sendEvent.postEvent:" + m_eventAdmin);
+		debug(this,"GitService.sendEvent.postEvent:" + m_eventAdmin);
 		m_eventAdmin.postEvent(new Event("git/" + topic, props));
 	}
 
 	@Reference(dynamic = true)
 	public void setEventAdmin(EventAdmin paramEventAdmin) {
-		debug("GitServiceImpl.setEventAdmin:" + paramEventAdmin);
+		debug(this,"GitServiceImpl.setEventAdmin:" + paramEventAdmin);
 		this.m_eventAdmin = paramEventAdmin;
 	}
-	protected void debug(String msg) {
-		//System.out.println(msg);
-		m_logger.debug(msg);
-	}
-	protected void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(GitServiceImpl.class);
 }
