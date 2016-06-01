@@ -139,15 +139,17 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 		_removeSettings: function () {
 			var etList = this._getEntitytypeInfo(this._existsList);
 			var namespace= this._facade.storeDesc.getNamespace();
+			var pack= this._facade.storeDesc.getNamespace();
 			var lang= ms123.config.ConfigManager.getLanguage();
-			var ds = new ms123.entitytypes.DefaultSettings(namespace,lang);
+			var ds = new ms123.entitytypes.DefaultSettings(namespace,pack, lang);
 			ds.deleteMessages(etList);
 			ds.deleteResources(etList);	
 		},
 		_createSettings: function (etList) {
 			var namespace= this._facade.storeDesc.getNamespace();
 			var lang= ms123.config.ConfigManager.getLanguage();
-			var ds = new ms123.entitytypes.DefaultSettings(namespace,lang);
+			var pack= this._facade.storeDesc.getNamespace();
+			var ds = new ms123.entitytypes.DefaultSettings(namespace,pack, lang);
 			ds.createMessages(etList);
 			ds.createResources(etList);	
 		},
