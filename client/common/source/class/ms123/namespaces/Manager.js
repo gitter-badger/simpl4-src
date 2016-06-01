@@ -18,6 +18,8 @@
  */
 /**
 	@ignore($)
+	@ignore(URL)
+	@ignore(jQuery.trim)
 	@asset(qx/icon/${qx.icontheme}/16/actions/*)
 	@asset(qx/icon/${qx.icontheme}/16/places/*)
 */
@@ -281,33 +283,46 @@ qx.Class.define("ms123.namespaces.Manager", {
 		},
 		_createAddForm: function () {
 			var formData = {
-				"name": {
-					'type': "TextField",
-					'label': this.tr("namespacesmanager.namespace_name"),
-					'validation': {
-						filter: "[A-Za-z0-9_]",
-						required: true,
-						validator: "/^[A-Za-z]([0-9A-Za-z_]){2,20}$/"
-					},
-					'value': ""
-				},
 				"url_meta": {
 					'type': "TextField",
 					'label': this.tr("namespacesmanager.url_meta"),
+					'exclude': 'namespace!=null && namespace.length>0',
 					'validation': {
 						required: false,
 						validator: "/^[A-Za-z]([0-9A-Za-z_/:.]){6,128}$/"
 					},
 					'value': ""
 				},
-				"url_data": {
+				"namespace": {
 					'type': "TextField",
-					'label': this.tr("namespacesmanager.url_data"),
+					'label': this.tr("namespacesmanager.namespace_name"),
+					'exclude': 'url_meta!=null && url_meta.length>0',
 					'validation': {
+						filter: "[A-Za-z0-9_]",
 						required: false,
-						validator: "/^[A-Za-z]([0-9A-Za-z_/:.]){6,128}$/"
+						validator: "/^[A-Za-z]([0-9A-Za-z_]){2,32}$/"
 					},
 					'value': ""
+				},
+				"username": {
+					'type': "TextField",
+					'label': this.tr("namespacesmanager.username"),
+					'validation': {
+						filter: "[A-Za-z0-9_]",
+						required: false,
+						validator: "/^[A-Za-z]([0-9A-Za-z_]){2,32}$/"
+					},
+					'value': ""
+				},
+				"password": {
+					'type': "TextField",
+					'label': this.tr("namespacesmanager.password"),
+					'value': ""
+				},
+				"withDataRepos": {
+					'type': "Checkbox",
+					'label': this.tr("namespacesmanager.with_data_repo"),
+					'value': false
 				}
 			};
 			var self = this;
@@ -317,8 +332,13 @@ qx.Class.define("ms123.namespaces.Manager", {
 				'callback': function (m) {
 					var f = qx.util.Serializer.toJson(m);
 					console.log("formData:" + f);
+					var p = self._parseRepoUrl(m);
+					console.log("p:",p);
+					if( p == null){
+						return;
+					}
 					try{
-						ms123.util.Remote.rpcSync( "namespace:installNamespace",{name:m.name, url_data:m.url_data, url_meta:m.url_meta });
+						ms123.util.Remote.rpcSync( "namespace:installNamespace",{name:p.namespace, url_data:p.url_data, url_meta:p.url_meta });
 					}catch(e){
 						ms123.form.Dialog.alert("NamespacesManager.createNamespace:"+e.message);
 						return;
@@ -337,6 +357,51 @@ qx.Class.define("ms123.namespaces.Manager", {
 				id: "tab1"
 			}];
 			return new ms123.widgets.Form(context);
+		},
+		_parseRepoUrl: function (m) {
+			var ret = {};
+			var namespace = m.namespace;
+			if( this._isEmpty( m.url_meta )){
+				if( this._isEmpty( m.namespace )){
+					return null;
+				}
+			}
+			if( !this._isEmpty( m.namespace )){
+				ret.namespace = m.namespace;
+				return ret;
+			}else{
+				var u = new URL(m.url_meta);
+				console.log("u:",u);
+				var startName = u.pathname.lastIndexOf( "/");
+				var len = u.pathname.length;
+				var ext='';
+				if( u.pathname.endsWith(".git")){
+					ret.namespace = u.pathname.substring( startName+1, len-4);
+					ext = ".git";
+				}else{
+					ret.namespace = u.pathname.substring( startName+1);
+				}
+				if( !this._isEmpty(m.password)){
+					u.password = m.password;
+				}
+				if( !this._isEmpty(m.username)){
+					u.username = m.username;
+				}
+				var ud = null;
+				if( m.withDataRepos){
+					ud = new URL(u.toString());
+					console.log("startName:",startName);
+					console.log("u.pathname:",u.pathname);
+					ud.pathname = u.pathname.substring(0,startName+1) + ret.namespace + "_data" + ext;
+					ret.url_data = ud.toString();
+				}
+				ret.url_meta = u.toString();
+			}
+			return ret;
+		},
+		_isEmpty: function (s) {
+			if (!s || jQuery.trim(s) == '') return true;
+			return false;
 		},
 		_load: function () {
 			var nsList = null;
