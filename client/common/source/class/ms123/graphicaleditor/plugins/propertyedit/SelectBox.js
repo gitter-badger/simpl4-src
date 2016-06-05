@@ -64,7 +64,6 @@ console.log("items:",this.items);
 			var selectables = this.getSelectables(true);
 			for( var i=0; i < selectables.length;i++){
 				var model = selectables[i].getModel();
-				console.log("model:",model);
 				var item = this._getItem(model);
 				if( item != null){
 					var enabled = item.enabled();
@@ -75,7 +74,6 @@ console.log("items:",this.items);
 		},
 		resetValue: function () {},
 		setValue: function (value) {
-			console.log("SelectBox.setValue:" + value);
 			this.setModelSelection([value]);
 			this._value = value;
 		},

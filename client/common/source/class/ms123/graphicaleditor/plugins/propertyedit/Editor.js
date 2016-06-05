@@ -896,7 +896,8 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 			return s.replace("[^A-Za-z0-9_]", "")
 		},
 		_getFilterForKey:function(key){
-			if( key =="oryx-ws_id" || key == "oryx-xf_id"){
+console.log("_getFilterForKey:",key);
+			if( key =="oryx-ws_id" || key == "oryx-xf_id" || key == "oryx-overrideid"){
 				return "[0-9A-Za-z_]";
 			}
 			return null;

@@ -67,7 +67,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 	members: {
 		// interface implementation
 		envChanged: function (env) {
-			console.log("env:",env);
 			this._env = env;
 		},
 		/**
