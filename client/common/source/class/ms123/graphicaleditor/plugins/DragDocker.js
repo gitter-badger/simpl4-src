@@ -168,6 +168,9 @@ console.log("DragDocker.handleMouseDown:"+uiObj+"/Parent:"+uiObj.parent);
 					}
 
 console.error("dockerSource:"+this.dockerSource+"/"+this.dockerTarget+"/"+uiObj);
+/*@@@MS seams better*/
+					this.dockerSource = undefined;
+					this.dockerTarget = undefined;
 				} else {
 					// If there parent is not an Edge, undefined the Source and Target
 					this.dockerSource = undefined;
