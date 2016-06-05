@@ -24,7 +24,7 @@ qx.Class.define("ms123.Application", {
 			this.base(arguments);
 			delete Array.prototype.toJSON;
 			this._initLogging();
-			this._initTheme("brown");
+			this._initTheme("simpl4");
 			//this._initTheme("ea");
 
 			ms123.util.RelationList;
@@ -277,6 +277,8 @@ qx.Class.define("ms123.Application", {
 				qx.theme.manager.Meta.getInstance().setTheme(ms123.theme.ms.Theme);
 			}else if( th== "simple"){
 				qx.theme.manager.Meta.getInstance().setTheme(ms123.theme.simple.Theme);
+			}else if( th== "simpl4"){
+				qx.theme.manager.Meta.getInstance().setTheme(ms123.theme.simpl4.Theme);
 			}else if( th== "brown"){
 				qx.theme.manager.Meta.getInstance().setTheme(ms123.theme.brown.Theme);
 			} else {

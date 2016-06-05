@@ -47,6 +47,9 @@ qx.Class.define("ms123.LoginWindow", {
 			}],
 			theme: [ 
 			{
+				label: "simpl4",
+				data: "simpl4"
+			}, {
 				label: "brown",
 				data: "brown"
 			}, {
