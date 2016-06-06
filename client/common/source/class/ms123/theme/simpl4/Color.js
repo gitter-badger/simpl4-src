@@ -32,16 +32,16 @@ qx.Theme.define("ms123.theme.simpl4.Color",
     "table-column-line" : "#c2c2c2",
     "table-focus-indicator" : "#c2c2c2",
     "table-row-background-even" : "white",
-    "table-row-background-focused" : "blue",
+    "table-row-background-focused" : "#607d8b",
     "table-row-background-focused-selected" :"#607d8b" ,
     "table-row-background-odd" : "white",
-    "table-row-background-selected" : "red",
+    "table-row-background-selected" : "#607d8b",
     "table-row-line" : "#c2c2c2",
     "text" : "#212121",
     "text-disabled" : "#57565A",
     "text-selected" : "white",
     "text-title" : "#314a6e",
     "window-border-inner" : "white",
-    "window-border" : "#cfd8dc"
+    "window-border" : "white"
   }
 });
