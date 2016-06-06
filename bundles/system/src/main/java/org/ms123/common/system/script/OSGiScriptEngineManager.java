@@ -36,6 +36,10 @@ import javax.script.SimpleBindings;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.ms123.common.libhelper.FileSystemClassLoader;
+import org.ms123.common.libhelper.ClassLoaderWrapper;
+import org.ms123.common.libhelper.BundleClassLoader;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.info;
 
 /**
  * This class acts as a delegate for all the available ScriptEngineManagers. Unluckily, the standard did not
@@ -75,11 +79,13 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
 	private Bindings bindings;
 	private Map<ScriptEngineManager, ClassLoader> classLoaders;
 	private BundleContext context;
+	private BundleClassLoader bundleClassLoader;
 
 	public OSGiScriptEngineManager(BundleContext context) {
 		this.context = context;
 		bindings = new SimpleBindings();
 		this.classLoaders = findManagers(context);
+		this.bundleClassLoader = new BundleClassLoader( context.getBundles());
 	}
 
 	/**
@@ -143,7 +149,8 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
 	public ScriptEngine getEngineByName(String shortName) {
 		for (ScriptEngineManager manager : classLoaders.keySet()) {
 			ClassLoader old = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(classLoaders.get(manager));
+			ClassLoaderWrapper wrapper = new ClassLoaderWrapper(classLoaders.get(manager), OSGiScriptEngineFactory.class.getClassLoader(), old);
+			Thread.currentThread().setContextClassLoader(wrapper);
 			ScriptEngine engine = manager.getEngineByName(shortName);
 			Thread.currentThread().setContextClassLoader(old);
 			if (engine != null) {
@@ -156,7 +163,10 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
 	public ScriptEngine getEngineByName(String namespace, String shortName) {
 		for (ScriptEngineManager manager : classLoaders.keySet()) {
 			ClassLoader old = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(getFilesystemClassloader(classLoaders.get(manager), namespace));
+			ClassLoader fsLoader = getFilesystemClassloader(this.bundleClassLoader, namespace);
+			ClassLoaderWrapper wrapper = new ClassLoaderWrapper( fsLoader, classLoaders.get(manager), old);
+
+			Thread.currentThread().setContextClassLoader(wrapper);
 			ScriptEngine engine = manager.getEngineByName(shortName);
 			Thread.currentThread().setContextClassLoader(old);
 			if (engine != null) {
@@ -173,6 +183,7 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
 		locations[2] = new File(System.getProperty("workspace") + "/" + "jooq/build");
 		locations[3] = new File(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
 		locations[4] = new File(System.getProperty("git.repos") + "/" + namespace + "/resources");
+
 		return new FileSystemClassLoader(parent, locations);
 	}
 
