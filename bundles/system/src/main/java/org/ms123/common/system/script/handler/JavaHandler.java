@@ -40,6 +40,10 @@ public class JavaHandler implements ScriptHandler {
 	public void compileScript(String namespace, String path, String code) throws Exception{
 		String destDir = System.getProperty("workspace")+"/"+ "java"+"/"+namespace;
 		String srcDir = System.getProperty("git.repos")+"/"+namespace;
+		File f = new File(destDir);
+		if(!f.exists()){
+			f.mkdirs();
+		}
 		try{
 			JavaCompiler.compile(namespace, m_bundleContext.getBundle(), FilenameUtils.getBaseName(path), code,new File(destDir));
 		}catch(Exception e){
