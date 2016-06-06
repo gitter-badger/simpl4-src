@@ -47,6 +47,8 @@ import static org.ms123.common.system.history.HistoryService.HISTORY_CAMEL_TRACE
 import static org.ms123.common.system.history.HistoryService.HISTORY_TOPIC;
 import static org.apache.camel.util.StringHelper.xmlEncode;
 import javax.xml.namespace.QName;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 
 @SuppressWarnings("unchecked")
 public class TraceEventHandler implements org.apache.camel.processor.interceptor.TraceEventHandler, Service {
@@ -91,9 +93,8 @@ public class TraceEventHandler implements org.apache.camel.processor.interceptor
 		props.put("resourceId", node.getId());
 		JSONSerializer js = new JSONSerializer();
 		js.prettyPrint(true);
-		if("out".equals(direction)){
-			info("logEntry:" + routeId + "/" + node.toString()+"/"+loggingOff+"/"+logExceptionsOnly);
-		}
+		info(this, "logEntry:" + routeId + "/" + node.toString()+"/"+loggingOff+"/"+logExceptionsOnly);
+		System.err.println("logEntry:" + routeId + "/" + node.toString()+"/"+loggingOff+"/"+logExceptionsOnly);
 		String breadcrumbId = (String) exchange.getIn().getHeaders().get(Exchange.BREADCRUMB_ID);
 		if( (loggingOff == false && logExceptionsOnly==false)|| hasException){
 			createLogEntry(exchange, contextName + "/" + routeId +"|"+  breadcrumbId, props, hasException, js);
@@ -160,16 +161,4 @@ public class TraceEventHandler implements org.apache.camel.processor.interceptor
 	@Override
 	public void stop() throws Exception {
 	}
-
-	private void debug(String msg) {
-		//System.out.println(msg);
-		m_logger.debug(msg);
-	}
-
-	private void info(String msg) {
-		//System.err.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(TraceEventHandler.class);
 }
