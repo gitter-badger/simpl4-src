@@ -153,9 +153,10 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 	@Override
 	public void doStart() throws Exception {
 		super.doStart();
-		if (hazelcastInstance == null) {
-			createOwnInstance = true;
-			hazelcastInstance = createOwnInstance();
+		if (this.hazelcastInstance == null) {
+			this.createOwnInstance = true;
+			this.hazelcastInstance = createOwnInstance();
+			info(this, "startHazelcast:"+this.hazelcastInstance);
 		}
 	}
 
@@ -163,12 +164,14 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 	public void doStop() throws Exception {
 		if (createOwnInstance && hazelcastInstance != null) {
 			hazelcastInstance.getLifecycleService().shutdown();
+			hazelcastInstance=null;
+			info(this, "stopHazelcast");
 		}
 		super.doStop();
 	}
 
 	public HazelcastInstance getHazelcastInstance() {
-		return hazelcastInstance;
+		return this.hazelcastInstance;
 	}
 
 	public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
@@ -177,9 +180,10 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 
 	private HazelcastInstance createOwnInstance() {
 		Config config = new XmlConfigBuilder().build();
-		// Disable the version check
 		config.getProperties().setProperty("hazelcast.version.check.enabled", "false");
-		return Hazelcast.newHazelcastInstance(config);
+		HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
+		info(this, "doStart:createOwnInstance:"+hi);
+		return hi;
 	}
 }
 

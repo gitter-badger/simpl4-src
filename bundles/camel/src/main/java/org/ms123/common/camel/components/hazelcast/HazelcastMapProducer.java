@@ -35,15 +35,18 @@ import static com.jcabi.log.Logger.info;
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class HazelcastMapProducer extends HazelcastDefaultProducer implements HazelcastConstantsOwn{
 
-	private final IMap<Object, Object> cache;
+	private IMap<Object, Object> cache;
 	private HazelcastMapEndpoint endpoint;
 	private String objectId;
 	private String source;
 	private String destination;
+	private String cacheName;;
+	private HazelcastInstance hazelcastInstance;
 
 	public HazelcastMapProducer(HazelcastInstance hazelcastInstance, HazelcastMapEndpoint endpoint, String cacheName) {
 		super(endpoint);
-		this.cache = hazelcastInstance.getMap(cacheName);
+		this.cacheName = cacheName;
+		this.hazelcastInstance = hazelcastInstance;
 		this.endpoint = endpoint;
 		this.objectId = endpoint.parameters.get(OBJECT_ID);
 		this.source = endpoint.parameters.get(SOURCE);
@@ -99,11 +102,18 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 
 	}
 
+	private IMap<Object, Object> getCache(){
+		if( this.cache == null){
+			this.cache = this.hazelcastInstance.getMap(this.cacheName);
+		}
+		info(this,"HazelcastMapProducer.hazelcastInstance:"+this.hazelcastInstance);
+		return this.cache;
+	}
 	/**
 	 * query map with a sql like syntax (see http://www.hazelcast.com/)
 	 */
 	private void query(String query, Exchange exchange) {
-		Collection<Object> result = this.cache.values(new SqlPredicate(query));
+		Collection<Object> result = getCache().values(new SqlPredicate(query));
 		exchange.getOut().setBody(result);
 	}
 
@@ -113,23 +123,23 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 	private void update(Object oid, Exchange exchange) {
 		Object obj = ExchangeUtils.getSource(this.source, exchange, Object.class);
 		info(this,"Update("+oid+").obj:"+obj);
-		this.cache.lock(oid);
-		this.cache.replace(oid, obj);
-		this.cache.unlock(oid);
+		getCache().lock(oid);
+		getCache().replace(oid, obj);
+		getCache().unlock(oid);
 	}
 
 	/**
 	 * remove an object from the cache
 	 */
 	private void delete(Object oid) {
-		this.cache.remove(oid);
+		getCache().remove(oid);
 	}
 
 	/**
 	 * find an object by the given id and give it back
 	 */
 	private void get(Object oid, Exchange exchange) {
-		Object obj = this.cache.get(oid);
+		Object obj = getCache().get(oid);
 		info(this,"Get("+oid+").obj:"+obj);
 		ExchangeUtils.setDestination(this.destination,obj , exchange);
 	}
@@ -140,7 +150,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 	private void put(Object oid, Exchange exchange) {
 		Object obj = ExchangeUtils.getSource(this.source, exchange, Object.class);
 		info(this,"Put("+oid+").obj:"+obj);
-		this.cache.put(oid, obj);
+		getCache().put(oid, obj);
 	}
 }
 
