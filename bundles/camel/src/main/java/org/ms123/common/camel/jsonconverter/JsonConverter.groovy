@@ -866,7 +866,7 @@ class ProcessorJsonConverter extends JsonConverterImpl{
 				file  = getRepoFile(namespace, srcFile, "sw."+codeLanguage);
 				script = readFileToString(file);
 			}
-			def sp = new ScriptProcessor(script,file, getScriptEngine(namespace,"nashorn"));
+			def sp = new ScriptProcessor(script,file, namespace, this);
 			ctx.current = ctx.current.process(sp);
 		}
 		ctx.current.id(resourceId);
@@ -898,14 +898,18 @@ class DatamapperJsonConverter extends JsonConverterImpl{
 
 class ScriptProcessor implements Processor {
 	def file;
+	def main;
+	def namespace;
 	def lastMod = null;
 	def scriptEngine;
 	def compiledScript;
-	public ScriptProcessor(script, f, se ){
+	public ScriptProcessor(script, f, ns, main ){
 		this.file = f;
 		this.lastMod = file.lastModified();
-		this.scriptEngine = se;
-		compiledScript = se.compile(script);
+		this.namespace = ns
+		this.main = main
+		this.scriptEngine = main.getScriptEngine(this.namespace,"nashorn");
+		this.compiledScript = this.scriptEngine.compile(script);
 	}
 
 	def testModified(){
@@ -913,7 +917,8 @@ class ScriptProcessor implements Processor {
 		def curMod = file.lastModified();
 		if( curMod > this.lastMod){
 			def script = readFileToString(this.file);
-			compiledScript = this.scriptEngine.compile(script);
+			this.scriptEngine = this.main.getScriptEngine(namespace,"nashorn")
+			this.compiledScript = this.scriptEngine.compile(script);
 			this.lastMod = curMod;
 		}
 	}
