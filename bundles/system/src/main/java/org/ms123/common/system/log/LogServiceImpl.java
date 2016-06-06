@@ -53,6 +53,8 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.info;
 
 /** LogService implementation
  */
@@ -84,7 +86,7 @@ public class LogServiceImpl extends BaseLogServiceImpl implements LogService, Ev
 	}
 
 	public void handleEvent(Event event) {
-		debug("LogServiceImpl.handleEvent: " + event + ",key:" + event.getProperty(LOG_KEY) + ",type:" + event.getProperty(LOG_TYPE));
+		debug(this,"LogServiceImpl.handleEvent: " + event + ",key:" + event.getProperty(LOG_KEY) + ",type:" + event.getProperty(LOG_TYPE));
 		StoreDesc sdesc = StoreDesc.getGlobalData();
 		PersistenceManager pm = m_nucleusService.getPersistenceManagerFactory(sdesc).getPersistenceManager();
 		try {
@@ -104,15 +106,15 @@ public class LogServiceImpl extends BaseLogServiceImpl implements LogService, Ev
 		} finally {
 			pm.close();
 		}
-		debug("LogServiceImpl.end");
+		debug(this,"LogServiceImpl.end");
 	}
 
 	public void update(Map<String, Object> props) {
-		info("LogServiceImpl.updated:" + props);
+		info(this,"LogServiceImpl.updated:" + props);
 	}
 
 	protected void deactivate() throws Exception {
-		info("LogServiceImpl.deactivate");
+		info(this,"LogServiceImpl.deactivate");
 		m_serviceRegistration.unregister();
 	}
 

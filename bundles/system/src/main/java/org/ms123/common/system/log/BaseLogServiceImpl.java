@@ -36,10 +36,10 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Extent;
 import javax.jdo.Query;
 import javax.transaction.UserTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.camel.util.IntrospectionSupport;
 import static org.ms123.common.system.log.LogService.LOG_TIME;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.info;
 
 /**
  *
@@ -132,14 +132,4 @@ abstract class BaseLogServiceImpl {
 		return retMap;
 	}
 
-	protected static void debug(String msg) {
-		m_logger.debug(msg);
-	}
-
-	protected static void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-
-	private static final Logger m_logger = LoggerFactory.getLogger(BaseLogServiceImpl.class);
 }
