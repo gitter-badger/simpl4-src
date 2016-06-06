@@ -151,10 +151,16 @@ public class ExchangeUtils {
 	}
 
 	public static <T> T getSource(String expr, Exchange exchange, Class<T> type) {
+		T value = null;
 		if (isEmpty(expr)) {
 			expr = "body";
 		}
-		return type.cast(evaluateExpr(expr, exchange, type));
+		try{
+			value = type.cast(evaluateExpr(expr, exchange, type));
+		}catch(Throwable e){
+			return type.cast(expr);
+		}
+		return value;
 	}
 
 	public static void setDestination(String expr, Object result, Exchange exchange) {
