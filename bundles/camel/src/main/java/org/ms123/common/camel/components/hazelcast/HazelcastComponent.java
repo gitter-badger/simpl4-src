@@ -39,6 +39,7 @@ import org.apache.camel.component.hazelcast.HazelcastConstants;
 import org.apache.camel.component.hazelcast.HazelcastCommand;
 import org.apache.camel.component.hazelcast.HazelcastComponentHelper;
 import org.apache.camel.component.hazelcast.HazelcastDefaultEndpoint;
+import org.ms123.common.system.hazelcast.HazelcastService;
 import static com.jcabi.log.Logger.info;
 
 import static org.apache.camel.util.ObjectHelper.removeStartingCharacters;
@@ -49,6 +50,7 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 
 	private HazelcastInstance hazelcastInstance;
 	private boolean createOwnInstance;
+	private CamelContext camelContext;
 
 	public HazelcastComponent() {
 		super(HazelcastDefaultEndpoint.class);
@@ -56,6 +58,8 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 
 	public HazelcastComponent(final CamelContext context) {
 		super(context, HazelcastDefaultEndpoint.class);
+		info(this,"HazelcastComponent");
+		this.camelContext=context;
 	}
 
 	@Override
@@ -153,23 +157,22 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 	@Override
 	public void doStart() throws Exception {
 		super.doStart();
-		if (this.hazelcastInstance == null) {
-			this.createOwnInstance = true;
-			this.hazelcastInstance = createOwnInstance();
-			info(this, "startHazelcast:"+this.hazelcastInstance);
-		}
+		info(this, "startHazelcast:"+this.hazelcastInstance);
+		this.hazelcastInstance = createInstance();
 	}
 
 	@Override
 	public void doStop() throws Exception {
-		if (createOwnInstance && hazelcastInstance != null) {
-			hazelcastInstance.getLifecycleService().shutdown();
-			hazelcastInstance=null;
-			info(this, "stopHazelcast");
-		}
 		super.doStop();
 	}
 
+	public HazelcastService getHazelcastService() {
+		return getByType(getCamelContext(), HazelcastService.class);
+	}
+
+	private <T> T getByType(CamelContext ctx, Class<T> kls) {
+		return kls.cast(ctx.getRegistry().lookupByName(kls.getName()));
+	}
 	public HazelcastInstance getHazelcastInstance() {
 		return this.hazelcastInstance;
 	}
@@ -178,10 +181,10 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 		this.hazelcastInstance = hazelcastInstance;
 	}
 
-	private HazelcastInstance createOwnInstance() {
-		Config config = new XmlConfigBuilder().build();
-		config.getProperties().setProperty("hazelcast.version.check.enabled", "false");
-		HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
+	private HazelcastInstance createInstance() {
+		HazelcastService hazelcastService = getHazelcastService();
+		info(this, "doStart:hazelcastService:"+hazelcastService);
+		HazelcastInstance hi = hazelcastService.getInstance("default");
 		info(this, "doStart:createOwnInstance:"+hi);
 		return hi;
 	}
