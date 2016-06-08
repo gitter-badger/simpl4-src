@@ -37,4 +37,5 @@ dependencies {
   compile files("${repository}/UserAgentUtils-1.9-snapshot.bar")
   compile files("${repository}/xbean/xbean-naming-3.18.jar")
   compile files("${repository}/schemacrawler-14.07.05.jar")
+	compile files("${repository}/hazelcast-3.6.3.jar")
 }

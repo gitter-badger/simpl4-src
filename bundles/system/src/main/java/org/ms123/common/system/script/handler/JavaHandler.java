@@ -26,6 +26,10 @@ import org.osgi.framework.ServiceReference;
 import org.ms123.common.camel.api.CamelService;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.XmlConfigBuilder;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
 /**
  ScriptEngineServiceImpl implementation
@@ -58,7 +62,8 @@ public class JavaHandler implements ScriptHandler {
 		if (camelService == null) {
 			throw new RuntimeException("JavaHandler.Cannot resolve camelService");
 		}
-		camelService.newGroovyClassLoader();
+		System.out.flush();
+		camelService.newGroovyClassLoader(namespace);
 	}
 
 }
