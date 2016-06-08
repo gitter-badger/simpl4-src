@@ -52,8 +52,8 @@ import javax.tools.ToolProvider;
 import javax.tools.DiagnosticCollector;
 import javax.tools.Diagnostic;
 import javax.tools.StandardJavaFileManager;
-import org.phidias.compile.BundleJavaManager;
 import javax.tools.StandardLocation;
+import org.ms123.common.system.compile.java.BundleJavaManager;
 
 /**
  *
@@ -237,8 +237,7 @@ abstract class BaseCompileServiceImpl {
 		try {
 			Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(getAllFiles(compileDirectory, ".java"));
 			List<String> options = new ArrayList<String>();
-//			options.add("-verbose");
-			BundleJavaManager bundleFileManager = new BundleJavaManager(bundle, fileManager, options);
+			BundleJavaManager bundleFileManager = new BundleJavaManager(bundle, fileManager);
 			javax.tools.JavaCompiler.CompilationTask task = compiler.getTask(null, bundleFileManager, diagnostics, options, null, compilationUnits);
 			if (!task.call()) {
 				Locale myLocale = Locale.getDefault();

@@ -1,3 +1,22 @@
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.ms123.common.system.compile.java;
 
 import javax.tools.JavaFileObject;
@@ -10,12 +29,12 @@ import java.util.ArrayList;
 import java.io.File;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import org.phidias.compile.BundleJavaManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
-import org.phidias.compile.StringJavaFileObject;
+import org.osgi.framework.wiring.BundleWiring;
+
 
 /**
  * Created by trung on 5/3/15.
@@ -23,7 +42,6 @@ import org.phidias.compile.StringJavaFileObject;
 @SuppressWarnings({"unchecked","deprecation"})
 public class JavaCompiler {
 	static javax.tools.JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-
 
 	private static String workspace   = System.getProperty("workspace");
 	private static String gitRepos   = System.getProperty("git.repos");
@@ -40,9 +58,7 @@ public class JavaCompiler {
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 		ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(javac.getStandardFileManager(diagnostics, null, null), locations, compiledCode, cl);
 
- // the OSGi aware file manager
-    BundleJavaManager bundleFileManager = new BundleJavaManager( bundle, fileManager, null);
-
+    BundleJavaManager bundleFileManager = new BundleJavaManager( bundle, fileManager);
 		javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, bundleFileManager, diagnostics, null, null, compilationUnits);
 		fileManager.close();
 		if (task.call()) {
@@ -62,7 +78,6 @@ public class JavaCompiler {
 
 	public static void compile(String namespace, Bundle bundle, String className, String sourceCodeInText, File destinationDirectory) throws Exception {
 		List<String> options = new ArrayList<String>();
-		//options.add("-verbose"); 
 
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 		StandardJavaFileManager standardFileManager = javac.getStandardFileManager(diagnostics, null, null);
@@ -75,9 +90,10 @@ public class JavaCompiler {
 
 		standardFileManager.setLocation( StandardLocation.CLASS_PATH, classPath);
 
-		BundleJavaManager bundleFileManager = new BundleJavaManager( bundle, standardFileManager, options);
-		javax.tools.JavaCompiler.CompilationTask compilationTask = javac.getTask( null, bundleFileManager, diagnostics, options, null, Arrays.asList(sourceFiles));
-		bundleFileManager.close();
+		BundleJavaManager	bundleJavaManager = new BundleJavaManager( bundle, standardFileManager);
+
+		javax.tools.JavaCompiler.CompilationTask compilationTask = javac.getTask( null, bundleJavaManager, diagnostics, options, null, Arrays.asList(sourceFiles));
+		standardFileManager.close();
 
 		// perform the actual compilation
 		if (compilationTask.call()) {
