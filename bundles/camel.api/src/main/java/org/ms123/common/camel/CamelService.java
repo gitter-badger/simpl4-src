@@ -47,4 +47,5 @@ public interface CamelService {
 	public void  createRoutesFromJson( String namespace ) throws RpcException;
 	public String evaluate(String expr, Exchange exchange);
 	public void newGroovyClassLoader();
+	public void newGroovyClassLoader(String namespace);
 }

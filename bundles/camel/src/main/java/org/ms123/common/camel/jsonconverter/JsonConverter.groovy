@@ -918,6 +918,7 @@ class ScriptProcessor implements Processor {
 		if( curMod > this.lastMod){
 			def script = readFileToString(this.file);
 			this.scriptEngine = this.main.getScriptEngine(namespace,"nashorn")
+			println("newScriptEngine:"+this.scriptEngine);
 			this.compiledScript = this.scriptEngine.compile(script);
 			this.lastMod = curMod;
 		}

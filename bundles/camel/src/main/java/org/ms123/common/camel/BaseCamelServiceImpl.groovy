@@ -550,6 +550,15 @@ info(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 		}
 	}
 
+	public void newGroovyClassLoader(String namespace){
+		String key = getContextKey(namespace);
+		GroovyRegistry gr = m_contextCache.get(key).groovyRegistry;
+		gr.newClassLoader();
+		CamelContext co = m_contextCache.get(key).context;
+		co.stop();
+		co.start();
+	}
+
 
 	private void toFlatList(Map<String,Object> fileMap,List<String> types,List<Map> result){
 		String type = (String)fileMap.get("type");
