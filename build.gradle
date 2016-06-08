@@ -30,6 +30,8 @@ ext.surfaceBuild="${rootDir}/build/${currentBranch}/surfaceBuild";
 ext.repository="${rootDir}/repository";
 ext.jsLibs="libs.js";
 ext.cssLibs="libs.css";
+ext.war=0
+ext.appserver="";
 
 configure(subprojects - 
 	project(":client") - 

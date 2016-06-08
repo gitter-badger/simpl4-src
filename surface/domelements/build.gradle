@@ -3,7 +3,7 @@ defaultTasks "buildAll"
 
 task buildHtml (type:Exec) {
 	executable "/bin/sh"
-	args "-c", "make-all.sh"
+	args "-c", "./make-all.sh"
 }
 
 task stage (type:Task) {
