@@ -301,7 +301,18 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}
 	}
 
-	def createProcessorJava(processMethodStr,importStr, completeClass) {
+	def getClassName(code) {
+		String pattern = "public class\\s+(\\w+)\\s+implements\\s+Processor";
+		Pattern r = Pattern.compile(pattern);
+		Matcher m = r.matcher(code);
+		if (m.find()) {
+			String clazz = m.group(1);
+			return clazz;
+		}
+		return "MyProcessor";
+	}
+
+	def createProcessorJava(processMethodStr,importStr, namespace, completeClass) {
 		def code = null;
 		if( completeClass){
 			code = processMethodStr;
@@ -310,7 +321,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}
 		System.out.println("Processor.Code.java:" + code);
 		try {
-			def clazz = JavaCompiler.compile(bundleContext.getBundle(), "MyProcessor", code);
+			def clazz = JavaCompiler.compile(namespace, bundleContext.getBundle(), getClassName(code), code);
 			return clazz.newInstance();
 		} catch (Throwable e) {
 			throw new RuntimeException(e.getMessage());
@@ -850,7 +861,7 @@ class ProcessorJsonConverter extends JsonConverterImpl{
 				def namespace = ctx.modelCamelContext.getRegistry().lookup("namespace");
 				def processor=null;
 				if( "java".equals(codeLanguage)){
-					processor = createProcessorJava(code,codeImport,codeKind=="completeClass");
+					processor = createProcessorJava(code,codeImport,namespace, codeKind=="completeClass");
 				}else{
 					processor = createProcessorGroovy(code,codeImport,namespace, codeKind=="completeClass");
 				}
