@@ -33,6 +33,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
+import org.ms123.common.libhelper.FileSystemClassLoader;
 import org.osgi.framework.wiring.BundleWiring;
 
 
@@ -54,6 +55,7 @@ public class JavaCompiler {
 		Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
 
 		ClassLoader loader = bundle.adapt(BundleWiring.class).getClassLoader();
+		loader = new FileSystemClassLoader(loader, locations);
 		DynamicClassLoader cl = new DynamicClassLoader(loader);
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 		ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(javac.getStandardFileManager(diagnostics, null, null), locations, compiledCode, cl);
