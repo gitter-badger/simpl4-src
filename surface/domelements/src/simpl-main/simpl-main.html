@@ -143,7 +143,7 @@
 
 		<!--iron-a11y-keys id="keys" target="[[target]]" keys="up down left right space space+shift" on-keys-pressed="keyHandler"></iron-a11y-keys-->
 
-		<simpl-dispatcher id="dispatcherId" on-mmenu-selected="menuItemSelected" selected="{{route}}" pages="{{getPages()}}">
+		<simpl-dispatcher id="dispatcherId" on-mmenu-selected="menuItemSelected" selected="{{route}}">
 			<paper-multidrawer-panel id="drawerPanel" drawer-width="230px" responsive-width="[[responsiveWidth]]" disable-swipe="false">
 				<div class="column grid" left-drawer>
 					<div class="grid column brand_drawer_panel fit">
@@ -157,7 +157,7 @@
 								</template>
 							</a>
 						</div>
-						<simpl-mmenu name="[[mmenuName]]" background="{{mmenuBackground}}" classes="{{mmenuClasses}}" sliding-submenus="true" searchfield="true" pages="{{getPages()}}" class="flex" />
+						<simpl-mmenu name="[[mmenuName]]" background="{{mmenuBackground}}" classes="{{mmenuClasses}}" sliding-submenus="true" searchfield="true" class="flex" />
 					</div>
 				</div>
 

@@ -37,7 +37,6 @@
 				}
 			},
 			ready: function() {
-				this.pages = simpl4PageRegistry.getPages();
 			},
 			attached: function() {
 				this.async( function() {
@@ -89,9 +88,10 @@
 				this.selected = page.hash;
 			},
 			getPageByHash: function( hash ) {
-				for ( var i = 0; i < this.pages.length; i++ ) {
-					if ( this.pages[ i ].hash == hash ) {
-						return this.pages[ i ];
+				var pages = simpl4PageRegistry.getPages();
+				for ( var i = 0; i < pages.length; i++ ) {
+					if ( pages[ i ].hash == hash ) {
+						return pages[ i ];
 					}
 				}
 			},

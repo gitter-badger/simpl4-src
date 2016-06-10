@@ -77,8 +77,8 @@
 				this.backgroundColor = "invalid";
 				this.classes = "mm-white mm-zoom-panels";
 				console.log( "mmenu.globalsChanged:", simpl4Globals.getAll() );
-				this._getMenuYaml();
-				this._createTree();
+				var nodes = this._getMenuYaml();
+				this._createTree(nodes);
 				this._createMenu()
 					//				this.context = "class2";
 				this.setStyleScope( this._mainmenu, "style-scope", this.tagName.toLowerCase() );
@@ -132,7 +132,7 @@
 				} ).bind( this ), 5000 );
 				this.async( function() {} );
 			},
-			_createTree: function() {
+			_createTree: function(nodes) {
 				var nav = document.createElement( 'nav' );
 				this._mainmenu = nav;
 				var ul = document.createElement( 'ul' );
@@ -141,7 +141,7 @@
 				Polymer.dom( nav ).setAttribute( "id", "mainmenu" );
 				Polymer.dom( nav ).classList.add( 'nav' )
 
-				this._createNodeList( ul, this.nodes, true );
+				this._createNodeList( ul, nodes, true );
 			},
 			_createNodeList: function( ul, nodes, firstLevel ) {
 				for ( var i = 0; i < nodes.length; i++ ) {
@@ -243,23 +243,24 @@
 			},
 			_getMenuYaml: function() {
 				console.log( "Menu._getMenuYaml:", this.name );
-				this.nodes = jQuery.ajax( {
+				var nodes = jQuery.ajax( {
 					url: this.name + ".yaml",
 					async: false,
 					dataType: "json"
 				} ).responseText;
 				try {
-					this.nodes = JSON.parse( this.nodes );
+					nodes = JSON.parse( nodes );
 				} catch ( e ) {
 					alert( "Error.Read Menu:" + e );
 					console.error( "Error.Read Menu:", e );
 					return;
 				}
-				this._pages = [];
-				this._traverse( this.nodes );
-				simpl4PageRegistry.addPages( this._pages );
+				var pages = [];
+				this._traverse( nodes,pages );
+				simpl4PageRegistry.addPages( pages );
+				return nodes;
 			},
-			_traverse: function( nodes ) {
+			_traverse: function( nodes,pages ) {
 				for ( var i = 0; i < nodes.length; i++ ) {
 					var node = nodes[ i ];
 					if ( node.name ) {
@@ -279,10 +280,10 @@
 					}
 					if ( node.disabled !== true ) {
 						if ( node.children && node.children.length > 0 ) {
-							this._pages.push( node );
-							this._traverse( node.children );
+							pages.push( node );
+							this._traverse( node.children,pages );
 						} else {
-							this._pages.push( node );
+							pages.push( node );
 						}
 					}
 				}
