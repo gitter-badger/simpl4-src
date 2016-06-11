@@ -58,7 +58,13 @@ clazz.construct.extend( "simpl4.util.CrudForm", {
 				prevF = f
 			}, this );
 		}, this );
-		var h1 = "data." + entityname + "." + tabView.childShapes[ 0 ].xf_id;
+		var p = "data";
+		var e = entityname;
+		if( entityname.indexOf(":") >=0){
+			p = entityname.split(":")[0];
+			e = entityname.split(":")[1];
+		}
+		var h1 = p+ "." + e + "." + tabView.childShapes[ 0 ].xf_id;
 		if ( tabView.childShapes.length == 1 && h1 == tr( h1 ) ) {
 			this._form = tabView.childShapes[ 0 ];
 			this._form.id = "Form";
@@ -82,7 +88,13 @@ clazz.construct.extend( "simpl4.util.CrudForm", {
 		}
 		shape.xf_id = f.name;
 		shape.xf_type = this.convertFieldType( f );
-		shape.label = tr( "data." + this.entityname + "." + f.name );
+		var p = "data";
+		var e = this.entityname;
+		if( this.entityname.indexOf(":") >=0){
+			p = this.entityname.split(":")[0];
+			e = this.entityname.split(":")[1];
+		}
+		shape.label = tr( p+"." + e + "." + f.name );
 		if ( f.constraints ) {
 			var c = JSON.parse( f.constraints );
 			shape.regulaConstraints = simpl4.util.FormManager.constructRegulaConstraints( c );
@@ -174,7 +186,13 @@ clazz.construct.extend( "simpl4.util.CrudForm", {
 						page.layout = "single";
 					}
 					page.id = "Page";
-					page.title = tr( "data." + entityname + "." + page.xf_id );
+					var p = "data";
+					var e = entityname;
+					if( entityname.indexOf(":") >=0){
+						p = entityname.split(":")[0];
+						e = entityname.split(":")[1];
+					}
+					page.title = tr( p+ "." + e + "." + page.xf_id );
 					childShapes.push( page );
 				}
 			} catch ( e ) {

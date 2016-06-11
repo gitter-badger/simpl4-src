@@ -42,6 +42,7 @@ simpl4.util.BaseManager.extend( "simpl4.util.FormManager", {
 			var props = simpl4.util.EntityManager.getEntityViewProperties( entityname, "main-form", {
 				namespace: namespace
 			} );
+			console.log("props:",props);
 			var fields = simpl4.util.EntityManager.getEntityViewFields( entityname, "main-form", true, {
 				namespace: namespace
 			} );

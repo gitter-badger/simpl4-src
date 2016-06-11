@@ -54,6 +54,15 @@ qx.Class.define("ms123.settings.views.FormPropertyEdit", {
 					},
 					'value': "tab1"
 				},
+				"customForm": {
+					'type': "TextField",
+					'label': this.tr("settings.views.propertyedit.customForm"),
+					'validation': {
+						required: false,
+						validator: "/^[A-Za-z]([0-9A-Za-z_]){0,60}$/"
+					},
+					'value': null
+				},
 				"modal":{
 					type: "CheckBox",
 					defaultValue:true,

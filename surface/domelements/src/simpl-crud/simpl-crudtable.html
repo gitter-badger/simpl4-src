@@ -275,6 +275,12 @@
 				this.dateList = {};
 				this.datetimeList = {};
 				this.columns = [];
+				var p = "data";
+				var e = this.entity;
+				if( this.entity.indexOf(":") >0 ){
+					p = this.entity.split(":")[0];
+					e = this.entity.split(":")[1];
+				}
 				var ret = [];
 				fields.forEach( function( f ) {
 					var dtName = f.name;
@@ -292,7 +298,7 @@
 						dtName = f.name + "_display";
 					}
 					var col = {
-						title: f.title || tr( 'data.' + this.entity + '.' + f.name ),
+						title: f.title || tr( p+'.' + e + '.' + f.name ),
 						data: dtName,
 						class: f.tags,
 						mRender: this.renderColumn.bind(this)
@@ -366,11 +372,17 @@
 							fields.push( this.meta[ i ].name );
 						}
 					}
+					var p = "data";
+					var e = filter.entity;
+					if( filter.entity.indexOf(":") >0 ){
+						p = filter.entity.split(":")[0];
+						e = filter.entity.split(":")[1];
+					}
 					data = simpl4.util.Rpc.rpcSync( "data:query", {
-						storeId: this.namespace + "_data",
+						storeId: this.namespace + "_"+p,
 						pageSize: 100,
 						orderby: props.orderby,
-						entity: filter.entity,
+						entity: e,
 						fields: fields,
 						filter: filter
 					} );

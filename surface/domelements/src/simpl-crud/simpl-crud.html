@@ -197,7 +197,9 @@
 					simpl4MessageManager.installMessages( this.namespace );
 				}
 				this.mainEntityName = this.entity;
-				this.panelHeaderCrudTable = tr( "data." + this.mainEntityName + "_list" );
+
+				var ep = this.getPack( this.mainEntityName );
+				this.panelHeaderCrudTable = tr( ep.pack+"." + ep.entityName + "_list" );
 				this.pageStack = new Array();
 				this.pageSelected = 0;
 				console.log( "pageSelected:" + this.pageSelected );
@@ -256,7 +258,9 @@
 				this.currentEntityChildName = detail.entityChild;
 				this.currentRowData = this.getData( detail.data );
 				this.currentTable = detail.table;
-				this.panelHeaderCrudForm = tr( "data." + detail.entity );
+
+				var ep = this.getPack( detail.entity );
+				this.panelHeaderCrudForm = tr( ep.pack+"." + ep.entityName );
 
 				this.whenElementsReady( ( function() {
 					console.debug( "Ready" );
@@ -295,7 +299,9 @@
 
 				this.prevNextButtonsInvisible = null;
 				this.handlePrevNextButtons();
-				this.panelHeaderCrudForm = tr( "data." + detail.entity );
+
+				var ep = this.getPack( detail.entity );
+				this.panelHeaderCrudForm = tr( ep.pack+"." + ep.entityName );
 				this.whenElementsReady( ( function() {
 					console.debug( "Form.Ready:" + JSON.stringify( this.currentRowData, null, 2 ) );
 					this.$.formid.setData( this.currentRowData );
@@ -320,7 +326,9 @@
 				this.currentEntityName = detail.entity;
 				this.currentEntityChildName = detail.entityChild;
 				this.currentTable = detail.table;
-				this.panelHeaderCrudForm = tr( "data." + detail.entity );
+
+				var ep = this.getPack( detail.entity );
+				this.panelHeaderCrudForm = tr( ep.pack+"." + ep.entityName );
 
 				this.whenElementsReady( ( function() {
 					this.$.formid.setData( {} );
@@ -331,13 +339,14 @@
 				console.log( "detailAction:", e.detail );
 				console.log( "detailAction:", this.$.detailsOverviewId );
 				var currentRowData = e.detail.data;
+
 				this.$.detailsOverviewId.setData( e.detail.data );
 				var props = simpl4EntityManager.getPropertiesForEntity( this.mainEntityName, {
 					namespace: this.namespace
 				} );
 				this.panelHeaderDetails = this._maskedEval( props.title_expression, currentRowData, "" );
 				var mainEntity = simpl4EntityManager.getEntity( this.mainEntityName, this.namespace );
-				this.mainEntityId = currentRowData.id;
+				this.mainEntityId = this.getIdValue(this.mainEntityName,this.namespace, currentRowData)
 				var entityChildList = [];
 				for ( var i = 0; i < mainEntity.childs.length; i++ ) {
 					var c = mainEntity.childs[ i ];
@@ -363,7 +372,6 @@
 					entityChildList.push( cn );
 				}
 				this.entityChildList = entityChildList;
-				console.log( "entityChildList:", this.entityChildList );
 				this.pageStack.push( this.pageSelected );
 				this.async(function(){
 					this.pageSelected = 2;
@@ -371,20 +379,23 @@
 			},
 			storeData: function( data ) {
 				var rpc = null;
+				var ep = this.getPack( this.mainEntityName );
 				if ( this.mainEntityName != this.currentEntityName ) {
 					rpc = {
-						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_data",
-						entity: this.mainEntityName,
+						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+ep.pack,
+						entity: ep.entityName,
 						entityChild: this.currentEntityChildName,
 						id: this.mainEntityId,
-						idChild: data.id,
+						idChild: this.getIdValue(this.mainEntityName,this.namespace, data),
 						data: data
 					}
 				} else {
+					var idValue = this.getIdValue( this.mainEntityName, this.namespace, data);
+					console.log("idValue:",idValue);
 					rpc = {
-						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_data",
-						entity: this.mainEntityName,
-						id: data.id,
+						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+p,
+						entity: e,
+						id: idValue,
 						data: data
 					}
 				}
@@ -392,13 +403,37 @@
 				return ret;
 			},
 			getData: function( data ) {
+				var ep = this.getPack( this.currentEntityName );
+				var idValue = this.getIdValue( this.currentEntityName, this.namespace, data);
 				var rpc = {
-					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_data",
-					entity: this.currentEntityName,
-					id: data.id
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+ep.pack,
+					entity: ep.entityName,
+					id: idValue
 				}
 				var ret = simpl4.util.Rpc.rpcSync( "data:queryOne", rpc );
 				return ret;
+			},
+			getPack:function( en){
+				var p = "data";
+				var e = en;
+				if( en.indexOf(":") >0 ){
+					p = en.split(":")[0];
+					e = en.split(":")[1];
+				}
+				return {entityName:e, pack:p}
+			},
+			getIdValue:function( entityName, namespace, data){
+				var pkList = simpl4.util.EntityManager.getEntity(entityName,namespace).primaryKeys;
+				if( pkList == null){
+					pkList = ["id"];
+				}
+				var idValue = "";
+				var colon = "";
+				for( var i=0; i < pkList.length;i++){
+					idValue += colon + data[pkList[i]];
+					colon = ":";
+				}
+				return idValue;
 			},
 			saveAction: function() {
 				var valid = this.$.formid.validate();
@@ -438,13 +473,6 @@
 							this.querySelector( "#toast" ).show();
 
 							this.needRefresh = true;
-							//setTimeout( ( function() {
-							//var pageSelected = this.pageStack.pop();
-							//this.pageSelected = ( pageSelected == null ) ? 0 : pageSelected;
-							//setTimeout( ( function() {
-							//	this.currentTable.refresh();
-							//} ).bind( this ), 100 );
-							//} ).bind( this ), 3000 );
 						}
 					} catch ( e ) {
 				 		var msg = e.substring(e.indexOf("entityName:")+11);

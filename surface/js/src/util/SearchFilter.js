@@ -184,12 +184,18 @@ clazz.construct.extend( "simpl4.util.SearchFilter", {
 		var category = "data";
 
 		var cols = model;
+		var pack = "data";
+		var entity = entityname;
+		if( entityname.indexOf(":") >=0){
+			pack = entityname.split(":")[0];
+			entity = entityname.split(":")[1];
+		}
 		var fields = [];
 		for ( var i = 0; i < cols.length; i++ ) {
 			var col = cols[ i ];
 			if ( col.hidden !== true && col.edittype != "relatedto" ) {
 				var field = {};
-				field.text = tr( category + "." + entityname + "." + col.name );
+				field.text = tr( pack + "." + entity + "." + col.name );
 				field.itemval = col.name;
 
 				var sopt = this._setDefaultSearchOptions( col );

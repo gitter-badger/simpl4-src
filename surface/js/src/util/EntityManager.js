@@ -38,21 +38,27 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 			namespace: Args.STRING | Args.Optional
 		} ], arguments );
 
+		var pack = "data";
+		var entityName = args.entity;
+		if( args.entity.indexOf(":") >0 ){
+			pack = args.entity.split(":")[0];
+			entityName = args.entity.split(":")[1];
+		}
 		var namespace = args.namespace || simpl4.util.BaseManager.getNamespace();
 		var withAutoGen = args.withAutoGen === true;
 		var withRelations = args.withRelations === true;
-		var fields = simpl4.util.EntityManager.fieldCache[ "fields-" + storeId + "-" + args.entity + "-" + withAutoGen + "-" + withRelations + "-" + args.filter + "-" + args.mapping ];
+		var fields = simpl4.util.EntityManager.fieldCache[ "fields-" + namespace + "-" + args.entity + "-" + withAutoGen + "-" + withRelations + "-" + args.filter + "-" + args.mapping ];
 		if ( !fields ) {
 			try {
 				fields = simpl4.util.Rpc.rpcSync( "entity:getFields", {
-					storeId: namespace + "_data",
+					storeId: namespace + "_"+pack,
 					withAutoGen: withAutoGen,
 					withRelations: withRelations,
 					filter: args.filter,
 					mapping: args.mapping,
-					entity: args.entity
+					entity: entityName
 				} );
-				simpl4.util.EntityManager.fieldCache[ "fields-" + storeId + "-" + args.entity + "-" + withAutoGen + "-" + withRelations + "-" + args.filter + "-" + args.mapping ] = fields;
+				simpl4.util.EntityManager.fieldCache[ "fields-" + namespace + "-" + args.entity + "-" + withAutoGen + "-" + withRelations + "-" + args.filter + "-" + args.mapping ] = fields;
 			} catch ( e ) {
 				this._error( "EntityManager.getFields", e );
 				return [];
@@ -105,6 +111,8 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 	getEntities: function() {
 		var args = Args( [ {
 			namespace: Args.STRING | Args.Optional
+		}, {
+			pack: Args.STRING | Args.Optional
 		} ], arguments );
 
 		var namespace = args.namespace || simpl4.util.BaseManager.getNamespace();
@@ -112,7 +120,7 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 		if ( !entities ) {
 			try {
 				entities = simpl4.util.Rpc.rpcSync( "entity:getEntities", {
-					storeId: namespace + "_data"
+					storeId: namespace + "_"+args.pack
 				} );
 				simpl4.util.EntityManager.entityCache[ "entities-" + namespace ] = entities;
 			} catch ( e ) {
@@ -128,11 +136,19 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 		}, {
 			namespace: Args.STRING | Args.Optional
 		} ], arguments );
+	
+		var pack = "data";
+		var entityName = args.name;
+		if( args.name.indexOf(":") >0 ){
+			pack = args.name.split(":")[0];
+			entityName = args.name.split(":")[1];
+		}
+
 
 		var namespace = args.namespace || this.getNamespace();
 		var entities = simpl4.util.EntityManager.entityCache[ "entities-" + namespace ];
 		if ( !entities ) {
-			entities = this.getEntities( namespace );
+			entities = this.getEntities( {namespace:namespace,pack:pack} );
 		}
 		if ( !entities ) {
 			this._error( "EntityManager.getEntity:" + args.name + "(" + namespace + ") not found" );
@@ -140,7 +156,7 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 		}
 		for ( var i = 0; i < entities.length; i++ ) {
 			var entity = entities[ i ];
-			if ( entity.name == args.name ) {
+			if ( entity.name == entityName ) {
 				return entity;
 			}
 		}
@@ -149,7 +165,7 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 			var entity = entities[ i ];
 			for ( var j = 0; entity.childs && j < entity.childs.length; j++ ) {
 				var child = entity.childs[ j ];
-				if ( child.modulename == args.name ) {
+				if ( child.modulename == entityName ) {
 					return child;
 				}
 			}
@@ -324,12 +340,18 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 			namespace: Args.STRING | Args.Optional
 		} ], arguments );
 
+		var pack = "data";
+		var entityName = args.entity;
+		if( args.entity.indexOf(":") >0 ){
+			pack = args.entity.split(":")[0];
+			entityName = args.entity.split(":")[1];
+		}
 		var namespace = args.namespace || simpl4.util.BaseManager.getNamespace();
 		var fields = simpl4.util.EntityManager.fieldCache[ "af-" + args.entity ];
 		if ( fields === undefined ) {
 			fields = simpl4.util.Rpc.rpcSync( "entity:getPermittedFields", {
-				storeId: namespace + "_data",
-				entity: args.entity
+				storeId: namespace + "_"+pack,
+				entity: entityName
 			} );
 			simpl4.util.EntityManager.fieldCache[ "af-" + args.entity ] = fields;
 		}
