@@ -592,7 +592,7 @@ qx.Class.define('ms123.widgets.Form', {
 				var fd = self.formData[p];
 				var val = m.get(p);
 				if ((fd.type == "DateField" || fd.type == "DateTimeField") && val != null && val != "" && typeof val == 'object' && val.constructor == Date) {
-					val = val.getTime()-(val.getTimezoneOffset()*60000);
+					val = val.getTime();//-(val.getTimezoneOffset()*60000);
 				}
 				//console.log("__formula:"+fd.__formula);
 				if (fd.__formula) {
