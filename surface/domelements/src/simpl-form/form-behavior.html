@@ -217,12 +217,13 @@
 			if( this.isEmpty(method)) return {};
 			try{
 				if( method.indexOf(".") == -1){
-					method = this.namespace + ":"+ method;
+					method = this.namespace + "."+ method;
 				}
 				var jsonData = simpl4.util.Rpc.rpcSync( "camelRoute:"+method, { } );
 				console.log("_getFormJsonDataForSelectionLists.jsonData:", jsonData);
 				return jsonData;
 			}catch(e){
+				console.error("_getFormJsonDataForSelectionLists.call:camelRoute:"+method);
 				console.error("_getFormJsonDataForSelectionLists:",e);
 			}
 		},
