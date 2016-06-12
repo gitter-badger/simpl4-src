@@ -107,6 +107,7 @@ import org.ms123.common.libhelper.Base64;
 import org.xml.sax.SAXException;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.annotation.component.*;
+import static org.apache.commons.lang3.StringUtils.stripEnd;
 
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "kind=jdo,name=dataLayer" })
@@ -1549,6 +1550,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 							debug("Bytearray");
 						} else if (row[col] instanceof java.util.Date) {
 							rowMap.put(colName, String.valueOf(((Date) row[col]).getTime()));
+						} else if (row[col] instanceof java.lang.String) {
+							rowMap.put(colName, stripEnd( (String)row[col]," "));
 						} else {
 							rowMap.put(colName, row[col]);
 						}
@@ -2047,6 +2050,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			return value;
 		} else if (value instanceof java.lang.Integer) {
 			return value;
+		} else if (value instanceof java.lang.String) {
+			return stripEnd((String)value," ");
 		} else if (dt.startsWith("related")) {
 			Object ret = "";
 			try {
