@@ -93,7 +93,7 @@
 					<paper-button style="text-align:left;" class="flex button" raised on-tap="cancelAction"><iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 				</div>
 				<simpl-panel bgcolor="{{panelBackgroundColor}}" heading="{{panelHeaderCrudForm}}">
-					<simpl-form id="formid" mode="{{mode}}" spec="{{formSpec}}"></simpl-form>
+					<simpl-form id="formid" mode="{{mode}}" form-name="[[formName]]" spec="{{formSpec}}"></simpl-form>
 					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
 						<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
 							<iron-icon icon="image:navigate-before"></iron-icon>
@@ -208,9 +208,14 @@
 				if ( namespace === this.prevNamespace && entity === this.prevEntityName ) return;
 				this.currentNamespace = namespace;
 				var formSpec = simpl4FormManager.getCrudForm( entity, namespace );
+				console.debug("setFormSpec:", formSpec);
 				this.prevEntityName = entity;
 				this.prevNamespace = namespace;
-				this.formSpec = [ formSpec ];
+				if (typeof formSpec === 'string' || myVar instanceof String){
+					this.formName = formSpec;
+				}else{
+					this.formSpec = [ formSpec ];
+				}
 			},
 			getFormSpec: function( item ) {
 				return [simpl4FormManager.getCrudForm( item.entity, item.namespace || this.namespace )];
@@ -393,12 +398,13 @@
 					var idValue = this.getIdValue( this.mainEntityName, this.namespace, data);
 					console.log("idValue:",idValue);
 					rpc = {
-						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+p,
-						entity: e,
+						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+ep.pack,
+						entity: ep.entityName,
 						id: idValue,
 						data: data
 					}
 				}
+console.log("rpc:",rpc);
 				var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
 				return ret;
 			},
@@ -475,6 +481,7 @@
 							this.needRefresh = true;
 						}
 					} catch ( e ) {
+						console.debug(e.stack);
 				 		var msg = e.substring(e.indexOf("entityName:")+11);
 						this.toast_message = tr( "data.form.save" ) + ": (" + msg;
 						this.querySelector( "#toast" ).show();

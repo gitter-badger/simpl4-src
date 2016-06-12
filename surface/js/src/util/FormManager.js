@@ -43,11 +43,15 @@ simpl4.util.BaseManager.extend( "simpl4.util.FormManager", {
 				namespace: namespace
 			} );
 			console.log("props:",props);
-			var fields = simpl4.util.EntityManager.getEntityViewFields( entityname, "main-form", true, {
-				namespace: namespace
-			} );
-			var _cf = new simpl4.util.CrudForm( namespace, entityname, fields, props );
-			cf = _cf.getSpec();
+			if( this.isEmpty(props.customForm)){
+				var fields = simpl4.util.EntityManager.getEntityViewFields( entityname, "main-form", true, {
+					namespace: namespace
+				} );
+				var _cf = new simpl4.util.CrudForm( namespace, entityname, fields, props );
+				cf = _cf.getSpec();
+			}else{
+				cf = props.customForm;
+			}
 			this.crudFormCache[ namespace + "/" + entityname ] = cf;
 		}
 		return cf;
@@ -184,6 +188,9 @@ simpl4.util.BaseManager.extend( "simpl4.util.FormManager", {
 			b = ' ';
 		}).bind(this) );
 		return ret;
+	},
+	isEmpty:function(str){
+		return (!str || !str.length);
 	},
 	toDash:function(camel){
 	 if( Polymer.whenReady) return camel; //@@@MS Polymer pre 0.5
