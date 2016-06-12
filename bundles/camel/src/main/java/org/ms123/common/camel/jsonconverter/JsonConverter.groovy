@@ -916,7 +916,9 @@ class ScriptProcessor implements Processor {
 	def compiledScript;
 	public ScriptProcessor(script, f, ns, main ){
 		this.file = f;
-		this.lastMod = file.lastModified();
+		if( f){
+			this.lastMod = f.lastModified();
+		}
 		this.namespace = ns
 		this.main = main
 		this.scriptEngine = main.getScriptEngine(this.namespace,"nashorn");
