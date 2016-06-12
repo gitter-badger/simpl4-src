@@ -1316,13 +1316,25 @@
 				if( this.items == null){
 					return;
 				}
-				for( var i=0; i < this.items.length;i++){
-					var item = this.items[i];
-					var option = document.createElement("option");
-					var label = document.createTextNode(item.label);
-					option.value = item.value;
-					Polymer.dom( option ).appendChild( label );
-					Polymer.dom( select ).appendChild( option );
+				if( this.items.length ){
+					for( var i=0; i < this.items.length;i++){
+						var item = this.items[i];
+						var option = document.createElement("option");
+						var label = document.createTextNode(item.label);
+						option.value = item.value;
+						Polymer.dom( option ).appendChild( label );
+						Polymer.dom( select ).appendChild( option );
+					}
+				}else{
+					var items=this.items
+					Object.keys(items).forEach(function(k) {
+						var item = items[k];
+						var option = document.createElement("option");
+						var label = document.createTextNode(item.label);
+						option.value = item.value;
+						Polymer.dom( option ).appendChild( label );
+						Polymer.dom( select ).appendChild( option );
+					})
 				}
 			},
 			valueChanged: function( v ) {
