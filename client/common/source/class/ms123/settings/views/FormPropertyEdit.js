@@ -59,7 +59,7 @@ qx.Class.define("ms123.settings.views.FormPropertyEdit", {
 					'label': this.tr("settings.views.propertyedit.customForm"),
 					'validation': {
 						required: false,
-						validator: "/^[A-Za-z]([0-9A-Za-z_]){0,60}$/"
+						validator: "/^[A-Za-z]([0-9A-Za-z._]){0,60}$/"
 					},
 					'value': null
 				},
