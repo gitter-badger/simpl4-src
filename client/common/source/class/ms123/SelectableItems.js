@@ -246,6 +246,13 @@ console.log("setVarMap:"+varMap);
 						mapping: mapping
 					});
 				}
+				if ( type == "camelparam_route" ) {
+					var ns = this._varMap.namespace;
+					var lang = ms123.config.ConfigManager.getLanguage() 
+					itemsRet = ms123.util.Remote.rpcSync( "camelRoute:"+ns+"."+name, {
+						lang:lang
+					} );
+				}
 				if (type == "sw.filter") {
 					console.log("Namespace:"+JSON.stringify(this._varMap,null,2));
 					console.log("Namespace:"+this._storeDesc);

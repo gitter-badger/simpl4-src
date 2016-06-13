@@ -44,7 +44,8 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.EnumField", {
 			}
 		},
 		createToolbar: function () {
-			var toolbar = this.base(arguments, ["del"]);
+			var toolbar = this.base(arguments, ["add", "del"]);
+			this.addButton.setEnabled(true);
 			this.enumDisplay = this.createSelectedEnumDisplay();
 			if (this.enumDescription) this.enumDisplay.setValue(this.enumDescription);
 			var container = new qx.ui.container.Composite();

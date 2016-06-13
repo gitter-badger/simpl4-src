@@ -29,17 +29,23 @@ qx.Mixin.define("ms123.graphicaleditor.plugins.propertyedit.MEnum", {
 		handleNodeSelected: function (e) {
 			var model = e.getData().model;
 			var type = e.getData().type;
+			console.log("button:" + this.delButton);
 			console.log("xtype:" + type);
 			console.log("xmodel:" + model.getValue() + "/" + type);
-			if (type == "sw.enum" || type == "sw.filter") {
+			this.addButton.setEnabled(false);
+			if (type == "sw.enum" || type == "sw.filter" || type == "camelparam_route") {
 				this.enumDisplay.setValue(type + ":" + model.getValue());
 				var childs = model.getChildren();
 				this.setTableData([]);
-				for (var i = 0; i < childs.getLength(); i++) {
-					var field = model.getChildren().getItem(i);
-					var map = {};
-					map.colname = field.getValue();
-					this.addRecord(map);
+				if( type != "camelparam_route"){
+					for (var i = 0; i < childs.getLength(); i++) {
+						var field = model.getChildren().getItem(i);
+						var map = {};
+						map.colname = field.getValue();
+						this.addRecord(map);
+					}
+				}else{
+					this.addButton.setEnabled(true);
 				}
 			}
 		},
