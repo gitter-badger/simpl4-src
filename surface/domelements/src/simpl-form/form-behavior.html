@@ -89,7 +89,7 @@
 		},
 		created: function() {},
 		ready: function() {
-			console.error("form.ready");
+			console.error( "form.ready" );
 		},
 		shapesChanged: function() {
 			console.debug( "simpl-baseform.shapesChanged" );
@@ -122,7 +122,7 @@
 					errorList.push( "Error" );
 				}
 			}
-			console.log("form.validate:", errorList);
+			console.log( "form.validate:", errorList );
 			return errorList.length == 0;
 		},
 		filterToArray: function( nodeList, all ) {
@@ -149,7 +149,7 @@
 
 			function waitForFields() {
 				//console.log( "form.WaitForFields:", self.fields );
-				if ( self.fields != null && self.fields.length>0 ) {
+				if ( self.fields != null && self.fields.length > 0 ) {
 					done();
 					return;
 				}
@@ -166,13 +166,13 @@
 			return f.label;
 		},
 		dataChanged: function() {
-			this.whenFieldsReady( (function() {
+			this.whenFieldsReady( ( function() {
 				this._setData( this.data );
-			}).bind(this) );
+			} ).bind( this ) );
 		},
 		setData: function( data ) {
-			this.resetData = jQuery.extend({}, data);;
-			if( data == null) return;
+			this.resetData = jQuery.extend( {}, data );;
+			if ( data == null ) return;
 			this.data = data;
 		},
 		_setData: function( data ) {
@@ -192,9 +192,9 @@
 			return data;
 		},
 		setItems: function( items ) {
-			this.whenFieldsReady( (function() {
+			this.whenFieldsReady( ( function() {
 				this._setItems( items );
-			}).bind(this) );
+			} ).bind( this ) );
 		},
 		_setItems: function( items ) {
 			this.fields.forEach( function( field ) {
@@ -206,35 +206,59 @@
 			console.debug( "Data:", JSON.stringify( this.getData(), null, 2 ) );
 		},
 
-		getFormJsonDataForSelectionLists:function(){
-			if( this.jsonDataForSelectionLists==null){
+		getFormJsonDataForSelectionLists: function() {
+			if ( this.jsonDataForSelectionLists == null ) {
 				this.jsonDataForSelectionLists = this._getFormJsonDataForSelectionLists( this._form.properties.xf_method_fetch );
 			}
 			return this.jsonDataForSelectionLists;
 		},
 
-		_getFormJsonDataForSelectionLists:function(method){
-			if( this.isEmpty(method)) return {};
-			try{
-				if( method.indexOf(".") == -1){
-					method = this.namespace + "."+ method;
+		_getFormJsonDataForSelectionLists: function( method ) {
+			if ( this.isEmpty( method ) ) return {};
+			try {
+				if ( method.indexOf( "." ) == -1 ) {
+					method = this.namespace + "." + method;
 				}
-				var jsonData = simpl4.util.Rpc.rpcSync( "camelRoute:"+method, { } );
-				console.log("_getFormJsonDataForSelectionLists.jsonData:", jsonData);
+				var jsonData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
+					uuid: window.uuid
+				} );
+				console.log( "_getFormJsonDataForSelectionLists.jsonData:", jsonData );
 				return jsonData;
-			}catch(e){
-				console.error("_getFormJsonDataForSelectionLists.call:camelRoute:"+method);
-				console.error("_getFormJsonDataForSelectionLists:",e);
+			} catch ( e ) {
+				console.error( "_getFormJsonDataForSelectionLists.call:camelRoute:" + method );
+				console.error( "_getFormJsonDataForSelectionLists:", e );
+			}
+		},
+		postProcess: function() {
+			var method = this._form.xf_postprocess_client;
+			console.log( "method:", method );
+			if ( this.isEmpty( method ) ) return {};
+			try {
+				if ( method.indexOf( "." ) == -1 ) {
+					method = this.namespace + "." + method;
+				}
+				var lang = simpl4.util.BaseManager.getLanguage()
+				var data = this.getData();
+				var formData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
+					formData: data,
+					lang: lang,
+					uuid: window.uuid
+				} );
+				console.log( "_postProcessForm.replaceFormData:", formData );
+				return formData;
+			} catch ( e ) {
+				console.error( "_postProcessForm.call:camelRoute:" + method );
+				console.error( "_postProcessForm:", e );
 			}
 		},
 
 		formNameChanged: function() {
 			this.async( function() {
 				this._formNameChanged();
-			},10 );
+			}, 10 );
 		},
 		_formNameChanged: function() {
-			console.log("form.formNameChanged:",this.formName+"/"+this.namespace);
+			console.log( "form.formNameChanged:", this.formName + "/" + this.namespace );
 			this.fields = [];
 			this.fieldsMap = {};
 			this.shapes = [];
@@ -247,8 +271,8 @@
 				this.formVar = form.properties.xf_name;
 				this.jsonDataForSelectionLists = this._getFormJsonDataForSelectionLists( form.properties.xf_method_fetch );
 				this.shapes = this.prepareShape( form ).childShapes;
-				this._shapeMap={};
-				this._buildShapeMap(this.shapes[0]);
+				this._shapeMap = {};
+				this._buildShapeMap( this.shapes[ 0 ] );
 				this.async( function() {
 					this.fields = this.filterToArray( this.$.formdiv.querySelectorAll( "[field]" ), true );
 					this.fields.forEach( function( field ) {
@@ -256,11 +280,11 @@
 					}, this );
 					this.fieldsMap = this.toMap( this.fields );
 					this.valueChanged();
-					if( this.resetData == null){
+					if ( this.resetData == null ) {
 						this.resetData = this.getData();
 					}
-				},1 );
-			},1 );
+				}, 1 );
+			}, 1 );
 		},
 		/*----------------------------------*/
 		specChanged: function( e ) {
@@ -272,8 +296,8 @@
 
 			this.async( function() {
 				this.shapes = this.spec;
-				this._shapeMap={};
-				this._buildShapeMap(this.shapes[0]);
+				this._shapeMap = {};
+				this._buildShapeMap( this.shapes[ 0 ] );
 				this.async( function() {
 					this.fields = this.filterToArray( this.$.formdiv.querySelectorAll( "[field]" ), true );
 					this.fields.forEach( function( field ) {
@@ -281,11 +305,11 @@
 					}, this );
 					this.fieldsMap = this.toMap( this.fields );
 					this.valueChanged();
-					if( this.resetData == null){
+					if ( this.resetData == null ) {
 						this.resetData = this.getData();
 					}
-				},1 );
-			},1 );
+				}, 1 );
+			}, 1 );
 		},
 		toMap: function( arr ) {
 			var map = {};
@@ -294,26 +318,26 @@
 			}, this );
 			return map;
 		},
-		_convertType:function(t){
-			if( t == "datetime"){
+		_convertType: function( t ) {
+			if ( t == "datetime" ) {
 				return "date";
-			}	
+			}
 			return t;
 		},
 		_buildShapeMap: function( shape ) {
-			if( shape.xf_id){
-				this._shapeMap[shape.xf_id] = shape;
+			if ( shape.xf_id ) {
+				this._shapeMap[ shape.xf_id ] = shape;
 			}
 			var childShapes = shape.childShapes;
 			for ( var i = 0; childShapes && i < childShapes.length; i++ ) {
-				this._buildShapeMap(childShapes[i]);
+				this._buildShapeMap( childShapes[ i ] );
 			}
 		},
 		prepareShape: function( shape ) {
 			shape = this.cleanShape( shape );
 
 			if ( shape.id == 'Input' ) {
-				shape.regulaConstraints = this.constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType(shape.xf_type) ] );
+				shape.regulaConstraints = this.constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType( shape.xf_type ) ] );
 			}
 
 			shape.childShapes = _.sortBy( shape.childShapes, function( element ) {
@@ -367,14 +391,14 @@
 				} else {
 					shape.properties.label = "";
 				}
-				if ( !this.isEmpty(shape.properties.xf_default )) {
-					if( shape.stencil.id.toLowerCase() == 'input' ){
-						if( shape.properties.xf_type.startsWith("date")){
+				if ( !this.isEmpty( shape.properties.xf_default ) ) {
+					if ( shape.stencil.id.toLowerCase() == 'input' ) {
+						if ( shape.properties.xf_type.startsWith( "date" ) ) {
 							var d = shape.properties.xf_default;
-							if( d != null && typeof (d ) === "string" && d.length>0){
-								shape.properties.xf_default = Date.create( d).getTime();
-								if( isNaN(shape.properties.xf_default )){
-									console.error("form-behavior:parse.error.DefaultDate("+shape.properties.xf_id+"):"+d);
+							if ( d != null && typeof( d ) === "string" && d.length > 0 ) {
+								shape.properties.xf_default = Date.create( d ).getTime();
+								if ( isNaN( shape.properties.xf_default ) ) {
+									console.error( "form-behavior:parse.error.DefaultDate(" + shape.properties.xf_id + "):" + d );
 								}
 							}
 						}
@@ -391,8 +415,8 @@
 				if ( shape.stencil.id.toLowerCase() == 'gridinput' ) {
 					var props = shape.properties;
 					props.columns = props.xf_columns.items;
-					for( var i=0; i < props.columns.length;i++){
-						var col = props.columns[i];
+					for ( var i = 0; i < props.columns.length; i++ ) {
+						var col = props.columns[ i ];
 						if ( col.display && col.display.match( /^[@%]/ ) ) {
 							col.display = tr( col.display.substring( 1 ) );
 						}
@@ -409,28 +433,31 @@
 					var enumembed = props.xf_enumembed;
 					var jsonpath = props.xf_jsonpath;
 					var si;
-					if ( !this.isEmpty(jsonpath) ) {
-						var a  = JSONPath({json: this.jsonDataForSelectionLists, path: jsonpath, callback: function(){}});
-						console.log("jsonpath:",jsonpath);
-						console.log("jsonData:",a);
-						if( a == null || a.length==0){
+					if ( !this.isEmpty( jsonpath ) ) {
+						var a = JSONPath( {
+							json: this.jsonDataForSelectionLists,
+							path: jsonpath,
+							callback: function() {}
+						} );
+						console.log( "jsonpath:", jsonpath );
+						console.log( "jsonData:", a );
+						if ( a == null || a.length == 0 ) {
 							props.items = [];
-						}else{
-							props.items = a[0];
+						} else {
+							props.items = a[ 0 ];
 						}
-					}else if ( enumembed && enumembed.totalCount > 0 ) {
+					} else if ( enumembed && enumembed.totalCount > 0 ) {
 						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
 					} else {
 						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					}
-					try{
-						if( this.isEmpty(props.xf_default)){
+					try {
+						if ( this.isEmpty( props.xf_default ) ) {
 							//props.xf_default = props.items[0].value;
 						}
-					}catch(e){
-					}
+					} catch ( e ) {}
 				}
 				if ( shape.stencil.id.toLowerCase() == 'tableselect' ) {
 					var props = shape.properties;
@@ -469,7 +496,7 @@
 					}, this );
 					var bounds = shape.bounds;
 					props.height = bounds.lowerRight.y - bounds.upperLeft.y;
-					if( props.height < 75) props.height = 75;
+					if ( props.height < 75 ) props.height = 75;
 				}
 			} else if ( shape.stencil.id.toLowerCase() == "actionbutton" ) {
 				var icon = shape.properties.xf_iconname;
@@ -492,10 +519,12 @@
 			} else {
 				shape.properties.label = "";
 			}
-			if( shape.properties.xf_type==null){
-				 shape.properties.xf_type = "noop";
+			if ( shape.properties.xf_type == null ) {
+				shape.properties.xf_type = "noop";
 			}
-			return _.extend( shape.properties, {bounds:shape.bounds}, shape.stencil, {
+			return _.extend( shape.properties, {
+				bounds: shape.bounds
+			}, shape.stencil, {
 				childShapes: shape.childShapes
 			} );
 		},
@@ -533,8 +562,8 @@
 					if ( params && params.length > 0 ) {
 						var pkey = params[ 0 ];
 						var val = pkey == 'format' ? '"YMD"' : values[ 1 ];
-						if( pkey == "regex"){
-							val = this.correctRegex(values[1]);
+						if ( pkey == "regex" ) {
+							val = this.correctRegex( values[ 1 ] );
 						}
 						ret += ',' + pkey + '=' + val;
 						if ( params.length > 1 ) {
@@ -549,9 +578,9 @@
 			}, this );
 			return ret;
 		},
-		correctRegex:function(r){
-			if( r == null) return '/.*/';
-			if( r.indexOf('/') === 0) return r;
+		correctRegex: function( r ) {
+			if ( r == null ) return '/.*/';
+			if ( r.indexOf( '/' ) === 0 ) return r;
 			return '/' + r + '/';
 		},
 		mapKeys: function( key ) {
