@@ -681,6 +681,7 @@
 					this._setData(this.resetData);
 				}
 				if ( target.xaction !== "cancel" && target.xaction !== "reset") {
+					this.postProcess();
 					valid = this.validate();
 				}
 				this.fire( 'xaction', {
