@@ -372,6 +372,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 					var initial = this.buildInitial(this.recordType, this.items);
 					this.addRecord(initial);
 				}, this);
+				this.addButton = badd;
 				toolbar._add(badd);
 			}
 			if( buttonList.indexOf("del") != -1){
