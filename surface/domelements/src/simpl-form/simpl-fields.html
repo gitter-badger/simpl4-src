@@ -1111,8 +1111,10 @@
 		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[invalid]]">
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
 			<input hidden is="iron-input" id="input" bind-value="[[value]]" />
-			<select multiple$=[[multiple]]  id="select" name="[[name]]">
-			</select>
+			<div>
+				<select multiple$=[[multiple]]  id="select" name="[[name]]">
+				</select>
+			</div>
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>
       </template>
@@ -1141,6 +1143,10 @@
 				items: {
 					observer:"itemsChanged",
 					type: Object
+				},
+				required: {
+					value: false,
+					type: String
 				},
 				delimiter: {
 						type: String,
@@ -1434,6 +1440,26 @@
 				}
 				if ( s == null || s == '' ) return true;
 				return false;
+			},
+			checkConstraints: function() {
+				this.setInvalid( false );
+				if ( !this.isRequired() ) return;
+				if ( !this.isEmpty(this.value) ) {
+					return;
+				}
+				this.setInvalid( true );
+				this.setErrorMessage( tr( "This field is required" ) );
+			},
+			setErrorMessage: function( message ) {
+				this.errorMessage = message;
+			},
+			setInvalid: function( b ) {
+				this.invalid = b;
+			},
+			isRequired: function() {
+				var data = this.form.getData();
+				var req = this.form._maskedEval( this.required, data, false );
+				return req;
 			}
 		} );
 
