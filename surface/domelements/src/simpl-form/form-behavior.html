@@ -18,6 +18,11 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 -->
+<style>
+	[visibility=hidden] {
+		visibility:hidden;
+	}
+</style>
 <script>
 	FormBehavior = {
 		eventDelegates: {
@@ -56,9 +61,9 @@
 				if ( this.isNotEmpty( excludeExpr ) ) {
 					var e = this._maskedEval( excludeExpr, map );
 					if ( e ) {
-						f.setAttribute( "exclude", "" );
+						f.setAttribute( "hidden", "" );
 					} else {
-						f.removeAttribute( "exclude" );
+						f.removeAttribute( "hidden" );
 					}
 				}
 				var invisibleExpr = f.getAttribute( "invisible-expr" );
@@ -66,9 +71,9 @@
 				if ( this.isNotEmpty( invisibleExpr ) ) {
 					var e = this._maskedEval( invisibleExpr, map );
 					if ( e ) {
-						f.setAttribute( "invisible", "" );
+						f.setAttribute( "visibility", "hidden" );
 					} else {
-						f.removeAttribute( "invisible" );
+						f.removeAttribute( "visibility" );
 					}
 				}
 			}
