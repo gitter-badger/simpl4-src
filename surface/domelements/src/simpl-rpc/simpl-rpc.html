@@ -43,7 +43,9 @@
 				}
 			},
 			collectAll: function() {
-				this.go();
+				this.async( function() {
+					this.go();
+				}, null, 30 );
 			},
 			ready: function() {
 				this.request_id = 1;
@@ -113,16 +115,13 @@
 					service: this.service,
 					id: this.getId()
 				};
-				if ( this.params ) {
+				if ( this.params && typeof this.params == "string" ) {
 					body.params = JSON5.parse( this.params );
-					if( (body.params.namespace && body.params.namespace=="default") || service == "camelRoute"){
-						body.params.namespace = simpl4.util.BaseManager.getNamespace();
-					}
 				}else{ 
-					if( this.service == "camelRoute"){
-						body.params = {};
-						body.params.namespace = simpl4.util.BaseManager.getNamespace();
-					}
+					body.params = this.params|| {};
+				}
+				if( (body.params.namespace && body.params.namespace=="default") || this.service == "camelRoute"){
+					body.params.namespace = simpl4.util.BaseManager.getNamespace();
 				}
 				args.body = JSON.stringify( body, null, 2 );
 				console.log("rpc.body:",args.body);
