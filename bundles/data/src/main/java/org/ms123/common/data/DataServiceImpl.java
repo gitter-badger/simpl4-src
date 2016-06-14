@@ -45,6 +45,7 @@ import org.mvel2.MVEL;
 import org.ms123.common.utils.UtilsService;
 import org.ms123.common.utils.TypeUtils;
 import org.ms123.common.nucleus.api.NucleusService;
+import org.ms123.common.git.GitService;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.data.api.DataLayer;
@@ -80,6 +81,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 	private ReportingService m_reportingService;
 
 	private NucleusService m_nucleusService;
+	private GitService m_gitService;
 
 	private DataLayer m_dataLayer;
 
@@ -400,6 +402,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 			@PName("offset")       @POptional  @PDefaultInt(0) Integer offset, 
 			@PName("mapping")          @POptional Map mapping) throws RpcException {
 		StoreDesc sdesc = StoreDesc.get(storeId);
+		sdesc = StoreDesc.getNamespaceData( sdesc.getNamespace(), (String)filterDesc.get(StoreDesc.PACK));
 		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
 		try {
 			if( params ==null) params = new HashMap();
@@ -442,7 +445,11 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 			@PName("pageSize")       @POptional  @PDefaultInt(0) Integer pageSize, 
 			@PName("offset")       @POptional  @PDefaultInt(0) Integer offset, 
 			@PName("mapping")          @POptional Map mapping) throws RpcException {
+
 		StoreDesc sdesc = StoreDesc.get(storeId);
+		String filterJson = m_gitService.searchContent( sdesc.getNamespace(), name, "sw.filter" );
+		Map<String,String> filterMap = (Map) m_ds.deserialize(filterJson);
+		sdesc = StoreDesc.getNamespaceData( sdesc.getNamespace(), filterMap.get(StoreDesc.PACK));
 		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
 		try {
 			Map options = new HashMap();
@@ -577,6 +584,11 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 	public void setNucleusService(NucleusService paramNucleusService) {
 		this.m_nucleusService = paramNucleusService;
 		System.out.println("DataServiceImpl.setNucleusService:" + paramNucleusService);
+	}
+	@Reference(dynamic = true)
+	public void setGitService(GitService paramGitService) {
+		this.m_gitService = paramGitService;
+		System.out.println("DataServiceImpl.setGitService:" + paramGitService);
 	}
 
 	@Reference(target = "(kind=jdo)", dynamic = true)
