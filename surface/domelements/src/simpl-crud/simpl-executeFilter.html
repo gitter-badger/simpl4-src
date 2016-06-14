@@ -59,10 +59,6 @@
 				'paramsChanged(params.*)'
 			],
 			ready: function() {
-				if( this.params==null){
-					 this.set( "params", {} );
-				}
-				console.log( "executefilter.ready:", this.get( 'params' ) );
 			},
 			paramsChanged: function() {
 				console.log( "executefilter.paramsChanged:", this.params );
@@ -80,7 +76,7 @@
 				var namespace = this.namespace || simpl4.util.BaseManager.getNamespace();
 				console.debug( "execute.namespace:", namespace );
 				console.debug( "execute.name:", this.name );
-				console.debug( "execute.params:", this.params );
+				console.debug( "execute.params:", params );
 				console.debug( "execute.pagesize:", this.pagesize );
 				console.debug( "execute.offset:", this.offset );
 				var map = simpl4.util.Rpc.rpcSync( "data:executeFilterByName", {
