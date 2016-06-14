@@ -681,7 +681,11 @@
 					this._setData(this.resetData);
 				}
 				if ( target.xaction !== "cancel" && target.xaction !== "reset") {
-					this.postProcess();
+					var ppData = this.postProcess();
+					if( ppData != null ){
+						this.setFieldData(ppData);
+						data = simpl4.util.Merge.deepmerge( data, ppData );
+					}
 					valid = this.validate();
 				}
 				this.fire( 'xaction', {

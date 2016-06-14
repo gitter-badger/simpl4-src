@@ -404,7 +404,6 @@
 						data: data
 					}
 				}
-console.log("rpc:",rpc);
 				var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
 				return ret;
 			},
@@ -442,8 +441,16 @@ console.log("rpc:",rpc);
 				return idValue;
 			},
 			saveAction: function() {
+				var ppData = this.$.formid.postProcess();
+				if( ppData != null ){
+					this.$.formid.setFieldData(ppData);
+				}
 				var valid = this.$.formid.validate();
 				var data = this.$.formid.getData();
+				if( ppData != null ){
+					data = simpl4.util.Merge.deepmerge( data, ppData );
+					console.log("Data1:",data);
+				}
 
 				console.log( "saveAction.valid:" + valid );
 				console.log( "saveAction:" + JSON.stringify( data, null, 2 ) );
@@ -459,6 +466,7 @@ console.log("rpc:",rpc);
 						if ( this.mode == 'edit' ) {
 							data = simpl4.util.Merge.deepmerge( this.currentRowData, data );
 						}
+						console.log( "Data finish:" , data );
 						var ret = this.storeData( data );
 						console.log( "Ret:", ret );
 						var content = ret;

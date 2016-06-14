@@ -170,6 +170,15 @@
 				this._setData( this.data );
 			} ).bind( this ) );
 		},
+		setFieldData: function( data ) {
+			var keys = Object.keys( data );
+			keys.forEach( function( k ) {
+				var field = this.getField( k );
+				if ( field == null || field.setValue == null ) return;
+				if ( field.setInvalid ) field.setInvalid( false );
+				field.setValue( data[k] );
+			}, this );
+		},
 		setData: function( data ) {
 			this.resetData = jQuery.extend( {}, data );;
 			if ( data == null ) return;
@@ -219,8 +228,11 @@
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
 				}
+				var lang = simpl4.util.BaseManager.getLanguage()
 				var jsonData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
-					uuid: window.uuid
+					uuid: window.uuid,
+					lang: this.lang,
+					mode: this.mode
 				} );
 				console.log( "_getFormJsonDataForSelectionLists.jsonData:", jsonData );
 				return jsonData;
@@ -231,8 +243,7 @@
 		},
 		postProcess: function() {
 			var method = this._form.xf_postprocess_client;
-			console.log( "method:", method );
-			if ( this.isEmpty( method ) ) return {};
+			if ( this.isEmpty( method ) ) return null;
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
@@ -242,6 +253,7 @@
 				var formData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
 					formData: data,
 					lang: lang,
+					mode: this.mode,
 					uuid: window.uuid
 				} );
 				console.log( "_postProcessForm.replaceFormData:", formData );
