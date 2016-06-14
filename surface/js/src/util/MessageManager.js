@@ -43,6 +43,14 @@ simpl4.util.BaseManager.extend( "simpl4.util.MessageManager", {
 			transMap[ row.msgid ] = row.msgstr;
 		}
 	},
+	addAliases:function(map){
+		Object.keys(map).forEach(function(key) {
+			var val = map[key];
+			var t = simpl4.util.MessageManager.transMap[ val ];
+console.log("add:("+key+"):",t);
+			simpl4.util.MessageManager.transMap[ key ] = t;
+		});
+	},
 	installMessages: function( namespace ) {
 		if ( this.namespaceMap[ namespace ] == null ) {
 			var rows = this.getMessages( namespace );
