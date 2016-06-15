@@ -85,19 +85,25 @@
 					</simpl-filter>
 				</template>
 				<template is="dom-if" if="[[filterName]]">
-					<simpl-buildfilter name="[[filterName]]" params="[[filterParams]]" filter="{{filter}}"/>
+					<simpl-buildfilter name="[[filterName]]" params="[[filterParams]]" filter="{{filter}}" />
 				</template>
-				<template is="dom-if" if="{{filter}}">
-					<simpl-panel id="panel2" bgcolor="{{panelBackgroundColor}}" heading="{{panelHeaderCrudTable}}" collapsable>
-						<simpl-crudtable namespace="{{namespace}}" buttons="{{buttonList}}" on-add-action="addAction" on-copy-action="copyAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
-					</simpl-panel>
+				<template is="dom-if" if="[[filter]]">
+					<template is="dom-if" if="[[withPanel]]">
+						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]" collapsable>
+							<simpl-crudtable namespace="[[namespace]]" buttons="[[buttonList]]" on-add-action="addAction" on-copy-action="copyAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+						</simpl-panel>
+					</template>
+					<template is="dom-if" if="[[!withPanel]]">
+						<simpl-crudtable namespace="[[namespace]]" buttons="[[buttonList]]" on-add-action="addAction" on-copy-action="copyAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+					</template>
 				</template>
 			</section>
 			<section style="padding:0px;position:relative;overflow-x:hidden;" num="1" unresolved>
 				<div class="grid flex" style="margin-top:5px;margin-bottom:10px">
-					<paper-button style="text-align:left;" class="flex button" raised on-tap="cancelAction"><iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
+					<paper-button style="text-align:left;" class="flex button" raised on-tap="cancelAction">
+						<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 				</div>
-				<simpl-panel bgcolor="{{panelBackgroundColor}}" heading="{{panelHeaderCrudForm}}">
+				<simpl-panel heading="{{panelHeaderCrudForm}}">
 					<simpl-form id="formid" mode="{{mode}}" namespace="{{namespace}}" form-name="[[formName]]" spec="{{formSpec}}"></simpl-form>
 					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
 						<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
@@ -107,8 +113,10 @@
 							<iron-icon icon="image:navigate-next"></iron-icon>
 						</paper-button>
 
-						<paper-button class="h flex button button_primary" raised on-tap="saveAction"><iron-icon icon="save"></iron-icon>{{tr('data.form.save')}}</paper-button>
-						<paper-button class="h flex button" raised on-tap="cancelAction"><iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
+						<paper-button class="h flex button button_primary" raised on-tap="saveAction">
+							<iron-icon icon="save"></iron-icon>{{tr('data.form.save')}}</paper-button>
+						<paper-button class="h flex button" raised on-tap="cancelAction">
+							<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 					</div>
 				</simpl-panel>
 				<paper-toast id="toast" duration=3000 class="capsule" text="{{toast_message}}" style="padding-right: 60px;"></paper-toast>
@@ -124,7 +132,8 @@
 			</section>
 			<section style="padding:0px;overflow-x:hidden;" num="2">
 				<div class="grid flex" style="margin-top:5px;margin-bottom:10px">
-					<paper-button style="text-align:left;" class="flex button button_primary" raised on-tap="cancelAction"><iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
+					<paper-button style="text-align:left;" class="flex button button_primary" raised on-tap="cancelAction">
+						<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 				</div>
 
 				<paper-tabs class="flex" selected="{{selectedDetailsTabId}}" selectables="paper-tab" scrollable attr-for-selected="details-item-id" scrollable>
@@ -172,6 +181,10 @@
 				entity: {
 					type: String
 				},
+				withPanel: {
+					type: Object,
+					value: true
+				},
 				buttonList: {
 					type: String,
 					value: 'add,edit,copy,detail'
@@ -179,10 +192,6 @@
 				buttonListDetail: {
 					type: String,
 					value: 'add,edit,copy'
-				},
-				panelBackgroundColor: {
-					type: String,
-					value: '#000'
 				},
 				pageSelected: {
 					type: Number,
@@ -204,7 +213,7 @@
 				this.mainEntityName = this.entity;
 
 				var ep = this.getPack( this.mainEntityName );
-				this.panelHeaderCrudTable = tr( ep.pack+"." + ep.entityName + "_list" );
+				this.panelHeaderCrudTable = tr( ep.pack + "." + ep.entityName + "_list" );
 				this.pageStack = new Array();
 				this.pageSelected = 0;
 				console.log( "pageSelected:" + this.pageSelected );
@@ -213,17 +222,17 @@
 				if ( namespace === this.prevNamespace && entity === this.prevEntityName ) return;
 				this.currentNamespace = namespace;
 				var formSpec = simpl4FormManager.getCrudForm( entity, namespace );
-				console.debug("setFormSpec:", formSpec);
+				console.debug( "setFormSpec:", formSpec );
 				this.prevEntityName = entity;
 				this.prevNamespace = namespace;
-				if (typeof formSpec === 'string' || myVar instanceof String){
+				if ( typeof formSpec === 'string' || myVar instanceof String ) {
 					this.formName = formSpec;
-				}else{
+				} else {
 					this.formSpec = [ formSpec ];
 				}
 			},
 			getFormSpec: function( item ) {
-				return [simpl4FormManager.getCrudForm( item.entity, item.namespace || this.namespace )];
+				return [ simpl4FormManager.getCrudForm( item.entity, item.namespace || this.namespace ) ];
 			},
 			getEditMode: function() {
 				return "edit";
@@ -233,10 +242,10 @@
 				if ( ct == null ) return;
 				var dataDesc = ct.dataDesc;
 				dataDesc.namespace = this.namespace;
-				if( dataDesc.type == "table"){
+				if ( dataDesc.type == "table" ) {
 					ct.filter = dataDesc;
-				}else{
-					ct.setData(this.getFormData(dataDesc));
+				} else {
+					ct.setData( this.getFormData( dataDesc ) );
 				}
 			},
 			cancelAction: function( e ) {
@@ -247,7 +256,7 @@
 					this.needRefresh = false;
 					setTimeout( ( function() {
 						this.pageSelected = prevPage;
-						if( this.currentTable ){
+						if ( this.currentTable ) {
 							this.currentTable.refresh();
 						}
 					} ).bind( this ), 100 );
@@ -270,7 +279,7 @@
 				this.currentTable = detail.table;
 
 				var ep = this.getPack( detail.entity );
-				this.panelHeaderCrudForm = tr( ep.pack+"." + ep.entityName );
+				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
 
 				this.whenElementsReady( ( function() {
 					console.debug( "Ready" );
@@ -311,7 +320,7 @@
 				this.handlePrevNextButtons();
 
 				var ep = this.getPack( detail.entity );
-				this.panelHeaderCrudForm = tr( ep.pack+"." + ep.entityName );
+				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
 				this.whenElementsReady( ( function() {
 					console.debug( "Form.Ready:" + JSON.stringify( this.currentRowData, null, 2 ) );
 					this.$.formid.setData( this.currentRowData );
@@ -319,12 +328,14 @@
 				} ).bind( this ) );
 			},
 			_addAction: function( e ) {
-				var e = {detail:{
-					namespace:this.namespace,
-					entityChild:"",
-					entity:this.entity
-				}};
-				this.addAction(e);
+				var e = {
+					detail: {
+						namespace: this.namespace,
+						entityChild: "",
+						entity: this.entity
+					}
+				};
+				this.addAction( e );
 			},
 			addAction: function( e ) {
 				this.prevNextButtonsInvisible = true;
@@ -338,7 +349,7 @@
 				this.currentTable = detail.table;
 
 				var ep = this.getPack( detail.entity );
-				this.panelHeaderCrudForm = tr( ep.pack+"." + ep.entityName );
+				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
 
 				this.whenElementsReady( ( function() {
 					this.$.formid.setData( {} );
@@ -356,13 +367,13 @@
 				} );
 				this.panelHeaderDetails = this._maskedEval( props.title_expression, currentRowData, "" );
 				var mainEntity = simpl4EntityManager.getEntity( this.mainEntityName, this.namespace );
-				this.mainEntityId = this.getIdValue(this.mainEntityName,this.namespace, currentRowData)
+				this.mainEntityId = this.getIdValue( this.mainEntityName, this.namespace, currentRowData )
 				var entityChildList = [];
 				for ( var i = 0; i < mainEntity.childs.length; i++ ) {
 					var c = mainEntity.childs[ i ];
 					var cn = {};
-					if( c.modulename == "team"){
-						 continue;
+					if ( c.modulename == "team" ) {
+						continue;
 					}
 					cn.entity = c.modulename;
 					cn.namespace = c.namespace;
@@ -376,34 +387,34 @@
 						id: currentRowData.id,
 						pageSize: 0
 					}
-					var datatype = c.datatype.split("/");
-					cn.type = datatype[0] == "list" ? "table" : "form";
+					var datatype = c.datatype.split( "/" );
+					cn.type = datatype[ 0 ] == "list" ? "table" : "form";
 					cn.dependent = c.dependent;
 					entityChildList.push( cn );
 				}
 				this.entityChildList = entityChildList;
 				this.pageStack.push( this.pageSelected );
-				this.async(function(){
+				this.async( function() {
 					this.pageSelected = 2;
-				},100);
+				}, 100 );
 			},
 			storeData: function( data ) {
 				var rpc = null;
 				var ep = this.getPack( this.mainEntityName );
 				if ( this.mainEntityName != this.currentEntityName ) {
 					rpc = {
-						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+ep.pack,
+						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + ep.pack,
 						entity: ep.entityName,
 						entityChild: this.currentEntityChildName,
 						id: this.mainEntityId,
-						idChild: this.getIdValue(this.mainEntityName,this.namespace, data),
+						idChild: this.getIdValue( this.mainEntityName, this.namespace, data ),
 						data: data
 					}
 				} else {
-					var idValue = this.getIdValue( this.mainEntityName, this.namespace, data);
-					console.log("idValue:",idValue);
+					var idValue = this.getIdValue( this.mainEntityName, this.namespace, data );
+					console.log( "idValue:", idValue );
 					rpc = {
-						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+ep.pack,
+						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + ep.pack,
 						entity: ep.entityName,
 						id: idValue,
 						data: data
@@ -414,47 +425,50 @@
 			},
 			getData: function( data ) {
 				var ep = this.getPack( this.currentEntityName );
-				var idValue = this.getIdValue( this.currentEntityName, this.namespace, data);
+				var idValue = this.getIdValue( this.currentEntityName, this.namespace, data );
 				var rpc = {
-					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_"+ep.pack,
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + ep.pack,
 					entity: ep.entityName,
 					id: idValue
 				}
 				var ret = simpl4.util.Rpc.rpcSync( "data:queryOne", rpc );
 				return ret;
 			},
-			getPack:function( en){
+			getPack: function( en ) {
 				var p = "data";
 				var e = en;
-				if( en.indexOf(":") >0 ){
-					p = en.split(":")[0];
-					e = en.split(":")[1];
+				if ( en.indexOf( ":" ) > 0 ) {
+					p = en.split( ":" )[ 0 ];
+					e = en.split( ":" )[ 1 ];
 				}
-				return {entityName:e, pack:p}
+				return {
+					entityName: e,
+					pack: p
+				}
 			},
-			getIdValue:function( entityName, namespace, data){
-				var pkList = simpl4.util.EntityManager.getEntity(entityName,namespace).primaryKeys;
-				if( pkList == null){
-					pkList = ["id"];
+			getIdValue: function( entityName, namespace, data ) {
+				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
+				if ( pkList == null ) {
+					pkList = [ "id" ];
 				}
 				var idValue = "";
 				var colon = "";
-				for( var i=0; i < pkList.length;i++){
-					idValue += colon + data[pkList[i]];
+				for ( var i = 0; i < pkList.length; i++ ) {
+					idValue += colon + data[ pkList[ i ] ];
 					colon = ":";
 				}
 				return idValue;
 			},
 			saveAction: function() {
 				var ppData = this.$.formid.postProcess();
-				if( ppData != null ){
-					this.$.formid.setFieldData(ppData);
+				if ( ppData != null ) {
+					this.$.formid.setFieldData( ppData );
 				}
 				var valid = this.$.formid.validate();
 				var data = this.$.formid.getData();
-				if( ppData != null ){
+				if ( ppData != null ) {
 					data = simpl4.util.Merge.deepmerge( data, ppData );
-					console.log("Data1:",data);
+					console.log( "Data1:", data );
 				}
 
 				console.log( "saveAction.valid:" + valid );
@@ -471,7 +485,7 @@
 						if ( this.mode == 'edit' ) {
 							data = simpl4.util.Merge.deepmerge( this.currentRowData, data );
 						}
-						console.log( "Data finish:" , data );
+						console.log( "Data finish:", data );
 						var ret = this.storeData( data );
 						console.log( "Ret:", ret );
 						var content = ret;
@@ -494,8 +508,8 @@
 							this.needRefresh = true;
 						}
 					} catch ( e ) {
-						console.debug(e.stack);
-				 		var msg = e.substring(e.indexOf("entityName:")+11);
+						console.debug( e.stack );
+						var msg = e.substring( e.indexOf( "entityName:" ) + 11 );
 						this.toast_message = tr( "data.form.save" ) + ": (" + msg;
 						this.querySelector( "#toast" ).show();
 						return;
@@ -508,10 +522,10 @@
 					this.$.prevButton.disabled = ( this.currentRowIndex > 0 ) ? false : true;
 				}
 			},
-			isForm:function(item){
+			isForm: function( item ) {
 				return item.type == "form";
 			},
-			isTable:function(item){
+			isTable: function( item ) {
 				return item.type == "table";
 			},
 			getFormData: function( dataDesc ) {
@@ -519,7 +533,7 @@
 					namespace: dataDesc.namespace
 				} );
 				var data = simpl4.util.Rpc.rpcSync( "data:query", dataDesc.rpc );
-				return data.rows.length > 0 ? data.rows[0] : {};
+				return data.rows.length > 0 ? data.rows[ 0 ] : {};
 			},
 			_maskedEval: function( scr, env, def ) {
 				try {
