@@ -33,6 +33,8 @@ qx.Class.define("ms123.entitytypes.FormEdit", {
 		this.base(arguments);
 		this._model = model;
 console.log("model:",model);
+		var pack = model.getPack();
+		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 		this._facade = facade;
 		this._isNew = param.isNew;
 		this._mode = param.mode;
@@ -252,7 +254,7 @@ console.log("model:",model);
 			buttonUpdateDb.addListener("execute", function () {
 				try {
 					ms123.util.Remote.rpcSync("domainobjects:createClasses", {
-						storeId: this._getStoreId()
+						storeId: this.storeDesc.getStoreId()
 					});
 					ms123.form.Dialog.alert(this.tr("entitytypes.update_db_successfull"));
 				} catch (e) {
