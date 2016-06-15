@@ -166,8 +166,8 @@
 			console.log( "xxx.dataTables.dataChanged.meta:", this.meta );
 			var firsttime = this.preparedMeta == null;
 //			console.log( "dataTables.dataChanged.firsttime:", firsttime );
-			if ( this.meta == null ) {
-				if ( this.data == null ) {
+			if ( this.meta == null || this.meta.length==0 ) {
+				if ( this.data == null || this.data.length==0) {
 					return;
 				}
 				if ( this.data.length > 0 ) {
