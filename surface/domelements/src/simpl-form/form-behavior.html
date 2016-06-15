@@ -20,8 +20,9 @@
 -->
 <style>
 	[visibility=hidden] {
-		visibility:hidden;
+		visibility: hidden;
 	}
+
 </style>
 <script>
 	FormBehavior = {
@@ -173,6 +174,8 @@
 		dataChanged: function() {
 			this.whenFieldsReady( ( function() {
 				this._setData( this.data );
+				this.preProcessService();
+				this.preProcessLocal();
 			} ).bind( this ) );
 		},
 		setFieldData: function( data ) {
@@ -181,7 +184,7 @@
 				var field = this.getField( k );
 				if ( field == null || field.setValue == null ) return;
 				if ( field.setInvalid ) field.setInvalid( false );
-				field.setValue( data[k] );
+				field.setValue( data[ k ] );
 			}, this );
 		},
 		setData: function( data ) {
@@ -220,34 +223,39 @@
 			console.debug( "Data:", JSON.stringify( this.getData(), null, 2 ) );
 		},
 
-		getFormJsonDataForSelectionLists: function() {
-			if ( this.jsonDataForSelectionLists == null ) {
-				this.jsonDataForSelectionLists = this._getFormJsonDataForSelectionLists( this._form.properties.xf_method_fetch );
-			}
-			return this.jsonDataForSelectionLists;
-		},
-
-		_getFormJsonDataForSelectionLists: function( method ) {
+		_getSelectionLists: function( method ) {
 			if ( this.isEmpty( method ) ) return {};
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
 				}
-				var lang = simpl4.util.BaseManager.getLanguage()
-				var jsonData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
-					uuid: window.uuid,
-					lang: this.lang,
-					mode: this.mode
-				} );
-				console.log( "_getFormJsonDataForSelectionLists.jsonData:", jsonData );
-				return jsonData;
+				var params = {
+					service: "camelRoute",
+					method: method,
+					parameter: {
+						lang: simpl4.util.BaseManager.getLanguage(),
+						mode: this.mode,
+						uuid: window.uuid
+					},
+					async: true,
+					context: this,
+					failed: function( e ) {
+						console.error( "_getSelectionLists:", e );
+						console.log( e.stack );
+					},
+					completed: function( lists ) {
+						console.log( "_getSelectionLists._selectionLists:", lists );
+						this._selectionLists = lists;
+					}
+				}
+				return simpl4.util.Rpc.rpcAsync( params );
 			} catch ( e ) {
-				console.error( "_getFormJsonDataForSelectionLists.call:camelRoute:" + method );
-				console.error( "_getFormJsonDataForSelectionLists:", e );
+				console.error( "_getSelectionLists.call:camelRoute:" + method );
+				console.error( "_getSelectionLists:", e );
 			}
 		},
-		postProcess: function() {
-			var method = this._form.xf_postprocess_client;
+		postProcessService: function() {
+			var method = this._form.xf_postprocess_service;
 			if ( this.isEmpty( method ) ) return null;
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
@@ -269,6 +277,84 @@
 			}
 		},
 
+		postProcessLocal: function() {
+			var script = this._form.xf_preprocess_local;
+			if ( this.isEmpty( script ) ) return null;
+			try {
+				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+				var lang = simpl4.util.BaseManager.getLanguage()
+				var formData = this._maskedEval( script, {
+					formData: data,
+					fd: data,
+					mode: this.mode,
+					lang: lang,
+					uuid: window.uuid
+				} );
+				return formData;
+			} catch ( e ) {
+				console.error( "_postProcessLocalForm:", e );
+			}
+		},
+
+		preProcessService: function() {
+			var method = this._form.xf_preprocess_service;
+			if ( this.isEmpty( method ) ) return null;
+			try {
+				if ( method.indexOf( "." ) == -1 ) {
+					method = this.namespace + "." + method;
+				}
+				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+				var params = {
+					service: "camelRoute",
+					method: method,
+					parameter: {
+						formData: data,
+						lang: simpl4.util.BaseManager.getLanguage(),
+						mode: this.mode,
+						uuid: window.uuid
+					},
+					async: true,
+					context: this,
+					failed: function( e ) {
+						console.error( "_postProcessForm:", e );
+						console.log( e.stack );
+					},
+					completed: function( formData ) {
+						console.log( "_preProcessForm.replaceFormData:", formData );
+						if ( formData != null ) {
+							this.setFieldData( formData );
+							if ( formData._selectionLists ) {
+								this._selectionLists = formData._selectionLists;
+							}
+						}
+					}
+				}
+				return simpl4.util.Rpc.rpcAsync( params );
+			} catch ( e ) {
+				console.error( "_postProcessForm.call:camelRoute:" + method );
+				console.error( "_postProcessForm:", e );
+			}
+		},
+		preProcessLocal: function() {
+			var script = this._form.xf_preprocess_local;
+			if ( this.isEmpty( script ) ) return null;
+			try {
+				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+				var lang = simpl4.util.BaseManager.getLanguage()
+				var formData = this._maskedEval( script, {
+					formData: data,
+					fd: data,
+					mode: this.mode,
+					lang: lang,
+					uuid: window.uuid
+				} );
+				if ( formData != null ) {
+					this.setFieldData( formData );
+				}
+			} catch ( e ) {
+				console.error( "_postProcessLocalForm:", e );
+			}
+		},
 		formNameChanged: function() {
 			this.async( function() {
 				this._formNameChanged();
@@ -286,7 +372,7 @@
 				this._form = form.properties;
 				this.defaultButtons = form.properties.xf_default_buttons;
 				this.formVar = form.properties.xf_name;
-				this.jsonDataForSelectionLists = this._getFormJsonDataForSelectionLists( form.properties.xf_method_fetch );
+				this._getSelectionLists( form.properties.xf_method_fetch );
 				this.shapes = this.prepareShape( form ).childShapes;
 				this._shapeMap = {};
 				this._buildShapeMap( this.shapes[ 0 ] );
@@ -452,7 +538,7 @@
 					var si;
 					if ( !this.isEmpty( jsonpath ) ) {
 						var a = JSONPath( {
-							json: this.jsonDataForSelectionLists,
+							json: this._selectionLists,
 							path: jsonpath,
 							callback: function() {}
 						} );

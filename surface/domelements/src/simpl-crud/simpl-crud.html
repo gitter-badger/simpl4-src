@@ -460,7 +460,11 @@
 				return idValue;
 			},
 			saveAction: function() {
-				var ppData = this.$.formid.postProcess();
+				var ppData = this.$.formid.postProcessService();
+				if ( ppData != null ) {
+					this.$.formid.setFieldData( ppData );
+				}
+				var ppData = this.$.formid.postProcessLocal();
 				if ( ppData != null ) {
 					this.$.formid.setFieldData( ppData );
 				}

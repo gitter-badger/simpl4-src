@@ -681,7 +681,12 @@
 					this._setData(this.resetData);
 				}
 				if ( target.xaction !== "cancel" && target.xaction !== "reset") {
-					var ppData = this.postProcess();
+					var ppData = this.postProcessService();
+					if( ppData != null ){
+						this.setFieldData(ppData);
+						data = simpl4.util.Merge.deepmerge( data, ppData );
+					}
+					var ppData = this.postProcessLocal();
 					if( ppData != null ){
 						this.setFieldData(ppData);
 						data = simpl4.util.Merge.deepmerge( data, ppData );
