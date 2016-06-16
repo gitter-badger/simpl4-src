@@ -26,6 +26,8 @@ import com.google.common.base.*;
 import com.google.common.collect.*;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.utils.annotations.RelatedTo;
+import org.ms123.common.utils.annotations.Functional;
+import javax.jdo.annotations.NotPersistent;
 import org.ms123.common.utils.TypeUtils;
 import java.lang.annotation.*;
 import javax.jdo.annotations.Element;
@@ -345,6 +347,16 @@ debug("\t:"+getTeamUserWhere(sel));
 		return list;
 	}
 
+
+	private boolean isAnnotationPresent(String prop, Object o, Class ann){
+		try {
+			Field field = o.getClass().getDeclaredField(prop);
+			if (field != null) {
+				return field.isAnnotationPresent(ann);
+			}
+		} catch (Exception e) { }
+		return false;
+	}
 	public List<String> getProjectionFromClass(String clazz, String alias) {
 		clazz = m_inflector.getClassName(clazz);
 		List<String> list = new ArrayList<String>();
@@ -357,19 +369,18 @@ debug("\t:"+getTeamUserWhere(sel));
 			String komma = "";
 			while (itv.hasNext()) {
 				String prop = (String) itv.next();
-				boolean isRelatedTo = false;
-				try {
-					Field field = o.getClass().getDeclaredField(prop);
-					if (field != null) {
-						isRelatedTo = field.isAnnotationPresent(RelatedTo.class);
-					}
-				} catch (Exception e) {
-				}
-				debug("\tName:" + prop + " -> " + beanMap.getType(prop) + "," + isRelatedTo); 
+				boolean isRelatedTo = isAnnotationPresent(prop,o, RelatedTo.class);
+				boolean isFunctional = isAnnotationPresent(prop,o, Functional.class);
+				boolean isNotPersistent = isAnnotationPresent(prop,o, NotPersistent.class);
+
+				debug("\tName:" + prop + " -> " + beanMap.getType(prop) + "," + isRelatedTo+"/isFunctional:"+isFunctional); 
 				if (clazz.equals("Document") && prop.equals("text")) {
 					continue;
 				}
 				if( !isAdmin() && STATE_FIELD.equals(prop)){
+					continue;
+				}
+				if( isFunctional || isNotPersistent){
 					continue;
 				}
 				Class type = beanMap.getType(prop);				

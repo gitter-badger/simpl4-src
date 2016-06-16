@@ -41,6 +41,7 @@ import javax.jdo.annotations.Index;
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.validation.constraints.AssertFalse;
 import javax.validation.constraints.AssertTrue;
@@ -72,6 +73,7 @@ import static org.ms123.common.entity.api.Constants.LEFT_FIELD;
 import static org.ms123.common.entity.api.Constants.RIGHT_FIELD;
 import static org.ms123.common.entity.api.Constants.RELATION;
 import org.ms123.common.utils.annotations.RelatedTo;
+import org.ms123.common.utils.annotations.Functional;
 import org.ms123.common.libhelper.Inflector;
 import org.osgi.framework.BundleContext;
 import aQute.bnd.annotation.metatype.*;
@@ -724,7 +726,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 				AnnotationsAttribute fieldAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
 				f.getFieldInfo().addAttribute(fieldAttr);
 				if (val[1].startsWith("related")) {
-					annotation = new Annotation("org.ms123.common.data.annotations.RelatedTo", constPool);
+					annotation = new Annotation("org.ms123.common.utils.annotations.RelatedTo", constPool);
 					if (relatedToField != null) {
 						annotation.addMemberValue("value", new StringMemberValue(relatedToField, constPool));
 					}
@@ -763,6 +765,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 			boolean isH2_FT = StoreDesc.VENDOR_H2.equals(sdesc.getVendor()) && "fulltext".equals(datatype);
 
 			boolean isGraphical = (edittype != null && edittype.startsWith("graphical"));
+			boolean isFunctional = (edittype != null && edittype.equals("functional"));
 			if ("textarea".equals(edittype) || isH2_FT || isGraphical || datatype.equals("text") || datatype.equals("array/string")) {
 				int len = isGraphical ? 128000 : TEXT_LEN;
 				Annotation columnAnnotation = new Annotation("javax.jdo.annotations.Column", constPool);
@@ -783,6 +786,11 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 					columnAnnotation.addMemberValue("defaultValue", mv);
 				}
 				fieldAttr.addAnnotation(columnAnnotation);
+			} else if (isFunctional) {
+				addEmptyAnnotation(f, "org.ms123.common.utils.annotations.Functional");
+				Annotation ann = new Annotation("javax.jdo.annotations.NotPersistent", constPool);
+				ann.addMemberValue("defaultFetchGroup", new StringMemberValue("false", constPool));
+				fieldAttr.addAnnotation(ann);
 			} else if ("map_string_integer".equals(datatype)) {
 				addMapAnnotation(f, "java.lang.String", "java.lang.Integer");
 			} else if ("map_integer_string".equals(datatype)) {

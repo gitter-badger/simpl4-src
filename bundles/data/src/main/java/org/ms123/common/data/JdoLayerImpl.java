@@ -1761,11 +1761,11 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			if (permittedFields.get(field) instanceof Map) {
 				Map cm = (Map) permittedFields.get(field);
 				if (cm != null && cm.get("formula_" + direction) != null && !"".equals(cm.get("formula_" + direction))) {
-					if (!"out".equals(direction)) {
+					//if (!"out".equals(direction)) {
 						if (map.get(field) == null) {
 							map.put(field, "");
 						}
-					}
+					//}
 				}
 			}
 		}
