@@ -256,8 +256,11 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		}
 		SessionContext sc = getSessionContext(exchange);
 		List result = null;
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true, m_paramHeaders, false, null, false);
+		Map exVars = ExchangeUtils.getVariablesFromHeaderFields(exchange, m_paramHeaders);
+//		Map exVars = ExchangeUtils.prepareVariables(exchange, true, m_paramHeaders, false, null, false);
+		info(this, "doFindByFilter(" + filterName + ").exe:" + exVars);
 		Map retMap = sc.executeNamedFilter(filterName, exVars, options);
+		info(this, "doFindByFilter(" + filterName + ").ret:" + retMap);
 		if (retMap == null) {
 			result = new ArrayList();
 		} else {
@@ -272,7 +275,8 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		String filterName = getStringCheck(LocalDataConstants.FILTER_NAME, m_filterName);
 		SessionContext sc = getSessionContext(exchange);
 		Map result = null;
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true, m_paramHeaders, false, null, false);
+		Map exVars = ExchangeUtils.getVariablesFromHeaderFields(exchange, m_paramHeaders);
+		//Map exVars = ExchangeUtils.prepareVariables(exchange, true, m_paramHeaders, false, null, false);
 		Map retMap = sc.executeNamedFilter(filterName, exVars, m_options);
 		if (retMap == null) {
 		} else {
