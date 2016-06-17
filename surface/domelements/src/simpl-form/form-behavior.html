@@ -145,8 +145,8 @@
 			try {
 				return ( new Function( "with(this) { return " + scr + "}" ) ).call( env );
 			} catch ( e ) {
-				console.log( "Form._maskedEval:" + scr );
-				console.error( "error:" + e );
+				console.error( "Form._maskedEval:" + scr );
+				console.error( "\t" + e );
 			}
 			return def;
 		},
@@ -534,7 +534,12 @@
 				if ( shape.stencil.id.toLowerCase() == 'enumselect' ) {
 					var props = shape.properties;
 					var enumembed = props.xf_enumembed;
+					var _enum = props.xf_enum;
+					var service = props.xf_service;
+					var filter = props.xf_filter;
 					var jsonpath = props.xf_jsonpath;
+					var parameters = props.xf_parameters;
+					var resultmapping = props.xf_resultmapping;
 					var si;
 					if ( !this.isEmpty( jsonpath ) ) {
 						var a = JSONPath( {
@@ -552,7 +557,22 @@
 					} else if ( enumembed && enumembed.totalCount > 0 ) {
 						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
-					} else {
+					} else if ( _enum && _enum.totalCount > 0 ) {
+						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
+						props.items = si.getItems();
+					} else if ( !this.isEmpty( filter ) ) {
+						var filterDesc = {
+							"totalCount": 1,
+							"enumDescription": "sw.filter:" + filter,
+							items: []
+						}
+
+						console.log( "filter.resultmapping:", resultmapping );
+						console.log( "filter.description:", JSON.stringify( filterDesc, null, 2 ) );
+						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
+						var selectionList = this.doResultMapping( si.getItems(), resultmapping );
+						props.items = selectionList;
+					} else if ( !this.isEmpty( service ) ) {} else {
 						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					}
@@ -647,6 +667,23 @@
 				lineBreak = true;
 			}
 			return lineBreak;
+		},
+		doResultMapping: function( items, resultmapping ) {
+			console.log( "----resultList:", items );
+			var selectionList = [];
+			var mapping = resultmapping.items;
+			for ( var i = 0; i < items.length; i++ ) {
+				var selectionObject = {};
+				var item = items[ i ];
+				for ( var j = 0; j < mapping.length; j++ ) {
+					var formvar = mapping[ j ].formvar;
+					var resvar = mapping[ j ].resultvar;
+					selectionObject[ formvar ] = this._maskedEval( resvar, item );
+				}
+				selectionList.push( selectionObject );
+			}
+			console.log( "====selectionList:", selectionList );
+			return selectionList;
 		},
 		constructRegulaConstraints: function( constraints ) {
 			if ( constraints == null || constraints.length == 0 ) return "";
