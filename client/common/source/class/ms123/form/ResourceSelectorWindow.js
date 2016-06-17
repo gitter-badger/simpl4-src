@@ -68,7 +68,7 @@ qx.Class.define("ms123.form.ResourceSelectorWindow", {
 		}else if( resourceTypes.indexOf( "sw.enum") != -1){
 			excludePathList = null;
 			includePathList = null;
-			path = "enumerations/data";
+			path = "enumerations";
 		}else{
 			excludePathList.push("enumerations");
 			excludePathList.push("data_description");

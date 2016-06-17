@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Stack;
 import java.lang.reflect.*;
 import org.ms123.common.utils.*;
+import org.ms123.common.store.StoreDesc;
 import net.sf.sojo.common.WalkerInterceptor;
 import net.sf.sojo.core.Constants;
 import net.sf.sojo.interchange.SerializerException;
@@ -47,6 +48,7 @@ import org.ms123.common.libhelper.Base64;
 import javax.jdo.annotations.Persistent;
 import org.ms123.common.data.api.SessionContext;
 import org.apache.commons.beanutils.BeanMap;
+import static org.apache.commons.lang3.StringUtils.stripEnd;
 
 @SuppressWarnings("unchecked")
 public class SojoFilterInterceptor implements WalkerInterceptor {
@@ -70,6 +72,7 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 	private Stack<String> m_moduleNameStack = new Stack();
 
 	private String m_currentModuleName = "ROOT";
+	private String m_pack;
 	private Map m_currentFieldMap = new HashMap();
 
 	private boolean m_isAdmin=false;
@@ -89,13 +92,14 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 		return m_isAdmin;
 	}
 
-	public static Map filterFields(Object o, SessionContext sc, List<String> fieldList, List<String> aliasList) {
+	public static Map filterFields(Object o, SessionContext sc, List<String> fieldList, List<String> aliasList, String pack) {
 		SojoFilterInterceptor interceptor = new SojoFilterInterceptor();
 		ObjectGraphWalker walker = new ObjectGraphWalker();
 		walker.setUseBeanMap(true);
 		ReflectionHelper.addSimpleType(org.datanucleus.store.types.wrappers.Date.class);
 		walker.setIgnoreNullValues(true);
 		interceptor.setFields(fieldList, aliasList);
+		interceptor.setPack(pack);
 		interceptor.setSessionContext(sc);
 	  interceptor.setAdmin(sc.getPermissionService().hasAdminRole());
 		walker.addInterceptor(interceptor);
@@ -112,7 +116,7 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 				return false;
 			}
 			if (pvKey != null && pvKey.getClass().equals(String.class)) {
-				if (m_sessionContext.isFieldPermitted((String) pvKey, m_currentModuleName)) {
+				if (m_sessionContext.isFieldPermitted((String) pvKey, StoreDesc.getFqEntityName(m_currentModuleName,m_pack))) {
 					String fieldName = (String) pvKey;
 					int index = m_fieldMap.get(pvPath);
 					String alias = m_aliasList.get(index);
@@ -126,6 +130,9 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 					}
 					if( pvValue instanceof java.util.Date){
 						pvValue = ((java.util.Date)pvValue).getTime();
+					}
+					if( pvValue instanceof String){
+						pvValue = stripEnd((String)pvValue," ");
 					}
 					((Map) m_current).put(fieldName, pvValue);
 				}
@@ -204,7 +211,7 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 
 	private Map getCurrentFieldMap(){
 		try{
-				return m_sessionContext.getPermittedFields(m_currentModuleName);
+				return m_sessionContext.getPermittedFields(StoreDesc.getFqEntityName(m_currentModuleName,m_pack));
 		}catch(Exception e){
 			return new HashMap();
 		}
@@ -226,6 +233,9 @@ public class SojoFilterInterceptor implements WalkerInterceptor {
 		return Base64.encode( new ByteArrayInputStream((byte[])pvValue));
 	}
 
+	private void setPack(String pack){
+		m_pack = pack;
+	}
 	private void setFields(List<String> fieldList, List<String> aliasList) {
 		m_aliasList = aliasList;
 		m_fieldMap = new HashMap();

@@ -455,12 +455,12 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		List<Object> retList = new ArrayList();
 		if( getBoolean(options, GET_OBJECT, false) == false ){
 			for (Map row : rows) {
-				Object obj = row.get(clazzName);
-				retList.add(SojoFilterInterceptor.filterFields(obj, this, fieldList, aliasList));
+				Object obj = row.get(StoreDesc.getSimpleEntityName(clazzName));
+				retList.add(SojoFilterInterceptor.filterFields(obj, this, fieldList, aliasList, StoreDesc.getPackName(entityName,m_sdesc.getPack())));
 			}
 		}else if( getBoolean(options, GET_OBJECT, false) ){
 			for (Map row : rows) {
-				Object obj = row.get(clazzName);
+				Object obj = row.get(StoreDesc.getSimpleEntityName(clazzName));
 				retList.add(obj);
 			}
 		}

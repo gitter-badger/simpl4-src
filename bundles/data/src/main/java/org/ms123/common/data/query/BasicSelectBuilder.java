@@ -281,7 +281,7 @@ public abstract class BasicSelectBuilder {
 		debug("getCondition:"+fullfieldname+"|"+selector);
 		addSelector(entityName);
 		entityName = m_queryBuilder.getEntityForPath(entityName);
-		Map configMap = m_queryBuilder.getPermittedFields(entityName);
+		Map configMap = m_queryBuilder.getPermittedFields(StoreDesc.getFqEntityName(entityName,m_pack));
 		String fieldname = (f.length == 2) ? f[1] : fullfieldname;
 		Map c = (Map) configMap.get(fieldname);
 		if (fieldname.equals("id")) {

@@ -322,7 +322,7 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 		_createNewFilterProps:function(){
 			var filterProps = {
 				id: this._filterProps.id,
-				modulename: ms123.settings.Config.getFqEntityName(this._filterProps.modulename,this.pack),
+				modulename: ms123.settings.Config.getFqEntityName(this._filterProps.modulename,this._filterProps.pack),
 				pack: this._filterProps.pack,
 				storeId: this._filterProps.storeId,
 				user: this._filterProps.user,
