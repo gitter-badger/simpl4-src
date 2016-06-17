@@ -188,13 +188,16 @@ public class QualityBatch implements Constants {
 		info("record.num:" + m_count++);
 		Object candId = getProperty(candidate,ID);
 		String entityName = getEntityName();
+		StoreDesc sdesc = sc.getStoreDesc();
+		String pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+		entityName = StoreDesc.getSimpleEntityName(entityName);
 		Class clazz = sc.getClass(entityName);
 		String filter = STATE_FIELD + " == \"" + STATE_OK + "\"";
 		Extent e = sc.getPM().getExtent(clazz, true);
 		Query q = sc.getPM().newQuery(e, filter);
 		q.addExtension("datanucleus.rdbms.query.resultSetConcurrency", "read-only");
 		q.addExtension("datanucleus.rdbms.query.fetchDirection", "forward");
-		q.declareImports(m_sdesc.getImports());
+		q.declareImports(m_sdesc.getImports(pack));
 		try {
 			Collection coll = (Collection) q.execute();
 			Iterator iter = coll.iterator();

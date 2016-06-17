@@ -174,8 +174,10 @@ class GitMetaDataImpl implements MetaData {
 	public Map<String,Object>  getEntitytype(String storeId, String name) throws Exception{
 		StoreDesc sdesc = StoreDesc.get(storeId);
 		debug("getEntitytype:"+sdesc+"/"+name);
+		String pack = StoreDesc.getPackName(name,sdesc.getPack());
+		name = StoreDesc.getSimpleEntityName(name);
 		String namespace = sdesc.getNamespace();
-		String pack = sdesc.getPack();
+		//String pack = sdesc.getPack();
 		String ret = null;
 		String path = null;
 		try{

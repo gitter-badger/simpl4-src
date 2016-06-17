@@ -90,6 +90,12 @@
 				filter[ "children" ] = newChildren;
 				return ok;
 			},
+			addPack:function(entity, pack){
+				if( entity.indexOf(":") >0){
+					return entity;
+				}
+				return pack + ":"+ entity;
+			},
 			build: function( withMeta ) {
 				var params = this.parseParams( this.params );
 				var namespace = this.namespace || simpl4.util.BaseManager.getNamespace();
@@ -104,7 +110,7 @@
 				var filter = map.filter;
 				this.insertFilterParams( filter, this.params );
 				filter.namespace = namespace;
-				filter.entity = map.pack + ":" + map.modulename;
+				filter.entity = this.addPack( map.modulename, map.pack);
 				console.log( "buildFilter.filter:", filter );
 				this.set( 'filter', filter );
 			}

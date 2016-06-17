@@ -59,6 +59,7 @@ public abstract class BasicSelectBuilder {
 	private List<String> m_sortedUniqueList = null;
 
 	protected String m_entityName;
+	protected String m_pack;
 
 	protected Map m_filters;
 
@@ -69,7 +70,8 @@ public abstract class BasicSelectBuilder {
 	public BasicSelectBuilder(QueryBuilder qb, StoreDesc sdesc, String entityName, List<String> joinFields, Map filters, Map fieldSets) {
 		m_queryBuilder = qb;
 		m_sdesc = sdesc;
-		m_entityName = entityName;
+		m_pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+		m_entityName = StoreDesc.getSimpleEntityName(entityName);
 		m_filters = filters;
 		m_fieldSets = fieldSets;
 		m_joinFields = joinFields;
@@ -127,7 +129,6 @@ public abstract class BasicSelectBuilder {
 				  where ="";
 					and = "";
 				}
-debug("\t:"+getTeamUserWhere(sel));
 				where += and +getTeamUserWhere(sel);
 				and = " and ";
 			}
@@ -333,6 +334,8 @@ debug("\t:"+getTeamUserWhere(sel));
 	}
 
 	public List<String> getProjectionListEntity(String entity, String parent) {
+		entity = StoreDesc.getSimpleEntityName(entity);
+		parent = StoreDesc.getSimpleEntityName(parent);
 		List<String> list = new ArrayList<String>();
 		String mn = m_inflector.getEntityName(entity);
 		String clazz = m_inflector.getClassName(mn);
@@ -341,6 +344,7 @@ debug("\t:"+getTeamUserWhere(sel));
 	}
 
 	public List<String> getProjectionListAll(String entity) {
+		entity = StoreDesc.getSimpleEntityName(entity);
 		List<String> list = new ArrayList<String>();
 		String clazz = m_inflector.getClassName(entity);
 		list.addAll(getProjectionFromClass(clazz, entity));
@@ -409,6 +413,7 @@ debug("\t:"+getTeamUserWhere(sel));
 		if (ind != -1) {
 			selector = selector.substring(0, ind);
 		}
+		selector = StoreDesc.getSimpleEntityName(selector);
 		m_selectorList.add(selector);
 	}
 
@@ -423,12 +428,10 @@ debug("\t:"+getTeamUserWhere(sel));
 
 	public List<String> getInvolvedEntity() {
 		List<String> uniqueList = uniqueList(m_selectorList);
-		debug("uniqueList:"+uniqueList);
 		List<String> entityList = new ArrayList();
 		for (String part : uniqueList) {
 			entityList.add(m_queryBuilder.getEntityForPath(part));
 		}
-		debug("entityList:"+entityList);
 		return entityList;
 	}
 
@@ -545,7 +548,7 @@ debug("\t:"+getTeamUserWhere(sel));
 		String entityName = m_queryBuilder.getEntityForPath(selector);
 		if( "team".equals(entityName)) return false;
 		SessionContext sc = m_queryBuilder.getSessionContext();
-		Map entityMap = sc.getEntitytype(entityName);
+		Map entityMap = sc.getEntitytype(StoreDesc.getFqEntityName(entityName,m_pack));
 		boolean hasTeamSecurity = getBoolean(entityMap, "team_security", false);
 		debug("hasTeamSecurity"+entityName+"):" + hasTeamSecurity);
 		return hasTeamSecurity;

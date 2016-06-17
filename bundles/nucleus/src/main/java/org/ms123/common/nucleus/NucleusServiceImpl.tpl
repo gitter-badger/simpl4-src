@@ -279,14 +279,16 @@ public class NucleusServiceImpl implements org.ms123.common.nucleus.api.NucleusS
 
 	public Class getClass(StoreDesc sdesc, String className) {
 		try {
+			String pack = StoreDesc.getPackName(className,sdesc.getPack());
+			className = StoreDesc.getSimpleEntityName(className);
 			className = m_inflector.getClassName(className);
-			String pack = sdesc.getJavaPackage();
+			String javaPack = sdesc.getJavaPackage(pack);
 			try {
 				ClassLoader cl = getClassLoader(sdesc);
-				//System.out.println("GetClass:("+sdesc+"),"+cl+"/"+pack+"."+className);				
-				return cl.loadClass(pack + "." + className);
+				//System.out.println("GetClass:("+sdesc+"),"+cl+"/"+javaPack+"."+className);				
+				return cl.loadClass(javaPack + "." + className);
 			} catch (Exception e1) {
-				debug("NucleusServiceImpl.getClass:" + sdesc + "/pack:" + pack + "/cn:" + className + " not found, trying common_ns");
+				debug("NucleusServiceImpl.getClass:" + sdesc + "/javaPack:" + javaPack + "/cn:" + className + " not found, trying common_ns");
 				try{
 					return m_aidClassLoader.loadClass(StoreDesc.PACK_AID + "." + className);
 				}catch(Exception e2){

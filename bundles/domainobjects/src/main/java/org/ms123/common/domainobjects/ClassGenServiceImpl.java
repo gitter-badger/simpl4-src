@@ -166,7 +166,9 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 		if (sdesc.isAidPack()) {
 			return;
 		}
-		String fqn = sdesc.getJavaPackage() + "." + m_inflector.getClassName(entity);
+		String pack = StoreDesc.getPackName(entity,sdesc.getPack());
+		entity = StoreDesc.getSimpleEntityName(entity);
+		String fqn = sdesc.getJavaPackage(pack) + "." + m_inflector.getClassName(entity);
 		for (Map<String, String> field : defaultFields) {
 			String datatype = field.get("datatype");
 			if (datatype.startsWith("array")) {
@@ -1190,8 +1192,11 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 	}
 
 	private String getFQN(StoreDesc sdesc, Map entity) {
-		String className = m_inflector.getClassName((String) entity.get("name"));
-		return sdesc.getJavaPackage() + "." + className;
+		String name = (String)entity.get("name");
+		String pack = StoreDesc.getPackName(name,sdesc.getPack());
+		name = StoreDesc.getSimpleEntityName(name);
+		String className = m_inflector.getClassName((String) name);
+		return sdesc.getJavaPackage(pack) + "." + className;
 	}
 
 	private String getJoinTableName(String leftEntity, String leftField, String rightEntity, String rightField, boolean isMap) {

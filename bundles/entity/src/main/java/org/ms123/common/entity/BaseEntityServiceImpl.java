@@ -286,9 +286,9 @@ System.out.println("className:"+className);
 		}
 		node.put("datatype", (collection || (level == 20 && listResolved)) ? "list" : "object");
 		node.put(ENTITY, entityName);
-		node.put("name", member[1]);
+		node.put("name", StoreDesc.getSimpleEntityName((String)member[1]));
 		node.put("write", m_permissionService.hasEntityPermissions(sdesc, entityName, "write"));
-		node.put("title", (sdesc.getPack()+"." + m_inflector.getEntityName(member[1])).toLowerCase());
+		node.put("title", (sdesc.getPack()+"." + m_inflector.getEntityName(StoreDesc.getSimpleEntityName((String)member[1]))).toLowerCase());
 		Map objNode = null;
 		if ((collection || level == 20) && listResolved) {
 			objNode = getNodeWithSingularNames(node, entityName, path, pathid);

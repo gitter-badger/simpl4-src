@@ -144,19 +144,19 @@ public class StoreDesc {
 		return m_package;
 	}
 
-	public String getJavaPackage() {
+	public String getJavaPackage(String pack) {
 		if (isAidPack()) {
 			return PACK_AID;
 		}
-		return getNamespace() + "." + getPack();
+		return getNamespace() + "." + pack;
 	}
 
 	public String getVendor() {
 		return m_vendor;
 	}
 
-	public String getImports() {
-		return "import " + getJavaPackage() + ".*;import aid.*";
+	public String getImports(String pack) {
+		return "import " + getJavaPackage(pack) + ".*;import aid.*";
 	}
 
 	public File getBaseDir() {
@@ -186,19 +186,23 @@ public class StoreDesc {
 	}
 
 	public String getFQN(String entityname) {
+		String	pack = StoreDesc.getPackName(entityname,getPack());
+		entityname = StoreDesc.getSimpleEntityName(entityname);
 		String className = m_inflector.getClassName(entityname);
 		if( className.indexOf(".") == -1){
-			return getJavaPackage() + "." + className;
+			return getJavaPackage(pack) + "." + className;
 		}
 		return className;
 	}
 
 	public String insertJavaPackage(String entityname) {
+		String	pack = StoreDesc.getPackName(entityname,getPack());
+		entityname = StoreDesc.getSimpleEntityName(entityname);
 		String s = entityname;
 		if (!s.startsWith(PACK_AID) && !s.startsWith(getNamespace())) {
 			int dot = s.lastIndexOf(".");
 			if (dot != -1) {
-				s = getJavaPackage() + "." + m_inflector.getClassName(s.substring(dot + 1));
+				s = getJavaPackage(pack) + "." + m_inflector.getClassName(s.substring(dot + 1));
 			}
 		} else {
 			int dot = s.lastIndexOf(".");
@@ -384,12 +388,24 @@ public class StoreDesc {
 
 	public static Map<String, StoreDesc> m_storeIds = null;
 
+	public static boolean hasPackName(String entity){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return true;
+		}
+		return false;
+	}
+
 	public static String getPackName(String entity){
+		return getPackName(entity, "data");
+	}
+
+	public static String getPackName(String entity, String def){
 		int colon = entity.indexOf(PACK_DELIM);
 		if( colon >= 0){
 			return entity.substring(0,colon);
 		}
-		return "data";
+		return def;
 	}
 	public static String getSimpleEntityName(String entity){
 		int colon = entity.indexOf(PACK_DELIM);

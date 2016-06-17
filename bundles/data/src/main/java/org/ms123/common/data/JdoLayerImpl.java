@@ -236,7 +236,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			String sql = "Select distinct id from " + from + " " + whereClause;
 			debug("sql:" + sql);
 			Query q = pm.newQuery("javax.jdo.query.JPQL", sql);
-			q.declareImports(sdesc.getImports());
+			String pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+			q.declareImports(sdesc.getImports(pack));
 			List results = (List) q.executeWithMap(qb.getQueryParams());
 			rit = results.iterator();
 		} else {
@@ -507,7 +508,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			String sql = "Select distinct "+entityName+" from " + from + " " + whereClause;
 			debug("sql:" + sql);
 			Query q = pm.newQuery("javax.jdo.query.JPQL", sql);
-			q.declareImports(sdesc.getImports());
+			String pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+			q.declareImports(sdesc.getImports(pack));
 			List results = (List) q.executeWithMap(qb.getQueryParams());
 			rit = results.iterator();
 		} else {
@@ -1375,13 +1377,13 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				for( Map<String,String> pk : pkList){
 					String pkName = pk.get("name");
 					String q = "string".equals(pk.get("datatype")) ? "'" : "" ;
-					whereClause += andStr + " (" + getAlias(entityName) + "." + pkName + " = "+q+ vals[i] + q +")";
+					whereClause += andStr + " (" + getAlias(StoreDesc.getSimpleEntityName(entityName)) + "." + pkName + " = "+q+ vals[i] + q +")";
 					andStr = " and";
 					i++;
 				}
 
 				if (fieldsArray == null) {
-					String alias = entityNameDetails;
+					String alias = StoreDesc.getSimpleEntityName(entityNameDetails);
 					if (joinFields.size() > 0) {
 						alias = joinFields.get(0);
 					}
@@ -1405,7 +1407,10 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			}
 			List<String> projList = null;
 			if (fieldsArray != null) {
-				projList = fieldsArray;
+				projList = new ArrayList<String>();
+				for( String field : fieldsArray){
+					projList.add(StoreDesc.getSimpleEntityName(field));
+				}
 				List<Map> pkList = null;
 				if (entityNameDetails != null) {
 					pkList = sessionContext.getPrimaryKeyFields(entityNameDetails);
@@ -1430,9 +1435,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			String from = qb.getFrom(jointype);
 			if (hasTeamSecurity) {
 				if (entityNameDetails != null) {
-					projection = projection + "," + entityName + "$" + detailFieldName;
+					projection = projection + "," + StoreDesc.getSimpleEntityName(entityName) + "$" + detailFieldName;
 				} else {
-					projection = projection + "," + entityName;
+					projection = projection + "," + StoreDesc.getSimpleEntityName(entityName);
 				}
 				projList.add("_team_list");
 			}
@@ -1459,9 +1464,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				String state = qb.getRequestedState();
 				String qualifier = null;
 				if (entityNameDetails != null) {
-					qualifier = entityName + "$" + detailFieldName;
+					qualifier = StoreDesc.getSimpleEntityName(entityName) + "$" + detailFieldName;
 				} else {
-					qualifier = entityName;
+					qualifier = StoreDesc.getSimpleEntityName(entityName);
 				}
 				stateWhere =  andStr+" "+ getStateWhere(qualifier,state);
 				andStr = " and";
@@ -1472,10 +1477,11 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			info("=========================================================================================");
 			info("sql:" + sql);
 			info("=========================================================================================");
-			info("Imports:"+sdesc.getImports());
+			String pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+			info("Imports:"+sdesc.getImports(pack));
 			info("Params:"+qb.getQueryParams());
 			Query q = pm.newQuery("javax.jdo.query.JPQL", sql);
-			q.declareImports(sdesc.getImports());
+			q.declareImports(sdesc.getImports(pack));
 			int offset = getInt(params, "offset", 0);
 			int pageSize = getInt(params, "pageSize", 30);
 			if( noResultSetCount && pageSize >0){
@@ -1523,6 +1529,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 							if( field != null){
 								String clazz = getLastElement(field.getDeclaringClass().getName());
 								String name = field.getName();
+								clazz = StoreDesc.getFqEntityName(clazz, pack);
 								isPermitted = sessionContext.isFieldPermitted(name, clazz);
 								debug("\tisPermitted("+clazz+","+name+"):"+isPermitted);
 							}
@@ -1612,9 +1619,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			debug("=========================================================================================");
 			debug("sql:" + sql.replace("\n"," "));
 			debug("=========================================================================================");
-			debug("Imports:"+sdesc.getImports());
+			debug("Imports:"+sdesc.getImports(sdesc.getPack()));
 			Query q = pm.newQuery("javax.jdo.query.JPQL", sql.replace("\n"," "));
-			q.declareImports(sdesc.getImports());
+			q.declareImports(sdesc.getImports(sdesc.getPack()));
 			List results = (List) q.executeWithMap(params);
 			Iterator itr = results.iterator();
 			int count = 0;

@@ -134,13 +134,15 @@ public class LuceneServiceImpl implements org.ms123.common.data.api.LuceneServic
 
 	private void _createIndex(String namespace, String entityName) throws Exception {
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		String pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+		entityName = StoreDesc.getSimpleEntityName(entityName);
 		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
 		String className = m_inflector.getClassName(entityName);
 		String plural = m_inflector.pluralize(entityName).toLowerCase();
 		LuceneSession ls = createSession(sdesc);
 		String sql = "Select " + plural + " from " + className + " " + plural;
 		javax.jdo.Query q = sc.getPM().newQuery("javax.jdo.query.JPQL", sql);
-		q.declareImports(sdesc.getImports());
+		q.declareImports(sdesc.getImports(pack));
 		List list = (List) q.execute();
 		Iterator itr = list.iterator();
 		int counter = 0;

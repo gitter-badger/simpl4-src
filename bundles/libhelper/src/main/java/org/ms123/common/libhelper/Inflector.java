@@ -66,7 +66,10 @@ public class Inflector {
 	}
 
 	public String  getClassName(Object word) {
-		return capitalize(singularize(word));
+		String pack = getPackName((String)word,null);
+		word = getSimpleEntityName((String)word);
+		String className = capitalize(singularize(word));
+		return pack != null ? getFqEntityName(className, pack ) : className;
 	}
 
 	public String  getEntityName(Object word) {
@@ -339,5 +342,27 @@ public class Inflector {
 		}
 		matcher.appendTail(sb);
 		return sb.toString();
+	}
+	public static final String PACK_DELIM = ":";
+	public static String getPackName(String entity, String def){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity.substring(0,colon);
+		}
+		return def;
+	}
+	public static String getSimpleEntityName(String entity){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity.substring(colon+1);
+		}
+		return entity;
+	}
+	public static String getFqEntityName(String entity, String pack){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity;
+		}
+		return pack + PACK_DELIM +entity;
 	}
 }

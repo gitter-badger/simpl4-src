@@ -154,7 +154,10 @@ public class DublettenCheckServicePGImpl implements DublettenCheckService {
 		List<Map> cvList = dcc.getCVList();
 		List idHitList = dcc.getIdHitList();
 		SessionContext sc = dcc.getSessionContext();
+		StoreDesc sdesc = sc.getStoreDesc();
 		String entityName = dcc.getEntityName();
+		String pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+		entityName = sdesc.getSimpleEntityName(entityName);
 		Map<String, String[]> fieldAlgoMap = dcc.getFieldAlgoMap();
 		String komma = "";
 		String className = m_inflector.getClassName(entityName);
@@ -170,7 +173,7 @@ public class DublettenCheckServicePGImpl implements DublettenCheckService {
 			System.out.println("dupcheck.sql:" + sql);
 			System.out.println("dupcheck.app:" + sc.getStoreDesc());
 			q = sc.getPM().newQuery("javax.jdo.query.JPQL", sql);
-			q.declareImports(sc.getStoreDesc().getImports());
+			q.declareImports(sc.getStoreDesc().getImports(pack));
 			System.out.println("dupcheck.queryParams:" + dcc.getQueryParams());
 			List results = (List) q.executeWithMap(dcc.getQueryParams());
 			System.out.println("dupcheck.resultSize:" + results);

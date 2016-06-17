@@ -149,6 +149,8 @@ public class DublettenCheckServiceImpl implements DublettenCheckService {
 		SessionContext sc = dcc.getSessionContext();
 		String entityName = dcc.getEntityName();
 		StoreDesc sdesc = sc.getStoreDesc();
+		String pack = StoreDesc.getPackName(entityName,sdesc.getPack());
+		entityName = sdesc.getSimpleEntityName(entityName);
 		String className = m_inflector.getClassName(entityName);
 		String plural = m_inflector.pluralize(entityName).toLowerCase();
 		String projection = "";
@@ -168,7 +170,7 @@ public class DublettenCheckServiceImpl implements DublettenCheckService {
 		String sql = "Select distinct " + projection + "," + pkProjection.toString() + " from " + className + " " + plural;
 		System.out.println("dublettenCheck.sql:" + sql);
 		Query q = sc.getPM().newQuery("javax.jdo.query.JPQL", sql);
-		q.declareImports(sdesc.getImports());
+		q.declareImports(sdesc.getImports(pack));
 		List compareList = (List) q.execute();
 		return compareList;
 	}
