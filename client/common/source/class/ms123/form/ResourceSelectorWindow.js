@@ -349,7 +349,7 @@ qx.Class.define("ms123.form.ResourceSelectorWindow", {
 			}
 		},
 		_getNamespace:function(){
-			if(this._config.namespace && this._config.namespace!='-'){
+			if(this._config.namespace && this._config.namespace!='-' && !this._config.namespace.startsWith("${")){
 				return this._config.namespace;
 			}
 			return this.__storeDesc.getNamespace();
