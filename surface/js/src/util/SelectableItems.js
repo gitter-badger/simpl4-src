@@ -236,7 +236,8 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 				var ns = this._varMap.namespace;
 				var lang = simpl4.util.BaseManager.getLanguage() 
 				itemsRet = simpl4.util.Rpc.rpcSync( "camelRoute:"+ns+"."+name, {
-					lang:lang
+					lang:lang,
+ 					uuid:window.uuid         
 				} );
 			}
 			if ( type == "sw.filter" ) {
