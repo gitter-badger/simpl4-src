@@ -188,5 +188,24 @@ public class ExchangeUtils {
 		}
 	}
 
+	public static Map<String,Object> getVariablesFromHeaderFields(Exchange exchange, String headerFields){
+		List<String> headerList=null;
+		if( !isEmpty(headerFields)){
+			headerList = Arrays.asList(headerFields.split(","));
+		}else{
+			headerList = new ArrayList();
+		}
+		Map<String,Object> variables = new HashMap();
+		for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
+			if( headerList.size()==0 || headerList.contains( header.getKey())){
+				if( header.getValue() instanceof Map){
+					variables.putAll((Map)header.getValue());
+				}else{
+					variables.put(header.getKey(), header.getValue());
+				}
+			}
+		}
+		return variables;
+	}
 }
 
