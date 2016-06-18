@@ -83,7 +83,6 @@ qx.Class.define("ms123.form.ResourceSelectorField", {
 		 * string will be returned.
 		 */
 		getValue: function () {
-			console.error("ResourceSelectorField.getValue:" + this.data);
 			return this.getChildControl("textfield").getValue();
 		},
 
@@ -95,7 +94,6 @@ qx.Class.define("ms123.form.ResourceSelectorField", {
 		 * param {Object} value The value to be set (JSON format or empty string)
 		 */
 		setValue: function (value) {
-			console.log("ResourceSelectorField.setValue:" + value);
 			if (value != undefined && value && value.length > 0) {
 				if (this.data == undefined) {
 				}

@@ -94,8 +94,7 @@
 			console.log( "Values:" + jsonData );
 		},
 		created: function() {},
-		ready: function() {
-		},
+		ready: function() {},
 		shapesChanged: function() {
 			console.debug( "simpl-baseform.shapesChanged" );
 			this.valueChanged();
@@ -360,7 +359,7 @@
 			}, 10 );
 		},
 		_formNameChanged: function() {
-//			console.log( "form.formNameChanged:", this.formName + "/" + this.namespace );
+			//			console.log( "form.formNameChanged:", this.formName + "/" + this.namespace );
 			this.fields = [];
 			this.fieldsMap = {};
 			this.shapes = [];
@@ -392,7 +391,7 @@
 		specChanged: function( e ) {
 			this.fields = [];
 			this.fieldsMap = {};
-//			console.log( "form.specChanged" );
+			//			console.log( "form.specChanged" );
 			this.shapes = [];
 			this._form = {};
 
@@ -530,7 +529,8 @@
 					var bounds = shape.bounds;
 					props.height = bounds.lowerRight.y - bounds.upperLeft.y;
 				}
-				if ( shape.stencil.id.toLowerCase() == 'enumselect' ) {
+				if ( shape.stencil.id.toLowerCase() == "enumselect" || shape.stencil.id.toLowerCase() == "tableselect" ) {
+					var isTableSelect = shape.stencil.id.toLowerCase() == "tableselect";
 					var props = shape.properties;
 					var enumembed = props.xf_enumembed;
 					var _enum = props.xf_enum;
@@ -543,7 +543,7 @@
 					if ( !this.isEmpty( varname ) ) {
 						props.items = this.variables[ varname ];
 						props.items = this.doResultMapping( props.items, resultmapping );
-					}else if ( !this.isEmpty( jsonpath ) ) {
+					} else if ( !this.isEmpty( jsonpath ) ) {
 						var a = JSONPath( {
 							json: this._selectionLists,
 							path: jsonpath,
@@ -555,10 +555,10 @@
 							props.items = a[ 0 ];
 						}
 						props.items = this.doResultMapping( props.items, resultmapping );
-					} else if ( enumembed && enumembed.totalCount > 0 ) {
+					} else if ( isTableSelect && enumembed && enumembed.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
-					} else if ( _enum && _enum.totalCount > 0 ) {
+					} else if ( isTableSelect && _enum && _enum.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					} else if ( !this.isEmpty( filter ) ) {
@@ -567,7 +567,7 @@
 							"enumDescription": "sw.filter:" + filter,
 							items: []
 						}
-						filterDesc.params = this.doParameterMapping(  parammapping );
+						filterDesc.params = this.doParameterMapping( parammapping );
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
 						props.items = this.doResultMapping( si.getItems(), resultmapping );
 					} else if ( !this.isEmpty( service ) ) {
@@ -576,52 +576,37 @@
 							"enumDescription": "sw.service:" + service,
 							items: []
 						}
-						serviceDesc.params = this.doParameterMapping(  parammapping );
+						serviceDesc.params = this.doParameterMapping( parammapping );
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( serviceDesc ) );
 						props.items = this.doResultMapping( si.getItems(), resultmapping );
 					} else {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					}
-				}
-				if ( shape.stencil.id.toLowerCase() == 'tableselect' ) {
-					var props = shape.properties;
-					var xf_id = props.xf_id;
-					var filter = props.xf_filter;
-					var inputListName = props.xf_inputlistname;
-					if ( filter ) {
-						var filterDesc = {
-							"enumDescription": "sw.filter:" + filter,
-							items: []
-						};
-						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
-						si.setVariable( "name", "" );
-						props.items = si.getItems();
-					} else if ( inputListName ) {
-						props.items = this.variables[ inputListName ];
+					if ( shape.stencil.id.toLowerCase() == 'tableselect' ) {
+						if ( props.items == null ) props.items = [];
+						var columns = props.xf_columns;
+						var fields = columns ? columns.items : [];
+						props.meta = [];
+						fields.forEach( function( field, i ) {
+							var title = field.display;
+							var alias = field.display;
+							if ( alias && alias.match( /^[@%]/ ) ) {
+								title = tr( alias.substring( 1 ) );
+							}
+							if ( title == null ) {
+								title = xf_id + "." + field.colname;
+							}
+							var col = {
+								title: title,
+								data: field.colname
+							}
+							props.meta.push( col );
+						}, this );
+						var bounds = shape.bounds;
+						props.height = bounds.lowerRight.y - bounds.upperLeft.y;
+						if ( props.height < 75 ) props.height = 75;
 					}
-					if ( props.items == null ) props.items = [];
-					var columns = props.xf_columns;
-					var fields = columns ? columns.items : [];
-					props.meta = [];
-					fields.forEach( function( field, i ) {
-						var title = field.display;
-						var alias = field.display;
-						if ( alias && alias.match( /^[@%]/ ) ) {
-							title = tr( alias.substring( 1 ) );
-						}
-						if ( title == null ) {
-							title = xf_id + "." + field.colname;
-						}
-						var col = {
-							title: title,
-							data: field.colname
-						}
-						props.meta.push( col );
-					}, this );
-					var bounds = shape.bounds;
-					props.height = bounds.lowerRight.y - bounds.upperLeft.y;
-					if ( props.height < 75 ) props.height = 75;
 				}
 			} else if ( shape.stencil.id.toLowerCase() == "actionbutton" ) {
 				var icon = shape.properties.xf_iconname;
@@ -672,7 +657,7 @@
 		},
 		doParameterMapping: function( parammapping ) {
 			var parameterMap = {};
-			if( !parammapping) return parameterMap;
+			if ( !parammapping ) return parameterMap;
 			console.log( "----paramMapping:", parammapping );
 			var env = simpl4.util.Merge.deepmerge( this.data, this.getData() );
 			env._uuid = window.uuid;
@@ -691,7 +676,7 @@
 		doResultMapping: function( items, resultmapping ) {
 			console.log( "----resultList:", items );
 			var selectionList = [];
-			if( resultmapping==null || this.isEmpty(resultmapping.items)){
+			if ( resultmapping == null || this.isEmpty( resultmapping.items ) ) {
 				return items;
 			}
 			var mapping = resultmapping.items;
