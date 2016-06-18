@@ -232,7 +232,7 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 					mapping: mapping
 				} );
 			}
-			if ( type == "camelparam_route" ) {
+			if ( type == "camelparam_route" || type == "sw.service" ) {
 				var ns = this._varMap.namespace;
 				var lang = simpl4.util.BaseManager.getLanguage() 
 				itemsRet = simpl4.util.Rpc.rpcSync( "camelRoute:"+ns+"."+name, {

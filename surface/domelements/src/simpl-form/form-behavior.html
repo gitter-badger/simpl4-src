@@ -538,9 +538,8 @@
 					var service = props.xf_service;
 					var filter = props.xf_filter;
 					var jsonpath = props.xf_jsonpath;
-					var parameters = props.xf_parameters;
+					var parammapping = props.xf_parammapping;
 					var resultmapping = props.xf_resultmapping;
-					var si;
 					if ( !this.isEmpty( jsonpath ) ) {
 						var a = JSONPath( {
 							json: this._selectionLists,
@@ -555,10 +554,10 @@
 							props.items = a[ 0 ];
 						}
 					} else if ( enumembed && enumembed.totalCount > 0 ) {
-						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
+						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
 					} else if ( _enum && _enum.totalCount > 0 ) {
-						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
+						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					} else if ( !this.isEmpty( filter ) ) {
 						var filterDesc = {
@@ -566,21 +565,24 @@
 							"enumDescription": "sw.filter:" + filter,
 							items: []
 						}
-
-						console.log( "filter.resultmapping:", resultmapping );
-						console.log( "filter.description:", JSON.stringify( filterDesc, null, 2 ) );
-						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
+						var parameterMap = this.doParameterMapping(  parammapping );
+						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
 						var selectionList = this.doResultMapping( si.getItems(), resultmapping );
 						props.items = selectionList;
-					} else if ( !this.isEmpty( service ) ) {} else {
-						si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
+					} else if ( !this.isEmpty( service ) ) {
+						var serviceDesc = {
+							"totalCount": 1,
+							"enumDescription": "sw.service:" + service,
+							items: []
+						}
+						var parameterMap = this.doParameterMapping(  parammapping );
+						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( serviceDesc ) );
+						var selectionList = this.doResultMapping( si.getItems(), resultmapping );
+						props.items = selectionList;
+					} else {
+						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					}
-					try {
-						if ( this.isEmpty( props.xf_default ) ) {
-							//props.xf_default = props.items[0].value;
-						}
-					} catch ( e ) {}
 				}
 				if ( shape.stencil.id.toLowerCase() == 'tableselect' ) {
 					var props = shape.properties;
@@ -667,6 +669,24 @@
 				lineBreak = true;
 			}
 			return lineBreak;
+		},
+		doParameterMapping: function( parammapping ) {
+			var parameterMap = {};
+			if( !parammapping) return parameterMap;
+			console.log( "----paramMapping:", parammapping );
+			var env = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+			env._uuid = window.uuid;
+			env._lang = simpl4.util.BaseManager.getLanguage();
+			env._mode = this.mode;
+			console.log( "----paramEnv:", env );
+			var mapping = parammapping.items;
+			for ( var j = 0; j < mapping.length; j++ ) {
+				var formexpr = mapping[ j ].formexpr;
+				var param = mapping[ j ].param;
+				parameterMap[ param ] = this._maskedEval( formexpr, env );
+			}
+			console.log( "====paramMap:", parameterMap );
+			return parameterMap;
 		},
 		doResultMapping: function( items, resultmapping ) {
 			console.log( "----resultList:", items );
