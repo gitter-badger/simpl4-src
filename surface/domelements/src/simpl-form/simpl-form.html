@@ -494,7 +494,7 @@
 		<template is="dom-repeat" items="{{items}}">
 
 			<template is="dom-if" if="{{isField(item.id)}}">
-				<form-element-renderer class="flex" item="[[item]]" />
+				<form-element-renderer style="width:100%;" class="flex" item="[[item]]" />
 			</template>
 			<template is="dom-if" if="{{isActionButton(item.id)}}" restamp>
 				<form-element-renderer class="" style="min-width:100px;margin-top:20px;" item="[[item]]" />
@@ -513,7 +513,7 @@
 
 			<template is="dom-if" if="{{isRow(item.id)}}">
 				<simpl-row class="horizontal layout center wrap">
-					<form-element-selector class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
+					<form-element-selector style="width:100%;" class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
 				</simpl-row>
 			</template>
 
