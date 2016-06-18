@@ -116,8 +116,8 @@
 				this.keys += ' ' + keysToAdd;
 			}
 
-			console.log( "location:" + window.location );
-			console.log( "init.route:" + this.route );
+			//console.log( "location:" + window.location );
+			//console.log( "init.route:" + this.route );
 		},
 		getGlobals: function() {
 			if ( this.globals == null ) {
@@ -126,7 +126,7 @@
 			return this.globals;
 		},
 		routeChanged: function() {
-			console.log( "routeChanged:" + this.route );
+			//console.log( "routeChanged:" + this.route );
 
 			this.route = this.route.toString();
 			var route = this.route;
@@ -136,7 +136,7 @@
 			if ( this.route != route ) {
 				this.route = route;
 			}
-			console.log( "routeChanged2:" + this.route );
+			//console.log( "routeChanged2:" + this.route );
 
 			channel.publish( "route.changed", {
 				route: this.route
@@ -145,7 +145,7 @@
 				if ( window._paq ) {
 					var action = this.route == "0" ? "main" : this.route;
 					if ( this.lastAction != action ) {
-						console.log( "trackEvent,webdemo:" + action )
+						//console.log( "trackEvent,webdemo:" + action )
 						_paq.push( [ 'trackEvent', "webdemo", action + "/" + Simpl4.Cache.getItem( "lang" ) ] )
 					}
 					this.lastAction = action;
@@ -181,7 +181,7 @@
 		menuItemSelected: function( e ) {
 			var page = e.detail.page;
 			if ( e.detail.isSelected && page.url ) {
-				console.debug( "menuItemSelected:", e );
+				//console.debug( "menuItemSelected:", e );
 				channel.publish( "menuItem.selected",
 					e.detail
 				);
@@ -252,11 +252,9 @@
 			}, 2 );
 		},
 		getLogoLink: function() {
-			console.log( "logoLink2:", this.logoLink );
 			return this.substituteLang( this.logoLink );
 		},
 		substituteLang: function( url, notemp ) {
-			console.log( "substituteLang:", this.getGlobals() );
 			if ( url == null || url == '' ) return;
 			if ( url.indexOf( "%l" ) != -1 ) {
 				url = url.replace( "%l", this.getGlobals().lang );
@@ -269,12 +267,10 @@
 					url += "?t=1";
 				}
 			}
-			console.log( "url:" + url );
 			return url;
 		},
 		getHelpDialogStyle: function() {
 			var h = $( window ).height() * 0.9;
-			console.log( "height:", h );
 			return "height:" + h + "px;";
 		},
 		showHelp: function( e ) {
@@ -285,7 +281,6 @@
 			this.$.helpDialog.toggle();
 		},
 		externalButtonEventHandler: function( e ) {
-			console.log( "externalButtonEventHandler:", e );
 			this.fire( 'toolbar-button-pressed', e.target || e.srcElement, {
 				key1: "value1"
 			} );

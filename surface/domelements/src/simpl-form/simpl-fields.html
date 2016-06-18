@@ -306,7 +306,6 @@
 			},
 			created: function() {
 				this._origType=null;
-				console.log("created");
 			},
 			ready: function() {
 				var self = this;
@@ -347,7 +346,6 @@
 					} );
 				}
 				if ( this.compact ) {
-					console.log( "Add compact" );
 					jQuery( this.decorator ).addClass( "compact" );
 					jQuery( this.$.input ).addClass( "compact" );
 					if ( is_chromium && !this.isDate() ) {
@@ -527,13 +525,12 @@
 						}
 					}
 					var tooltips = this["tooltips_"+simpl4.util.BaseManager.getLanguage()];
-					console.log("showComponents:", showComponents+"/"+viewMode);
 					var locale =  simpl4.util.BaseManager.getLanguage();
 					var picker = $(this.$.input).datetimepicker( {locale:locale, viewMode:viewMode, showComponents:showComponents, ignoreReadonly:true, tooltips:tooltips, focusOnShow:false, format:_format, showTodayButton:true, showClear:false, showClose:true});
 					var self = this;
 					picker.on("dp.change", function(e){
-						console.log("change.date:",e.date.toDate());
-						console.log("change.val:",$(self.$.input).val());
+						//console.log("change.date:",e.date.toDate());
+						//console.log("change.val:",$(self.$.input).val());
 						self.editValue = $(self.$.input).val();
 					});
 					return picker;
@@ -869,7 +866,6 @@
 					}
 				}
 				this.field  = this.querySelector(this.elementname);
-				console.log("f:",this.field);
 				this.field.setValue(this.value);
 				this.field.label = this.label;
 			},
@@ -1299,7 +1295,6 @@
 				'jsonItemsChanged(jsonItems)'
 			],
 			compactChanged: function( ) {
-				console.log("compactChanged:", this.compact);
 				if( this.compact === false) return;
 				this.async( function() {
 					jQuery( this.decorator ).addClass( "compact" );
@@ -1311,7 +1306,6 @@
 			},
 			jsonItemsChanged: function( v ) {
 				var o = JSON.parse( this.jsonItems );
-				console.log( "prsed:", o );
 				this.items = o;
 			},
 			itemsChanged:function(){
@@ -1344,7 +1338,7 @@
 				}
 			},
 			valueChanged: function( v ) {
-				console.log( "select-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
+				//console.log( "select-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
 				if ( this.isDomReady != true ) return;
 				if ( this.withoutCheck ) {
 					this.withoutCheck = false;
@@ -1353,23 +1347,23 @@
 				this.checkConstraints();
 			},
 			setValue: function( v ) {
-				console.log( "select-field(" + this.name + ").setValue:",v );
+				//console.log( "select-field(" + this.name + ").setValue:",v );
 				this.value = v;
 				this.selectize.setValue(v);
 			},
 			getValue: function() {
-				console.log( "select-field(" + this.name + "),getValue:", this.value );
+				//console.log( "select-field(" + this.name + "),getValue:", this.value );
 				if( this.multiple !== true && this.value && Array.isArray(this.value) && this.value.length>0){
 					return this.value[0];
 				}
 				return this.value;
 			},
 			onFocus: function( val ) {
-				console.log( "select-field(" + this.name + ").onFocus" );
+				//console.log( "select-field(" + this.name + ").onFocus" );
 				//this.selectizeControl.blur();
 			},
 			onChange: function( val ) {
-				console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
+				//console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
 				this.value = val;
 				this.fire( 'value-changed', this );
 			},
@@ -1425,7 +1419,7 @@
 			},
 			_attached: function() {
 				this.alwaysFloatLabel = true;
-				console.log( "select-field(" + this.name + ").attached" );
+				//console.log( "select-field(" + this.name + ").attached" );
 				this.isDomReady = true;
 				if ( this.compact ) {
 					this.compactChanged();
@@ -1542,7 +1536,6 @@
 				'jsonItemsChanged(jsonItems)'
 			],
 			compactChanged: function( ) {
-				console.log("compactChanged:", this.compact);
 				if( this.compact === false) return;
 				this.async( function() {
 					jQuery( this.decorator ).addClass( "compact" );
@@ -1554,7 +1547,6 @@
 			},
 			jsonItemsChanged: function( v ) {
 				var o = JSON.parse( this.jsonItems );
-				console.log( "prsed:", o );
 				this.items = o;
 			},
 			itemsChanged:function(){
@@ -1575,7 +1567,7 @@
 				}
 			},
 			valueChanged: function( v ) {
-				console.log( "drop-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
+				//console.log( "drop-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
 				if ( this.isDomReady != true ) return;
 				if ( this.withoutCheck ) {
 					this.withoutCheck = false;
@@ -1585,7 +1577,7 @@
 			},
 			setValue: function( v ) {
 				this._dropdown.data( "options", this._options );
-				console.log( "drop-field(" + this.name + ").setValue:",v+"/"+ this._dropdown.data( "options" ) );
+				//console.log( "drop-field(" + this.name + ").setValue:",v+"/"+ this._dropdown.data( "options" ) );
 				this.value = v;
 
 				this.async( function() {
@@ -1593,12 +1585,12 @@
 				},10 );
 			},
 			getValue: function() {
-				console.log( "drop-field(" + this.name + "),GetValue:", this.value );
+				//console.log( "drop-field(" + this.name + "),GetValue:", this.value );
 				return this.value;
 			},
 			onSelected: function( val ) {
 				if( val == undefined) return;
-				console.log( "drop-field(" + this.name + ").onSelected:", this.value+"/val:"+val );
+				//console.log( "drop-field(" + this.name + ").onSelected:", this.value+"/val:"+val );
 				this.value = val;
 				this.fire( 'value-changed', this );
 			},
@@ -1617,7 +1609,7 @@
 					optionClass: this.name
 				}
 				this.async( function() {
-				console.log( "drop-field(" + this.name + ").create" );
+				//console.log( "drop-field(" + this.name + ").create" );
 					$( this.$.select ).dropdown( this._options );
 				} );
 			}
@@ -1774,7 +1766,7 @@
 					c.xf_type = c.type;
 					c.xf_id = c.colname;
 				} ).bind( this ) );
-				console.debug( "columnsChanged:", this.columns );
+				//console.debug( "columnsChanged:", this.columns );
 			},
 			addLine: function( e ) {
 				var lid = parseInt(e.target.dataset.lid);
@@ -1789,7 +1781,6 @@
 				if ( this.lines.length > 1 ) {
 					var lid = e.target.dataset.lid;
 					var ret = this.splice( 'lines', lid, 1 );
-					console.log( "ret:", ret );
 				}
 			},
 			upLine: function( e ) {
@@ -1827,7 +1818,6 @@
 			getLineValues: function( i ) {
 				var line = {};
 				for ( var j = 0; j < this.columns.length; j++ ) {
-				console.log( "id:" + "#id" + i + "_" + j );
 					var e = this.querySelector( "#id" + i + "_" + j );
 					var val = e.getValue();
 					var col = this.columns[ j ];
@@ -1865,7 +1855,7 @@
 					var errorList = regula.validate( {
 						elements: [elements]
 					} );
-					console.log("errorList:",errorList);
+					//console.log("errorList:",errorList);
 				}
 			},
 			setErrorMessage: function( message ) {
@@ -2018,7 +2008,7 @@
 				this.setInvalid(false);;
 			},
 			itemsChanged: function( items ) {
-				console.log("itemsChanged("+this._iid+"):",this.items);
+				//console.log("itemsChanged("+this._iid+"):",this.items);
 			},
 			setItems: function( items ) {
 				this.items = items;
@@ -2136,7 +2126,7 @@
 				return this.filter != null;
 			},
 			ready: function() {
-				console.log("Field.relatedto.ready:",this.entity+"/"+this.namespace);
+				//console.log("Field.relatedto.ready:",this.entity+"/"+this.namespace);
 				this.props = simpl4.util.EntityManager.getPropertiesForEntity( this.entity, {
 					namespace: this.namespace
 				} );
@@ -2183,7 +2173,7 @@
 				simpl4.util.MessageManager.installMessages( this.namespace );
 			},
 			entityChanged: function() {
-			  console.log("Field.relatedto.entityChanged:",this.entity+"/"+this.namespace);
+			  //console.log("Field.relatedto.entityChanged:",this.entity+"/"+this.namespace);
 				if( this.entity==null) return;
 				this.entityName = this.entity;
 			},
@@ -2310,7 +2300,7 @@
 				return this.filter != null;
 			},
 			ready: function() {
-				console.log("Field.relatedto.ready:",this.entity+"/"+this.namespace);
+				//console.log("Field.relatedto.ready:",this.entity+"/"+this.namespace);
 				this.props = simpl4.util.EntityManager.getPropertiesForEntity( this.entity, {
 					namespace: this.namespace
 				} );
@@ -2341,7 +2331,7 @@
 					}
 					if ( value == undefined ) value = null;
 					var form_fieldname = item.form_fieldname ? item.form_fieldname : item.db_fieldname;
-					console.debug( "db-selector-field.assignValue(" + path + "):" + form_fieldname + "=" + value );
+					//console.debug( "db-selector-field.assignValue(" + path + "):" + form_fieldname + "=" + value );
 					try {
 						var f = this.form.getField( form_fieldname );
 						if ( f == null ) {
@@ -2443,7 +2433,7 @@
 				simpl4.util.MessageManager.installMessages( this.namespace );
 			},
 			entityChanged: function() {
-			  console.log("Field.relatedto.entityChanged:",this.entity+"/"+this.namespace);
+			  //console.log("Field.relatedto.entityChanged:",this.entity+"/"+this.namespace);
 				if( this.entity==null) return;
 				this.entityName = this.entity;
 			},

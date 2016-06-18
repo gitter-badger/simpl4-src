@@ -25,7 +25,6 @@ license that can be found in the LICENSE file.
 					'routeChanged(route)'
 				],
 				attached: function() {
-					console.log( "flatiron-route.ready:", this.route );
 					this.router.on( /(.*)/, function( route ) {
 						this.route = route;
 					}.bind( this ) );
@@ -37,7 +36,6 @@ license that can be found in the LICENSE file.
 					this.route = r && r != "" ? r.join( this.router.delimiter ) : '0';
 				},
 				routeChanged: function() {
-					console.log( "flatiron.routeChanged:", this.route );
 					if ( this.autoHash ) {
 						window.location.hash = this.route;
 					}

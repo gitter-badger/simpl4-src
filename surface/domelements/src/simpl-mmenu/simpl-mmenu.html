@@ -70,13 +70,12 @@
 				StyleScopeBehavior
 			],
 			attached: function() {
-				console.log( "mmenu.attached" );
 			},
 			ready: function() {
 				this.context = null;
 				this.backgroundColor = "invalid";
 				this.classes = "mm-white mm-zoom-panels";
-				console.log( "mmenu.globalsChanged:", simpl4Globals.getAll() );
+				//console.log( "mmenu.globalsChanged:", simpl4Globals.getAll() );
 				var nodes = this._getMenuYaml();
 				this._createTree(nodes);
 				this._createMenu()
@@ -90,15 +89,15 @@
 				return $( this._mainmenu ).data( "mmenu" );
 			},
 			setSelected: function( e ) {
-				console.log( "setSelected:", e );
+				//console.log( "setSelected:", e );
 				$( this._mainmenu ).data( "mmenu" ).setSelected( e );
 			},
 			openPanel: function( e ) {
-				console.log( "openPanel:", e );
+				//console.log( "openPanel:", e );
 				$( this._mainmenu ).data( "mmenu" ).openPanel( e );
 			},
 			_createMenu: function() {
-				console.log( "mmenu.createMenu.classes:", this.classes );
+				//console.log( "mmenu.createMenu.classes:", this.classes );
 				var menu = $( this._mainmenu ).mmenu( {
 					slidingSubmenus: this.slidingSubmenus == "true",
 					searchfield: {
@@ -120,7 +119,6 @@
 				} );
 
 				var b = this.background;
-				console.log( "b:" + b );
 				if ( b && b.length >= 0 ) {
 					this.backgroundColor = b;
 					$( this._mainmenu ).css( "backgroundColor", b );
@@ -227,7 +225,6 @@
 				return node.children && node.children.length > 0;
 			},
 			contextChanged: function() {
-				console.log( "contextChanged:", this.context );
 				if ( this.context == null ) return;
 				this._applyMenuContext( this._mainmenu );
 			},
@@ -242,7 +239,6 @@
 				} ).bind( this ) );
 			},
 			_getMenuYaml: function() {
-				console.log( "Menu._getMenuYaml:", this.name );
 				var nodes = jQuery.ajax( {
 					url: this.name + ".yaml",
 					async: false,

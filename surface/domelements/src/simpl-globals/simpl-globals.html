@@ -91,7 +91,7 @@
 				if ( src.match( /sw\/surface/ ) ) {
 					var x = src.split( "/sw" );
 					var baseUrl = x[ 0 ];
-					console.log( "baseUrl1:" + baseUrl );
+					//console.log( "baseUrl1:" + baseUrl );
 					simpl4.util.BaseManager.setBaseUrl( baseUrl);
 					break;
 				}
@@ -103,7 +103,7 @@
 					if ( href.match( /sw\/surface/ ) ) {
 						var x = href.split( "/sw" );
 						var baseUrl = x[ 0 ];
-						console.log( "baseUrl2:" + baseUrl );
+						//console.log( "baseUrl2:" + baseUrl );
 						simpl4.util.BaseManager.setBaseUrl( baseUrl );
 						break;
 					}
@@ -114,16 +114,15 @@
 			var namespace = pathElements[ pathElements.length-2 ];
 
 			if( pathElements.length > 4 ){
-				console.log("base.pathname.split:",window.location.pathname.split("/"));
+				//console.log("base.pathname.split:",window.location.pathname.split("/"));
 				var loc = window.location;
 				var head = document.getElementsByTagName("head")[0];
 				if( head.querySelector("base")) {
-					console.log("Remove base");
 					head.removeChild(head.querySelector("base"));
 				}
 				var base = document.createElement("base");
 				base.href = simpl4.util.BaseManager.getBaseUrl()+"/repo/"+ namespace + "/";
-				console.log("base.new.href:",base.href);
+				//console.log("base.new.href:",base.href);
 				head.appendChild(base);
 			}
 
@@ -136,9 +135,9 @@
 			var qtheme = getParameterByName( "theme" );
 			var qlang = getParameterByName( "lang" );
 			//removeQueryParameter();
-			console.log( "search:", location );
-			console.log( "qlang:" + qlang );
-			console.log( "qtheme:" + qtheme );
+			//console.log( "search:", location );
+			//console.log( "qlang:" + qlang );
+			//console.log( "qtheme:" + qtheme );
 			var lang = Simpl4.Cache.getItem( "lang" );
 			if ( qlang ) {
 				simpl4.util.BaseManager.setLanguage( qlang );
@@ -153,9 +152,9 @@
 				Simpl4.Cache.setItem( "theme", qtheme );
 			}
 			var themeImport = document.querySelectorAll( "head > [href=\"theme.html\"]" );
-			console.log("hrefTheme:",themeImport);
+			//console.log("hrefTheme:",themeImport);
 			if( themeImport.length == 0 ){
-				console.log("themeCache:",Simpl4.Cache.getItem( "theme" ));
+				//console.log("themeCache:",Simpl4.Cache.getItem( "theme" ));
 				var themeName = qtheme || Simpl4.Cache.getItem( "theme" );
 				if( themeName == null ){
 					themeName = "indigo-red";
@@ -176,7 +175,7 @@
 			window.simpl4EntityManager = simpl4.util.EntityManager;
 			window.simpl4PageRegistry = simpl4.util.PageRegistry;
 			window.simpl4Globals = simpl4.util.Globals;
-			console.log( "GLOBAS", simpl4Globals.getAll() );
+			//console.log( "GLOBAS", simpl4Globals.getAll() );
 
 			simpl4MessageManager.installBaseMessages();
 			window.tr = simpl4MessageManager.tr;
@@ -198,7 +197,7 @@
 			awFont.fontWeight = "normal";
 			awFont.fontStyle = "normal";
 			awFont.onload = function () {
-				console.log("awfont loaded");
+				//console.log("awfont loaded");
 			}
 
 			Polymer( {
@@ -213,7 +212,7 @@
 					CSSImportBehavior
 				],
 				ready: function() {
-					console.debug( "simpl-globals.ready:" + tr( 'data.customer.cid' ) );
+					//console.debug( "simpl-globals.ready:" + tr( 'data.customer.cid' ) );
 					this.selectedPage = {
 						scope: "asciidoctor-default"
 					}
@@ -236,7 +235,6 @@
 						}
 						ret = data;
 					} ).bind( this ) );
-					console.log( "return:", ret );
 					return ret;
 				}
 			} );
@@ -254,7 +252,7 @@
 			TranslationsBehavior = {
 				properties: {},
 				created: function() {
-					console.log( 'Translations for ', this, 'enabled!' );
+					//console.log( 'Translations for ', this, 'enabled!' );
 				},
 
 				tr: function( m ) {
@@ -292,12 +290,11 @@
 					if ( args.length == 0 ) {
 						return;
 					}
-					console.debug( "args:", args );
 					this._domVisitor( main_el, function( el ) {
 						for ( i = 0; i < args.length; i++ ) {
 							if ( !$( el ).hasClass( args[ i ] ) && el.nodeType == 1 ) {
 								if ( el.classList == null ) {
-									console.log( "el:", el );
+									//console.log( "el:", el );
 								} else {
 									try { //@@@MS SVG-Elements in IE
 										el.classList.add( args[ i ] )
