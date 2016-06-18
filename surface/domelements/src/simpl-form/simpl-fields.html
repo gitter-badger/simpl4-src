@@ -1913,7 +1913,7 @@
 				<label class="label-text">{{label}}</label>
 			</div>
 			<div class="horizontal layout" style="[[getHeight(height)]">
-				<simpl-datatables class="flex" id="dataTable" invalid$="[[isInvalid]]" selection="{{selection}}" multi-Select="[[multiSelect]]" selected="{{value}}" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[items]]">
+				<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTable" invalid$="[[isInvalid]]" selection="{{selection}}" multi-Select="[[multiSelect]]" selected="{{value}}" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[items]]">
 				</simpl-datatables>
 				<div class="error layout horizontal center" hidden$="[[!isInvalid]]">
 					<div class="error-text flex auto" role="alert" aria-hidden$="[[!isInvalid]]"></div>
