@@ -95,7 +95,6 @@
 		},
 		created: function() {},
 		ready: function() {
-			console.error( "form.ready" );
 		},
 		shapesChanged: function() {
 			console.debug( "simpl-baseform.shapesChanged" );
@@ -361,7 +360,7 @@
 			}, 10 );
 		},
 		_formNameChanged: function() {
-			console.log( "form.formNameChanged:", this.formName + "/" + this.namespace );
+//			console.log( "form.formNameChanged:", this.formName + "/" + this.namespace );
 			this.fields = [];
 			this.fieldsMap = {};
 			this.shapes = [];
@@ -393,7 +392,7 @@
 		specChanged: function( e ) {
 			this.fields = [];
 			this.fieldsMap = {};
-			console.log( "form.specChanged" );
+//			console.log( "form.specChanged" );
 			this.shapes = [];
 			this._form = {};
 
@@ -540,19 +539,22 @@
 					var jsonpath = props.xf_jsonpath;
 					var parammapping = props.xf_parammapping;
 					var resultmapping = props.xf_resultmapping;
-					if ( !this.isEmpty( jsonpath ) ) {
+					var varname = props.xf_varname;
+					if ( !this.isEmpty( varname ) ) {
+						props.items = this.variables[ varname ];
+						props.items = this.doResultMapping( props.items, resultmapping );
+					}else if ( !this.isEmpty( jsonpath ) ) {
 						var a = JSONPath( {
 							json: this._selectionLists,
 							path: jsonpath,
 							callback: function() {}
 						} );
-						console.log( "jsonpath:", jsonpath );
-						console.log( "jsonData:", a );
 						if ( a == null || a.length == 0 ) {
 							props.items = [];
 						} else {
 							props.items = a[ 0 ];
 						}
+						props.items = this.doResultMapping( props.items, resultmapping );
 					} else if ( enumembed && enumembed.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
@@ -565,20 +567,18 @@
 							"enumDescription": "sw.filter:" + filter,
 							items: []
 						}
-						var parameterMap = this.doParameterMapping(  parammapping );
+						filterDesc.params = this.doParameterMapping(  parammapping );
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
-						var selectionList = this.doResultMapping( si.getItems(), resultmapping );
-						props.items = selectionList;
+						props.items = this.doResultMapping( si.getItems(), resultmapping );
 					} else if ( !this.isEmpty( service ) ) {
 						var serviceDesc = {
 							"totalCount": 1,
 							"enumDescription": "sw.service:" + service,
 							items: []
 						}
-						var parameterMap = this.doParameterMapping(  parammapping );
+						serviceDesc.params = this.doParameterMapping(  parammapping );
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( serviceDesc ) );
-						var selectionList = this.doResultMapping( si.getItems(), resultmapping );
-						props.items = selectionList;
+						props.items = this.doResultMapping( si.getItems(), resultmapping );
 					} else {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
@@ -691,14 +691,17 @@
 		doResultMapping: function( items, resultmapping ) {
 			console.log( "----resultList:", items );
 			var selectionList = [];
+			if( resultmapping==null || this.isEmpty(resultmapping.items)){
+				return items;
+			}
 			var mapping = resultmapping.items;
 			for ( var i = 0; i < items.length; i++ ) {
 				var selectionObject = {};
 				var item = items[ i ];
 				for ( var j = 0; j < mapping.length; j++ ) {
-					var formvar = mapping[ j ].formvar;
-					var resvar = mapping[ j ].resultvar;
-					selectionObject[ formvar ] = this._maskedEval( resvar, item );
+					var _mapping = mapping[ j ].mapping;
+					var resexpr = mapping[ j ].resultexpr;
+					selectionObject[ _mapping ] = this._maskedEval( resexpr, item );
 				}
 				selectionList.push( selectionObject );
 			}

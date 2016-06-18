@@ -51,7 +51,7 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 		return this._missingParamList;
 	},
 	_evalUrl: function() {
-		console.log("_url:", this._url);
+		console.log( "_url:", this._url );
 		if ( this._url instanceof Array ) {
 			this._items = this._url;
 			this._items = this._translate( this._items );
@@ -216,6 +216,7 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 			var name = x[ 1 ];
 			var ms = "";
 			var items = url.items;
+			var params = url.params;
 			var mapping = {};
 			for ( var i = 0; i < items.length; i++ ) {
 				if ( items[ i ].mapping ) {
@@ -234,18 +235,20 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 			}
 			if ( type == "camelparam_route" || type == "sw.service" ) {
 				var ns = this._varMap.namespace;
-				var lang = simpl4.util.BaseManager.getLanguage() 
-				itemsRet = simpl4.util.Rpc.rpcSync( "camelRoute:"+ns+"."+name, {
-					lang:lang,
- 					uuid:window.uuid         
-				} );
+				var defParams = {
+					lang: simpl4.util.BaseManager.getLanguage(),
+					uuid: window.uuid
+				}
+				var p = params ? params : defParams;
+				itemsRet = simpl4.util.Rpc.rpcSync( "camelRoute:" + ns + "." + name, p );
 			}
 			if ( type == "sw.filter" ) {
-				console.log( "Namespace:" + JSON.stringify( this._varMap, null, 2 ) );
+				console.log( "varMap:", this._varMap );
 				var storeId = this._varMap.STORE_ID || this.getStoreId();
+				var p = params ? params : this._varMap;
 				var ret = simpl4.util.Rpc.rpcSync( "data:executeFilterByName", {
 					name: name,
-					params: this._varMap,
+					params: p,
 					checkParams: false,
 					storeId: storeId,
 					mapping: mapping
