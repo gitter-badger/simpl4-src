@@ -77,7 +77,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 			{
 				name: "description",
 				type: "TextField",
-				label: this.tr("data.field.description"),
+				label: this.tr("aid.field.description"),
 				width: 120,
 				'value': ""
 			},
@@ -88,7 +88,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 				value: "string",
 				readonly:false,//!this._isNew,
 				options: this._dataTypeList,
-				label: this.tr("data.field.datatype")
+				label: this.tr("aid.field.datatype")
 			},
 			{
 				name: "edittype",
@@ -96,7 +96,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 				width: 60,
 				value: "text",
 				options: this._editTypeList,
-				label: this.tr("data.field.edittype")
+				label: this.tr("aid.field.edittype")
 			},
 			/*{
 				name: "selectable_items",
@@ -111,14 +111,14 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 				type: "CheckBox",
 				value: false,
 				width: 30,
-				label: this.tr("data.field.primary_key")
+				label: this.tr("aid.field.primary_key")
 			},
 			{
 				name: "enabled",
 				type: "CheckBox",
 				value: true,
 				width: 30,
-				label: this.tr("data.field.enabled")
+				label: this.tr("aid.field.enabled")
 			}];
 			this._columnModel = this._translate(columnmodel);
 			return this._columnModel;
