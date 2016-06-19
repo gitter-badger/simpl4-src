@@ -361,23 +361,53 @@
 				var props = simpl4.util.EntityManager.getEntityViewProperties( filter.entity, "main-grid", {
 					namespace: this.namespace
 				} );
+
+				var fields = null;
+				var meta = this.dtMeta;
+				if ( meta ) {
+					fields = [];
+					for ( var i = 0; i < meta.length; i++ ) {
+						fields.push( meta[ i ].data );
+					}
+				}
+				var p = "data";
+				var e = filter.entity;
+				if( filter.entity.indexOf(":") >0 ){
+					p = filter.entity.split(":")[0];
+					e = filter.entity.split(":")[1];
+				}
+
 				var data;
 				if ( filter.rpc ) {
 					data = simpl4.util.Rpc.rpcSync( "data:query", filter.rpc );
+				} else if( props.customService){
+					var customService = props.customService;
+					if( props.customService.indexOf(":") == -1){
+						customService = "camelRoute:"+customService;
+					}
+					if( props.customService.indexOf(".") == -1){
+						var x = customService.split(":");
+						customService = x[0] + ":" + this.namespace + "."+ x[1];
+					}
+					console.log("xxx.customService:",customService);
+					console.log("xxx.fields:",fields);
+					console.log("xxx.props:",props);
+					console.log("xxx.filter:",filter);
+					console.log("xxx.entity:",e);
+					console.log("xxx.dtMeta:",this.dtMeta);
+					data = simpl4.util.Rpc.rpcSync( customService, {
+						storeId: this.namespace + "_"+p,
+						pageSize: 100,
+						orderby: props.orderby,
+						uuid: window.uuid,
+						entity: e,
+						fields: fields,
+						filter: filter
+					} );
+			
+					console.log("xxx.data:",data);
+					return data;
 				} else {
-					var fields = null;
-					if ( this.meta ) {
-						fields = [];
-						for ( var i = 0; i < this.meta.length; i++ ) {
-							fields.push( this.meta[ i ].name );
-						}
-					}
-					var p = "data";
-					var e = filter.entity;
-					if( filter.entity.indexOf(":") >0 ){
-						p = filter.entity.split(":")[0];
-						e = filter.entity.split(":")[1];
-					}
 					data = simpl4.util.Rpc.rpcSync( "data:query", {
 						storeId: this.namespace + "_"+p,
 						pageSize: 100,
