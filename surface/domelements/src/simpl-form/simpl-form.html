@@ -317,7 +317,7 @@
 			<checkbox-field field class="flex" type={{item.xf_type}} enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></checkbox-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isInputAndNotBoolean(item.id,item.xf_type)}}">
-			<input-field field class="flex" type="{{item.xf_type}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></input-field>
+			<input-field field class="flex" type="{{item.xf_type}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" expression-out="[[item.xf_expression_out]]" expression-in="[[item.xf_expression_in]]" defaultvalue="{{item.xf_default}}"></input-field>
 		</template>
 		<template is="dom-if" if="{{isActionButton(item.id)}}">
 			<xaction-button on-tap="internalXAction" class$="[[getActionButtonClasses(item.xf_action)]]" xid="{{item.xf_id}}" style$="[[getActionButtonColor(item.xf_action)]]" xaction="{{item.xf_action}}" raised>

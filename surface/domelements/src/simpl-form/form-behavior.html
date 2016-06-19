@@ -195,7 +195,14 @@
 				if ( field.setValue == null ) return;
 				field.withoutCheck = true;
 				if ( field.setInvalid ) field.setInvalid( false );
-				field.setValue( data[ field.name ] || field.defaultvalue || "" );
+				var fieldData = data[ field.name ];
+				if( field.expressionIn){
+					fieldData = this._maskedEval( field.expressionIn, {
+						fd: data,
+						self:fieldData
+					} );
+				}
+				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
 		},
 		getData: function() {
@@ -203,6 +210,13 @@
 			this.fields.forEach( function( field ) {
 				if ( field.getValue == null ) return;
 				data[ field.name ] = field.getValue();
+			}, this );
+			this.fields.forEach( function( field ) {
+				if ( field.getValue == null || field.expressionOut == null) return;
+				data[field.name] = this._maskedEval( field.expressionOut, {
+					fd: data,
+					self:field.getValue()
+				} );
 			}, this );
 			return data;
 		},
@@ -337,7 +351,7 @@
 			var script = this._form.xf_preprocess_local;
 			if ( this.isEmpty( script ) ) return null;
 			try {
-				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+				var data = this.data;
 				var lang = simpl4.util.BaseManager.getLanguage()
 				var formData = this._maskedEval( script, {
 					formData: data,
@@ -350,7 +364,7 @@
 					this.setFieldData( formData );
 				}
 			} catch ( e ) {
-				console.error( "_postProcessLocalForm:", e );
+				console.error( "_preProcessLocalForm:", e );
 			}
 		},
 		formNameChanged: function() {
@@ -555,10 +569,10 @@
 							props.items = a[ 0 ];
 						}
 						props.items = this.doResultMapping( props.items, resultmapping );
-					} else if ( isTableSelect && enumembed && enumembed.totalCount > 0 ) {
+					} else if ( !isTableSelect && enumembed && enumembed.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
-					} else if ( isTableSelect && _enum && _enum.totalCount > 0 ) {
+					} else if ( !isTableSelect && _enum && _enum.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					} else if ( !this.isEmpty( filter ) ) {
