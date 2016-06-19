@@ -63,11 +63,11 @@ simpl4.util.BaseManager.extend( "simpl4.util.FormManager", {
 			namespace: namespace,
 			url: url
 		} );
-		this.selectableItemsCache[ namespace + "/" + formName + "/" + fieldName ] = si;
+		this.selectableItemsCache[ namespace + "/" + formName + "/" + fieldName + "/"+ url ] = si;
 		return si;
 	},
 	getSelectableItems: function( namespace, formName, fieldName, url ) {
-		var si = this.selectableItemsCache[ namespace + "/" + formName + "/" + fieldName ];
+		var si = this.selectableItemsCache[ namespace + "/" + formName + "/" + fieldName + "/"+ url ];
 		if ( si == null && url != null ) {
 			si = this.createSelectableItems( namespace, formName, fieldName, url );
 		}
