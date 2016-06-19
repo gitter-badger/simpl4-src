@@ -52,7 +52,16 @@ qx.Class.define("ms123.settings.views.GridPropertyEdit", {
 						required: false,
 						validator: "/^[A-Za-z]([0-9A-Za-z_.:;,]){0,60}$/"
 					},
-					'value': ""
+					'value': null
+				},
+				"customService": {
+					'type': "TextField",
+					'label': this.tr("settings.views.propertyedit.customService"),
+					'validation': {
+						required: false,
+						validator: "/^[A-Za-z]([0-9A-Za-z._:]){0,60}$/"
+					},
+					'value': null
 				},
 				"horizontal_scroll": {
 					'type': "CheckBox",
