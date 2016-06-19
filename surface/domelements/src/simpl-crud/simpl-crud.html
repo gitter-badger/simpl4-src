@@ -325,9 +325,8 @@
 
 				var ep = this.getPack( detail.entity );
 				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
+				this.$.formid.setData( this.currentRowData );
 				this.whenElementsReady( ( function() {
-					console.debug( "Form.Ready:" + JSON.stringify( this.currentRowData, null, 2 ) );
-					this.$.formid.setData( this.currentRowData );
 					this.pageSelected = 1;
 				} ).bind( this ) );
 			},
