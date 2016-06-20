@@ -300,6 +300,7 @@
 					var col = {
 						title: f.title || tr( p+'.' + e + '.' + f.name ),
 						data: dtName,
+						visible:f.invisible!==true,
 						class: f.tags,
 						mRender: this.renderColumn.bind(this)
 					}
@@ -358,7 +359,10 @@
 			getData: function( filter ) {
 				console.log( "XFilter:", this.filter );
 				this.selection = null;
-				var props = simpl4.util.EntityManager.getPropertiesForEntity( filter.entity, {
+				var props = simpl4.util.EntityManager.getEntityViewProperties( filter.entity, "main-grid", {
+					namespace: this.namespace
+				} );
+				var propsEntity = simpl4.util.EntityManager.getPropertiesForEntity( filter.entity, {
 					namespace: this.namespace
 				} );
 
@@ -380,8 +384,8 @@
 				var data;
 				if ( filter.rpc ) {
 					data = simpl4.util.Rpc.rpcSync( "data:query", filter.rpc );
-				} else if( props.customServiceRead){
-					var customService = props.customServiceRead;
+				} else if( propsEntity.customServiceRead){
+					var customService = propsEntity.customServiceRead;
 					if( customService.indexOf(":") == -1){
 						customService = "camelRoute:"+customService;
 					}
@@ -391,10 +395,8 @@
 					}
 					console.log("xxx.customService:",customService);
 					console.log("xxx.fields:",fields);
-					console.log("xxx.props:",props);
 					console.log("xxx.filter:",filter);
 					console.log("xxx.entity:",e);
-					console.log("xxx.dtMeta:",this.dtMeta);
 					data = simpl4.util.Rpc.rpcSync( customService, {
 						storeId: this.namespace + "_"+p,
 						pageSize: 100,

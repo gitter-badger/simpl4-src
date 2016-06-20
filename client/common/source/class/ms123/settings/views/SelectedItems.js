@@ -115,6 +115,12 @@ qx.Class.define("ms123.settings.views.SelectedItems", {
 					header: "Tags"
 				},
 				{
+					name: "invisible",
+					type: "CheckBox",
+					width: 15,
+					header: "%settings.invisible"
+				},
+				{
 					name: "enabled",
 					type: "CheckBox",
 					width: 15,
