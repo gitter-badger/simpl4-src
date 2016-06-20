@@ -341,7 +341,7 @@
 				this.currentRowIndex = detail.rowIndex;
 
 
-				console.log("props:",props);
+				console.log("currentRowData:",this.currentRowData);
 
 				this.prevNextButtonsInvisible = null;
 				this.handlePrevNextButtons();
@@ -432,11 +432,11 @@
 				var customServiceInsert =  props.customServiceInsert;
 				var mode = this.mode;
 				if( mode == "add" && customServiceInsert ){
-					this._storeDataCustom(data, customServiceInsert);
+					return this._storeDataCustom(data, customServiceInsert);
 				}else if( mode == "edit"  && customServiceUpdate ){
-					this._storeDataCustom(data, customServiceUpdate );
+					return this._storeDataCustom(data, customServiceUpdate );
 				}else{
-					this._storeData(data);
+					return this._storeData(data);
 				}
 
 			},
@@ -462,6 +462,7 @@
 						data: data
 					}
 				}
+				console.log("rpc:",rpc);
 				var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
 				return ret;
 			},
