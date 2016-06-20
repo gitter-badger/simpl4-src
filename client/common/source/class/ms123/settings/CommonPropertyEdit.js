@@ -113,6 +113,38 @@ qx.Class.define("ms123.settings.CommonPropertyEdit", {
 					'label': this.tr("data.entity.record_validation"),
 					'value': null
 				},
+				"customServiceRead": {
+					'type': "resourceselector",
+					'label': this.tr("settings.views.propertyedit.customServiceRead"),
+					'config':{
+						'type':'sw.camel'
+					},
+					'value': null
+				},
+				"customServiceUpdate": {
+					'type': "resourceselector",
+					'label': this.tr("settings.views.propertyedit.customServiceUpdate"),
+					'config':{
+						'type':'sw.camel'
+					},
+					'value': null
+				},
+				"customServiceInsert": {
+					'type': "resourceselector",
+					'label': this.tr("settings.views.propertyedit.customServiceInsert"),
+					'config':{
+						'type':'sw.camel'
+					},
+					'value': null
+				},
+				"customServiceDelete": {
+					'type': "resourceselector",
+					'label': this.tr("settings.views.propertyedit.customServiceDelete"),
+					'config':{
+						'type':'sw.camel'
+					},
+					'value': null
+				},
 				"workflow_list":{
 					'type': "GridInput",
 					'label': this.tr("data.entity.workflow_list"),

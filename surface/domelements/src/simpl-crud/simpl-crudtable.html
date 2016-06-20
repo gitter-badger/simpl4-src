@@ -358,7 +358,7 @@
 			getData: function( filter ) {
 				console.log( "XFilter:", this.filter );
 				this.selection = null;
-				var props = simpl4.util.EntityManager.getEntityViewProperties( filter.entity, "main-grid", {
+				var props = simpl4.util.EntityManager.getPropertiesForEntity( filter.entity, {
 					namespace: this.namespace
 				} );
 
@@ -380,12 +380,12 @@
 				var data;
 				if ( filter.rpc ) {
 					data = simpl4.util.Rpc.rpcSync( "data:query", filter.rpc );
-				} else if( props.customService){
-					var customService = props.customService;
-					if( props.customService.indexOf(":") == -1){
+				} else if( props.customServiceRead){
+					var customService = props.customServiceRead;
+					if( customService.indexOf(":") == -1){
 						customService = "camelRoute:"+customService;
 					}
-					if( props.customService.indexOf(".") == -1){
+					if( customService.indexOf(".") == -1){
 						var x = customService.split(":");
 						customService = x[0] + ":" + this.namespace + "."+ x[1];
 					}

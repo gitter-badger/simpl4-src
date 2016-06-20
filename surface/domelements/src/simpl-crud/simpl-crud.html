@@ -425,6 +425,22 @@
 				}, 100 );
 			},
 			storeData: function( data ) {
+				var props = simpl4.util.EntityManager.getPropertiesForEntity( this.entity, {
+					namespace: this.namespace
+				} );
+				var customServiceUpdate =  props.customServiceUpdate;
+				var customServiceInsert =  props.customServiceInsert;
+				var mode = this.mode;
+				if( mode == "add" && customServiceInsert ){
+					this._storeDataCustom(data, customServiceInsert);
+				}else if( mode == "edit"  && customServiceUpdate ){
+					this._storeDataCustom(data, customServiceUpdate );
+				}else{
+					this._storeData(data);
+				}
+
+			},
+			_storeData: function( data ) {
 				var rpc = null;
 				var ep = this.getPack( this.mainEntityName );
 				if ( this.mainEntityName != this.currentEntityName ) {
@@ -447,6 +463,41 @@
 					}
 				}
 				var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
+				return ret;
+			},
+			_storeDataCustom: function( data, customService ) {
+				if( customService.indexOf(":") == -1){
+					customService = "camelRoute:"+customService;
+				}
+				if( customService.indexOf(".") == -1){
+					var x = customService.split(":");
+					customService = x[0] + ":" + this.namespace + "."+ x[1];
+				}
+				var rpc = null;
+				var ep = this.getPack( this.mainEntityName );
+				if ( this.mainEntityName != this.currentEntityName ) {
+					rpc = {
+						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + ep.pack,
+						entity: ep.entityName,
+						entityChild: this.currentEntityChildName,
+						id: this.mainEntityId,
+						idChild: this.getIdValue( this.mainEntityName, this.namespace, data ),
+						data: data
+					}
+				} else {
+					var idValue = this.getIdValue( this.mainEntityName, this.namespace, data );
+					console.log( "idValue:", idValue );
+					rpc = {
+						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + ep.pack,
+						entity: ep.entityName,
+						id: idValue,
+						data: data
+					}
+				}
+				if( window.uuid){
+					rpc.uuid = window.uuid;
+				}
+				var ret = simpl4.util.Rpc.rpcSync( customService, rpc );
 				return ret;
 			},
 			getData: function( data ) {
