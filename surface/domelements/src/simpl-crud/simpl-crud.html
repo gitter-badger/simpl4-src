@@ -279,9 +279,14 @@
 				this.setFormSpec( detail.namespace, detail.entity );
 				this.currentEntityName = detail.entity;
 				this.currentEntityChildName = detail.entityChild;
-				this.currentRowData = this.getData( detail.data );
-				this.currentTable = detail.table;
 
+				if( this.loadBeforeEdit() ){
+					this.currentRowData = this.getData( detail.data );
+				}else{
+					this.currentRowData = detail.data;
+				}
+
+				this.currentTable = detail.table;
 				var ep = this.getPack( detail.entity );
 				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
 
@@ -294,7 +299,11 @@
 			prevAction: function( e ) {
 				if ( this.currentRowIndex > 0 ) {
 					this.currentRowIndex--;
-					this.currentRowData = this.getData( this.currentDataSet[ this.currentRowIndex ] );
+					if( this.loadBeforeEdit() ){
+						this.currentRowData = this.getData( this.currentDataSet[ this.currentRowIndex ] );
+					}else{
+						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
+					}
 					this.$.formid.setData( this.currentRowData );
 				}
 				this.handlePrevNextButtons();
@@ -302,7 +311,11 @@
 			nextAction: function( e ) {
 				if ( this.currentRowIndex < ( this.currentDataSet.length - 1 ) ) {
 					this.currentRowIndex++;
-					this.currentRowData = this.getData( this.currentDataSet[ this.currentRowIndex ] );
+					if( this.loadBeforeEdit() ){
+						this.currentRowData = this.getData( this.currentDataSet[ this.currentRowIndex ] );
+					}else{
+						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
+					}
 					this.$.formid.setData( this.currentRowData );
 				}
 				this.handlePrevNextButtons();
@@ -544,6 +557,12 @@
 			},
 			isTable: function( item ) {
 				return item.type == "table";
+			},
+			loadBeforeEdit:function(){
+				var props = simpl4.util.EntityManager.getEntityViewProperties( this.entity, "main-form", {
+					namespace: this.namespace
+				} );
+				return props.loadBeforeEdit===true;
 			},
 			getFormData: function( dataDesc ) {
 				var props = simpl4.util.EntityManager.getEntityViewProperties( dataDesc.entity, "main-form", {
