@@ -63,6 +63,11 @@ qx.Class.define("ms123.settings.views.FormPropertyEdit", {
 					},
 					'value': null
 				},
+				"loadBeforeEdit":{
+					type: "CheckBox",
+					defaultValue:false,
+					label: this.tr("settings.loadBeforeEdit")
+				},
 				"modal":{
 					type: "CheckBox",
 					defaultValue:true,

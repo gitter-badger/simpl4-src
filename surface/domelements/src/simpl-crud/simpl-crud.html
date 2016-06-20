@@ -315,10 +315,20 @@
 				this.setFormSpec( detail.namespace, detail.entity );
 				this.currentEntityName = detail.entity;
 				this.currentEntityChildName = detail.entityChild;
-				this.currentRowData = this.getData( detail.data );
+				var props = simpl4.util.EntityManager.getEntityViewProperties( detail.entity, "main-form", {
+					namespace: detail.namespace
+				} );
+				if( props.loadBeforeEdit ){
+					this.currentRowData = this.getData( detail.data );
+				}else{
+					this.currentRowData = detail.data;
+				}
 				this.currentTable = detail.table;
 				this.currentDataSet = detail.dataSet;
 				this.currentRowIndex = detail.rowIndex;
+
+
+				console.log("props:",props);
 
 				this.prevNextButtonsInvisible = null;
 				this.handlePrevNextButtons();
