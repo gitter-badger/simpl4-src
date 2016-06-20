@@ -304,6 +304,9 @@
 						class: f.tags,
 						mRender: this.renderColumn.bind(this)
 					}
+					if( col.visible == false){
+						col.class="never";
+					}
 					ret.push( col );
 					this.columns.push( f.name );
 				}, this );
