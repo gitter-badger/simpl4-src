@@ -108,6 +108,8 @@ import org.xml.sax.SAXException;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.annotation.component.*;
 import static org.apache.commons.lang3.StringUtils.stripEnd;
+import org.ms123.common.utils.annotations.Functional;
+import javax.jdo.annotations.NotPersistent;
 
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "kind=jdo,name=dataLayer" })
@@ -1408,7 +1410,13 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			List<String> projList = null;
 			if (fieldsArray != null) {
 				projList = new ArrayList<String>();
+				
+				Class c = getClass(sessionContext, entityNameDetails!=null ? entityNameDetails : entityName);
 				for( String field : fieldsArray){
+					if( !isPersistent( field, c)){
+						System.err.println("NOtpersitent:"+field);
+						continue;
+					}
 					projList.add(StoreDesc.getSimpleEntityName(field));
 				}
 				List<Map> pkList = null;
@@ -2469,6 +2477,21 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		}
 	}
 
+	private boolean isPersistent(String prop, Class c){
+		boolean isFunctional = isAnnotationPresent(prop,c, Functional.class);
+		boolean isNotPersistent = isAnnotationPresent(prop,c, NotPersistent.class);
+		return isFunctional == false && isNotPersistent==false;
+	}
+	private boolean isAnnotationPresent(String prop, Class c, Class ann){
+		try {
+			Field field = c.getDeclaredField(prop);
+			if (field != null) {
+				return field.isAnnotationPresent(ann);
+			}
+		} catch (Exception e) { }
+		return false;
+	}
+
 
 	private boolean noAuth() {
 		String sh = System.getProperty("workspace");
@@ -2480,20 +2503,6 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		}
 		return false;
 	}
-	/*public MediaType getContentType(InputStream is, String fileName,TikaConfig tikaConfig) {
-		MediaType mediaType;
-		Metadata md = new Metadata();
-		md.set(Metadata.RESOURCE_NAME_KEY, fileName);
-		Detector detector = new ContainerAwareDetector(tikaConfig.getMimeRepository());
-
-		try {
-			mediaType = detector.detect(is, md);
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			return null;
-		}
-		return mediaType;
-	}*/
 	public static String replaceTokens(String text, Map<String, String> replacements) {
 		Pattern pattern = Pattern.compile("[\\@\\$]\\{(.+?)\\}");
 		Matcher matcher = pattern.matcher(text);
