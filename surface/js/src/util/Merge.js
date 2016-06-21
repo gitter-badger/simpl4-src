@@ -18,6 +18,7 @@
  */
 /**
  */
+require( "./Construct" );
 clazz.construct.extend( "simpl4.util.Merge", {
 	deepmerge: function( target, src ) {
 		var array = Array.isArray( src );
@@ -57,5 +58,82 @@ clazz.construct.extend( "simpl4.util.Merge", {
 		}
 
 		return dst;
+	},
+
+	/* Other merge variant, with multiple input objects, always deep*/
+	clonemerge: function( argv ) {
+		[].splice.call( arguments, 0, 0, true );
+		return simpl4.util.Merge.merge.apply( null, arguments );
+	},
+
+	merge: function( clone, argv ) {
+		var firstarg = 1
+		var result = arguments[ firstarg ];
+		var size = arguments.length - firstarg;
+
+		if ( clone || simpl4.util.Merge._typeof( result ) !== 'object' ) {
+			result = {};
+		}
+		for ( var index = 0; index < size; ++index ) {
+			var item = arguments[ index + firstarg ],
+				type = simpl4.util.Merge._typeof( item );
+
+			if ( type !== 'object' ) continue;
+
+			for ( var key in item ) {
+				var sitem = clone ? simpl4.util.Merge.clone( item[ key ] ) : item[ key ];
+				result[ key ] = simpl4.util.Merge._mergeRecursive( result[ key ], sitem );
+			}
+		}
+		return result;
+	},
+
+	clone: function( input ) {
+		var output = input,
+			type = simpl4.util.Merge._typeof( input ),
+			index, size;
+
+		if ( type === 'array' ) {
+			output = [];
+			size = input.length;
+			for ( index = 0; index < size; ++index ) {
+				output[ index ] = simpl4.util.Merge.clone( input[ index ] );
+			}
+		} else if ( type === 'object' ) {
+			output = {};
+			for ( index in input ) {
+				output[ index ] = simpl4.util.Merge.clone( input[ index ] );
+			}
+		}
+		return output;
+	},
+
+	_mergeRecursive: function( base, extend ) {
+		if ( simpl4.util.Merge._typeof( base ) !== 'object' ) {
+			return extend;
+		}
+		for ( var key in extend ) {
+			if ( simpl4.util.Merge._typeof( base[ key ] ) === 'object' && simpl4.util.Merge._typeof( extend[ key ] ) === 'object' ) {
+				base[ key ] = simpl4.util.Merge._mergeRecursive( base[ key ], extend[ key ] );
+			} else {
+				base[ key ] = extend[ key ];
+			}
+		}
+		return base;
+	},
+
+	_typeof: function( input ) {
+		return ( {} ).toString.call( input ).slice( 8, -1 ).toLowerCase();
 	}
 }, {} );
+
+/*var obj1 = {
+	key1: "value1"
+};
+var obj2 = {
+	key2: "value2"
+};
+
+var clone = simpl4.util.Merge.clonemerge( obj1, obj2 );
+console.log( "clone:", clone );
+console.log( "obj1:", obj1 );*/
