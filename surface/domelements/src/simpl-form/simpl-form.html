@@ -661,6 +661,11 @@
 				},
 				variables: {
 					type: Object
+				},
+				saveDisabled: {
+					type: Boolean,
+					value:false,
+					notify:true
 				}
 			},
 			observers: [
@@ -701,7 +706,9 @@
 					valid: valid
 				} );
 			},
-			attached: function() {}
+			attached: function() {
+				this.saveDisabled=false;
+			}
 		} );
 
 	</script>

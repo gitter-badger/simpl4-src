@@ -37,6 +37,7 @@
 				map[ f.name ] = f.value;
 			}
 			map[ "isEdit" ] = this.mode == "edit";
+			this.saveDisabled = this.isSaveDisabled();
 			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
@@ -77,6 +78,24 @@
 						f.removeAttribute( "visibility" );
 					}
 				}
+			}
+		},
+		isSaveDisabled: function() {
+			var script = this._form.xf_save_disabled;
+			if ( this.isEmpty( script ) ) return false;
+			try {
+				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+				var lang = simpl4.util.BaseManager.getLanguage()
+				var res = this._maskedEval( script, {
+					f: data,
+					formData: data,
+					mode: this.mode,
+					lang: lang,
+					uuid: window.uuid
+				} );
+				return res;
+			} catch ( e ) {
+				console.error( "_postProcessLocalForm:", e );
 			}
 		},
 		isNotEmpty: function( s ) {
@@ -198,7 +217,8 @@
 				var fieldData = data[ field.name ];
 				if( field.expressionIn){
 					fieldData = this._maskedEval( field.expressionIn, {
-						fd: data,
+						formData: data,
+						f: data,
 						self:fieldData
 					} );
 				}
@@ -214,7 +234,8 @@
 			this.fields.forEach( function( field ) {
 				if ( field.getValue == null || field.expressionOut == null) return;
 				data[field.name] = this._maskedEval( field.expressionOut, {
-					fd: data,
+					f: data,
+					formData: data,
 					self:field.getValue()
 				} );
 			}, this );
@@ -297,7 +318,7 @@
 				var lang = simpl4.util.BaseManager.getLanguage()
 				var formData = this._maskedEval( script, {
 					formData: data,
-					fd: data,
+					f: data,
 					mode: this.mode,
 					lang: lang,
 					uuid: window.uuid
@@ -355,7 +376,7 @@
 				var lang = simpl4.util.BaseManager.getLanguage()
 				var formData = this._maskedEval( script, {
 					formData: data,
-					fd: data,
+					f: data,
 					mode: this.mode,
 					lang: lang,
 					uuid: window.uuid

@@ -104,7 +104,7 @@
 						<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 				</div>
 				<simpl-panel heading="{{panelHeaderCrudForm}}">
-					<simpl-form id="formid" mode="{{mode}}" namespace="{{namespace}}" form-name="[[formName]]" spec="{{formSpec}}"></simpl-form>
+					<simpl-form id="formid" mode="{{mode}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
 					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
 						<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
 							<iron-icon icon="image:navigate-before"></iron-icon>
@@ -113,7 +113,7 @@
 							<iron-icon icon="image:navigate-next"></iron-icon>
 						</paper-button>
 
-						<paper-button class="h flex button button_primary" raised on-tap="saveAction">
+						<paper-button class="h flex button button_primary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
 							<iron-icon icon="save"></iron-icon>{{tr('data.form.save')}}</paper-button>
 						<paper-button class="h flex button" raised on-tap="cancelAction">
 							<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
@@ -187,6 +187,10 @@
 				},
 				withPanel: {
 					type: Object,
+					value: true
+				},
+				saveDisabled: {
+					type: Boolean,
 					value: true
 				},
 				buttonList: {
