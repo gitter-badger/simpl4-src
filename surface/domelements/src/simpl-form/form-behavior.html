@@ -30,28 +30,31 @@
 			'value-changed': 'valueChanged'
 		},
 		valueChanged: function( e ) {
-			//console.debug( "Form.valueChanged:", e );
-			var map = {};
-			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
-				var f = this.fields[ i ];
-				map[ f.name ] = f.value;
-			}
-			map[ "isEdit" ] = this.mode == "edit";
-			this.saveDisabled = this.isSaveDisabled();
+			var data = simpl4.util.Merge.deepmerge( this.data, this._getData() );
+			var lang = simpl4.util.BaseManager.getLanguage()
+			var	env = {
+				f: data,
+				formData: data,
+				mode: this.mode,
+				isEdit: this.mode == "edit",
+				lang: lang
+			};
+
+			this.saveDisabled = this.isSaveDisabled(map);
 			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
 				var readonlyExpr = f.getAttribute( "readonly-expr" );
 				//console.log( "Name:" + f.name + "|enabled-expr:" + enabledExpr + "|readonlyExpr:" + readonlyExpr + "|" );
 				if ( this.isNotEmpty( readonlyExpr ) ) {
-					var e = this._maskedEval( readonlyExpr, map );
+					var e = this._maskedEval( readonlyExpr, env );
 					if ( e ) {
 						f.setAttribute( "disabled", "" );
 					} else {
 						f.removeAttribute( "disabled" );
 					}
 				} else if ( this.isNotEmpty( enabledExpr ) ) {
-					var e = this._maskedEval( enabledExpr, map );
+					var e = this._maskedEval( enabledExpr, env );
 					if ( e ) {
 						f.removeAttribute( "disabled" );
 					} else {
@@ -61,7 +64,7 @@
 				var excludeExpr = f.getAttribute( "exclude-expr" );
 				//console.log( "Name:" + f.name + "|excludeExpr:" + excludeExpr + "|" );
 				if ( this.isNotEmpty( excludeExpr ) ) {
-					var e = this._maskedEval( excludeExpr, map );
+					var e = this._maskedEval( excludeExpr, env );
 					if ( e ) {
 						f.setAttribute( "hidden", "" );
 					} else {
@@ -71,7 +74,7 @@
 				var invisibleExpr = f.getAttribute( "invisible-expr" );
 				//console.log( "Name:" + f.name + "|invisibleExpr:" + invisibleExpr + "|" );
 				if ( this.isNotEmpty( invisibleExpr ) ) {
-					var e = this._maskedEval( invisibleExpr, map );
+					var e = this._maskedEval( invisibleExpr, env );
 					if ( e ) {
 						f.setAttribute( "visibility", "hidden" );
 					} else {
@@ -80,19 +83,11 @@
 				}
 			}
 		},
-		isSaveDisabled: function() {
+		isSaveDisabled: function(env) {
 			var script = this._form.xf_save_disabled;
 			if ( this.isEmpty( script ) ) return false;
 			try {
-				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
-				var lang = simpl4.util.BaseManager.getLanguage()
-				var res = this._maskedEval( script, {
-					f: data,
-					formData: data,
-					mode: this.mode,
-					lang: lang,
-					uuid: window.uuid
-				} );
+				var res = this._maskedEval( script, env );
 				return res;
 			} catch ( e ) {
 				console.error( "_postProcessLocalForm:", e );
@@ -225,6 +220,14 @@
 				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
 		},
+		_getData: function() {
+			var data = {};
+			this.fields.forEach( function( field ) {
+				if ( field.getValue == null ) return;
+				data[ field.name ] = field.getValue();
+			}, this );
+			return data;
+		},
 		getData: function() {
 			var data = {};
 			this.fields.forEach( function( field ) {
@@ -253,7 +256,7 @@
 			}, this );
 		},
 		actionCallback: function() {
-			console.debug( "Data:", JSON.stringify( this.getData(), null, 2 ) );
+			console.debug( "Data:", JSON.stringify( this._getData(), null, 2 ) );
 		},
 
 		_getSelectionLists: function( method ) {
@@ -295,7 +298,7 @@
 					method = this.namespace + "." + method;
 				}
 				var lang = simpl4.util.BaseManager.getLanguage()
-				var data = this.getData();
+				var data = this._getData();
 				var formData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
 					formData: data,
 					lang: lang,
@@ -314,14 +317,13 @@
 			var script = this._form.xf_preprocess_local;
 			if ( this.isEmpty( script ) ) return null;
 			try {
-				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+				var data = simpl4.util.Merge.deepmerge( this.data, this._getData() );
 				var lang = simpl4.util.BaseManager.getLanguage()
 				var formData = this._maskedEval( script, {
 					formData: data,
 					f: data,
 					mode: this.mode,
-					lang: lang,
-					uuid: window.uuid
+					lang: lang
 				} );
 				return formData;
 			} catch ( e ) {
@@ -336,7 +338,7 @@
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
 				}
-				var data = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+				var data = simpl4.util.Merge.deepmerge( this.data, this._getData() );
 				var params = {
 					service: "camelRoute",
 					method: method,
@@ -378,8 +380,7 @@
 					formData: data,
 					f: data,
 					mode: this.mode,
-					lang: lang,
-					uuid: window.uuid
+					lang: lang
 				} );
 				if ( formData != null ) {
 					this.setFieldData( formData );
@@ -417,7 +418,7 @@
 					this.fieldsMap = this.toMap( this.fields );
 					this.valueChanged();
 					if ( this.resetData == null ) {
-						this.resetData = this.getData();
+						this.resetData = this._getData();
 					}
 				}, 1 );
 			}, 1 );
@@ -442,7 +443,7 @@
 					this.fieldsMap = this.toMap( this.fields );
 					this.valueChanged();
 					if ( this.resetData == null ) {
-						this.resetData = this.getData();
+						this.resetData = this._getData();
 					}
 				}, 1 );
 			}, 1 );
@@ -694,7 +695,7 @@
 			var parameterMap = {};
 			if ( !parammapping ) return parameterMap;
 			console.log( "----paramMapping:", parammapping );
-			var env = simpl4.util.Merge.deepmerge( this.data, this.getData() );
+			var env = simpl4.util.Merge.deepmerge( this.data, this._getData() );
 			env._uuid = window.uuid;
 			env._lang = simpl4.util.BaseManager.getLanguage();
 			env._mode = this.mode;
