@@ -216,7 +216,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 					var items = this.items[i].items();
 					var self = this;
 					items.each(function (value) {
-						var b = self.__maskedEval(value.enabled(),self._env);
+						var b = value.enabled ? self.__maskedEval(value.enabled(),self._env) : true;
 						console.log("value:",value.value()+"="+b);
 						if( b){
 							var option = [value.title(), null, value.value()];
