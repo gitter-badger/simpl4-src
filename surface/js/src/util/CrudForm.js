@@ -110,7 +110,7 @@ clazz.construct.extend( "simpl4.util.CrudForm", {
 		if( f.form_enabled_expr!=null ){
 			shape.xf_enabled = f.form_enabled_expr+'';
 		}
-		shape.defaultValue = f.default_value !== '' ? f.default_value : null;
+		shape.xf_default = f.default_value !== '' ? f.default_value : null;
 		return shape;
 	},
 	convertFieldType: function( f ) {
