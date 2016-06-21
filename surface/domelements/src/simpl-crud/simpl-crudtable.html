@@ -374,6 +374,9 @@
 				if ( meta ) {
 					fields = [];
 					for ( var i = 0; i < meta.length; i++ ) {
+						if( meta[i].data.endsWith("_display")){
+							continue;
+						}
 						fields.push( meta[ i ].data );
 					}
 				}
