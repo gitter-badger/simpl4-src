@@ -76,6 +76,10 @@ public class JDBCPersistenceManagerLoader extends AbstractPersistenceManagerLoad
 			m_props.put("datanucleus.schema.validateTables", "false");
 			m_props.put("datanucleus.validateTables", "false");
 			m_props.put("datanucleus.schema.validateColumns", "false");
+			m_props.put("datanucleus.schema.validateAll", "false");
+			m_props.put("datanucleus.schema.validateConstraints", "false");
+			m_props.put("datanucleus.rdbms.CheckExistTablesOrViews", "false");
+			m_props.put("datanucleus.rdbms.initializeColumnInfo", "NONE");
 		}
 		m_props.put("datanucleus.schema.validateConstraints", "false");
 
