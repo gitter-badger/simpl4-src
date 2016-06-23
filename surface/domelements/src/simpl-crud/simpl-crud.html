@@ -456,7 +456,7 @@
 					}
 				} else {
 					var idValue = this.getIdValue( this.mainEntityName, this.namespace, data );
-					console.log( "idValue:", idValue );
+					console.log( "storeData.idValue:", idValue );
 					rpc = {
 						storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + ep.pack,
 						entity: ep.entityName,
@@ -556,10 +556,6 @@
 
 				var valid = this.$.formid.validate();
 				console.log( "saveAction.valid:" + valid );
-				console.log( "saveAction:" + JSON.stringify( data, null, 2 ) );
-				console.log( "currentEntityName:" + this.currentEntityName );
-				console.log( "mainEntityName:" + this.mainEntityName );
-				console.log( "mainEntityId:" + this.mainEntityId );
 				if ( !valid ) {
 					this.toast_message = tr( "widgets.table.form_incomplete" );
 					this.querySelector( "#toast" ).show();
@@ -569,9 +565,8 @@
 						if ( this.mode == 'edit' ) {
 							data = simpl4.util.Merge.merge( true, this.currentRowData, data );
 						}
-						console.log( "Data finish:", data );
+						console.log( "saveAction.storeData:", data );
 						var ret = this.storeData( data );
-						console.log( "Ret:", ret );
 						var content = ret;
 						var cv = ret[ "constraintViolations" ];
 						if ( cv ) {

@@ -137,7 +137,9 @@
 					errorList.push( "Error" );
 				}
 			}
-			console.log( "form.validate:", errorList );
+			if( errorList && errorList.length>0){
+				console.log( "form.validate.errorList:", errorList );
+			}
 			return errorList.length == 0;
 		},
 		filterToArray: function( nodeList, all ) {
