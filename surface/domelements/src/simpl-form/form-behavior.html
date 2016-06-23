@@ -32,12 +32,12 @@
 		valueChanged: function( e ) {
 			var data = simpl4.util.Merge.merge( true, this.data, this._getData() );
 			var lang = simpl4.util.BaseManager.getLanguage()
-			var	env = {
+			var env = {
 				$mode: this.mode,
 				$lang: lang
 			};
 			env = simpl4.util.Merge.merge( true, data, env );
-			this.saveDisabled = this.isSaveDisabled(env);
+			this.saveDisabled = this.isSaveDisabled( env );
 			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
@@ -80,7 +80,7 @@
 				}
 			}
 		},
-		isSaveDisabled: function(env) {
+		isSaveDisabled: function( env ) {
 			var script = this._form.xf_save_disabled;
 			if ( this.isEmpty( script ) ) return false;
 			try {
@@ -152,11 +152,12 @@
 		},
 		_maskedEval: function( scr, env, def ) {
 			try {
+				env._ = _;
 				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
 				console.error( "\t" + e );
 				console.debug( "Form._maskedEval.script:" + scr );
-				console.debug( "Form._maskedEval.env:" + JSON.stringify(env,null,2) );
+				console.debug( "Form._maskedEval.env:" + JSON.stringify( env, null, 2 ) );
 			}
 			return def;
 		},
@@ -208,11 +209,11 @@
 				field.withoutCheck = true;
 				if ( field.setInvalid ) field.setInvalid( false );
 				var fieldData = data[ field.name ];
-				if( field.expressionIn){
-					var	env = {
+				if ( field.expressionIn ) {
+					var env = {
 						$mode: this.mode,
 						$lang: simpl4.util.BaseManager.getLanguage(),
-						$self:fieldData
+						$self: fieldData
 					};
 					env = simpl4.util.Merge.merge( true, data, env );
 					fieldData = this._maskedEval( field.expressionIn, env );
@@ -235,14 +236,14 @@
 				data[ field.name ] = field.getValue();
 			}, this );
 			this.fields.forEach( function( field ) {
-				if ( field.getValue == null || field.expressionOut == null) return;
-				var	env = {
+				if ( field.getValue == null || field.expressionOut == null ) return;
+				var env = {
 					$mode: this.mode,
 					$lang: simpl4.util.BaseManager.getLanguage(),
-					$self:field.getValue()
+					$self: field.getValue()
 				};
 				env = simpl4.util.Merge.merge( true, data, env );
-				data[field.name] = this._maskedEval( field.expressionOut, env );
+				data[ field.name ] = this._maskedEval( field.expressionOut, env );
 			}, this );
 			return data;
 		},
@@ -294,7 +295,9 @@
 		},
 		postProcessService: function() {
 			var method = this._form.xf_postprocess_service;
-			if ( this.isEmpty( method ) ) return null;
+			var mode = this._form.xf_postprocess_service_mode;
+			var ok = mode == this.mode || mode == "edit_add";
+			if ( !ok || this.isEmpty( method ) ) return null;
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
@@ -304,6 +307,7 @@
 				var formData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
 					formData: data,
 					lang: lang,
+					formName: this.removeExtension( this.formName ),
 					mode: this.mode,
 					uuid: window.uuid
 				} );
@@ -321,7 +325,7 @@
 			try {
 				var data = simpl4.util.Merge.merge( true, this.data, this._getData() );
 				var lang = simpl4.util.BaseManager.getLanguage()
-				var	env = {
+				var env = {
 					$mode: this.mode,
 					$lang: lang
 				};
@@ -335,7 +339,9 @@
 
 		preProcessService: function() {
 			var method = this._form.xf_preprocess_service;
-			if ( this.isEmpty( method ) ) return null;
+			var mode = this._form.xf_preprocess_service_mode;
+			var ok = mode == this.mode || mode == "edit_add";
+			if ( !ok || this.isEmpty( method ) ) return null;
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
@@ -347,6 +353,7 @@
 					parameter: {
 						formData: data,
 						lang: simpl4.util.BaseManager.getLanguage(),
+						formName: this.removeExtension( this.formName ),
 						mode: this.mode,
 						uuid: window.uuid
 					},
@@ -378,13 +385,14 @@
 			try {
 				var data = this.data;
 				var lang = simpl4.util.BaseManager.getLanguage()
-				var	env = {
+				var env = {
 					$mode: this.mode,
 					$lang: lang
 				};
 				env = simpl4.util.Merge.merge( true, data, env );
 				var formData = this._maskedEval( script, env );
 				if ( formData != null ) {
+					console.log( "preProcessLocal.setFormData:", formData );
 					this.setFieldData( formData );
 				}
 			} catch ( e ) {
@@ -609,10 +617,10 @@
 						filterDesc.checkParams = true;
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
 						var items = si.getItems();
-						if( si.getMissingParamList()){
-							console.error("Filter:",filterDesc);
-							console.error("Filter.misingParameters:",si.getMissingParamList());
-						}else{
+						if ( si.getMissingParamList() ) {
+							console.error( "Filter:", filterDesc );
+							console.error( "Filter.misingParameters:", si.getMissingParamList() );
+						} else {
 							props.items = this.doResultMapping( items, resultmapping );
 						}
 					} else if ( !this.isEmpty( service ) ) {
@@ -720,7 +728,7 @@
 		},
 		doResultMapping: function( items, resultmapping ) {
 			console.log( "----resultList:", items );
-			if( typeof items == "string" ){
+			if ( typeof items == "string" ) {
 				console.error( "----doResultMapping.cannot handle String result:", items );
 				return [];
 			}
@@ -800,6 +808,12 @@
 		isEmpty: function( s ) {
 			if ( s == null || s == '' ) return true;
 			return false;
+		},
+		removeExtension: function( s ) {
+			if ( s.endsWith( ".form" ) ) {
+				return s.substring( 0, s.length - 5 );
+			}
+			return s;
 		},
 		expandString: function( str, binding ) {
 			if ( str == null || str.length == 0 ) return "";

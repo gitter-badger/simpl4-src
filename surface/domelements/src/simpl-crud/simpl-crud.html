@@ -179,7 +179,7 @@
 					type: String
 				},
 				filterName: {
-					value:null,
+					value: null,
 					type: String
 				},
 				entity: {
@@ -284,9 +284,9 @@
 				this.currentEntityName = detail.entity;
 				this.currentEntityChildName = detail.entityChild;
 
-				if( this.loadBeforeEdit() ){
+				if ( this.loadBeforeEdit() ) {
 					this.currentRowData = this.getData( detail.data );
-				}else{
+				} else {
 					this.currentRowData = detail.data;
 				}
 
@@ -303,9 +303,9 @@
 			prevAction: function( e ) {
 				if ( this.currentRowIndex > 0 ) {
 					this.currentRowIndex--;
-					if( this.loadBeforeEdit() ){
+					if ( this.loadBeforeEdit() ) {
 						this.currentRowData = this.getData( this.currentDataSet[ this.currentRowIndex ] );
-					}else{
+					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
 					this.$.formid.setData( this.currentRowData );
@@ -315,9 +315,9 @@
 			nextAction: function( e ) {
 				if ( this.currentRowIndex < ( this.currentDataSet.length - 1 ) ) {
 					this.currentRowIndex++;
-					if( this.loadBeforeEdit() ){
+					if ( this.loadBeforeEdit() ) {
 						this.currentRowData = this.getData( this.currentDataSet[ this.currentRowIndex ] );
-					}else{
+					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
 					this.$.formid.setData( this.currentRowData );
@@ -335,9 +335,9 @@
 				var props = simpl4.util.EntityManager.getEntityViewProperties( detail.entity, "main-form", {
 					namespace: detail.namespace
 				} );
-				if( props.loadBeforeEdit ){
+				if ( props.loadBeforeEdit ) {
 					this.currentRowData = this.getData( detail.data );
-				}else{
+				} else {
 					this.currentRowData = detail.data;
 				}
 				this.currentTable = detail.table;
@@ -345,7 +345,7 @@
 				this.currentRowIndex = detail.rowIndex;
 
 
-				console.log("currentRowData:",this.currentRowData);
+				console.log( "currentRowData:", this.currentRowData );
 
 				this.prevNextButtonsInvisible = null;
 				this.handlePrevNextButtons();
@@ -432,15 +432,15 @@
 				var props = simpl4.util.EntityManager.getPropertiesForEntity( this.entity, {
 					namespace: this.namespace
 				} );
-				var customServiceUpdate =  props.customServiceUpdate;
-				var customServiceInsert =  props.customServiceInsert;
+				var customServiceUpdate = props.customServiceUpdate;
+				var customServiceInsert = props.customServiceInsert;
 				var mode = this.mode;
-				if( mode == "add" && customServiceInsert ){
-					return this._storeDataCustom(data, customServiceInsert);
-				}else if( mode == "edit"  && customServiceUpdate ){
-					return this._storeDataCustom(data, customServiceUpdate );
-				}else{
-					return this._storeData(data);
+				if ( mode == "add" && customServiceInsert ) {
+					return this._storeDataCustom( data, customServiceInsert );
+				} else if ( mode == "edit" && customServiceUpdate ) {
+					return this._storeDataCustom( data, customServiceUpdate );
+				} else {
+					return this._storeData( data );
 				}
 
 			},
@@ -466,17 +466,18 @@
 						data: data
 					}
 				}
-				console.log("rpc:",rpc);
-				var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
-				return ret;
+				console.log( "rpc:", rpc );
+				//	var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
+				//	return ret;
+				return {};
 			},
 			_storeDataCustom: function( data, customService ) {
-				if( customService.indexOf(":") == -1){
-					customService = "camelRoute:"+customService;
+				if ( customService.indexOf( ":" ) == -1 ) {
+					customService = "camelRoute:" + customService;
 				}
-				if( customService.indexOf(".") == -1){
-					var x = customService.split(":");
-					customService = x[0] + ":" + this.namespace + "."+ x[1];
+				if ( customService.indexOf( "." ) == -1 ) {
+					var x = customService.split( ":" );
+					customService = x[ 0 ] + ":" + this.namespace + "." + x[ 1 ];
 				}
 				var rpc = null;
 				var ep = this.getPack( this.mainEntityName );
@@ -499,7 +500,7 @@
 						data: data
 					}
 				}
-				if( window.uuid){
+				if ( window.uuid ) {
 					rpc.uuid = window.uuid;
 				}
 				var ret = simpl4.util.Rpc.rpcSync( customService, rpc );
@@ -542,21 +543,20 @@
 				return idValue;
 			},
 			saveAction: function() {
-				var ppData = this.$.formid.postProcessService();
-				if ( ppData != null ) {
-					this.$.formid.setFieldData( ppData );
-				}
-				var ppData = this.$.formid.postProcessLocal();
-				if ( ppData != null ) {
-					this.$.formid.setFieldData( ppData );
-				}
-				var valid = this.$.formid.validate();
+				var postServiceData = this.$.formid.postProcessService();
 				var data = this.$.formid.getData();
-				if ( ppData != null ) {
-					data = simpl4.util.Merge.deepmerge( data, ppData );
-					console.log( "Data1:", data );
+				if ( postServiceData != null ) {
+					this.$.formid.setFieldData( postServiceData );
+					data = simpl4.util.Merge.merge( true, data, postServiceData );
 				}
 
+				var postLocalService = this.$.formid.postProcessLocal();
+				if ( postLocalService != null ) {
+					this.$.formid.setFieldData( postLocalService );
+					data = simpl4.util.Merge.merge( true, data, postLocalService );
+				}
+
+				var valid = this.$.formid.validate();
 				console.log( "saveAction.valid:" + valid );
 				console.log( "saveAction:" + JSON.stringify( data, null, 2 ) );
 				console.log( "currentEntityName:" + this.currentEntityName );
@@ -569,7 +569,7 @@
 				} else {
 					try {
 						if ( this.mode == 'edit' ) {
-							data = simpl4.util.Merge.deepmerge( this.currentRowData, data );
+							data = simpl4.util.Merge.merge( true, this.currentRowData, data );
 						}
 						console.log( "Data finish:", data );
 						var ret = this.storeData( data );
@@ -614,11 +614,11 @@
 			isTable: function( item ) {
 				return item.type == "table";
 			},
-			loadBeforeEdit:function(){
+			loadBeforeEdit: function() {
 				var props = simpl4.util.EntityManager.getEntityViewProperties( this.entity, "main-form", {
 					namespace: this.namespace
 				} );
-				return props.loadBeforeEdit===true;
+				return props.loadBeforeEdit === true;
 			},
 			getFormData: function( dataDesc ) {
 				var props = simpl4.util.EntityManager.getEntityViewProperties( dataDesc.entity, "main-form", {
