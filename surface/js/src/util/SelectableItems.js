@@ -249,7 +249,7 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 				var ret = simpl4.util.Rpc.rpcSync( "data:executeFilterByName", {
 					name: name,
 					params: p,
-					checkParams: false,
+					checkParams: url.checkParams === true ? true : false,
 					storeId: storeId,
 					mapping: mapping
 				} );
