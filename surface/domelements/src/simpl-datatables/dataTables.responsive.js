@@ -572,7 +572,7 @@ Responsive.prototype = {
 
 
 		var widthAvailable = dt.table().container().offsetWidth;
-		console.log("widthAvailable:"+widthAvailable);
+		//console.log("widthAvailable:"+widthAvailable);
 		//Width is 0, when table not visible
 		if( widthAvailable==0) return;
 
@@ -679,7 +679,7 @@ Responsive.prototype = {
 
 		var cols = dt.columns().eq(0).length;
 		var x = tableWidth/cols*0.04;
-		console.log("x:"+x+"/",(dt.columns().eq(0)));
+		//console.log("x:"+x+"/",(dt.columns().eq(0)));
 		// The cloned header now contains the smallest that each column can be
 		dt.columns().eq(0).each( function ( idx ) {
 			columns[idx].minWidth = (cells[ idx ].offsetWidth-x) || 0;

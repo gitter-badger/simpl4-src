@@ -84,8 +84,6 @@
 				'selectionChanged(selection)'
 			],
 			ready: function() {
-				//this.dtMeta= null; //@@@MS ?!?!?
-				console.debug( "crudtable.ready:" + this.namespace );
 			},
 			addAction: function() {
 				this.fire( "add-action", {
@@ -147,11 +145,9 @@
 				var name = null;
 				while ( src ) {
 					name = src.getAttribute( "name" );
-					console.log( "sname:", name );
 					if ( name ) break;
 					src = src.parentElement;
 				}
-				console.log( "name:", name );
 				if ( name == null ) return;
 				this.buttonDef[ name ].action.call( this );
 			},
@@ -169,7 +165,6 @@
 				}
 			},
 			buttonsChanged: function() {
-				console.log( "buttonsChanged" );
 				var buttons = {
 					add: {
 						action: this.addAction,
@@ -222,10 +217,9 @@
 					bList.push( b );
 				} ).bind( this ) );
 				this.buttonList = bList;
-				console.log( "buttonList:", this.buttonList );
 			},
 			filterChanged: function( o, n ) {
-				console.log( "crudtable.filterChanged:", this.filter );
+				//console.log( "crudtable.filterChanged:", this.filter );
 				if ( !this.filter ) return;
 				this.entity = this.filter.entity;
 				this.namespace = this.filter.namespace || simpl4.util.BaseManager.getNamespace();
@@ -233,7 +227,6 @@
 				if ( this.dtMeta == null ) {
 					firsttime = true;
 				}
-				console.log( "crudtable.firsttime:" + firsttime );
 				if ( firsttime ) {
 					this.dtMeta = this.preProcessMeta( simpl4EntityManager.getEntityViewFields( this.filter.entity, "main-grid", true, {
 						namespace: this.namespace
@@ -360,7 +353,6 @@
 				this.filterChanged();
 			},
 			getData: function( filter ) {
-				console.log( "XFilter:", this.filter );
 				this.selection = null;
 				var props = simpl4.util.EntityManager.getEntityViewProperties( filter.entity, "main-grid", {
 					namespace: this.namespace
@@ -399,10 +391,10 @@
 						var x = customService.split(":");
 						customService = x[0] + ":" + this.namespace + "."+ x[1];
 					}
-					console.log("xxx.customService:",customService);
-					console.log("xxx.fields:",fields);
-					console.log("xxx.filter:",filter);
-					console.log("xxx.entity:",e);
+					//console.log("xxx.customService:",customService);
+					//console.log("xxx.fields:",fields);
+					//console.log("xxx.filter:",filter);
+					//console.log("xxx.entity:",e);
 					data = simpl4.util.Rpc.rpcSync( customService, {
 						storeId: this.namespace + "_"+p,
 						pageSize: 100,
@@ -413,7 +405,7 @@
 						filter: filter
 					} );
 			
-					console.log("xxx.data:",data);
+					//console.log("xxx.data:",data);
 					return data;
 				} else {
 					data = simpl4.util.Rpc.rpcSync( "data:query", {

@@ -51,7 +51,6 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 		return this._missingParamList;
 	},
 	_evalUrl: function() {
-		console.log( "_url:", this._url );
 		if ( this._url instanceof Array ) {
 			this._items = this._url;
 			this._items = this._translate( this._items );

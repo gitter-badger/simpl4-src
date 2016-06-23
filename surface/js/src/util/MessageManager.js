@@ -47,7 +47,6 @@ simpl4.util.BaseManager.extend( "simpl4.util.MessageManager", {
 		Object.keys(map).forEach(function(key) {
 			var val = map[key];
 			var t = simpl4.util.MessageManager.transMap[ val ];
-console.log("add:("+key+"):",t);
 			simpl4.util.MessageManager.transMap[ key ] = t;
 		});
 	},

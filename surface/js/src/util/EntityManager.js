@@ -263,7 +263,6 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 
 		var buildstr = build !== false ? "true" : "no";
 		var namespace = args.namespace || this.getNamespace();
-		console.error( "namespace:" + namespace + "/" + args.view );
 		var fields = simpl4.util.EntityManager.fieldCache[ "vf-" + args.entity + "-" + namespace + "-" + args.view + "-" + buildstr ];
 		if ( fields === undefined ) {
 			try {
@@ -306,7 +305,6 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 		return settings.properties;
 	},
 	getAllSettingsForEntityList: function( namespace, entityList ) {
-		console.log( "namespace:" + namespace );
 		if ( !Array.isArray( entityList ) ) {
 			entityList = [ entityList ];
 		}

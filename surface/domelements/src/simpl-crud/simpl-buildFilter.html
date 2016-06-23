@@ -44,7 +44,6 @@
 				'paramsChanged(params.*)'
 			],
 			paramsChanged: function() {
-				console.log( "buildfilter.paramsChanged:", this.params );
 				this.build( true );
 			},
 			parseParams: function( o ) {
@@ -99,9 +98,7 @@
 			build: function( withMeta ) {
 				var params = this.parseParams( this.params );
 				var namespace = this.namespace || simpl4.util.BaseManager.getNamespace();
-				console.debug( "execute.namespace:", namespace );
-				console.debug( "execute.name:", this.name );
-				console.debug( "execute.params:", params );
+				console.log( "buildFilter.build:", namespace+"."+this.name+"/",params );
 				var map = simpl4.util.Rpc.rpcSync( "git:searchContent", {
 					reponame: namespace,
 					name: this.name,

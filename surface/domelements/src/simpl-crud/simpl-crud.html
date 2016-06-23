@@ -214,7 +214,6 @@
 				this.selectedDetailsTabId = "detailsMainTabId";
 				this.entryAnimation = 'slide-from-left-animation';
 				this.exitAnimation = 'slide-left-animation';
-				console.log( "Crud.attached.Entity:", this.entity + "/namespace:" + this.namespace );
 				if ( this.namespace && this.namespace != simpl4.util.BaseManager.getNamespace() ) {
 					simpl4MessageManager.installMessages( this.namespace );
 				}
@@ -224,7 +223,6 @@
 				this.panelHeaderCrudTable = tr( ep.pack + "." + ep.entityName + "_list" );
 				this.pageStack = new Array();
 				this.pageSelected = 0;
-				console.log( "pageSelected:" + this.pageSelected );
 			},
 			setFormSpec: function( namespace, entity ) {
 				if ( namespace === this.prevNamespace && entity === this.prevEntityName ) return;
@@ -381,8 +379,8 @@
 				var ep = this.getPack( detail.entity );
 				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
 
+				this.$.formid.setData( {} );
 				this.whenElementsReady( ( function() {
-					this.$.formid.setData( {} );
 					this.pageSelected = 1;
 				} ).bind( this ) );
 			},

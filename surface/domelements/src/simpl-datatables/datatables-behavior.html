@@ -162,8 +162,8 @@
 			},10 );
 		},
 		_dataChanged: function() {
-			console.log( "xxx.dataTables.dataChanged.data:", this.data );
-			console.log( "xxx.dataTables.dataChanged.meta:", this.meta );
+			//console.log( "xxx.dataTables.dataChanged.data:", this.data );
+			//console.log( "xxx.dataTables.dataChanged.meta:", this.meta );
 			var firsttime = this.preparedMeta == null;
 //			console.log( "dataTables.dataChanged.firsttime:", firsttime );
 			if ( this.meta == null || this.meta.length==0 ) {
@@ -236,7 +236,7 @@
 
 			function waitForTable() {
 				var width = self.$.dataTablesId.offsetWidth;
-				console.log( "xxx.waitForTable.Width:", width );
+				//console.log( "xxx.waitForTable.Width:", width );
 				if ( width > 0 ) {
 					done();
 					return;
