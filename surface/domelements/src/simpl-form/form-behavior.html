@@ -30,17 +30,14 @@
 			'value-changed': 'valueChanged'
 		},
 		valueChanged: function( e ) {
-			var data = simpl4.util.Merge.deepmerge( this.data, this._getData() );
+			var data = simpl4.util.Merge.merge( true, this.data, this._getData() );
 			var lang = simpl4.util.BaseManager.getLanguage()
 			var	env = {
-				f: data,
-				formData: data,
-				mode: this.mode,
-				isEdit: this.mode == "edit",
-				lang: lang
+				$mode: this.mode,
+				$lang: lang
 			};
-
-			this.saveDisabled = this.isSaveDisabled(map);
+			env = simpl4.util.Merge.merge( true, data, env );
+			this.saveDisabled = this.isSaveDisabled(env);
 			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
@@ -155,10 +152,11 @@
 		},
 		_maskedEval: function( scr, env, def ) {
 			try {
-				return ( new Function( "with(this) { return " + scr + "}" ) ).call( env );
+				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
-				console.error( "Form._maskedEval:" + scr );
 				console.error( "\t" + e );
+				console.debug( "Form._maskedEval.script:" + scr );
+				console.debug( "Form._maskedEval.env:" + JSON.stringify(env,null,2) );
 			}
 			return def;
 		},
@@ -211,11 +209,13 @@
 				if ( field.setInvalid ) field.setInvalid( false );
 				var fieldData = data[ field.name ];
 				if( field.expressionIn){
-					fieldData = this._maskedEval( field.expressionIn, {
-						formData: data,
-						f: data,
-						self:fieldData
-					} );
+					var	env = {
+						$mode: this.mode,
+						$lang: simpl4.util.BaseManager.getLanguage(),
+						$self:fieldData
+					};
+					env = simpl4.util.Merge.merge( true, data, env );
+					fieldData = this._maskedEval( field.expressionIn, env );
 				}
 				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
@@ -236,11 +236,13 @@
 			}, this );
 			this.fields.forEach( function( field ) {
 				if ( field.getValue == null || field.expressionOut == null) return;
-				data[field.name] = this._maskedEval( field.expressionOut, {
-					f: data,
-					formData: data,
-					self:field.getValue()
-				} );
+				var	env = {
+					$mode: this.mode,
+					$lang: simpl4.util.BaseManager.getLanguage(),
+					$self:field.getValue()
+				};
+				env = simpl4.util.Merge.merge( true, data, env );
+				data[field.name] = this._maskedEval( field.expressionOut, env );
 			}, this );
 			return data;
 		},
@@ -317,14 +319,14 @@
 			var script = this._form.xf_preprocess_local;
 			if ( this.isEmpty( script ) ) return null;
 			try {
-				var data = simpl4.util.Merge.deepmerge( this.data, this._getData() );
+				var data = simpl4.util.Merge.merge( true, this.data, this._getData() );
 				var lang = simpl4.util.BaseManager.getLanguage()
-				var formData = this._maskedEval( script, {
-					formData: data,
-					f: data,
-					mode: this.mode,
-					lang: lang
-				} );
+				var	env = {
+					$mode: this.mode,
+					$lang: lang
+				};
+				env = simpl4.util.Merge.merge( true, data, env );
+				var formData = this._maskedEval( script, env );
 				return formData;
 			} catch ( e ) {
 				console.error( "_postProcessLocalForm:", e );
@@ -376,12 +378,12 @@
 			try {
 				var data = this.data;
 				var lang = simpl4.util.BaseManager.getLanguage()
-				var formData = this._maskedEval( script, {
-					formData: data,
-					f: data,
-					mode: this.mode,
-					lang: lang
-				} );
+				var	env = {
+					$mode: this.mode,
+					$lang: lang
+				};
+				env = simpl4.util.Merge.merge( true, data, env );
+				var formData = this._maskedEval( script, env );
 				if ( formData != null ) {
 					this.setFieldData( formData );
 				}
@@ -604,8 +606,15 @@
 							items: []
 						}
 						filterDesc.params = this.doParameterMapping( parammapping );
+						filterDesc.checkParams = true;
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
-						props.items = this.doResultMapping( si.getItems(), resultmapping );
+						var items = si.getItems();
+						if( si.getMissingParamList()){
+							console.error("Filter:",filterDesc);
+							console.error("Filter.misingParameters:",si.getMissingParamList());
+						}else{
+							props.items = this.doResultMapping( items, resultmapping );
+						}
 					} else if ( !this.isEmpty( service ) ) {
 						var serviceDesc = {
 							"totalCount": 1,
@@ -696,9 +705,9 @@
 			if ( !parammapping ) return parameterMap;
 			console.log( "----paramMapping:", parammapping );
 			var env = simpl4.util.Merge.deepmerge( this.data, this._getData() );
-			env._uuid = window.uuid;
-			env._lang = simpl4.util.BaseManager.getLanguage();
-			env._mode = this.mode;
+			env.$uuid = window.uuid;
+			env.$lang = simpl4.util.BaseManager.getLanguage();
+			env.$mode = this.mode;
 			console.log( "----paramEnv:", env );
 			var mapping = parammapping.items;
 			for ( var j = 0; j < mapping.length; j++ ) {
@@ -711,6 +720,10 @@
 		},
 		doResultMapping: function( items, resultmapping ) {
 			console.log( "----resultList:", items );
+			if( typeof items == "string" ){
+				console.error( "----doResultMapping.cannot handle String result:", items );
+				return [];
+			}
 			var selectionList = [];
 			if ( resultmapping == null || this.isEmpty( resultmapping.items ) ) {
 				return items;
