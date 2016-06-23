@@ -44,6 +44,8 @@ task stage (type:Task) {
 		fileset(file:'libs/selectize.js')
 		fileset(file:'libs/jquery.pep.js')
 		fileset(file:'libs/sugar.dev.js')
+		fileset(file:'libs/esprima.js')
+		fileset(file:'libs/metaes.js')
 		fileset(file:'libs/Font.js')
 		fileset(file:'libs/jquery.touchSwipe.js')
 		fileset(dir:'src',includes:'**/*.js', excludes:'src/util/Construct.js')
