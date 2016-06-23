@@ -183,10 +183,18 @@
 			return f.label;
 		},
 		dataChanged: function() {
+			console.debug("dataChanged:",this.data);
 			this.whenFieldsReady( ( function() {
+				if ( this.preProcessData ) {
+					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
+					this.preProcessData = null;
+				} else {
+					this.doPreProcess();
+					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
+					this.preProcessData = null;
+				}
+				console.log( "dataChanged.merged:", this.data );
 				this._setData( this.data );
-				this.preProcessService();
-				this.preProcessLocal();
 			} ).bind( this ) );
 		},
 		setFieldData: function( data ) {
@@ -309,6 +317,7 @@
 					lang: lang,
 					formName: this.removeExtension( this.formName ),
 					mode: this.mode,
+					prePost: 'post',
 					uuid: window.uuid
 				} );
 				console.log( "_postProcessForm.replaceFormData:", formData );
@@ -342,31 +351,32 @@
 			var mode = this._form.xf_preprocess_service_mode;
 			var ok = mode == this.mode || mode == "edit_add";
 			if ( !ok || this.isEmpty( method ) ) return null;
+			console.log( "preProcessService:", method + "/" + ok + "/preProcessData:", this.preProcessData + "/data:", this.data );
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
 				}
-				var data = simpl4.util.Merge.deepmerge( this.data, this._getData() );
 				var params = {
 					service: "camelRoute",
 					method: method,
 					parameter: {
-						formData: data,
+						formData: this.data,
 						lang: simpl4.util.BaseManager.getLanguage(),
 						formName: this.removeExtension( this.formName ),
 						mode: this.mode,
+						prePost: 'pre',
 						uuid: window.uuid
 					},
-					async: true,
+					async: false,
 					context: this,
 					failed: function( e ) {
 						console.error( "_postProcessForm:", e );
 						console.log( e.stack );
 					},
 					completed: function( formData ) {
-						console.log( "_preProcessForm.replaceFormData:", formData );
+						console.log( "_preProcessService.replaceFormData:", formData );
 						if ( formData != null ) {
-							this.setFieldData( formData );
+							this._preData = formData;
 							if ( formData._selectionLists ) {
 								this._selectionLists = formData._selectionLists;
 							}
@@ -375,8 +385,8 @@
 				}
 				return simpl4.util.Rpc.rpcAsync( params );
 			} catch ( e ) {
-				console.error( "_postProcessForm.call:camelRoute:" + method );
-				console.error( "_postProcessForm:", e );
+				console.error( "_postProcessServic:", e );
+				console.debug( "_postProcessService.call:camelRoute:" + method );
 			}
 		},
 		preProcessLocal: function() {
@@ -392,12 +402,20 @@
 				env = simpl4.util.Merge.merge( true, data, env );
 				var formData = this._maskedEval( script, env );
 				if ( formData != null ) {
-					console.log( "preProcessLocal.setFormData:", formData );
-					this.setFieldData( formData );
+					this._preData = formData;
+					console.log( "_preProcessLocal.replaceFormData:", formData );
 				}
 			} catch ( e ) {
-				console.error( "_preProcessLocalForm:", e );
+				console.error( "_preProcessLocal:", e );
+				console.debug( "_postProcessService.script:" , script );
 			}
+		},
+		doPreProcess: function() {
+			this.preProcessService();
+			var dataSer = this._preData;
+			this.preProcessLocal();
+			var dataLoc = this._preData;
+			this.preProcessData = simpl4.util.Merge.merge( true, dataSer, dataLoc );
 		},
 		formNameChanged: function() {
 			this.async( function() {
@@ -410,6 +428,7 @@
 			this.fieldsMap = {};
 			this.shapes = [];
 			this._form = {};
+			this._preData = null;
 
 			this.async( function() {
 				var form = simpl4FormManager.getForm( this.formName, this.namespace );
@@ -417,6 +436,7 @@
 				this.defaultButtons = form.properties.xf_default_buttons;
 				this.formVar = form.properties.xf_name;
 				this._getSelectionLists( form.properties.xf_method_fetch );
+				this.doPreProcess();
 				this.shapes = this.prepareShape( form ).childShapes;
 				this._shapeMap = {};
 				this._buildShapeMap( this.shapes[ 0 ] );
@@ -712,7 +732,7 @@
 			var parameterMap = {};
 			if ( !parammapping ) return parameterMap;
 			console.log( "----paramMapping:", parammapping );
-			var env = simpl4.util.Merge.deepmerge( this.data, this._getData() );
+			var env = simpl4.util.Merge.merge( true, this.preProcessData, this.data, this._getData() );
 			env.$uuid = window.uuid;
 			env.$lang = simpl4.util.BaseManager.getLanguage();
 			env.$mode = this.mode;
