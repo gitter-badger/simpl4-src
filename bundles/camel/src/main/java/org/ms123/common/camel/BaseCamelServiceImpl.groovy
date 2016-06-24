@@ -171,7 +171,7 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 		try{
 			if( "namespace/installed".equals(event.getTopic())){
 				String namespace= (String)event.getProperty("namespace")
-				info(this,"BaseCamelServiceImpl.handleEvent:"+namespace);
+				debug(this,"BaseCamelServiceImpl.handleEvent:"+namespace);
 				_createRoutesFromJson( namespace);
 			}
 		}catch(Exception e){
@@ -193,12 +193,11 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 	}
 
 	public Map<String,Object> getProcedureShape(String namespace, String procedureName) {
-		info(this,"getProcedureShape:"+procedureName);
+		debug(this,"getProcedureShape:"+procedureName);
 		Iterator<Map.Entry<String,Map>> iter = m_procedureCache.entrySet().iterator();
 		while (iter.hasNext()) {
 			Map.Entry<String,Map> entry = iter.next();
 			String key = entry.getKey();
-			info(this,"\t"+entry.key);
 			if(key.startsWith(namespace+"/") && key.endsWith("/"+procedureName)){
 				return entry.value;
 			}
@@ -210,7 +209,6 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 		while (iter.hasNext()) {
 			Map.Entry<String,Map> entry = iter.next();
 			String key = entry.getKey();
-			info(this,"\t"+entry.key);
 			if(entry.getKey().startsWith(prefix)){
 				ret.add(entry.value);
 			}
@@ -251,7 +249,7 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 			return resultList;
 		}
 		CamelContext cc = cce.context;
-		info(this,"Def:"+cc.getRouteDefinitions());
+		debug(this,"Def:"+cc.getRouteDefinitions());
 		List<RouteDefinition> rdList =  cc.getRouteDefinitions();
 		for( RouteDefinition rd : rdList){
 			Map routeMap = new HashMap();
@@ -351,13 +349,13 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 					okList.add( routeBaseId);
 					continue;
 				}
-				info(this,"routeBaseId:"+routeBaseId);
+				debug(this,"routeBaseId:"+routeBaseId);
 				boolean autoStart = getBoolean(rootShape, AUTOSTART, false);
 				RouteCacheEntry re = cce.routeEntryMap[routeBaseId];
 				if( re == null){
 					//new Route
 					re = new RouteCacheEntry( rootShape:rootShape,md5:md5,routeId:routeBaseId);
-					info(this,"Add route:"+routeBaseId);
+					debug(this,"Add route:"+routeBaseId);
 					def c  = createRoutesDefinitionFromJson( re, _path, cce.context, rootShape);
 					RoutesDefinition routesDef = c.getRoutesDefinition();
 					Map<String,Map> procedureShapes = c.getProcedureShapes();					
@@ -380,14 +378,14 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 					cce.routeEntryMap[routeBaseId] = re;
 					okList.add( routeBaseId);
 				}else{
-info(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
+debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 					if( re.lastError == null  && re.md5 == md5 ){
 						//Nothing changed.
 						okList.add( routeBaseId);
 						continue;
 					}else{
 						//exchange route
-						info(this,"Exchange route:"+routeBaseId+"/"+autoStart);
+						debug(this,"Exchange route:"+routeBaseId+"/"+autoStart);
 						re.md5 = md5;
 						re.rootShape = rootShape;
 						def c  = createRoutesDefinitionFromJson( re, _path, cce.context, rootShape);
@@ -447,7 +445,7 @@ info(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 		}
 		for( String rid in ridList){
 			if( !containsRid(okList,rid)){
-				info(this,"Remove route:"+rid);
+				debug(this,"Remove route:"+rid);
 				cce.context.stopRoute(rid);
 				cce.context.removeRoute(rid);
 				def baseRouteId = Utils.getBaseRouteId(rid);
@@ -455,10 +453,10 @@ info(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 				removeProcedureShape(namespace+"/"+baseRouteId+"/");
 			}
 		}
-		info(this,"-->Context("+contextKey+"):status:"+cce.context.getStatus());
+		debug(this,"-->Context("+contextKey+"):status:"+cce.context.getStatus());
 		cce.context.getRouteDefinitions().each(){RouteDefinition rdef->
 			String rid = rdef.getId();
-			info(this,"\tRoute("+rid+"):status:"+cce.context.getRouteStatus(rid));
+			debug(this,"\tRoute("+rid+"):status:"+cce.context.getRouteStatus(rid));
 		}
 	}
 
@@ -607,15 +605,15 @@ info(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 
 	public static class SleepBean {
 		public void sleep(String body, Exchange exchange) throws Exception {
-			info(this,"SleepBean.start");
+			debug(this,"SleepBean.start");
 			Thread.sleep(500);
-			info(this,"SleepBean.end");
+			debug(this,"SleepBean.end");
 		}
 	}
 
 	protected void printRoutes(CamelContext camelContextObj) {
 		for (Endpoint e : camelContextObj.getEndpoints()) {
-			info(this,"Endpoint:" + e + "/" + e.getEndpointKey());
+			debug(this,"Endpoint:" + e + "/" + e.getEndpointKey());
 		}
 	}
 

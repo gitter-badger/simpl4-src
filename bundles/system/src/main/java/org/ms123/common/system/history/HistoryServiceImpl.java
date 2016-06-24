@@ -86,7 +86,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	}
 
 	public void handleEvent(Event event) {
-		info("HistoryServiceImpl.handleEvent: " + event + "/"+ event.getProperty(HISTORY_TYPE));
+		debug("HistoryServiceImpl.handleEvent: " + event + "/"+ event.getProperty(HISTORY_TYPE));
 		try {
 			String type = (String) event.getProperty(HISTORY_TYPE);
 			if( ACTIVITI_CAMEL_CORRELATION_TYPE.equals(type)){
@@ -98,7 +98,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 				Date time = new Date();
 				String hint = (String) event.getProperty(HISTORY_HINT);
 				String msg = (String) event.getProperty(HISTORY_MSG);
-				info("handleEvent:"+this.cassandraAccess);
+				debug("handleEvent:"+this.cassandraAccess);
 				if( this.cassandraAccess == null){
 					throw new RuntimeException("HistoryServiceImpl.handleEvent:cassandraAccess is null");
 				}
@@ -108,7 +108,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 			e.printStackTrace();
 		} finally {
 		}
-		info("HistoryServiceImpl.end");
+		debug("HistoryServiceImpl.end");
 	}
 
 
@@ -175,9 +175,9 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 			 ) throws RpcException {
 		try {
 			Map<String,List<Map>> ret = new LinkedHashMap<String,List<Map>>();
-			info("getRouteInstance.activitiId:"+activitiId);
+			debug("getRouteInstance.activitiId:"+activitiId);
 			Set<String> routeDefIds = this.cassandraAccess.getActivitiCamelCorrelation(activitiId);
-			info("getRouteInstance.routeDefIds:"+routeDefIds);
+			debug("getRouteInstance.routeDefIds:"+routeDefIds);
 			if( routeDefIds.size() == 0) return null;
 			for( String routeDefId : routeDefIds){	
 				String x[] = routeDefId.split("\\|");
@@ -197,7 +197,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 		System.out.println("HistoryServiceImpl.setCassandraService:" + cassandraService);
 		this.m_cassandraService = cassandraService;
 		this.cassandraAccess = new org.ms123.common.system.history.cql.CassandraAccessImpl(cassandraService);
-		info("HistoryServiceImpl.setCassandraService.cassandraAccess:"+this.cassandraAccess);
+		debug("HistoryServiceImpl.setCassandraService.cassandraAccess:"+this.cassandraAccess);
 	}
 }
 

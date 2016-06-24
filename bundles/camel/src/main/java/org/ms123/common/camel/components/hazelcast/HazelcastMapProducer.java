@@ -31,6 +31,7 @@ import org.apache.camel.component.hazelcast.HazelcastConstants;
 import org.apache.camel.component.hazelcast.HazelcastDefaultProducer;
 import org.ms123.common.camel.api.ExchangeUtils;
 import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class HazelcastMapProducer extends HazelcastDefaultProducer implements HazelcastConstantsOwn{
@@ -65,11 +66,10 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 
 
 		String oid = ExchangeUtils.getParameter(this.objectId, exchange, String.class, OPERATION);
-		info(this, "OID:" + oid);
 
 
 		String soperation = endpoint.parameters.get(OPERATION);
-		info(this, "OPERATION:" + soperation);
+		debug(this, "OID:" + oid+"\tOperation:"+soperation);
 		final int operation = Integer.parseInt(soperation);
 		switch (operation) {
 
@@ -106,7 +106,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 		if( this.cache == null){
 			this.cache = this.hazelcastInstance.getMap(this.cacheName);
 		}
-		info(this,"HazelcastMapProducer.hazelcastInstance:"+this.hazelcastInstance);
+		debug(this,"HazelcastMapProducer.hazelcastInstance:"+this.hazelcastInstance);
 		return this.cache;
 	}
 	/**

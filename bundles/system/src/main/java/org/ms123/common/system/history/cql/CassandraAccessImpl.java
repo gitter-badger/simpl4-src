@@ -90,7 +90,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 			}
 		}
 		UUID time = UUIDs.startOf(date.getTime());
-		info("upsertHistory:"+key+"/"+type);
+		debug("upsertHistory:"+key+"/"+type);
 		BoundStatement boundStatement = null;
 		boundStatement = new BoundStatement(insertHistory);
 		boundStatement.setString(0, key);
@@ -118,7 +118,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 	}
 
 	public List<Map> getHistory(String key, String type, Long startTime, Long endTime) throws Exception {
-		info("getHistory.start:"+key+"/"+type);
+		debug("getHistory.start:"+key+"/"+type);
 		final List<Map> retList = new ArrayList();
 		if (startTime == null) {
 			startTime = new Date().getTime() - (long) 1 * 1000 * 60 * 60 * 24;
@@ -137,7 +137,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 			statement.setUUID(2, uuidEnd);
 			ResultSet results = m_session.execute(statement);
 			List<Row> rows = results.all();
-			info("getHistory.results:"+rows.size());
+			debug("getHistory.results:"+rows.size());
 			for (Row row : rows) {
 				Map m = new HashMap();
 				String _key = row.getString("routeId") + "|" + row.getString("instanceId");
@@ -147,16 +147,16 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 					retList.addAll(lm);
 				}
 			}
-			info("getHistory.isfullyFetched:"+results.isFullyFetched());
+			debug("getHistory.isfullyFetched:"+results.isFullyFetched());
 		}else{
 			retList.addAll(getOneHistoryEntry(key, type));
 		}
-		info("getHistory.return:"+retList.size());
+		debug("getHistory.return:"+retList.size());
 		return retList;
 	}
 
 	private List<Map> getOneHistoryEntry(String key, String type) {
-		info("getOneHistoryEntry:"+key+"/"+type);
+		debug("getOneHistoryEntry:"+key+"/"+type);
 		List<Map> retList = new ArrayList();
 
 		BoundStatement statement = new BoundStatement(selectHistory);
@@ -172,7 +172,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 			m.put(HISTORY_MSG, row.getString(HISTORY_MSG));
 			retList.add(m);
 		}
-		info("getOneHistoryEntry.return:"+retList.size());
+		debug("getOneHistoryEntry.return:"+retList.size());
 		return retList;
 	}
 
@@ -186,7 +186,7 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 		for (Row row : results) {
 			 ret.add( row.getString("routeInstanceId"));
 		}
-		info("getActivitiCamelCorrelation:"+ret);
+		debug("getActivitiCamelCorrelation:"+ret);
 		return ret;
 	}
 

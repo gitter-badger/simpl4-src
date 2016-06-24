@@ -63,7 +63,7 @@ public class ThreadContext {
 		String sua = request.getHeader("user-agent");
 		if( sua == null) sua = "UNKNOWN";
 		UserAgent userAgent = UserAgent.parseUserAgentString(sua);
-		loadThreadContext( namespace, username,userAgent,sua);
+		loadThreadContext( namespace, cleanUserName(username),userAgent,sua);
 	}
 	public static void loadThreadContext(String namespace,String username,UserAgent ua, String sua) {
 		ThreadContext current = new ThreadContext();
@@ -100,6 +100,14 @@ public class ThreadContext {
 		m_threadLocal.set(current);
 	}
 
+	private static String SUBID_DELIM ="#";
+	private static String cleanUserName( String username){
+		if( username != null && username.indexOf( SUBID_DELIM ) >0 ){
+			String x[] = username.split(SUBID_DELIM);
+			username = x[0];
+		}
+		return username;
+	}
 	public void remove(){
 		m_threadLocal.remove();
 	}
@@ -118,6 +126,12 @@ public class ThreadContext {
 	}
 	public Date getStartTime() {
 		return startTime;
+	}
+	public void setProperties(Map props){
+		m_properties = props;
+	}
+	public Map getProperties(){
+		return m_properties;
 	}
 	public void put(String key, Object value){
 		m_properties.put(key,value);

@@ -97,7 +97,7 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 				throw new RpcException(JsonRpcServlet.ERROR_FROM_SERVER, JsonRpcServlet.PARAMETER_MISMATCH, "Method("+methodName+"):Namespace not found");
 			}
 		}
-		info(this,"Namespace/Procedure:"+namespace+"/"+methodName);
+		info(this,"procedure:"+namespace+"."+methodName);
 		info(this,"methodParams:"+methodParams);
 		String fqMethodName = namespace+"."+methodName;
 		Map shape  = this.getProcedureShape(namespace,methodName );
@@ -165,7 +165,7 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 		properties.put("__logExceptionsOnly", getBoolean(shape, "logExceptionsOnly", false));
 		properties.put("_namespace",namespace);
 		properties.put("_method",methodName);
-		info(this,"methodParams:" + methodParams);
+		debug(this,"methodParams:" + methodParams);
 		debug(this,"paramList:" + paramList);
 		debug(this,"properties:" + properties);
 		debug(this,"headers:" + headers);

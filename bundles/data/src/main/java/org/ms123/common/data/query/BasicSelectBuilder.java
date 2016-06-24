@@ -311,6 +311,7 @@ public abstract class BasicSelectBuilder {
 			return exists + " (" + select + ")";
 		}
 		if (c == null) {
+			debug("configMap:"+configMap);
 			throw new RuntimeException("Query:Field \"" + fieldname + "\" not found in " + m_sdesc + "/" + entityName);
 		}
 		Object data = rule.get("data");
