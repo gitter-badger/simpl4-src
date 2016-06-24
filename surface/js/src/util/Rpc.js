@@ -146,6 +146,13 @@ clazz.construct.extend( "simpl4.util.Rpc", {
 		if ( config.failed != null ) {
 			req.error = config.failed
 			req.context = config.context;
+		}else{
+			req.context = config.context;
+			req.error = function( data, status ) {
+				ret = {};
+				ret.error = {};
+				ret.error.message = data.statusText+"("+data.status+")";
+			}
 		}
 		var username = simpl4.util.Rpc._getUserName();
 		var password = simpl4.util.Rpc._getPassword();

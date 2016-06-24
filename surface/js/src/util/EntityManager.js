@@ -276,7 +276,6 @@ simpl4.util.BaseManager.extend( "simpl4.util.EntityManager", {
 					} );
 				}
 			} catch ( e ) {
-				console.log( "e;", e );
 				this._error( "EntityManager.getEntityViewFields", e );
 			}
 			if ( build !== false ) {
