@@ -61,6 +61,7 @@ import org.ms123.common.rpc.PDefaultString;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
+import org.ms123.common.rpc.CallService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import java.util.regex.Pattern;
@@ -76,6 +77,7 @@ import static org.ms123.common.libhelper.Utils.listToList;
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=permission" })
 public class PermissionServiceImpl extends BasePermissionServiceImpl implements org.ms123.common.permission.api.PermissionService {
 
+	private String SUBID_DELIM = "#";
 	protected MetaData m_gitMetaData;
 	protected boolean m_isRuntimeSystem;
 
@@ -132,7 +134,7 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 			gresult.add(rmap);
 		}
 	}
-	private List<Map> getPermissions(Map userProps, String filter){
+	private List<Map> getPermissions(Map userProps, List<String> additionalRoles, String filter){
 		List<Map> permissions = new ArrayList();
 		Pattern p = null;
 		if( filter != null){
@@ -144,6 +146,16 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 		String rs = (String) userProps.get(ROLES);
 		if (rs != null && rs.length() > 0) {
 			roleList = Arrays.asList(rs.split("\\s*,\\s*"));
+		}
+		if( additionalRoles != null){
+			if( roleList == null){
+				roleList = additionalRoles;
+			}else{
+				List<String> newList = new ArrayList<String>();
+				newList.addAll( roleList);
+				newList.addAll( additionalRoles);
+				roleList = newList;
+			}
 		}
 		debug("roleList:" + roleList);
 		if (roleList != null) {
@@ -178,7 +190,14 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 	}
 
 	public boolean login(String namespace, String username, String password) {
-		info("PermissionServiceImpl:login:" + username + "/" + password + "/namespace:" + namespace+"/RC:"+org.ms123.common.system.thread.ThreadContext.getThreadContext());
+		info("login:" + username + "/" + password + "/namespace:" + namespace);
+
+		String subId = null;
+		if( username.indexOf( SUBID_DELIM ) >0 ){
+			String x[] = username.split(SUBID_DELIM);
+			username = x[0];
+			subId = x[1];
+		}
 		if( org.ms123.common.system.thread.ThreadContext.getThreadContext() == null ){
 			org.ms123.common.system.thread.ThreadContext.loadThreadContext(namespace,username);	
 		}
@@ -199,7 +218,7 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 			info("1.There is no user with username of " + username);
 			return false;
 		}
-		debug("PermissionServiceImpl.login:"+userProps);
+		debug("login:"+userProps);
 		String _password = (String)userProps.get("password");
 		if( _password != null){
 			if( password == null) password="";
@@ -213,13 +232,17 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 			sa.addRole("global.guest");
 		}
 		
+		List<String> additionalRoles=null;
+		if( subId != null  ){
+			additionalRoles = lookForAdditionalRoles(namespace,subId);
+		}
 		boolean isAdmin = getBoolean(userProps.get("admin"), false);
 		if (isAdmin) {
 			sa.addRole("admin");
 		} else {
 			try {
 				//List<Map> permissions = getPermissions(userProps, "^.*:entities:.*");
-				List<Map> permissions = getPermissions(userProps, null);
+				List<Map> permissions = getPermissions(userProps, additionalRoles, null);
 				Iterator<Map> pit = permissions.iterator();
 				while (pit.hasNext()) {
 					Map p = pit.next();
@@ -243,7 +266,6 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 				return false;
 			}
 		}
-		System.out.println("isAdmin:" + isAdmin);
 		MyRealm realm = new MyRealm();
 		realm.add(sa);
 		DefaultSecurityManager sm = createSecurityManager(realm);
@@ -397,6 +419,13 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 	public void setNamespaceService(NamespaceService nss) {
 		System.out.println("PermissionServiceImpl.setNamespaceService:" + nss);
 		m_isRuntimeSystem = nss.isRuntimeSystem();
+		m_namespaceService = nss;
+	}
+
+	@Reference(dynamic = true, optional=true)
+	public void setCallService(CallService callService) {
+		System.out.println("PermissionServiceImpl.setCallService:" + callService);
+		m_callService = callService;
 	}
 
 	@Reference(dynamic = true, optional = true)

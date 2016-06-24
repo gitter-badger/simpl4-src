@@ -64,8 +64,7 @@ public class LoginFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 		String pathInfo = request.getPathInfo();
 		infob("\n\n<==========================================> ");
-		info("doFilter -> " + pathInfo);
-		infob("date: " + new Date());
+		info("doFilter -> " + request.getRequestURL());
 		Enumeration headerNames = request.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
 			String headerName = (String) headerNames.nextElement();
@@ -162,8 +161,14 @@ public class LoginFilter implements Filter {
 			}
 		}
 
-		info(pathInfo + ";" + credentials + "/ok:" + ok + "/accessRule:"+accessRule);
-		if (ok || checkCredentials(namespace, credentials, false)) {
+		info("State before credentails check:"+ok);
+		RequestMapper rm = new RequestMapper(request);
+		ThreadContext.loadThreadContext(rm, response);
+		if (!ok ) {
+			info("Check -> " + credentials);
+			ok = checkCredentials(namespace, credentials, false);
+		}
+		if (ok) {
 			if (accessRule != null) {
 				String username = (String) req.getAttribute(USERNAME);
 				if (!m_permissionService.isFileAccesPermitted(username, (List) accessRule.get(PermissionService.PERMITTED_USERS), (List) accessRule.get(PermissionService.PERMITTED_ROLES))) {
@@ -171,11 +176,7 @@ public class LoginFilter implements Filter {
 					return;
 				}
 			}
-			info(">>>> OK," + Thread.currentThread().getName());
-			RequestMapper rm = new RequestMapper(request);
-			ThreadContext.loadThreadContext(rm, response);
-			info(request.getPathInfo() + "|" + request.getMethod() + "|Uri:" + request.getRequestURI());
-			info(request.getRequestURL() + "|Url:" + request.getServletPath() + "|QS:" + request.getQueryString());
+			info(">>>> OK -> "+request.getRequestURL() + "\tQueryString:" + request.getQueryString()+ "\tMethod:"+request.getMethod());
 			chain.doFilter(rm, response);
 			info(">>>> End FILTER:" + ThreadContext.getThreadContext().get(ThreadContext.SESSION_MANAGER) + "/" + new Date().getTime());
 			Date startTime = ThreadContext.getThreadContext().getStartTime();
@@ -183,6 +184,7 @@ public class LoginFilter implements Filter {
 			ThreadContext.getThreadContext().remove();
 			displayInfo("Finish", startTime);
 		} else {
+			ThreadContext.getThreadContext().remove();
 			info("==== NOK");
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		}

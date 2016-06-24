@@ -25,6 +25,9 @@ public interface Constants {
 	public static String GLOBAL = "global";
 
 	public static String ROLES = "roles";
+	public static String ADDITIONAL_ROLES = "additionalRoles";
+	public static String SUB_LOGIN = "subLogin";
+	public static String SUB_ID = "subId";
 
 	public static String ADMIN_ROLE = "admin";
 

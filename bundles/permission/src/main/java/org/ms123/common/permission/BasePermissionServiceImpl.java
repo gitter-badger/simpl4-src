@@ -46,6 +46,8 @@ import org.ms123.common.git.GitService;
 import org.ms123.common.store.StoreDesc;
 import org.apache.shiro.authz.Permission;
 import org.mvel2.MVEL;
+import org.ms123.common.rpc.CallService;
+import org.ms123.common.namespace.NamespaceService;
 import org.springframework.util.AntPathMatcher;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import org.slf4j.Logger;
@@ -60,6 +62,8 @@ class BasePermissionServiceImpl implements Constants {
 	protected AuthService m_authService;
 
 	protected GitService m_gitService;
+	protected CallService m_callService;
+	protected NamespaceService m_namespaceService;
 
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 
@@ -223,7 +227,7 @@ class BasePermissionServiceImpl implements Constants {
 			for (String roleid : roleList) {
 				String[] s = roleid.split("\\.");
 				if (s.length != 2) {
-					debug("PermissionServiceImpl.getUserRoles:wrong roleid:" + roleid);
+					debug("getUserRoles:wrong roleid:" + roleid);
 					continue;
 				}
 				roleListRet.add(roleid);
@@ -231,6 +235,10 @@ class BasePermissionServiceImpl implements Constants {
 		}
 		if( !roleListRet.contains("global.guest")){
 			roleListRet.add("global.guest");
+		}
+		List<String>	addRoles = (List)org.ms123.common.system.thread.ThreadContext.getThreadContext().get(ADDITIONAL_ROLES);
+		if( addRoles != null ){
+			roleListRet.addAll( addRoles );
 		}
 		debug("Permission.getUser.roleList("+userid+"):" + roleListRet);
 		return roleListRet;
@@ -241,7 +249,7 @@ class BasePermissionServiceImpl implements Constants {
 		try{
 			userRoleList = getUserRoles(userName);
 		}catch(Exception e){
-			error("BasePermissionServiceImpl.getUserRoles", e);
+			error("getUserRoles", e);
 			return false;
 		}
 		info("UserRoleList:" + userRoleList);
@@ -292,6 +300,26 @@ class BasePermissionServiceImpl implements Constants {
 			}
 		}
 		return null;
+	}
+	protected List<String> lookForAdditionalRoles(String namespace, String subid){
+		String service = (String)m_namespaceService.getBranding().get(SUB_LOGIN);
+		service = getFqServiceName( namespace, service );
+		Map<String, String> params = new HashMap<String,String>();
+		params.put(SUB_ID, subid );
+		List<String> roles = (List)m_callService.callCamel( service, params);
+		info("lookForAdditionalRoles.adding:"+roles);
+		if( roles != null){
+			org.ms123.common.system.thread.ThreadContext.getThreadContext().put(ADDITIONAL_ROLES, roles );
+		}
+		return roles;
+	}
+
+
+	private String getFqServiceName( String namespace, String service ){
+		if( service.indexOf(".") == -1 &&  !"xyz".equals(namespace)){
+			service = namespace + "."+ service;
+		}
+		return service;
 	}
 
 	protected void debug(String msg) {
