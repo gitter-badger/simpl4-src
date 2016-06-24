@@ -555,7 +555,7 @@
 				}
 
 				var valid = this.$.formid.validate();
-				console.log( "saveAction.valid:" + valid );
+				console.log( "saveAction.valid("+valid+"):" , data );
 				if ( !valid ) {
 					this.toast_message = tr( "widgets.table.form_incomplete" );
 					this.querySelector( "#toast" ).show();

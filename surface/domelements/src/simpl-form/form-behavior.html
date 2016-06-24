@@ -185,7 +185,7 @@
 			return f.label;
 		},
 		dataChanged: function() {
-			console.debug("dataChanged:",this.data);
+			console.debug("form.dataChanged:",this.data);
 			this.whenFieldsReady( ( function() {
 				if ( this.preProcessData ) {
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
