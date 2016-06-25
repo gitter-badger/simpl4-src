@@ -42,6 +42,15 @@ clazz.construct.extend( "simpl4.util.PageRegistry", {
 		}
 		return ret;
 	},
+	getPageByHash: function( hash ) {
+		var pages = simpl4.util.PageRegistry.getPages();
+		for ( var i = 0; i < pages.length; i++ ) {
+			if ( pages[ i ].hash == hash ) {
+				return pages[ i ];
+			}
+		}
+		return null;
+	},
 	setActivePage:function(ap){
 		this.activePage=ap;
 	},

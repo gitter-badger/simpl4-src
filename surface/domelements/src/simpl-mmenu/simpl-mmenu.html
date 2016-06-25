@@ -189,6 +189,7 @@
 				if ( browser.name != "ie" || ( browser.major != "9" && browser.major != "10" ) ) {
 					Polymer.dom( li ).appendChild( pr )
 				}
+				node.element = a;
 				Polymer.dom( a ).appendChild( icon );
 				Polymer.dom( a ).setAttribute( "style", 'cursor:pointer' );
 				Polymer.dom( a ).appendChild( t );

@@ -36,22 +36,15 @@
 					type: String
 				}
 			},
-			ready: function() {
-			},
 			attached: function() {
 				this.async( function() {
 					this._attached();
 				} );
 			},
 			_attached: function() {
-				this._mmenu = document.querySelectorAll( this.shadowRoot ? "html /deep/ simpl-mmenu" : "simpl-mmenu" )[ 0 ];
-				this._mmenuRoot = Polymer.dom( this._mmenu.root );
-				var aList = this._mmenuRoot.querySelectorAll( "a" );
-				for ( var i = 0; i < aList.length; i++ ) {
-					var a = aList[ i ];
-					if ( a[ "className" ] != "mm-subopen" ) {
-						$( a ).tap( this.tapListener.bind( this ), false );
-					}
+				var pages = simpl4PageRegistry.getPages( );
+				for( var p = 0; p< pages.length;p++){
+					$( pages[p].element ).tap( this.tapListener.bind( this ), false );
 				}
 				if ( this.selected ) {
 					var self = this;
@@ -87,14 +80,6 @@
 				} );
 				this.selected = page.hash;
 			},
-			getPageByHash: function( hash ) {
-				var pages = simpl4PageRegistry.getPages();
-				for ( var i = 0; i < pages.length; i++ ) {
-					if ( pages[ i ].hash == hash ) {
-						return pages[ i ];
-					}
-				}
-			},
 			selectMenuItem: function(  hash ) {
 				if ( this._mmenuRoot == null ) return;
 				var li = $( this._mmenuRoot.querySelector( '#x' + hash ) );
@@ -111,7 +96,7 @@
 			},
 			selectedChanged: function( e ) {
 				if ( this._selectedPage == null || this.selected != this._selectedPage.hash ) {
-					var page = this.getPageByHash( this.selected );
+					var page = simpl4PageRegistry.getPageByHash( this.selected );
 					if ( page ) {
 						this._selectedPage = page;
 						simpl4PageRegistry.setActivePage( page );
@@ -128,13 +113,12 @@
 				for ( var i = 0; i < aList.length; i++ ) {
 					var a = aList[ i ];
 					var href = a.getAttribute("href");
-						console.log("Dispatcher.href:",href);
 					if( href.match(/^local.*/)){
 						var page = simpl4PageRegistry.getPage( href.substring("local:".length));
-						console.log("Dispatcher.filterLocalLinks.page:",page);
 						if( page){
 							a.removeAttribute("href");
 							a.page = page;
+							a.element=a;
 							$( a ).tap( this.tapListener.bind( this ), false );
 						}
 					}else if( href.startsWith("#_")){
