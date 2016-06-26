@@ -88,12 +88,22 @@
 			getMenuApi: function() {
 				return $( this._mainmenu ).data( "mmenu" );
 			},
-			setSelected: function( e ) {
-				//console.log( "setSelected:", e );
-				$( this._mainmenu ).data( "mmenu" ).setSelected( e );
+			setSelected: function( page ) {
+				console.log( "setSelected:", page );
+
+				var li = $( document.querySelector( '#x' + page.hash ) );
+				var i = 0;
+				var $e = li.parent();
+				while ( $e.length>0 && i++ < 10 ) {
+					if ( $e.prop( "tagName" ) === "DIV" ) {
+						this.openPanel( $e );
+						break;
+					}
+					var $e = $e.parent();
+				}
+				$( this._mainmenu ).data( "mmenu" ).setSelected( li );
 			},
 			openPanel: function( e ) {
-				//console.log( "openPanel:", e );
 				$( this._mainmenu ).data( "mmenu" ).openPanel( e );
 			},
 			_createMenu: function() {
@@ -189,9 +199,10 @@
 				if ( browser.name != "ie" || ( browser.major != "9" && browser.major != "10" ) ) {
 					Polymer.dom( li ).appendChild( pr )
 				}
-				node.element = a;
 				Polymer.dom( a ).appendChild( icon );
 				Polymer.dom( a ).setAttribute( "style", 'cursor:pointer' );
+				Polymer.dom( a ).setAttribute( "id", "hash_" + node.hash );
+				Polymer.dom( a ).classList.add( 'menuentry' )
 				Polymer.dom( a ).appendChild( t );
 				Polymer.dom( li ).setAttribute( "style", 'list-style:none' );
 				Polymer.dom( li ).setAttribute( "id", "x" + node.hash );
@@ -199,6 +210,7 @@
 					Polymer.dom( li ).classList.add( 'firstLevel' )
 				}
 				a.page = node;
+				node.provider = this;
 			},
 			_createIcon: function( node ) {
 				var icon = null;
@@ -254,7 +266,6 @@
 				}
 				var pages = [];
 				this._traverse( nodes,pages );
-				simpl4PageRegistry.addPages( pages );
 				return nodes;
 			},
 			_traverse: function( nodes,pages ) {

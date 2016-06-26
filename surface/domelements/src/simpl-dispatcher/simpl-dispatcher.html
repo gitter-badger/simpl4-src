@@ -42,9 +42,10 @@
 				} );
 			},
 			_attached: function() {
-				var pages = simpl4PageRegistry.getPages( );
-				for( var p = 0; p< pages.length;p++){
-					$( pages[p].element ).tap( this.tapListener.bind( this ), false );
+				var menuEntries = document.querySelectorAll( "a.menuentry" );
+				for ( var i = 0; i < menuEntries.length; i++ ) {
+					var a = menuEntries[ i ];
+					$( menuEntries[i] ).tap( this.tapListener.bind( this ), false );
 				}
 				if ( this.selected ) {
 					var self = this;
@@ -59,48 +60,40 @@
 					$("#mainContainer").animate({ scrollTop: $(target.params.id).offset().top }, 1000);
 					return;
 				}
-				if ( e.target[ "className" ] == "mm-subopen" ) {
-					return;
-				}
 				var page = e.target.page;
 				if ( !page ){
 					 return;
 				}
 				if ( this._selectedPage ) {
-					this.fire( "mmenu-selected", {
+					this.fire( "menu-selected", {
 						isSelected: false,
 						page: this._selectedPage
 					} );
 				}
 				this._selectedPage = page;
-				simpl4PageRegistry.setActivePage( page );
-				this.fire( "mmenu-selected", {
+				this.fire( "menu-selected", {
 					isSelected: true,
 					page: this._selectedPage
 				} );
 				this.selected = page.hash;
 			},
+			getPageByHash:function(hash){
+				var e = document.querySelector( '#hash_' + hash  );
+				return e.page;
+			},
+			getActivePage:function(){
+				return this._selectedPage;
+			},
 			selectMenuItem: function(  hash ) {
-				if ( this._mmenuRoot == null ) return;
-				var li = $( this._mmenuRoot.querySelector( '#x' + hash ) );
-				var i = 0;
-				var $e = li.parent();
-				while ( $e.length>0 && i++ < 10 ) {
-					if ( $e.prop( "tagName" ) === "DIV" ) {
-						this._mmenu.openPanel( $e );
-						break;
-					}
-					var $e = $e.parent();
-				}
-				this._mmenu.setSelected( li );
+				var page = this.getPageByHash( hash );
+				page.provider.setSelected( page );
 			},
 			selectedChanged: function( e ) {
 				if ( this._selectedPage == null || this.selected != this._selectedPage.hash ) {
-					var page = simpl4PageRegistry.getPageByHash( this.selected );
+					var page = this.getPageByHash( this.selected );
 					if ( page ) {
 						this._selectedPage = page;
-						simpl4PageRegistry.setActivePage( page );
-						this.fire( "mmenu-selected", {
+						this.fire( "menu-selected", {
 							isSelected: true,
 							page: this._selectedPage
 						} );
@@ -114,7 +107,7 @@
 					var a = aList[ i ];
 					var href = a.getAttribute("href");
 					if( href.match(/^local.*/)){
-						var page = simpl4PageRegistry.getPage( href.substring("local:".length));
+						var page = this.getPageByHash( href.substring("local:".length));
 						if( page){
 							a.removeAttribute("href");
 							a.page = page;

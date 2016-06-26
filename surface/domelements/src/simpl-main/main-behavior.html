@@ -86,7 +86,12 @@
 			return {};
 		},
 		getPages: function() {
-			return simpl4PageRegistry.getPages();
+			var menuEntries = document.querySelectorAll( "a.menuentry" );
+			var pages = [];
+			for ( var i = 0; i < menuEntries.length; i++ ) {
+				pages.push( menuEntries[ i ].page );
+			}
+			return pages;
 		},
 		attached: function() {
 			this.async( function() {
@@ -107,7 +112,7 @@
 			//				this.signInOutIcon="system-update-alt";
 			this.keys = this.$.keys;
 			// Allow selecting pages by num keypad. 
-			var pages = simpl4PageRegistry.getPages();
+			/*var pages = simpl4PageRegistry.getPages();
 			if( pages==null || pages.length==0) return;	
 			var keysToAdd = Array.apply( null, pages ).map( function( x, i ) {
 				return i + 1;
@@ -116,7 +121,7 @@
 			} );
 			if ( this.keys ) {
 				this.keys += ' ' + keysToAdd;
-			}
+			}*/
 
 			//console.log( "location:" + window.location );
 			//console.log( "init.route:" + this.route );
@@ -157,7 +162,7 @@
 			}
 		},
 		togglePanel: function() {
-//			this.drawerPanel.openLeftDrawer();
+			//			this.drawerPanel.openLeftDrawer();
 		},
 		keyHandler: function( e, detail, sender ) {
 			var num = parseInt( detail.key );
@@ -209,17 +214,21 @@
 			var head = _import.head;
 
 			var newToolbarBottom = body.querySelector( ".toolbar.bottom" );
-			this.setToolbarClass( newToolbarBottom );
-			this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;
-			if ( newToolbarBottom == null ) {
-				newToolbarBottom = this.getEmptyToolbarBottom();
+			if ( newToolbarBottom != null ) {
+				this.setToolbarClass( newToolbarBottom );
+				this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;
+				if ( newToolbarBottom == null ) {
+					newToolbarBottom = this.getEmptyToolbarBottom();
+				}
 			}
 			var toolbarBottom = this.querySelector( "div.toolbar.bottom" );
-			toolbarBottom.parentNode.replaceChild( newToolbarBottom, toolbarBottom );
-			var buttons = newToolbarBottom.querySelectorAll( "[on-tap]" );
-			for ( var i = 0; i < buttons.length; i++ ) {
-				var button = buttons[ i ];
-				button.addEventListener( 'tap', this.externalButtonEventHandler );
+			if ( toolbarBottom != null ) {
+				toolbarBottom.parentNode.replaceChild( newToolbarBottom, toolbarBottom );
+				var buttons = newToolbarBottom.querySelectorAll( "[on-tap]" );
+				for ( var i = 0; i < buttons.length; i++ ) {
+					var button = buttons[ i ];
+					button.addEventListener( 'tap', this.externalButtonEventHandler );
+				}
 			}
 
 			this.pageCache[ this.selectedPage.url ] = true;
@@ -289,6 +298,7 @@
 		},
 		setToolbarClass: function( newToolbarBottom ) {
 			var mainToolbar = this.querySelector( "#mainToolbar" );
+			if ( mainToolbar == null ) return;
 			if ( newToolbarBottom == null ) {
 				mainToolbar.classList.remove( "medium-tall" );
 				mainToolbar.classList.remove( "small" );

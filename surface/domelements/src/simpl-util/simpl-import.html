@@ -103,7 +103,8 @@
 				}, 50 );
 			},
 			setScope: function( insertPoint ) {
-				var page = simpl4PageRegistry.getActivePage();
+				var d = document.querySelector("simpl-dispatcher");
+				var page = d.getActivePage();
 				if( page == null) return;
 				var scope = page.scope;
 				if ( this.isAsciidoc( this.url ) && scope == null ) {

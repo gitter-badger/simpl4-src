@@ -48,7 +48,8 @@
 			attached: function( filter ) {
 			},
 			dataChanged: function( filter ) {
-				var page = simpl4PageRegistry.getActivePage();
+				var d = document.querySelector("simpl-dispatcher");
+				var page = d.getActivePage();
 				var scope = this.scope || page.scope || "asciidoctor-default";
 				this.selectedPage = {
 					scope:scope
