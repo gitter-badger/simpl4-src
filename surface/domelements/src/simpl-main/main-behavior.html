@@ -107,7 +107,9 @@
 			//				this.signInOutIcon="system-update-alt";
 			this.keys = this.$.keys;
 			// Allow selecting pages by num keypad. 
-			var keysToAdd = Array.apply( null, simpl4PageRegistry.getPages() ).map( function( x, i ) {
+			var pages = simpl4PageRegistry.getPages();
+			if( pages==null || pages.length==0) return;	
+			var keysToAdd = Array.apply( null, pages ).map( function( x, i ) {
 				return i + 1;
 			} ).reduce( function( x, y ) {
 				return x + ' ' + y;
