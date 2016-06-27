@@ -79,14 +79,16 @@
 			},
 			getPageByHash:function(hash){
 				var e = document.querySelector( '#hash_' + hash  );
-				return e.page;
+				return e ? e.page : null;
 			},
 			getActivePage:function(){
 				return this._selectedPage;
 			},
 			selectMenuItem: function(  hash ) {
 				var page = this.getPageByHash( hash );
-				page.provider.setSelected( page );
+				if( page != null){
+					page.provider.setSelected( page );
+				}
 			},
 			selectedChanged: function( e ) {
 				if ( this._selectedPage == null || this.selected != this._selectedPage.hash ) {

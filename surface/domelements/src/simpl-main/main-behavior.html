@@ -214,12 +214,10 @@
 			var head = _import.head;
 
 			var newToolbarBottom = body.querySelector( ".toolbar.bottom" );
-			if ( newToolbarBottom != null ) {
-				this.setToolbarClass( newToolbarBottom );
-				this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;
-				if ( newToolbarBottom == null ) {
-					newToolbarBottom = this.getEmptyToolbarBottom();
-				}
+			this.setToolbarClass( newToolbarBottom );
+			this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;
+			if ( newToolbarBottom == null ) {
+				newToolbarBottom = this.getEmptyToolbarBottom();
 			}
 			var toolbarBottom = this.querySelector( "div.toolbar.bottom" );
 			if ( toolbarBottom != null ) {
