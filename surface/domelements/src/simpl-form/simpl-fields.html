@@ -1367,7 +1367,7 @@
 				this.value = val;
 				this.fire( 'value-changed', this );
 			},
-			selectize: function() {
+			createSelectize: function() {
 				if( this.multiple === true){
 					this.maxItems = 1000;
 				}
@@ -1424,7 +1424,7 @@
 				if ( this.compact ) {
 					this.compactChanged();
 				}
-				this.selectize();
+				this.createSelectize();
 				this.selectizeControl = this.$.decorator.querySelector( ".selectize-control" );
 //					jQuery( this.selectizeControl ).css( "pointer-events", "none" );
 			},
