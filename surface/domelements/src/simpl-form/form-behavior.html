@@ -506,7 +506,8 @@
 			shape = this.cleanShape( shape );
 
 			if ( shape.id == 'Input' ) {
-				shape.regulaConstraints = this.constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType( shape.xf_type ) ] );
+console.log("shape:",shape);
+				shape.regulaConstraints = this.constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType( shape.xf_type ) ], shape.xf_errormsg );
 			}
 
 			shape.childShapes = _.sortBy( shape.childShapes, function( element ) {
@@ -772,7 +773,7 @@
 			console.log( "====selectionList:", selectionList );
 			return selectionList;
 		},
-		constructRegulaConstraints: function( constraints ) {
+		constructRegulaConstraints: function( constraints, msg ) {
 			if ( constraints == null || constraints.length == 0 ) return "";
 			constraints = JSON.parse( constraints );
 			var ret = "";
@@ -785,7 +786,14 @@
 					ret += b + '@' + self.mapKeys( key );
 					var params = self.constraintParams[ key ];
 
-					ret += '(message="' + tr( "validation." + self.mapKeys( key ) ) + '"';
+					if( msg ){
+						if ( msg && msg.match( /^[@%]/ ) ) {
+							msg = tr( msg.substring( 1 ) );
+						}
+					}else{
+						msg = tr( "validation." + self.mapKeys( key ) );
+					}
+					ret += '(message="' + msg + '"';
 					if ( params && params.length > 0 ) {
 						var pkey = params[ 0 ];
 						var val = pkey == 'format' ? '"YMD"' : values[ 1 ];
