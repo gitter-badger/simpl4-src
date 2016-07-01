@@ -99,44 +99,52 @@
 			for ( var i = 0; i < rows.length; i++ ) {
 					$( rows[ i ] ).swipe(  {
 					tap:function(event, target) {
-						self.tapAction($(target).closest("tr"), false);
+						self.tapAction(self.getIndex(target), $(target).closest("tr"), false);
 					},
-					doubleTap:function(target) {
-						self.tapAction($(target).closest("tr"),true);
+					doubleTap:function(event, target) {
+						self.tapAction(self.getIndex(target), $(target).closest("tr"),true);
 					},
 					threshold:50
 				});
 			}
 		},
-		tapAction:function( row, doubleTap){
+		tapAction:function( index, row, doubleTap){
 			this.currentRowIndex = row.index();
 			if ( this.multiSelect ) {
-				this.tapActionMulti( row, doubleTap );
+				this.tapActionMulti( index, row, doubleTap );
 			} else {
-				this.tapActionSingle( row, doubleTap );
+				this.tapActionSingle( index, row, doubleTap );
 			}
 		},
-		tapActionSingle: function( row, doubleTap ) {
+		tapActionSingle: function( index, row, doubleTap ) {
 			if ( $( row ).hasClass( 'selected' ) ) {
-				return;
+		//		return;
 			}
 			this.unselectAll();
 			$( row ).addClass( 'selected' );
 			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
+				dt:this,
 				doubleTap:doubleTap,
+				index:index,
 				rows: sel
 			} );
 			this.selection = sel;
 		},
-		tapActionMulti: function(row, doubleTap ) {
+		tapActionMulti: function(index, row, doubleTap ) {
 			$( row ).toggleClass( 'selected' );
 			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
+				dt:this,
 				doubleTap:doubleTap,
+				index:index,
 				rows: sel
 			} );
 			this.selection = sel;
+		},
+		getIndex:function( target ){
+			var closest = $(target).closest("td");
+			return this._api.cell(closest).index();
 		},
 		getSelection: function() {
 			return this.selection;
