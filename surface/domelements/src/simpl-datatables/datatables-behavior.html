@@ -93,6 +93,9 @@
 			$( this.root.querySelectorAll( "table.dataTables" ) ).attr( "id", "dataTablesId" );
 			this.createRowListener();
 		},
+		getApi:function(){
+			return this._api;
+		},
 		createRowListener: function() {
 			var self = this;
 			var rows = this._api.rows().nodes();
