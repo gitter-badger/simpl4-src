@@ -7,10 +7,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-media-query/iron-media-query.html">
-<link rel="import" href="../iron-selector/iron-selector.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 
 <!--
 Material design: [Navigation drawer](https://www.google.com/design/spec/patterns/navigation-drawer.html)
@@ -895,7 +891,8 @@ console.log("toggleLeftPanel.main:",this._isMainSelected());
         },
 
         _onQueryMatchesChanged: function(event) {
-          switch (event.srcElement.id) {
+					var target = event.target || event.srcElement;
+          switch (target.id) {
             case 'mqResponsiveWidth':
               this._responsiveChange(event.detail.value, 'narrow');
               break;
