@@ -108,7 +108,7 @@
 				for ( var i = 0; i < aList.length; i++ ) {
 					var a = aList[ i ];
 					var href = a.getAttribute("href");
-					if( href.match(/^local.*/)){
+					if( href && href.match(/^local.*/)){
 						var page = this.getPageByHash( href.substring("local:".length));
 						if( page){
 							a.removeAttribute("href");
