@@ -313,6 +313,7 @@ is selected. This way, no video will play when the dialog is closed.
 				var pdf = document.createElement( 'simpl-pdfviewer' );
 				pdf.file = it.src;
 				pdf.height = "100%";
+				pdf.style = "position:absolute;";
 				this._replaceMedia( pdf );
 			},
 			_displayImage: function( it ) {
@@ -362,7 +363,7 @@ is selected. This way, no video will play when the dialog is closed.
 				}
 				var strategy = this._strategies[ it.type ];
 				if ( !strategy ) {
-					console.warn( "[simpl-lightbox] Cannot display media of type", it.type );
+//					console.warn( "[simpl-lightbox] Cannot display media of type", it.type );
 					return;
 				}
 				if ( typeof strategy === 'function' ) {
