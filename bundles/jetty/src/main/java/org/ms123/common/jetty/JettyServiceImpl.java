@@ -128,6 +128,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 	private static Map<String, String> createFiletypeMap() {
 		Map<String, String> result = new HashMap<String, String>();
 		result.put("json", "application/json");
+		result.put("pdf", "image/pdf");
 		result.put("json.gz", "application/json");
 		result.put("yaml", "text/x-yaml");
 		result.put("yml", "text/x-yaml");
