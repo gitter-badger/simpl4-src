@@ -43,6 +43,7 @@ task stage (type:Task) {
 		fileset(file:'libs/jsonpath.js')
 		fileset(file:'libs/selectize.js')
 		fileset(file:'libs/jquery.pep.js')
+		fileset(file:'libs/jquery.scrollTo.js')
 		fileset(file:'libs/sugar.dev.js')
 		fileset(file:'libs/esprima.js')
 		fileset(file:'libs/metaes.js')
