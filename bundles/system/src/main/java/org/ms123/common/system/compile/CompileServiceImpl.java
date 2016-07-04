@@ -87,6 +87,14 @@ public class CompileServiceImpl extends BaseCompileServiceImpl implements Compil
 		}
 	}
 
+	@RequiresRoles("admin")
+	public List<Map> compileJavaNamespace( @PName("namespace") String namespace) throws RpcException {
+		try {
+			return _compileJavaNamespace(namespace);
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "CompileServiceImpl.javacompile:",e);
+		}
+	}
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
 		System.out.println("CompileServiceImpl.setGitService:" + gitService);

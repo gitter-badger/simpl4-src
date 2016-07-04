@@ -154,7 +154,7 @@ abstract class BaseCompileServiceImpl {
 		for (Map<String, String> repo : repos) {
 			String namespace = repo.get("name");
 			info(this, "Compile in " + namespace + ":");
-			List<Map> resultList = compileJavaNamespace(namespace);
+			List<Map> resultList = _compileJavaNamespace(namespace);
 			for (Map<String, String> result : resultList) {
 				info(this, "CompileJava:" + result.get(PATH) + " -> " + result.get(MSG));
 			}
@@ -172,7 +172,7 @@ abstract class BaseCompileServiceImpl {
 		}
 	}
 
-	public List<Map> compileJavaNamespace(String namespace) {
+	public List<Map> _compileJavaNamespace(String namespace) {
 		return compileJavaNamespace(namespace, m_bundleContext.getBundle());
 	}
 

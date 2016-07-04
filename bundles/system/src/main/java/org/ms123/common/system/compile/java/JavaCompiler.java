@@ -47,9 +47,10 @@ public class JavaCompiler {
 	private static String workspace   = System.getProperty("workspace");
 	private static String gitRepos   = System.getProperty("git.repos");
 	public static Class<?> compile(String namespace, Bundle bundle, String className, String sourceCodeInText) throws Exception {
-		File[] locations = new File[2];
+		File[] locations = new File[3];
 		locations[0] = new File(workspace, "jooq/build");
 		locations[1] = new File(gitRepos, namespace+ "/.etc/jooq/build");
+		locations[2] = new File(System.getProperty("workspace") + "/" + "java" + "/" + namespace);
 		SourceCode sourceCode = new SourceCode(className, sourceCodeInText);
 		CompiledCode compiledCode = new CompiledCode(className);
 		Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
@@ -89,6 +90,7 @@ public class JavaCompiler {
 		List<File> classPath = new ArrayList<File>(); 
 		classPath.add( new File(workspace, "jooq/build"));
 		classPath.add( new File(gitRepos, namespace+ "/.etc/jooq/build"));
+		classPath.add( new File(System.getProperty("workspace") + "/" + "java" + "/" + namespace));
 
 		standardFileManager.setLocation( StandardLocation.CLASS_PATH, classPath);
 
