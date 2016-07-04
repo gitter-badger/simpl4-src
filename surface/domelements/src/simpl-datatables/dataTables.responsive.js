@@ -856,11 +856,7 @@ $.extend( Responsive.prototype, {
 		// The cloned header now contains the smallest that each column can be
 		headerCells.each( function (i) {
 			var idx = dt.column.index( 'fromVisible', i );
-			if( columns[idx].control){ //@@@ with scroller this column is always shown
-				columns[ idx ].minWidth =  0;
-			}else{
-				columns[ idx ].minWidth =  this.offsetWidth || 0;
-			}
+			columns[ idx ].minWidth =  this.offsetWidth || 0;
 		} );
 
 		inserted.remove();
