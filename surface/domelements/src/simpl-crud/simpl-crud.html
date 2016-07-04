@@ -73,9 +73,27 @@
 		paper-button.new /deep/ paper-material.content {
 			padding: 0.3em 0.57em !important;
 		}
+		simpl-toast /deep/ paper-toast {
+			white-space: nowrap;
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+		simpl-toast /deep/ span {
+			min-width: 450px;
+			padding-right: 25px;
+			font-size: 30px;
+			vertical-align: middle;
+		}
+		simpl-toast /deep/ iron-icon {
+			width: 48px;
+			height: 48px;
+			vertical-align: middle;
+		}
 
 	</style>
 	<template>
+		<simpl-toast id="toastId"></simpl-toast>
+
 		<iron-pages id="ironPages" selected="{{pageSelected}}" attr-for-selected="num">
 			<section style="padding:0px;min-height:400px;position:relative;overflow-x:hidden;" num="0">
 				<template is="dom-if" if="[[!filterName]]">
@@ -119,7 +137,6 @@
 							<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 					</div>
 				</simpl-panel>
-				<paper-toast id="toast" duration=3000 class="capsule" text="{{toast_message}}" style="padding-right: 60px;"></paper-toast>
 				<paper-dialog id="error" class="scrolling">
 					<!--action-dialog-->
 					<div style="padding:15px;">
@@ -173,9 +190,10 @@
 	<script>
 		Polymer( {
 			is: 'simpl-crud',
-			behaviors: [ 
+			behaviors: [
 				Polymer.IronA11yKeysBehavior,
-				TranslationsBehavior ],
+				TranslationsBehavior
+			],
 			properties: {
 				namespace: {
 					type: String
@@ -239,12 +257,12 @@
 			},
 			_enterPressed: function() {
 				console.log( "_enterPressedCrud:", this.saveDisabled );
-				if( this.saveDisabled===true) return;
+				if ( this.saveDisabled === true ) return;
 				this.saveAction();
 			},
-			onError: function(e) {
+			onError: function( e ) {
 				console.log( "exceptionCrud:", e );
-				this.fire("error",e.detail);
+				this.fire( "error", e.detail );
 			},
 			attached: function() {
 				this.selectedDetailsTabId = "detailsMainTabId";
@@ -591,10 +609,10 @@
 				}
 
 				var valid = this.$.formid.validate();
-				console.log( "saveAction.valid("+valid+"):" , data );
+				console.log( "saveAction.valid(" + valid + "):", data );
 				if ( !valid ) {
-					this.toast_message = tr( "widgets.table.form_incomplete" );
-					this.querySelector( "#toast" ).show();
+					var msg = tr( "widgets.table.form_incomplete" );
+					this.querySelector( "#toastId" ).show( msg, "error", "10000" );
 					return;
 				} else {
 					try {
@@ -613,20 +631,21 @@
 							}
 							this.alert( message );
 						} else {
+							var msg = "";
 							if ( this.mode == 'add' ) {
-								this.toast_message = tr( "data.form.created" );
+								msg = tr( "data.form.created" );
 							} else {
-								this.toast_message = tr( "data.form.saved" );
+								msg = tr( "data.form.saved" );
 							}
-							this.querySelector( "#toast" ).show();
+							this.querySelector( "#toastId" ).show( msg, "success", "10000" );
 
 							this.needRefresh = true;
 						}
 					} catch ( e ) {
 						console.debug( e.stack );
 						var msg = e.substring( e.indexOf( "entityName:" ) + 11 );
-						this.toast_message = tr( "data.form.save" ) + ": (" + msg;
-						this.querySelector( "#toast" ).show();
+						msg = tr( "data.form.save" ) + ": (" + msg;
+						this.querySelector( "#toastId" ).show( msg, "error", "10000" );
 						return;
 					}
 				}
