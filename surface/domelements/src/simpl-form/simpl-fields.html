@@ -800,7 +800,7 @@
 				this.isInvalid = b;
 			},
 			isRequired: function() {
-				var data = this.form.getData();
+				var data = this.form._getData();
 				var req = this.form._maskedEval( this.required, data, false );
 				return req;
 			},
@@ -1451,7 +1451,7 @@
 				this.invalid = b;
 			},
 			isRequired: function() {
-				var data = this.form.getData();
+				var data = this.form._getData();
 				var req = this.form._maskedEval( this.required, data, false );
 				return req;
 			}
@@ -1865,7 +1865,7 @@
 				this.isInvalid = b;
 			},
 			isRequired: function() {
-				var data = this.form.getData();
+				var data = this.form._getData();
 				var req = this.form._maskedEval( this.required, data, false );
 				return req;
 			}
@@ -2014,7 +2014,7 @@
 				this.items = items;
 			},
 			isRequired: function() {
-				var data = this.form.getData();
+				var data = this.form._getData();
 				var req = this.form._maskedEval( this.required, data, false );
 				return req;
 			}
