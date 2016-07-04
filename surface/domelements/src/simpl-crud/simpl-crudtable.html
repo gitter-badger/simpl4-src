@@ -20,7 +20,7 @@
 -->
 <dom-module id="simpl-crudtable">
 	<template>
-		<style is="custom-style"  include="simpl-datatables-shared-styles"></style>
+		<style is="custom-style" include="simpl-datatables-shared-styles"></style>
 		<style>
 			paper-button.ripple {
 				float: left;
@@ -52,10 +52,12 @@
 				display: inline;
 				max-width: 70px;
 			}
+
 		</style>
 		<div class="layout horizontal" style="margin-bottom:10px;">
 			<template is="dom-repeat" items="{{buttonList}}">
-				<paper-button class="button button_secondary ripple flex" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}"><iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
+				<paper-button class="button button_secondary ripple flex" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
+					<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
 			</template>
 		</div>
 		<div style="overflow:hidden;">
@@ -83,8 +85,7 @@
 				'buttonsChanged(buttons)',
 				'selectionChanged(selection)'
 			],
-			ready: function() {
-			},
+			ready: function() {},
 			addAction: function() {
 				this.fire( "add-action", {
 					entity: this.entity,
@@ -270,9 +271,9 @@
 				this.columns = [];
 				var p = "data";
 				var e = this.entity;
-				if( this.entity.indexOf(":") >0 ){
-					p = this.entity.split(":")[0];
-					e = this.entity.split(":")[1];
+				if ( this.entity.indexOf( ":" ) > 0 ) {
+					p = this.entity.split( ":" )[ 0 ];
+					e = this.entity.split( ":" )[ 1 ];
 				}
 				var ret = [];
 				fields.forEach( function( f ) {
@@ -291,14 +292,14 @@
 						dtName = f.name + "_display";
 					}
 					var col = {
-						title: f.title || tr( p+'.' + e + '.' + f.name ),
+						title: f.title || tr( p + '.' + e + '.' + f.name ),
 						data: dtName,
-						visible:f.invisible!==true,
+						visible: f.invisible !== true,
 						class: f.tags,
-						mRender: this.renderColumn.bind(this)
+						mRender: this.renderColumn.bind( this )
 					}
-					if( col.visible == false){
-						col.class="never";
+					if ( col.visible == false ) {
+						col.class = "never";
 					}
 					ret.push( col );
 					this.columns.push( f.name );
@@ -314,12 +315,12 @@
 				var clazz = meta.settings.aoColumns[ meta.col ].sClass;
 				if ( Detectizr.device.type == "mobile" && clazz && clazz.toLowerCase().indexOf( "phone" ) > -1 ) {
 					return "<div class='phone'><a href='tel:" + row[ name ] + "'>" + row[ name ] + "</a></div>";
-				}else if ( this.entity == "document" && name=='filename') {
-					var rpcString = encodeURIComponent(JSON.stringify(this._getRpcHeader(row.id)));
+				} else if ( this.entity == "document" && name == 'filename' ) {
+					var rpcString = encodeURIComponent( JSON.stringify( this._getRpcHeader( row.id ) ) );
 					var username = simpl4.util.Rpc._getUserName();
 					var password = simpl4.util.Rpc._getPassword();
 					var cred = simpl4.util.Base64.encode( username + ":" + password );
-					return "<div class='filename'><a class='filename' target='_blank' href='/rpc/get?credentials="+cred+"&rpc=" + rpcString + "'>" + row[ name ] + "</a></div>";
+					return "<div class='filename'><a class='filename' target='_blank' href='/rpc/get?credentials=" + cred + "&rpc=" + rpcString + "'>" + row[ name ] + "</a></div>";
 				} else {
 					return row[ name ];
 				}
@@ -331,15 +332,15 @@
 				}, this );
 				return map;
 			},
-			_getRpcHeader: function (id) {
+			_getRpcHeader: function( id ) {
 				return {
 					"service": "data",
 					"method": "queryOne",
 					"params": {
-						"storeId":this.namespace+"_data",
-						"entity":"document",
-						"getContent":true,
-						"id":id
+						"storeId": this.namespace + "_data",
+						"entity": "document",
+						"getContent": true,
+						"id": id
 					}
 				};
 			},
@@ -366,7 +367,7 @@
 				if ( meta ) {
 					fields = [];
 					for ( var i = 0; i < meta.length; i++ ) {
-						if( meta[i].data.endsWith("_display")){
+						if ( meta[ i ].data.endsWith( "_display" ) ) {
 							continue;
 						}
 						fields.push( meta[ i ].data );
@@ -374,48 +375,63 @@
 				}
 				var p = "data";
 				var e = filter.entity;
-				if( filter.entity.indexOf(":") >0 ){
-					p = filter.entity.split(":")[0];
-					e = filter.entity.split(":")[1];
+				if ( filter.entity.indexOf( ":" ) > 0 ) {
+					p = filter.entity.split( ":" )[ 0 ];
+					e = filter.entity.split( ":" )[ 1 ];
 				}
 
 				var data;
 				if ( filter.rpc ) {
 					data = simpl4.util.Rpc.rpcSync( "data:query", filter.rpc );
-				} else if( propsEntity.customServiceRead){
+				} else if ( propsEntity.customServiceRead ) {
 					var customService = propsEntity.customServiceRead;
-					if( customService.indexOf(":") == -1){
-						customService = "camelRoute:"+customService;
+					if ( customService.indexOf( ":" ) == -1 ) {
+						customService = "camelRoute:" + customService;
 					}
-					if( customService.indexOf(".") == -1){
-						var x = customService.split(":");
-						customService = x[0] + ":" + this.namespace + "."+ x[1];
+					if ( customService.indexOf( "." ) == -1 ) {
+						var x = customService.split( ":" );
+						customService = x[ 0 ] + ":" + this.namespace + "." + x[ 1 ];
 					}
 					//console.log("xxx.customService:",customService);
 					//console.log("xxx.fields:",fields);
 					//console.log("xxx.filter:",filter);
 					//console.log("xxx.entity:",e);
-					data = simpl4.util.Rpc.rpcSync( customService, {
-						storeId: this.namespace + "_"+p,
-						pageSize: 100,
-						orderby: props.orderby,
-						uuid: window.uuid,
-						entity: e,
-						fields: fields,
-						filter: filter
-					} );
-			
-					//console.log("xxx.data:",data);
+					try {
+						data = simpl4.util.Rpc.rpcSync( customService, {
+							storeId: this.namespace + "_" + p,
+							pageSize: 100,
+							orderby: props.orderby,
+							uuid: window.uuid,
+							entity: e,
+							fields: fields,
+							filter: filter
+						} );
+					} catch ( e ) {
+						console.error( "simpl-crudtable1:", e );
+						this.fire( "error", {
+							error: e
+						} );
+						return [];
+					}
+					console.log( "xxx.data:", data );
 					return data;
 				} else {
-					data = simpl4.util.Rpc.rpcSync( "data:query", {
-						storeId: this.namespace + "_"+p,
-						pageSize: 100,
-						orderby: props.orderby,
-						entity: e,
-						fields: fields,
-						filter: filter
-					} );
+					try {
+						data = simpl4.util.Rpc.rpcSync( "data:query", {
+							storeId: this.namespace + "_" + p,
+							pageSize: 100,
+							orderby: props.orderby,
+							entity: e,
+							fields: fields,
+							filter: filter
+						} );
+					} catch ( e ) {
+						console.error( "simpl-crudtable2:", e );
+						this.fire( "error", {
+							error: e
+						} );
+						return [];
+					}
 				}
 				return data.rows;
 			}
