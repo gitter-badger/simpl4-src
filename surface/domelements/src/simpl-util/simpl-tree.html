@@ -52,6 +52,7 @@
 	</style>
 	<template>
 		<content></content>
+		<div id="treeRootId"></div>
 	</template>
 	<script>
 		Polymer( {
@@ -184,7 +185,10 @@
 				var div = document.createElement( 'div' );
 				Polymer.dom( div ).setAttribute( "id", "main" );
 				this._tree = div;
-				Polymer.dom( this.root ).appendChild( div )
+				if( this.$.treeRootId.firstChild ){
+					Polymer.dom( this.$.treeRootId ).removeChild( this.$.treeRootId.firstChild );
+				}
+				Polymer.dom( this.$.treeRootId ).appendChild( div )
 				console.log( "simpl-tree._createRoot:", this.data );
 				this._createNode( div, this.data, this.opened ? true : false );
 			},
