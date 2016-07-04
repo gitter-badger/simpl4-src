@@ -694,6 +694,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 	}
 
 	private void checkPermissions(StoreDesc sdesc, String user, String entityName, Map<String,Object> dataMap, String action) {
+		if( entityName == null) return;
 		entityName = m_inflector.getEntityName(entityName);
 		debug("checkPermissions:"+entityName+"/"+action+"/"+dataMap);
 		if( entityName.equals("team") && dataMap!=null && "write".equals(action)){
@@ -1299,6 +1300,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 	public Map query(SessionContext sessionContext, Map params, StoreDesc sdesc, String entityName, String idParent, String entityNameDetails) {
 		debug("query:" + params + ",entityName:" + entityName + ",entityNameDetails:" + entityNameDetails + ",idParent:" + idParent ); 
 		String config = sessionContext.getConfigName();
+		checkPermissions(sdesc, sessionContext.getUserName(),entityName, null, "read");
+		checkPermissions(sdesc, sessionContext.getUserName(),entityNameDetails, null, "read");
 		PersistenceManager pm = sessionContext.getPM();
 		long start = new Date().getTime();
 		List<String> joinFields = new ArrayList<String>();
