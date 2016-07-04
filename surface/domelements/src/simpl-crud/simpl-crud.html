@@ -173,7 +173,9 @@
 	<script>
 		Polymer( {
 			is: 'simpl-crud',
-			behaviors: [ TranslationsBehavior ],
+			behaviors: [ 
+				Polymer.IronA11yKeysBehavior,
+				TranslationsBehavior ],
 			properties: {
 				namespace: {
 					type: String
@@ -208,7 +210,37 @@
 				selectedDetailsTabId: {
 					type: String,
 					observer: "selectedDetailsTabIdChanged"
+				},
+				pressed: {
+					type: String,
+					readOnly: true,
+					value: ''
+				},
+				boundKeys: {
+					type: Array,
+					value: function() {
+						return Object.keys( this.keyBindings ).join( ' ' ).split( ' ' );
+					}
+				},
+				preventDefault: {
+					type: Boolean,
+					value: true,
+					notify: true
+				},
+				keyEventTarget: {
+					type: Object,
+					value: function() {
+						return this;
+					}
 				}
+			},
+			keyBindings: {
+				'enter': '_enterPressed'
+			},
+			_enterPressed: function() {
+				console.log( "_enterPressedCrud:", this.saveDisabled );
+				if( this.saveDisabled===true) return;
+				this.saveAction();
 			},
 			attached: function() {
 				this.selectedDetailsTabId = "detailsMainTabId";

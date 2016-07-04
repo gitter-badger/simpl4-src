@@ -690,6 +690,9 @@ console.log("shape:",shape);
 				if ( icon == null || icon == "" ) {
 					shape.properties.xf_iconname = ( action == "execute" ) ? "check" : "clear";
 				}
+				if( action == "execute" ){
+					this.executeButtonExists=true;
+				}
 				var label = shape.properties.xf_label;
 				if ( label && label.match( /^[@%]/ ) ) {
 					shape.properties.xf_label = tr( label.substring( 1 ) );
