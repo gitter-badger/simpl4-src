@@ -63,7 +63,10 @@
 			} else if ( this.options ) {
 				options = this.parseOptions( this.options );
 			} else {
-				options = {};
+				options = {
+					dom:"t",
+  				paging: false
+				};
 			}
 			if ( this._api ) {
 				this._api.destroy( false );
@@ -73,6 +76,14 @@
 			if ( dataSet && dataSet.length < 10 && options && options.dom ) {
 				options.dom = options.dom.replace( "f", "" );
 			}
+
+			if( dtMeta[0].class == null || dtMeta[0].class.indexOf("control") == -1){
+					this.dtMeta.splice( 0, 0, {
+						class: "control"
+					} );
+					options.responsive={details:{type:"column"}};
+			}
+			console.trace("options:",options);
 			this._api = dtMainElem.DataTable( jQuery.extend( {
 				"initComplete": function( settings, json ) {
 					self.fire( "init-complete", {

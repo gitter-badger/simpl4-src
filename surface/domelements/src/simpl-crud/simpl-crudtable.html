@@ -52,6 +52,11 @@
 				display: inline;
 				max-width: 70px;
 			}
+			:host /deep/ .control {
+				width: 40px;
+				min-width: 40px;
+				padding: 0 !important;
+			}
 
 		</style>
 		<div class="layout horizontal" style="margin-bottom:10px;">
@@ -73,6 +78,10 @@
 				StyleScopeBehavior
 			],
 			properties: {
+				dtOptions: {
+					type: String,
+					value: ""
+				},
 				buttons: {
 					type: String
 				},
@@ -81,7 +90,7 @@
 				}
 			},
 			observers: [
-				'filterChanged(filter.*)',
+				'filterChanged(filter.*,dtOptions)',
 				'buttonsChanged(buttons)',
 				'selectionChanged(selection)'
 			],
@@ -220,7 +229,6 @@
 				this.buttonList = bList;
 			},
 			filterChanged: function( o, n ) {
-				//console.log( "crudtable.filterChanged:", this.filter );
 				if ( !this.filter ) return;
 				this.entity = this.filter.entity;
 				this.namespace = this.filter.namespace || simpl4.util.BaseManager.getNamespace();
@@ -235,7 +243,19 @@
 				}
 				this.dataSet = this.preProcessData( this.getData( this.filter ) );
 				if ( firsttime ) {
-					this.createTable( this.dtMeta, this.dataSet );
+					if ( this.dtOptions == "" ) {
+						var options = {
+							responsive: {
+								details: {
+									type: "column"
+								}
+							},
+							paging: false,
+							dom: "frti",
+							scrollY: '300px'
+						};
+					}
+					this.createTable( this.dtMeta, this.dataSet, this.dtOptions );
 				} else {
 					this._api.clear();
 					this.dataSet.forEach( ( function( row, idx ) {
