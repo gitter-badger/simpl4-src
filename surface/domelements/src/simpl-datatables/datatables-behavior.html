@@ -52,7 +52,7 @@
 				this._createTable( dtMeta, dataSet, options );
 			} ).bind( this ) );
 		},
-		recalc:function(){
+		recalc: function() {
 			this._api.responsive.recalc();
 			this._api.columns.adjust()
 		},
@@ -70,10 +70,16 @@
 			}
 			var self = this;
 			var dtMainElem = $( this.$.dataTablesId );
-			if ( dataSet && dataSet.length < 10 && options && options.dom) {
-				options.dom = options.dom.replace("f","");
+			if ( dataSet && dataSet.length < 10 && options && options.dom ) {
+				options.dom = options.dom.replace( "f", "" );
 			}
 			this._api = dtMainElem.DataTable( jQuery.extend( {
+				"initComplete": function( settings, json ) {
+					self.fire( "init-complete", {
+						settings: settings,
+						json: json
+					} );
+				},
 				language: this.getLang(),
 				paging: true,
 				pagingType: "two_button",
@@ -93,25 +99,25 @@
 			$( this.root.querySelectorAll( "table.dataTables" ) ).attr( "id", "dataTablesId" );
 			this.createRowListener();
 		},
-		getApi:function(){
+		getApi: function() {
 			return this._api;
 		},
 		createRowListener: function() {
 			var self = this;
 			var rows = this._api.rows().nodes();
 			for ( var i = 0; i < rows.length; i++ ) {
-					$( rows[ i ] ).swipe(  {
-					tap:function(event, target) {
-						self.tapAction(target,self.getIndex(target), $(target).closest("tr"), false);
+				$( rows[ i ] ).swipe( {
+					tap: function( event, target ) {
+						self.tapAction( target, self.getIndex( target ), $( target ).closest( "tr" ), false );
 					},
-					doubleTap:function(event, target) {
-						self.tapAction(target,self.getIndex(target), $(target).closest("tr"),true);
+					doubleTap: function( event, target ) {
+						self.tapAction( target, self.getIndex( target ), $( target ).closest( "tr" ), true );
 					},
-					threshold:50
-				});
+					threshold: 50
+				} );
 			}
 		},
-		tapAction:function( target, index, row, doubleTap){
+		tapAction: function( target, index, row, doubleTap ) {
 			this.currentRowIndex = row.index();
 			if ( this.multiSelect ) {
 				this.tapActionMulti( target, index, row, doubleTap );
@@ -121,43 +127,43 @@
 		},
 		tapActionSingle: function( target, index, row, doubleTap ) {
 			if ( $( row ).hasClass( 'selected' ) ) {
-		//		return;
+				//		return;
 			}
 			this.unselectAll();
 			$( row ).addClass( 'selected' );
 			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
-				dt:this,
-				doubleTap:doubleTap,
-				index:index,
-				target:target,
+				dt: this,
+				doubleTap: doubleTap,
+				index: index,
+				target: target,
 				rows: sel
 			} );
 			this.selection = sel;
 		},
-		tapActionMulti: function(target, index, row, doubleTap ) {
+		tapActionMulti: function( target, index, row, doubleTap ) {
 			$( row ).toggleClass( 'selected' );
 			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
-				dt:this,
-				doubleTap:doubleTap,
-				index:index,
-				target:target,
+				dt: this,
+				doubleTap: doubleTap,
+				index: index,
+				target: target,
 				rows: sel
 			} );
 			this.selection = sel;
 		},
-		getIndex:function( target ){
-			var closest = $(target).closest("td");
-			return this._api.cell(closest).index();
+		getIndex: function( target ) {
+			var closest = $( target ).closest( "td" );
+			return this._api.cell( closest ).index();
 		},
 		getSelection: function() {
 			return this.selection;
 		},
 		unselectAll: function() {
-			if( this._api==null) return;
+			if ( this._api == null ) return;
 			var rows = this._api.rows().nodes();
-			if( rows !=null){
+			if ( rows != null ) {
 				$( rows ).removeClass( 'selected' );
 			}
 		},
@@ -172,15 +178,15 @@
 		dataChanged: function() {
 			this.async( function() {
 				this._dataChanged();
-			},10 );
+			}, 10 );
 		},
 		_dataChanged: function() {
 			//console.log( "xxx.dataTables.dataChanged.data:", this.data );
 			//console.log( "xxx.dataTables.dataChanged.meta:", this.meta );
 			var firsttime = this.preparedMeta == null;
-//			console.log( "dataTables.dataChanged.firsttime:", firsttime );
-			if ( this.meta == null || this.meta.length==0 ) {
-				if ( this.data == null || this.data.length==0) {
+			//			console.log( "dataTables.dataChanged.firsttime:", firsttime );
+			if ( this.meta == null || this.meta.length == 0 ) {
+				if ( this.data == null || this.data.length == 0 ) {
 					return;
 				}
 				if ( this.data.length > 0 ) {
