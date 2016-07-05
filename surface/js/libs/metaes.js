@@ -1280,7 +1280,7 @@
         fn: self,
         cfg: cfg,
         names: {
-          this: thisObj || _this
+          'this': thisObj || _this
         },
         closure: this.env,
         prev: prevEnv
@@ -1491,7 +1491,7 @@
 
   function delayApply(e, thisObj, callee, args, c, cerr, env) {
     var pausable = createPausable(apply, c, arguments);
-    applyInterceptor(e, {this: thisObj, callee: callee, arguments: args}, env, pausable.pauser);
+    applyInterceptor(e, {'this': thisObj, callee: callee, arguments: args}, env, pausable.pauser);
     tasksStack.push(pausable.delayed);
   }
 
