@@ -102,24 +102,24 @@
 			for ( var i = 0; i < rows.length; i++ ) {
 					$( rows[ i ] ).swipe(  {
 					tap:function(event, target) {
-						self.tapAction(self.getIndex(target), $(target).closest("tr"), false);
+						self.tapAction(target,self.getIndex(target), $(target).closest("tr"), false);
 					},
 					doubleTap:function(event, target) {
-						self.tapAction(self.getIndex(target), $(target).closest("tr"),true);
+						self.tapAction(target,self.getIndex(target), $(target).closest("tr"),true);
 					},
 					threshold:50
 				});
 			}
 		},
-		tapAction:function( index, row, doubleTap){
+		tapAction:function( target, index, row, doubleTap){
 			this.currentRowIndex = row.index();
 			if ( this.multiSelect ) {
-				this.tapActionMulti( index, row, doubleTap );
+				this.tapActionMulti( target, index, row, doubleTap );
 			} else {
-				this.tapActionSingle( index, row, doubleTap );
+				this.tapActionSingle( target, index, row, doubleTap );
 			}
 		},
-		tapActionSingle: function( index, row, doubleTap ) {
+		tapActionSingle: function( target, index, row, doubleTap ) {
 			if ( $( row ).hasClass( 'selected' ) ) {
 		//		return;
 			}
@@ -130,17 +130,19 @@
 				dt:this,
 				doubleTap:doubleTap,
 				index:index,
+				target:target,
 				rows: sel
 			} );
 			this.selection = sel;
 		},
-		tapActionMulti: function(index, row, doubleTap ) {
+		tapActionMulti: function(target, index, row, doubleTap ) {
 			$( row ).toggleClass( 'selected' );
 			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
 				dt:this,
 				doubleTap:doubleTap,
 				index:index,
+				target:target,
 				rows: sel
 			} );
 			this.selection = sel;
