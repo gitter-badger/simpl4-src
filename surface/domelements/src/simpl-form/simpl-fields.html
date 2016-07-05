@@ -1104,7 +1104,7 @@
 
 	</style>
 	<template>
-		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[invalid]]">
+		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[isInvalid]]">
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
 			<input hidden is="iron-input" id="input" bind-value="[[value]]" />
 			<div>
@@ -1448,7 +1448,7 @@
 				this.errorMessage = message;
 			},
 			setInvalid: function( b ) {
-				this.invalid = b;
+				this.isInvalid = b;
 			},
 			isRequired: function() {
 				var data = this.form._getData();
