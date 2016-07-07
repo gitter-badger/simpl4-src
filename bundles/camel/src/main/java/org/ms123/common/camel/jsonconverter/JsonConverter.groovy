@@ -944,8 +944,17 @@ class ScriptProcessor implements Processor {
 		params.put("headers", ex.in.headers);
 		params.put("h", ex.in.headers);
 		params.put("min", ex.in);
+		params.put("msg", ex.in);
 		params.put("properties", ex.properties);
 		params.put("p", ex.properties);
+		def env = [
+			gitRepos: System.getProperty("git.repos"),
+			simpl4Dir: System.getProperty("simpl4.dir"),
+			homeDir: System.getProperty("git.repos")+ "/" + this.namespace,
+			homeDataDir: System.getProperty("git.repos")+ "/" + this.namespace+"_data",
+			namespace: this.namespace
+		]
+		params.put("env", env);
 		compiledScript.eval(params);
 	}
 }
