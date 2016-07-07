@@ -64,8 +64,8 @@
 				options = this.parseOptions( this.options );
 			} else {
 				options = {
-					dom:"t",
-  				paging: false
+					dom: "t",
+					paging: false
 				};
 			}
 			if ( this._api ) {
@@ -74,16 +74,20 @@
 			var self = this;
 			var dtMainElem = $( this.$.dataTablesId );
 			if ( dataSet && dataSet.length < 10 && options && options.dom ) {
-				options.dom = options.dom.replace( "f", "" );
+				//options.dom = options.dom.replace( "f", "" );
 			}
 
-			if( dtMeta[0].class == null || dtMeta[0].class.indexOf("control") == -1){
-					this.dtMeta.splice( 0, 0, {
-						class: "control"
-					} );
-					options.responsive={details:{type:"column"}};
+			if ( dtMeta[ 0 ].class == null || dtMeta[ 0 ].class.indexOf( "control" ) == -1 ) {
+				this.dtMeta.splice( 0, 0, {
+					class: "control"
+				} );
+				options.responsive = {
+					details: {
+						type: "column"
+					}
+				};
 			}
-			console.trace("options:",options);
+			console.trace( "options:", options );
 			this._api = dtMainElem.DataTable( jQuery.extend( {
 				"initComplete": function( settings, json ) {
 					self.fire( "init-complete", {
@@ -109,9 +113,25 @@
 			}, options ) );
 			$( this.root.querySelectorAll( "table.dataTables" ) ).attr( "id", "dataTablesId" );
 			this.createRowListener();
+			this.addDetailCopier( dtMainElem, this._api );
 		},
 		getApi: function() {
 			return this._api;
+		},
+		addDetailCopier: function( mainElem, api ) {
+			mainElem.on( 'keyup change', '.child input, .child select, .child textarea', function( e ) {
+				var srcDetailElem = $( this );
+				var rowIdx = srcDetailElem.closest( 'ul' ).data( 'dtr-index' );
+				var colIdx = srcDetailElem.closest( 'li' ).data( 'dtr-index' );
+				var cell = api.cell( {
+					row: rowIdx,
+					column: colIdx
+				} ).node();
+				$( 'input, select, textarea', cell ).val( srcDetailElem.val() );
+				if ( srcDetailElem.is( ':checked' ) ) {
+					$( 'input', cell ).prop( 'checked', true );
+				}
+			} );
 		},
 		createRowListener: function() {
 			var self = this;
