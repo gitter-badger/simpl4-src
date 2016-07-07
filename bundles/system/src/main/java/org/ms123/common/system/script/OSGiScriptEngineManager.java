@@ -36,6 +36,7 @@ import javax.script.SimpleBindings;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.ms123.common.libhelper.FileSystemClassLoader;
+import org.ms123.common.libhelper.DirectoryClassLoader;
 import org.ms123.common.libhelper.ClassLoaderWrapper;
 import org.ms123.common.libhelper.BundleClassLoader;
 import static com.jcabi.log.Logger.debug;
@@ -177,14 +178,16 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
 	}
 
 	private ClassLoader getFilesystemClassloader(ClassLoader parent, String namespace) {
-		File[] locations = new File[5];
+		File[] locations = new File[6];
 		locations[0] = new File(System.getProperty("workspace") + "/" + "groovy" + "/" + namespace);
 		locations[1] = new File(System.getProperty("workspace") + "/" + "java" + "/" + namespace);
 		locations[2] = new File(System.getProperty("workspace") + "/" + "jooq/build");
 		locations[3] = new File(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
 		locations[4] = new File(System.getProperty("git.repos") + "/" + namespace + "/resources");
+		locations[5] = new File(System.getProperty("git.repos") + "/" + namespace + "/.etc/files");
 
-		return new FileSystemClassLoader(parent, locations);
+		ClassLoader fcl = new FileSystemClassLoader(parent, locations);
+		return new DirectoryClassLoader( fcl, new File(System.getProperty("git.repos") + "/" + namespace + "/.etc/jars"));
 	}
 
 	public List<ScriptEngineFactory> getEngineFactories() {
