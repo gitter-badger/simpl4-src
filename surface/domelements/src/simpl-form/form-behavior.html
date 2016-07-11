@@ -683,6 +683,14 @@ console.log("shape:",shape);
 						props.height = bounds.lowerRight.y - bounds.upperLeft.y;
 						if ( props.height < 75 ) props.height = 75;
 					}
+					
+					if ( props.items.length>0 && !this.isEmpty( shape.properties.xf_default ) && shape.properties.xf_default.startsWith("#") ) {
+						try{
+							shape.properties.xf_default= props.items[ parseInt( shape.properties.xf_default.substring(1)) ].value;
+						}catch(e){
+							console.error("set xf_default("+shape.properties.xf_id+"):",e);
+						}
+					}
 				}
 			} else if ( shape.stencil.id.toLowerCase() == "actionbutton" ) {
 				var icon = shape.properties.xf_iconname;
