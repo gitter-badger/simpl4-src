@@ -137,7 +137,7 @@
 					errorList.push( "Error" );
 				}
 			}
-			if( errorList && errorList.length>0){
+			if ( errorList && errorList.length > 0 ) {
 				console.log( "form.validate.errorList:", errorList );
 			}
 			return errorList.length == 0;
@@ -185,7 +185,7 @@
 			return f.label;
 		},
 		dataChanged: function() {
-			console.debug("form.dataChanged:",this.data);
+			console.debug( "form.dataChanged:", this.data );
 			this.whenFieldsReady( ( function() {
 				if ( this.preProcessData ) {
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
@@ -230,6 +230,15 @@
 				}
 				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
+		},
+		updateData: function( data ) {
+			var keys = Object.keys( data );
+			keys.forEach( ( function( key ) {
+				var field = this.fieldsMap[ key ];
+				if ( field ) {
+					field.setValue( data[ key ] );
+				}
+			} ).bind( this ) );
 		},
 		_getData: function() {
 			var data = {};
@@ -409,7 +418,7 @@
 				}
 			} catch ( e ) {
 				console.error( "_preProcessLocal:", e );
-				console.debug( "_postProcessService.script:" , script );
+				console.debug( "_postProcessService.script:", script );
 			}
 		},
 		doPreProcess: function() {
@@ -506,7 +515,7 @@
 			shape = this.cleanShape( shape );
 
 			if ( shape.id == 'Input' ) {
-console.log("shape:",shape);
+				console.log( "shape:", shape );
 				shape.regulaConstraints = this.constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType( shape.xf_type ) ], shape.xf_errormsg );
 			}
 
@@ -683,12 +692,12 @@ console.log("shape:",shape);
 						props.height = bounds.lowerRight.y - bounds.upperLeft.y;
 						if ( props.height < 75 ) props.height = 75;
 					}
-					
-					if ( props.items.length>0 && !this.isEmpty( shape.properties.xf_default ) && shape.properties.xf_default.startsWith("#") ) {
-						try{
-							shape.properties.xf_default= props.items[ parseInt( shape.properties.xf_default.substring(1)) ].value;
-						}catch(e){
-							console.error("set xf_default("+shape.properties.xf_id+"):",e);
+
+					if ( props.items.length > 0 && !this.isEmpty( shape.properties.xf_default ) && shape.properties.xf_default.startsWith( "#" ) ) {
+						try {
+							shape.properties.xf_default = props.items[ parseInt( shape.properties.xf_default.substring( 1 ) ) ].value;
+						} catch ( e ) {
+							console.error( "set xf_default(" + shape.properties.xf_id + "):", e );
 						}
 					}
 				}
@@ -698,8 +707,8 @@ console.log("shape:",shape);
 				if ( icon == null || icon == "" ) {
 					shape.properties.xf_iconname = ( action == "execute" ) ? "check" : "clear";
 				}
-				if( action == "execute" ){
-					this.executeButtonExists=true;
+				if ( action == "execute" ) {
+					this.executeButtonExists = true;
 				}
 				var label = shape.properties.xf_label;
 				if ( label && label.match( /^[@%]/ ) ) {
@@ -797,11 +806,11 @@ console.log("shape:",shape);
 					ret += b + '@' + self.mapKeys( key );
 					var params = self.constraintParams[ key ];
 
-					if( msg ){
+					if ( msg ) {
 						if ( msg && msg.match( /^[@%]/ ) ) {
 							msg = tr( msg.substring( 1 ) );
 						}
-					}else{
+					} else {
 						msg = tr( "validation." + self.mapKeys( key ) );
 					}
 					ret += '(message="' + msg + '"';
