@@ -236,6 +236,8 @@
 			keys.forEach( ( function( key ) {
 				var field = this.fieldsMap[ key ];
 				if ( field ) {
+					field.withoutCheck = true;
+					if ( field.setInvalid ) field.setInvalid( false );
 					field.setValue( data[ key ] );
 				}
 			} ).bind( this ) );
