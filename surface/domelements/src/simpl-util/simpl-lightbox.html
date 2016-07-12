@@ -299,6 +299,7 @@ is selected. This way, no video will play when the dialog is closed.
 			_strategies: {
 				'pdf': '_displayPdf',
 				'image': '_displayImage',
+				'html': '_displayHtml',
 				'video': '_displayVideo'
 			},
 
@@ -324,6 +325,12 @@ is selected. This way, no video will play when the dialog is closed.
 				img.src = it.src;
 				img.sizing = 'contain';
 				img.preload = true;
+				img.fade = true;
+				this._replaceMedia( img );
+			},
+			_displayHtml: function( it ) {
+				var img = document.createElement( 'iframe' );
+				img.src = it.src;
 				img.fade = true;
 				this._replaceMedia( img );
 			},
