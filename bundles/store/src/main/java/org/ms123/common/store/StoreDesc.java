@@ -408,6 +408,7 @@ public class StoreDesc {
 		return def;
 	}
 	public static String getSimpleEntityName(String entity){
+		if( entity == null) return null;
 		int colon = entity.indexOf(PACK_DELIM);
 		if( colon >= 0){
 			return entity.substring(colon+1);
