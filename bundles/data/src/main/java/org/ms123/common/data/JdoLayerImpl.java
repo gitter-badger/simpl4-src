@@ -1349,6 +1349,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 				}
 				if (fieldsArray != null) {
 					for (String field : fieldsArray) {
+						if( field == null) {
+							throw new RuntimeException("JdoLayerImpl.fieldname is null:"+fieldsArray);
+						}
 						int dot = field.indexOf(".");
 						if (dot != -1) {
 							qb.addSelector(field);
