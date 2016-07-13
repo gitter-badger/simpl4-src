@@ -27,10 +27,16 @@
 				font-size: 12px;
 				cursor: default;
 				border: 0 none;
-				-webkit-user-select: none;  /* Chrome all / Safari all */
-				-moz-user-select: none;     /* Firefox all */
-				-ms-user-select: none;      /* IE 10+ */
-				user-select: none;    
+				-webkit-user-select: none;
+				/* Chrome all / Safari all */
+				
+				-moz-user-select: none;
+				/* Firefox all */
+				
+				-ms-user-select: none;
+				/* IE 10+ */
+				
+				user-select: none;
 			}
 			:host /deep/ table.responsive.dataTables tr {
 				height: 24px;
@@ -64,6 +70,14 @@
 				width: 90px;
 				margin-top: 2px;
 			}
+			:host /deep/ table.dataTable td {
+				height: 24px;
+			}
+			:host /deep/ table.dataTable.dtr-column > tbody > tr > td.control:before,
+			:host /deep/ table.dataTable.dtr-column > tbody > tr > th.control:before {
+				margin-top: -10px;
+				line-height: 16px;
+			}
 			:host /deep/ table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child:before,
 			:host /deep/ table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before {
 				top: 6px;
@@ -76,7 +90,6 @@
 				color: var(--simpl-datatables-detailbutton-closed-color, black);
 				background: var(--simpl-datatables-detailbutton-closed-background, brown);
 			}
-
 			:host.firefox /deep/ table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child:before,
 			:host.firefox /deep/ table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before {
 				top: 4px !important;
@@ -86,12 +99,10 @@
 				color: var(--simpl-datatables-detailbutton-open-color, black);
 				background: var(--simpl-datatables-detailbutton-open-background, gray);
 			}
-
 			:host /deep/ table.dataTable.dtr-inline.collapsed > tbody > tr.selected > td:first-child:before,
 			:host /deep/ table.dataTable.dtr-inline.collapsed > tbody > tr.selected > th:first-child:before {
 				color: var(--simpl-datatables-detailbutton-closed-selected-color, white);
 			}
-			
 			:host /deep/ table.responsive.dataTables thead tr th,
 			:host /deep/ table.responsive.dataTables tfoot tr th {
 				color: var(--simpl-datatables-header-color, --secondary-text-color);
@@ -187,9 +198,9 @@
 			:host /deep/ .dataTables_scrollBody {
 				overflow-x: hidden !important;
 			}
-:host /deep/ .dataTables_wrapper.no-footer .dataTables_scrollBody {
-     border-bottom: 0px solid #111;
-}
+			:host /deep/ .dataTables_wrapper.no-footer .dataTables_scrollBody {
+				border-bottom: 0px solid #111;
+			}
 			:host > div {
 				color: var(--simpl-datatables-container-color, --secondary-text-color);
 				background: var(--simpl-datatables-container-background, --light-primary);
@@ -205,20 +216,20 @@
 			:host /deep/ .dataTables_paginate.paging_two_button {
 				margin-right: 4px;
 			}
-
-    	:host /deep/ table.dataTable > tbody > tr.child ul li {
-      	border-bottom: 1px solid #efefef;
-      	padding: 0em 0; 
+			:host /deep/ table.dataTable > tbody > tr.child ul li {
+				border-bottom: 1px solid #efefef;
+				padding: 0em 0;
 			}
-    	:host.firefox /deep/ table.dataTable > tbody > tr.child ul li {
-      	border-bottom: 1px solid #efefef;
-      	padding: 0.2em 0; 
+			:host.firefox /deep/ table.dataTable > tbody > tr.child ul li {
+				border-bottom: 1px solid #efefef;
+				padding: 0.2em 0;
 			}
 			:host /deep/ .control {
 				width: 35px;
 				min-width: 35px;
 				padding: 0 !important;
 			}
+
 		</style>
 	</template>
 </dom-module>
