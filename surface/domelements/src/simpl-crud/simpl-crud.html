@@ -107,7 +107,7 @@
 				</template>
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
-						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]" collapsable>
+						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
 							<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
 					</template>
@@ -117,25 +117,20 @@
 				</template>
 			</section>
 			<section style="padding:0px;position:relative;overflow-x:hidden;" num="1" unresolved>
-				<div class="grid flex" style="margin-top:5px;margin-bottom:10px">
-					<paper-button style="text-align:left;" class="flex button" raised on-tap="cancelAction">
-						<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
-				</div>
 				<simpl-panel heading="{{panelHeaderCrudForm}}">
-					<simpl-form id="formid" mode="{{mode}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
 					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
+						<paper-button class="h flex button button_primary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
+							<iron-icon icon="save"></iron-icon>{{tr('data.form.save')}}</paper-button>
+						<paper-button class="h flex button" raised on-tap="cancelAction">
+							<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 						<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
 							<iron-icon icon="image:navigate-before"></iron-icon>
 						</paper-button>
 						<paper-button class="h flex button button_primary" id="nextButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="nextAction">
 							<iron-icon icon="image:navigate-next"></iron-icon>
 						</paper-button>
-
-						<paper-button class="h flex button button_primary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
-							<iron-icon icon="save"></iron-icon>{{tr('data.form.save')}}</paper-button>
-						<paper-button class="h flex button" raised on-tap="cancelAction">
-							<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
 					</div>
+					<simpl-form id="formid" mode="{{mode}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
 				</simpl-panel>
 				<paper-dialog id="error" class="scrolling">
 					<!--action-dialog-->
