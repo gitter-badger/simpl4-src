@@ -77,8 +77,9 @@
 				//options.dom = options.dom.replace( "f", "" );
 			}
 
+			dtMeta = simpl4.util.Merge.clone( dtMeta );
 			if ( dtMeta[ 0 ].class == null || dtMeta[ 0 ].class.indexOf( "control" ) == -1 ) {
-				this.dtMeta.splice( 0, 0, {
+				dtMeta.splice( 0, 0, {
 					class: "control"
 				} );
 				options.responsive = {
