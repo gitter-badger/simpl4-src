@@ -1,0 +1,225 @@
+<!--
+  A web-component grid layout of filterable items.
+
+  ### Usage
+  ```
+  bower install angiolep/app-grid --save
+  ```
+
+  ```html
+    <link rel="import" href="bower_components/app-grid/app-grid.html">
+
+    <app-grid
+      items='["paolo", "angioletti"]'>
+    </app-grid>
+  ```
+
+  ### Items
+
+  ``<app-grid>`` expects an array of any values being set via its items property:
+
+  ```html
+  <script>
+    document
+      .querySelector('app-grid')
+      .items = [
+        {first: "Paolo", last: "Angioletti", male: true},
+        {first: "Michelangelo", last: "Buonarroti", male: true},
+        {first: "Leonardo", last: "da Vinci", male: false}
+      ];
+  </script>
+  ```
+
+  ### Templating
+
+  ``<app-grid>`` creates as many ``<div>`` children as many items you set. By default, each of those ``<div>`` will contain an instance of the following template:
+
+  ```html
+  <template>[[item.toString()]]</template>
+  ```
+
+  You could change the default template with a custom one (which in turn could make use of Polymer data bindings) as follows:
+
+  ```html
+  <app-grid>
+    <template>
+      <h1 class="username">[[item.last]] <small>[[item.first]]</small></h1>
+      <p>Male: <span>[[item.male]]</span></p>
+    </template>
+  </app-grid>
+  ```
+
+
+  ### Styling
+
+  ``<app-grid>`` provides `--app-grid-item-container` as CSS mixin for styling the container of each item in the grid:
+
+  ```html
+    <style is="custom-style">
+      app-grid {
+        --app-grid-item-container: {
+          border-radius: 4px;
+          box-shadow: 4px 4px 8px lightgray;
+          border: 0px solid gray;
+          text-align: center;
+          padding: 8px;
+
+          /* WARN, following styles will be ignored */
+          /*   - width, height    */
+          /*   - margin           */
+          /*   - top, left        */
+          /*   - opacity          */
+        }
+      }
+    </style>
+  ```
+
+  Width, height, margin, top, left and opacity styles will not have any effect. The reason is they must be set via the ``itemWidth``, ``itemHeight`` and ``itemSpacing`` properties because the layout algorithm needs them befores CSS styles are applied by the browser.
+
+
+  ### Layout
+
+  ``<app-grid>`` layout algorithm calculates the number of rows and columns dynamically so to fit all items on screen. It also detects any resize event so to apply the same math all over again and then move the items to new positions with nice animation effects.
+
+
+  @demo
+-->
+<dom-module id="app-grid">
+	<template>
+		<style>
+			:host {
+				display: block;
+			}
+			.grid {
+				position: relative;
+			}
+			.item-container {
+				display: block;
+				position: absolute;
+				transition: top 1s, left 1s, opacity 1s;
+				box-sizing: border-box;
+				@apply(--app-grid-item-container);
+			}
+
+		</style>
+		<div id="grid" class="grid"></div>
+	</template>
+	<script>
+		;
+		! function() {
+			Polymer( {
+				is: 'app-grid',
+
+				behaviors: [
+					Polymer.Templatizer
+				],
+
+				properties: {
+					/**
+					 * The width in pixels of each item in the grid
+					 */
+					itemWidth: {
+						type: Number,
+						value: 128
+					},
+					/**
+					 * The height in pixels of each item in the grid
+					 */
+					itemHeight: {
+						type: Number,
+						value: 128
+					},
+					/**
+					 * The margin in pixels set around each item in the grid
+					 */
+					itemSpacing: {
+						type: Number,
+						value: 16
+					},
+					/**
+					 * The array of items in the grid
+					 */
+					items: {
+						type: Array,
+						value: function() {
+							return new Array();
+						},
+						observer: '_itemsChanged'
+					}
+				},
+
+
+				attached: function() {
+					window.addEventListener( 'resize', this._layout.bind( this ) );
+				},
+				detached: function() {
+					window.removeEventListener( 'resize', this._layout );
+				},
+
+				get parent() {
+					if ( this.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE ) {
+						return this.parentNode.host;
+					}
+					return this.parentNode;
+				},
+
+				_itemsChanged: function( newValue, oldValue ) {
+					var userTemplate, item, gridEl;
+
+					userTemplate = Polymer.dom( this ).querySelector( 'template' );
+					if ( userTemplate ) {
+						this.templatize( userTemplate );
+					}
+
+					gridEl = Polymer.dom( this.$.grid );
+					while ( gridEl.firstChild ) {
+						gridEl.removeChild( gridEl.firstChild );
+					}
+
+					for ( k = 0; k < newValue.length; k++ ) {
+						var itemEl = document.createElement( 'div' );
+						itemEl.classList.add( 'item-container' );
+						itemEl.style.width = this.itemWidth + 'px';
+						itemEl.style.height = this.itemHeight + 'px';
+						itemEl.style.margin = 0;
+						itemEl.style.opacity = 0;
+						gridEl.appendChild( itemEl );
+
+						userEl = this.stamp( null );
+						userEl.item = newValue[ k ];
+						itemEl.appendChild( userEl.root );
+					}
+					this._layout();
+				},
+
+				_layout: function() {
+					var gridEl, gridWidth, itemEls, itemEl, itemWidth, itemHeight, rows, cols, colIdx, rowIdx, k, paddingTop, paddingLeft;
+					gridEl = Polymer.dom( this.$.grid ).node;
+					itemEls = Polymer.dom( gridEl ).querySelectorAll( '.item-container' );
+					if ( itemEls.length > 0 ) {
+
+						gridWidth = +window.getComputedStyle( gridEl ).width.replace( 'px', '' ); // this.parent.offsetWidth;
+						itemWidth = this.itemWidth + this.itemSpacing;
+						itemHeight = this.itemHeight + this.itemSpacing;
+						cols = Math.floor( gridWidth / itemWidth );
+						paddingTop = this.itemSpacing;
+						paddingLeft = ( gridWidth - ( cols * this.itemWidth ) - ( ( cols - 1 ) * this.itemSpacing ) ) / 2;
+
+						for ( k = 0; k < itemEls.length; k++ ) {
+							itemEl = itemEls[ k ];
+							colIdx = Math.floor( k % cols );
+							rowIdx = Math.floor( k / cols );
+							itemEl.style.opacity = 1;
+							itemEl.style.top = ( ( rowIdx * itemHeight ) + paddingTop ) + 'px';
+							itemEl.style.left = ( ( colIdx * itemWidth ) + paddingLeft ) + 'px';
+						}
+						rows = ( rowIdx + 1 );
+
+						gridEl.style.height = ( ( rows * itemHeight ) + paddingTop ) + 'px';
+					}
+				}
+			} );
+		}();
+
+	</script>
+</dom-module>
