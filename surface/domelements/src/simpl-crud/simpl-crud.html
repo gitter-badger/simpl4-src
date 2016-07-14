@@ -230,6 +230,10 @@
 					readOnly: true,
 					value: ''
 				},
+				noCarriageReturn:{
+					type: Boolean,
+					value: false
+				},
 				boundKeys: {
 					type: Array,
 					value: function() {
@@ -253,7 +257,7 @@
 			},
 			_enterPressed: function() {
 				console.log( "_enterPressedCrud:", this.saveDisabled );
-				if ( this.saveDisabled === true ) return;
+				if ( this.noCarriageReturn || this.saveDisabled === true ) return;
 				this.saveAction();
 			},
 			onError: function( e ) {

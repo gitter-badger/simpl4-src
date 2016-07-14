@@ -667,6 +667,10 @@
 					type: Boolean,
 					value: false
 				},
+				noCarriageReturn:{
+					type: Boolean,
+					value: false
+				},
 				saveDisabled: {
 					type: Boolean,
 					value: false,
@@ -709,7 +713,7 @@
 			},
 			_enterPressed: function() {
 				console.log( "_enterPressedForm:", this.saveDisabled+"/"+this.executeButtonExists );
-				if( !this.executeButtonExists || this.saveDisabled===true) return;
+				if( this.noCarriageReturn || !this.executeButtonExists || this.saveDisabled===true) return;
 				var action = {
 					xaction:"execute"
 				}
