@@ -459,6 +459,7 @@
 						field.setForm( this );
 					}, this );
 					this.fieldsMap = this.toMap( this.fields );
+					this.fire("form-ready", this );
 					this.valueChanged();
 					if ( this.resetData == null ) {
 						this.resetData = this._getData();
@@ -485,6 +486,7 @@
 					}, this );
 					this.fieldsMap = this.toMap( this.fields );
 					this.valueChanged();
+					this.fire("form-ready", this );
 					if ( this.resetData == null ) {
 						this.resetData = this._getData();
 					}

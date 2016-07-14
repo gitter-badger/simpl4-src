@@ -76,6 +76,9 @@
 		observers: [
 			'disabledChanged(disabled)'
 		],
+		getForm:function(){
+			return this.form;
+		},
 		disabledChanged: function( event ) {
 			this.alwaysFloatLabel = this.disabled;
 		},
