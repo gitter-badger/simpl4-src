@@ -305,7 +305,7 @@
 				if ( dataDesc.type == "table" ) {
 					ct.filter = dataDesc;
 				} else {
-					ct.setData( this.getFormData( dataDesc ) );
+					ct.setData( clone(this.getFormData( dataDesc )) );
 				}
 			},
 			cancelAction: function( e ) {
@@ -348,7 +348,7 @@
 
 				this.whenElementsReady( ( function() {
 					console.debug( "Ready" );
-					this.$.formid.setData( this.currentRowData );
+					this.$.formid.setData( clone(this.currentRowData) );
 					this.pageSelected = 1;
 				} ).bind( this ) );
 			},
@@ -360,7 +360,7 @@
 					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
-					this.$.formid.setData( this.currentRowData );
+					this.$.formid.setData( clone(this.currentRowData) );
 				}
 				this.handlePrevNextButtons();
 			},
@@ -372,7 +372,7 @@
 					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
-					this.$.formid.setData( this.currentRowData );
+					this.$.formid.setData( clone(this.currentRowData) );
 				}
 				this.handlePrevNextButtons();
 			},
@@ -404,7 +404,7 @@
 
 				var ep = this.getPack( detail.entity );
 				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
-				this.$.formid.setData( this.currentRowData );
+				this.$.formid.setData( clone(this.currentRowData) );
 				this.whenElementsReady( ( function() {
 					this.pageSelected = 1;
 				} ).bind( this ) );
@@ -680,6 +680,9 @@
 							this.querySelector( "#toastId" ).show( msg, "success", "10000" );
 
 							this.needRefresh = true;
+							if ( this.mode == 'add' ) {
+								this.cancelAction();
+							}
 						}
 					} catch ( e ) {
 						console.error( "saveAction:", e );
