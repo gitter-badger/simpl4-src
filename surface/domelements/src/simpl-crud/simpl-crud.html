@@ -108,11 +108,11 @@
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
-							<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+							<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
 					</template>
 					<template is="dom-if" if="[[!withPanel]]">
-						<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 					</template>
 				</template>
 			</section>
@@ -165,7 +165,7 @@
 						<neon-animatable style="position:relative;" details-item-id$="[[item.id]]">
 							<paper-material class="flex" elevation="1">
 								<template is="dom-if" if="[[isTable(item)]]">
-									<simpl-crudtable id$="{{item.id}}" buttons="{{item.buttonListDetail}}" data-desc="[[item]]" on-add-action="addAction" on-copy-action="copyAction" on-detail-action="detailAction" on-edit-action="editAction"></simpl-crudtable>
+									<simpl-crudtable id$="{{item.id}}" buttons="{{item.buttonListDetail}}" data-desc="[[item]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-detail-action="detailAction" on-edit-action="editAction"></simpl-crudtable>
 								</template>
 								<template is="dom-if" if="[[isForm(item)]]">
 									<simpl-form id$="{{item.id}}" mode="[[getEditMode()]]" data-desc="[[item]]" spec="[[getFormSpec(item)]]"></simpl-form>
@@ -181,6 +181,7 @@
 				</neon-animated-pages>
 			</section>
 		</iron-pages>
+		<delete-dialog on-delete-ok="onDeleteOk" id="dialogOkId"></delete-dialog>
 	</template>
 	<script>
 		Polymer( {
@@ -404,6 +405,35 @@
 					this.pageSelected = 1;
 				} ).bind( this ) );
 			},
+			delAction: function( e ) {
+				var detail = e.detail;
+				this.mode = 'del';
+				console.log( "delAction:", detail );
+				this.currentTable = detail.table;
+				this.$.dialogOkId.open( detail );
+			},
+			onDeleteOk: function( e ) {
+				console.log( "deleteok:", e );
+				try {
+					this.deleteData( e.detail.data );
+					this.async( function() {
+						if ( this.currentTable ) {
+							this.currentTable.refresh();
+						}
+					}, 100 );
+					this.querySelector( "#toastId" ).show( tr("entitytypes.deleted"), "success", "5000" );
+				} catch ( e ) {
+					console.error( "delAction:", e );
+					var msg = null;
+					if ( e.message ) {
+						msg = e.message;
+					} else {
+						msg = e.toString();
+					}
+					this.querySelector( "#toastId" ).show( msg, "error", "10000" );
+					return;
+				}
+			},
 			_addAction: function( e ) {
 				var e = {
 					detail: {
@@ -514,9 +544,8 @@
 					}
 				}
 				console.log( "rpc:", rpc );
-				//	var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
-				//	return ret;
-				return {};
+				var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
+				return ret;
 			},
 			_storeDataCustom: function( data, customService ) {
 				if ( customService.indexOf( ":" ) == -1 ) {
@@ -553,6 +582,17 @@
 				var ret = simpl4.util.Rpc.rpcSync( customService, rpc );
 				return ret;
 			},
+			deleteData: function( data ) {
+				var ep = this.getPack( this.mainEntityName );
+				var rpc = {
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + ep.pack,
+					entity: ep.entityName,
+					id: this.getIdValue( this.mainEntityName, this.namespace, data )
+				}
+				console.log( "rpc.delete:", rpc );
+				var ret = simpl4.util.Rpc.rpcSync( "data:delete" , rpc );
+				return ret;
+			},
 			getData: function( data ) {
 				var ep = this.getPack( this.currentEntityName );
 				var idValue = this.getIdValue( this.currentEntityName, this.namespace, data );
@@ -577,6 +617,7 @@
 				}
 			},
 			getIdValue: function( entityName, namespace, data ) {
+				console.log( "getIdValue:", entityName + "/", data );
 				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
 				if ( pkList == null ) {
 					pkList = [ "id" ];
@@ -637,9 +678,15 @@
 							this.needRefresh = true;
 						}
 					} catch ( e ) {
-						console.debug( e.stack );
-						var msg = e.substring( e.indexOf( "entityName:" ) + 11 );
-						msg = tr( "data.form.save" ) + ": (" + msg;
+						console.error( "saveAction:", e );
+						var msg = null;
+						if ( e.message ) {
+							msg = e.message;
+						} else {
+							var m = e.toString();
+							msg = m.substring( m.indexOf( "entityName:" ) + 11 );
+							msg = tr( "data.form.save" ) + ": (" + msg + ")";
+						}
 						this.querySelector( "#toastId" ).show( msg, "error", "10000" );
 						return;
 					}

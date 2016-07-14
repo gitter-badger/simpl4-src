@@ -1,0 +1,58 @@
+<div>
+	<dom-module id="delete-dialog">
+		<style>
+			:host {
+				pointer-events: all;
+			}
+			paper-button {
+				color: #727272 !important;
+			}
+			iron-icon.error-big {
+				color: #c00418;
+				height: 64px;
+				width: 64px;
+			}
+			paper-dialog {
+				min-height: 250px;
+				min-width: 300px;
+				color: #727272 !important;
+			}
+
+		</style>
+		<template>
+			<paper-dialog with-backdrop id="dialogId">
+				<div class="layout vertical">
+					<iron-icon class="error-big flex" icon="warning"></iron-icon>
+					<p style="font-size:20px;">[[tr("entitytypes.confirm_delete")]]</p>
+				</div>
+
+				<div class="buttons layout horizontal">
+					<paper-button dialog-dismiss>
+						<iron-icon icon="cancel"></iron-icon>[[tr("button.cancel")]]</paper-button>
+					<paper-button on-tap="onTap" class="flex" raised dialog autofocus>
+						<iron-icon icon="delete"></iron-icon>[[tr("yes")]]</paper-button>
+				</div>
+			</paper-dialog>
+		</template>
+		<script>
+			Polymer( {
+				is: 'delete-dialog',
+				behaviors: [
+					TranslationsBehavior
+				],
+				onTap: function() {
+					this.fire( "delete-ok", this.data );
+					this.$.dialogId.close();
+				},
+				close: function( msg ) {
+					this.$.dialogId.close();
+				},
+				open: function( data ) {
+					this.data = data;
+					this.$.dialogId.open();
+				}
+			} );
+
+		</script>
+	</dom-module>
+</div>

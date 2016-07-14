@@ -131,6 +131,16 @@
 					data: this.selection[ 0 ]
 				} );
 			},
+			delAction: function() {
+				if ( this.selection == null ) return;
+				this.fire( "del-action", {
+					data: this.selection[ 0 ],
+					entity: this.entity,
+					table: this,
+					entityChild: this.id,
+					namespace: this.namespace
+				} );
+			},
 			selectAction: function() {
 				if ( this.selection == null ) return;
 				this.fire( "select-action", {
@@ -188,6 +198,12 @@
 						text: tr( 'button.edit' ),
 						disabled: true
 					},
+					del: {
+						action: this.delAction,
+						icon: "delete",
+						text: tr( 'button.del' ),
+						disabled: true
+					},
 					show: {
 						action: this.showAction,
 						icon: "bookmark-outline",
@@ -229,6 +245,7 @@
 				this.buttonList = bList;
 			},
 			filterChanged: function( o, n ) {
+console.log("filterChanged:",this.filter);
 				if ( !this.filter ) return;
 				this.entity = this.filter.entity;
 				this.namespace = this.filter.namespace || simpl4.util.BaseManager.getNamespace();
@@ -242,6 +259,7 @@
 					} ) );
 				}
 				this.dataSet = this.preProcessData( this.getData( this.filter ) );
+console.log("filterChanged:",this.dataSet);
 				if ( firsttime ) {
 					if ( this.dtOptions == "" ) {
 						var options = {
@@ -374,6 +392,7 @@
 				this.filterChanged();
 			},
 			getData: function( filter ) {
+console.log("getData:",filter);
 				this.selection = null;
 				var props = simpl4.util.EntityManager.getEntityViewProperties( filter.entity, "main-grid", {
 					namespace: this.namespace
@@ -436,6 +455,7 @@
 					console.log( "xxx.data:", data );
 					return data;
 				} else {
+console.log("getData2:",filter);
 					try {
 						data = simpl4.util.Rpc.rpcSync( "data:query", {
 							storeId: this.namespace + "_" + p,
