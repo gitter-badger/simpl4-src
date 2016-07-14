@@ -30,7 +30,7 @@
 			'value-changed': 'valueChanged'
 		},
 		valueChanged: function( e ) {
-			var data = simpl4.util.Merge.merge( true, this.data, this._getData() );
+			var data = this._getData();
 			var lang = simpl4.util.BaseManager.getLanguage()
 			var env = {
 				$mode: this.mode,
@@ -185,7 +185,14 @@
 			return f.label;
 		},
 		dataChanged: function() {
-			console.debug( "form.dataChanged:", this.data );
+			console.log( "\n-->form.dataChanged.internal:", this.internal );
+			if(this.internal !== true){
+				this._dataChanged();
+			}
+			this.internal=false;
+		},
+		_dataChanged: function() {
+			console.error( "\n-->form.dataChanged:", JSON.stringify(this.data,null,2) );
 			this.whenFieldsReady( ( function() {
 				if ( this.preProcessData ) {
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
@@ -195,7 +202,7 @@
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
 					this.preProcessData = null;
 				}
-				console.log( "dataChanged.merged:", this.data );
+				console.log( "form.dataChanged.afterPre:", JSON.stringify(this.data,null,2) );
 				this._setData( this.data );
 			} ).bind( this ) );
 		},
@@ -211,7 +218,9 @@
 		setData: function( data ) {
 			this.resetData = jQuery.extend( {}, data );;
 			if ( data == null ) return;
+			this.internal = true;
 			this.data = data;
+			this._dataChanged();
 		},
 		_setData: function( data ) {
 			this.fields.forEach( function( field ) {
@@ -234,6 +243,7 @@
 		updateData: function( data ) {
 			var keys = Object.keys( data );
 			keys.forEach( ( function( key ) {
+				this.data[key] = data[key];
 				var field = this.fieldsMap[ key ];
 				if ( field ) {
 					field.withoutCheck = true;
@@ -243,7 +253,7 @@
 			} ).bind( this ) );
 		},
 		_getData: function() {
-			var data = {};
+			var data = simpl4.util.Merge.merge( true, this.data );
 			this.fields.forEach( function( field ) {
 				if ( field.getValue == null ) return;
 				data[ field.name ] = field.getValue();
@@ -251,7 +261,7 @@
 			return data;
 		},
 		getData: function() {
-			var data = {};
+			var data = simpl4.util.Merge.merge( true, this.data );
 			this.fields.forEach( function( field ) {
 				if ( field.getValue == null ) return;
 				data[ field.name ] = field.getValue();
@@ -345,7 +355,7 @@
 			var script = this._form.xf_preprocess_local;
 			if ( this.isEmpty( script ) ) return null;
 			try {
-				var data = simpl4.util.Merge.merge( true, this.data, this._getData() );
+				var data = this._getData();
 				var lang = simpl4.util.BaseManager.getLanguage()
 				var env = {
 					$mode: this.mode,
@@ -429,6 +439,7 @@
 			this.preProcessLocal();
 			var dataLoc = this._preData;
 			this.preProcessData = simpl4.util.Merge.merge( true, dataSer, dataLoc );
+			this._preData=null;
 		},
 		formNameChanged: function() {
 			this.async( function() {
@@ -519,7 +530,6 @@
 			shape = this.cleanShape( shape );
 
 			if ( shape.id == 'Input' ) {
-				console.log( "shape:", shape );
 				shape.regulaConstraints = this.constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType( shape.xf_type ) ], shape.xf_errormsg );
 			}
 
@@ -759,7 +769,7 @@
 			var parameterMap = {};
 			if ( !parammapping ) return parameterMap;
 			console.log( "----paramMapping:", parammapping );
-			var env = simpl4.util.Merge.merge( true, this.preProcessData, this.data, this._getData() );
+			var env = simpl4.util.Merge.merge( true, this.preProcessData, this._getData() );
 			env.$uuid = window.uuid;
 			env.$lang = simpl4.util.BaseManager.getLanguage();
 			env.$mode = this.mode;
