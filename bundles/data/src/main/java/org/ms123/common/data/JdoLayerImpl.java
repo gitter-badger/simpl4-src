@@ -589,7 +589,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 					if( updateId instanceof String && updateId.toString().indexOf(":") != -1){
 						String[] vals = updateId.toString().split(":");
 						for( Map<String,String> pk : pkList){
-							PropertyUtils.setProperty(objectUpdate, pk.get("name"), vals[i++]);
+							PropertyUtils.setProperty(objectUpdate, pk.get("name"), convertPKPart(pk,vals[i++]));
 						}
 					}else{
 						Map<String,String> pk = pkList.get(0);
@@ -672,13 +672,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		info("deleteObject:" + entityName + ",id:" + id);
 		Map retMap = new HashMap();
 		String classNameDelete = m_inflector.getClassName(entityName);
-		Object objId = null;
-		if (sdesc.isDataPack()) {
-			Map permittedFields = sessionContext.getPermittedFields(m_inflector.getEntityName(entityName));
-			objId = getIdObject(id, sessionContext.getPrimaryKeyFields(entityName));
-		} else {
-			objId = getIdObject(id, null);
-		}
+		Map permittedFields = sessionContext.getPermittedFields(m_inflector.getEntityName(entityName));
+		Object	objId = getIdObject(id, sessionContext.getPrimaryKeyFields(entityName));
+		info("objId:" + objId );
 		Class deleteClazz = getClass(sdesc, classNameDelete);
 		Object objectDelete = pm.getObjectById(deleteClazz, objId);
 		Boolean bypassTrigger = (Boolean)sessionContext.getProperty("bypassTrigger");
@@ -2362,6 +2358,25 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		return orderBy;
 	}
 
+	private Object convertPKPart(Map<String,String> pk, String id) {
+		String dt = pk.get("datatype");
+		info("convertPKPart.datatype:"+dt+"/id:"+id);
+		Object ret = id;
+		if (  "long".equals(dt)) {
+			ret = Long.valueOf(id);
+		}else if (  "number".equals(dt)) {
+			ret = Integer.valueOf(id);
+		}else if (  "decimal".equals(dt)) {
+			ret = Double.valueOf(id);
+		}else if (  "double".equals(dt)) {
+			ret = Double.valueOf(id);
+		}else if (  "date".equals(dt)) {
+			ret = new java.util.Date(Long.valueOf(id));
+		}
+		info("convertPKPart.ret:"+ret);
+		return ret;
+	}
+
 	private Object getIdObject(String id, List<Map> pkList) {
 		if( pkList.size() > 1 ){
 			info("getIdObject.ret:"+id);
@@ -2377,7 +2392,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		if (  "long".equals(dt)) {
 			ret = Long.valueOf(id);
 		}else if (  "number".equals(dt)) {
-			ret = Long.valueOf(id);
+			ret = Integer.valueOf(id);
 		}else if (  "decimal".equals(dt)) {
 			ret = Double.valueOf(id);
 		}else if (  "double".equals(dt)) {

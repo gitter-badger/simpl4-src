@@ -314,11 +314,23 @@ System.out.println("className:"+className);
 	public List<Map> getPrimaryKeyFields(StoreDesc sdesc, String entityName) {
 		List<Map> ret = new ArrayList<Map>();
 		try {
+			Map<String,Object> et =  m_gitMetaData.getEntitytype(sdesc.getStoreId(), entityName);
+			List<String> pkList = (List)et.get("primaryKeys");
 			List<Map> allFields = getFields(sdesc, entityName, true, true);
+			Map<String, Map> map = new HashMap<String,Map>();
 			for( Map<String,String> field : allFields){
 				boolean hasPrimary = GitMetaDataImpl.getBoolean(field, "primary_key", false);
 				if( hasPrimary ){
-					ret.add( field );
+					map.put( (String)field.get("name"), field );
+				}
+			}
+			if( pkList != null){
+				for( String pk : pkList){
+					ret.add( map.get(pk));
+				}
+			}else{
+				for (String key : map.keySet()) {
+					ret.add( map.get(key));
 				}
 			}
 		} catch (Exception e) {
