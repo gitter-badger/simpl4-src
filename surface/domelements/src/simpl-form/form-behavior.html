@@ -244,6 +244,14 @@
 				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
 		},
+		clearData: function( data ) {
+			this.fields.forEach( function( field ) {
+				if ( field.setValue == null ) return;
+				field.withoutCheck = true;
+				if ( field.setInvalid ) field.setInvalid( false );
+				field.setValue( null );
+			}, this );
+		},
 		updateData: function( data ) {
 			var keys = Object.keys( data );
 			keys.forEach( ( function( key ) {

@@ -360,7 +360,14 @@
 					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
-					this.$.formid.setData( clone(this.currentRowData) );
+					if( Detectizr.browser.name == "firefox"){
+						this.$.formid.clearData( );
+						this.async( function() {
+							this.$.formid.setData( clone(this.currentRowData) );
+						}, 10 );
+					}else{
+						this.$.formid.setData( clone(this.currentRowData) );
+					}
 				}
 				this.handlePrevNextButtons();
 			},
@@ -372,7 +379,14 @@
 					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
-					this.$.formid.setData( clone(this.currentRowData) );
+					if( Detectizr.browser.name == "firefox"){
+						this.$.formid.clearData( );
+						this.async( function() {
+							this.$.formid.setData( clone(this.currentRowData) );
+						}, 10 );
+					}else{
+						this.$.formid.setData( clone(this.currentRowData) );
+					}
 				}
 				this.handlePrevNextButtons();
 			},
