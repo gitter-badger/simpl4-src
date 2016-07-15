@@ -108,11 +108,11 @@
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
-							<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+							<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
 					</template>
 					<template is="dom-if" if="[[!withPanel]]">
-						<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 					</template>
 				</template>
 			</section>
@@ -165,7 +165,7 @@
 						<neon-animatable style="position:relative;" details-item-id$="[[item.id]]">
 							<paper-material class="flex" elevation="1">
 								<template is="dom-if" if="[[isTable(item)]]">
-									<simpl-crudtable id$="{{item.id}}" buttons="{{item.buttonListDetail}}" data-desc="[[item]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-detail-action="detailAction" on-edit-action="editAction"></simpl-crudtable>
+									<simpl-crudtable id$="{{item.id}}" buttons="{{item.buttonListDetail}}" data-desc="[[item]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction"></simpl-crudtable>
 								</template>
 								<template is="dom-if" if="[[isForm(item)]]">
 									<simpl-form id$="{{item.id}}" mode="[[getEditMode()]]" data-desc="[[item]]" spec="[[getFormSpec(item)]]"></simpl-form>
@@ -408,6 +408,11 @@
 				this.whenElementsReady( ( function() {
 					this.pageSelected = 1;
 				} ).bind( this ) );
+			},
+			refreshAction: function( e ) {
+				var detail = e.detail;
+				console.log( "refreshAction:", detail );
+				detail.table.refresh();
 			},
 			delAction: function( e ) {
 				var detail = e.detail;
@@ -682,6 +687,10 @@
 							this.needRefresh = true;
 							if ( this.mode == 'add' ) {
 								this.cancelAction();
+							}
+							if ( this.mode == 'edit' && this.loadBeforeEdit()==false ) {
+								simpl4.util.Merge.merge(false, this.currentRowData, data);
+								console.log("merged:",JSON.stringify(this.currentRowData,null,2));
 							}
 						}
 					} catch ( e ) {

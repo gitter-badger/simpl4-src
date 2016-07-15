@@ -141,6 +141,14 @@
 					namespace: this.namespace
 				} );
 			},
+			refreshAction: function() {
+				this.fire( "refresh-action", {
+					entity: this.entity,
+					table: this,
+					entityChild: this.id,
+					namespace: this.namespace
+				} );
+			},
 			selectAction: function() {
 				if ( this.selection == null ) return;
 				this.fire( "select-action", {
@@ -203,6 +211,12 @@
 						icon: "delete",
 						text: tr( 'button.del' ),
 						disabled: true
+					},
+					refresh: {
+						action: this.refreshAction,
+						icon: "refresh",
+						text: tr( 'button.refresh' ),
+						disabled: false
 					},
 					show: {
 						action: this.showAction,
