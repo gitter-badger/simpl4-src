@@ -155,6 +155,7 @@
 		_maskedEval: function( scr, env, def ) {
 			try {
 				env._ = _;
+				env.moment = moment;
 				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
 				console.error( "\t" + e );
@@ -228,6 +229,7 @@
 				field.withoutCheck = true;
 				if ( field.setInvalid ) field.setInvalid( false );
 				var fieldData = data[ field.name ];
+				var oldValue = fieldData;
 				if ( field.expressionIn ) {
 					var env = {
 						$mode: this.mode,
@@ -236,6 +238,8 @@
 					};
 					env = simpl4.util.Merge.merge( true, data, env );
 					fieldData = this._maskedEval( field.expressionIn, env );
+					console.log("expressionIn("+field.name+"\t,"+field.expressionIn+"\t,"+oldValue+ ") -> ",fieldData);
+
 				}
 				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
@@ -268,6 +272,7 @@
 			}, this );
 			this.fields.forEach( function( field ) {
 				if ( field.getValue == null || field.expressionOut == null ) return;
+				var oldValue = field.getValue();
 				var env = {
 					$mode: this.mode,
 					$lang: simpl4.util.BaseManager.getLanguage(),
@@ -275,6 +280,8 @@
 				};
 				env = simpl4.util.Merge.merge( true, data, env );
 				data[ field.name ] = this._maskedEval( field.expressionOut, env );
+
+				console.log("expressionOut("+field.name+"\t,"+field.expressionOut+"\t,"+oldValue+ ") -> ",data[field.name]);
 			}, this );
 			return data;
 		},
