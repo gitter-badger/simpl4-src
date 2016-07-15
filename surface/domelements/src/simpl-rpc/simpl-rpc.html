@@ -26,7 +26,7 @@
 			is: 'simpl-rpc',
 			properties: {
 				allparams: {
-					computed: "collectAll(method,service)"
+					computed: "collectAll(method,service,params)"
 				},
 				service: {
 					type: String
@@ -52,8 +52,14 @@
 				this.xhr = document.createElement( 'simpl-xhr' );
 			},
 			receive: function( response, xhr ) {
+				console.log( "rpc.receive(" + this.method + "):", xhr );
 				if ( this.isSuccess( xhr ) ) {
-					this.processResponse( xhr );
+					var resp = this.evalResponse( xhr );
+					if ( resp.error ) {
+						this.error2( resp.error, xhr );
+					} else {
+						this.processResponse( resp.result, xhr );
+					}
 				} else {
 					this.error( xhr );
 				}
@@ -63,11 +69,10 @@
 				var status = xhr.status || 0;
 				return !status || ( status >= 200 && status < 300 );
 			},
-			processResponse: function( xhr ) {
-				var response = this.evalResponse( xhr );
-				this.response = response;
+			processResponse: function( result, xhr ) {
+				this.response = result;
 				this.fire( 'response', {
-					response: response,
+					response: result,
 					xhr: xhr
 				} );
 			},
@@ -75,6 +80,12 @@
 				var response = xhr.status + ': ' + xhr.responseText;
 				this.fire( 'error', {
 					response: response,
+					xhr: xhr
+				} );
+			},
+			error2: function( error, xhr ) {
+				this.fire( 'error', {
+					error: error,
 					xhr: xhr
 				} );
 			},
@@ -88,7 +99,7 @@
 				var r = xhr.responseText;
 				try {
 					var response = JSON.parse( r );
-					return response.result;
+					return response;
 				} catch ( x ) {
 					return r;
 				}
@@ -97,6 +108,8 @@
 				return this.request_id++;
 			},
 			go: function() {
+				console.log( "rpc.go:", this.method + "/", this.params );
+				var params = simpl4.util.Merge.clone( this.params );
 				var args = this.xhrArgs || {};
 				args.headers = this.headers || {};
 				if ( args.headers && typeof( args.headers ) == 'string' ) {
@@ -107,7 +120,7 @@
 				var password = simpl4.util.Rpc._getPassword();
 				args.headers[ 'Authorization' ] = 'Basic ' + simpl4.util.Base64.encode( username + ":" + password );
 				args.callback = this.receive.bind( this );
-				args.url = simpl4.util.BaseManager.getBaseUrl()+"/rpc/xyz";
+				args.url = simpl4.util.BaseManager.getBaseUrl() + "/rpc/xyz";
 				args.method = 'POST';
 				var body = {
 					jsonrpc: '2.0',
@@ -115,12 +128,12 @@
 					service: this.service,
 					id: this.getId()
 				};
-				if ( this.params && typeof this.params == "string" ) {
-					body.params = JSON5.parse( this.params );
-				}else{ 
-					body.params = this.params|| {};
+				if ( params && typeof params == "string" ) {
+					body.params = JSON5.parse( params );
+				} else {
+					body.params = params || {};
 				}
-				if( (body.params.namespace && body.params.namespace=="default") || this.service == "camelRoute"){
+				if ( ( body.params.namespace && body.params.namespace == "default" ) || this.service == "camelRoute" ) {
 					body.params.namespace = simpl4.util.BaseManager.getNamespace();
 				}
 				args.body = JSON.stringify( body, null, 2 );
