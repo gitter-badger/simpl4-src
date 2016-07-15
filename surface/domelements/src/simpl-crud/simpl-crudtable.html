@@ -403,10 +403,15 @@
 				if ( meta ) {
 					fields = [];
 					for ( var i = 0; i < meta.length; i++ ) {
-						if ( meta[i].data == null  ||  meta[ i ].data.endsWith( "_display" ) ) {
+						if ( meta[i].data == null ) {
 							continue;
 						}
-						fields.push( meta[ i ].data );
+						if ( meta[ i ].data.endsWith( "_display" ) ) {
+							var s = meta[i].data;
+							fields.push( s.substring(0, s.length-8) );
+						}else{
+							fields.push( meta[ i ].data );
+						}
 					}
 				}
 				var p = "data";
