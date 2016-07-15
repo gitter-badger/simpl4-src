@@ -187,7 +187,7 @@
 					this.buttonDef[ "select" ].disabled =
 					this.buttonDef[ "detail" ].disabled = this.selection == null;
 				for ( var i = 0; i < this.buttonList.length; i++ ) {
-					if ( this.buttonList[ i ].name != 'add' && this.buttonList[ i ].name != 'cancel' ) {
+					if ( this.buttonList[ i ].name != 'add' && this.buttonList[ i ].name != 'cancel' && this.buttonList[i].name != "refresh" ) {
 						this.set( "buttonList." + i + ".disabled", this.selection == null );
 					}
 				}
@@ -263,10 +263,13 @@
 				this.entity = this.filter.entity;
 				this.namespace = this.filter.namespace || simpl4.util.BaseManager.getNamespace();
 				var firsttime = false;
-				if ( this.dtMeta == null ) {
+				if ( this.dtMeta == null || this._api == null ) {
 					firsttime = true;
 				}
 				if ( firsttime ) {
+					if( this.dtMeta != null && this.dtMeta.length==0 ){
+						simpl4EntityManager.clearCache();
+					}
 					this.dtMeta = this.preProcessMeta( simpl4EntityManager.getEntityViewFields( this.filter.entity, "main-grid", true, {
 						namespace: this.namespace
 					} ) );
