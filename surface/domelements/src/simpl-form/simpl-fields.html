@@ -1115,7 +1115,7 @@
 				</select>
 			</div>
       <template is="dom-if" if="[[errorMessage]]">
-        <paper-input-error>[[errorMessage]]</paper-input-error>
+        <paper-input-error hidden$="[[!isInvalid]]">[[errorMessage]]</paper-input-error>
       </template>
 		</paper-input-container>
 	</template>
