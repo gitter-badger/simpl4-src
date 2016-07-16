@@ -612,6 +612,9 @@
 						}
 					}
 				}
+				if ( _.isEmpty(shape.properties.xf_required)){
+					shape.properties.xf_required="false";
+				}
 				if ( shape.stencil.id.toLowerCase() == 'textarea' ) {
 					if ( shape.properties.xf_rows == null ) {
 						shape.properties.xf_rows = 3;

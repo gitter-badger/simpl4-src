@@ -325,19 +325,19 @@
 				<iron-icon icon="{{item.xf_iconname}}"></iron-icon>{{item.xf_label}}</xaction-button>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isEnumSelect(item.id)}}">
-			<select-field field class="flex" name$="{{item.xf_id}}" items="{{item.items}}" multiple="[[item.xf_multiselection]]" tabindex$="[[item.xf_tabindex]]" required$="[[item.xf_required]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			<select-field field class="flex" name$="{{item.xf_id}}" items="{{item.items}}" multiple="[[item.xf_multiselection]]" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</select-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isUpload(item.id)}}">
-			<upload-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" enabled-expr$="{{item.xf_enabled}}" required$="[[item.xf_required]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" label="{{item.label}}" raised>
+			<upload-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" enabled-expr$="{{item.xf_enabled}}" required="[[item.xf_required]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</upload-field>
 		</template>
 		<template is="dom-if" if="{{isTableSelect(item.id)}}">
-			<tableselect-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" multi-select="[[item.xf_multiselection]]" required$="[[item.xf_required]]" height="[[item.height]]" items="[[item.items]]" meta="[[item.meta]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			<tableselect-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" multi-select="[[item.xf_multiselection]]" required="[[item.xf_required]]" height="[[item.height]]" items="[[item.items]]" meta="[[item.meta]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</tableselect-field>
 		</template>
 		<template is="dom-if" if="{{isGridInput(item.id)}}">
-			<gridinput-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" required$="[[item.xf_required]]" height="[[item.height]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			<gridinput-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" height="[[item.height]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</gridinput-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isTextArea(item.id)}}">
