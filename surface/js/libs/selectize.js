@@ -1202,8 +1202,8 @@
 			if( hasTouch() ){
 				$control_keyboard    = $('<iron-icon id="kon" float="right" style="margin:2px;margin-left:25px;cursor:pointer;" icon="hardware:keyboard" />').appendTo($dropdown);
 				$control_keyboard_hide    = $('<iron-icon id="koff" float="right" style="margin:2px;margin-left:25px;cursor:pointer;" icon="hardware:keyboard-hide" />').appendTo($dropdown);
-				$wrapper[0].querySelector("#kon").style.color="#212121";
-				$wrapper[0].querySelector("#koff").style.color="#DDDDDD";
+				$control_keyboard[0].style.color="#212121";
+				$control_keyboard_hide[0].style.color="#DDDDDD";
 
 				var initial_screen_size = window.innerHeight;
 				window.addEventListener("resize", function() {
@@ -1211,21 +1211,21 @@
 					console.log("is_keyboard:",is_keyboard);
 					if( !is_keyboard ){
 						$control_input.attr('readonly', true);
-						$wrapper[0].querySelector("#kon").style.color="#212121";
-						$wrapper[0].querySelector("#koff").style.color="#DDDDDD";
+						$control_keyboard[0].style.color="#212121";
+						$control_keyboard_hide[0].style.color="#DDDDDD";
 					}
 				}, false);
 
 				$control_keyboard.on('click', function(e){
 					$control_input.removeAttr('readonly');
 					$control_input.focus();
-					$wrapper[0].querySelector("#kon").style.color="#DDDDDD";
-					$wrapper[0].querySelector("#koff").style.color="#212121";
+					$control_keyboard[0].style.color="#DDDDDD";
+					$control_keyboard_hide[0].style.color="#212121";
 				});
 				$control_keyboard_hide.on('click', function(e){
 					$control_input.attr('readonly', true);
-					$wrapper[0].querySelector("#kon").style.color="#212121";
-					$wrapper[0].querySelector("#koff").style.color="#DDDDDD";
+					$control_keyboard[0].style.color="#212121";
+					$control_keyboard_hide[0].style.color="#DDDDDD";
 				});
 			}
 			if(self.settings.copyClassesToDropdown) {
