@@ -267,12 +267,13 @@
 					firsttime = true;
 				}
 				if ( firsttime ) {
-					if( this.dtMeta != null && this.dtMeta.length==0 ){
-						simpl4EntityManager.clearCache();
-					}
 					this.dtMeta = this.preProcessMeta( simpl4EntityManager.getEntityViewFields( this.filter.entity, "main-grid", true, {
 						namespace: this.namespace
 					} ) );
+				}
+				if( this.dtMeta == null || this.dtMeta.length==0 ){
+					console.error("crudtable.nometa:",this.filter);
+					return;
 				}
 				this.dataSet = this.preProcessData( this.getData( this.filter ) );
 				if ( firsttime ) {
