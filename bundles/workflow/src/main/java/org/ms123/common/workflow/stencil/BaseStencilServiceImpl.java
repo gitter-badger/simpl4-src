@@ -291,7 +291,6 @@ class BaseStencilServiceImpl {
 		InputStream is = new FileInputStream(file);
 		Reader in = new InputStreamReader(is, "UTF-8");
 		String jsonString = readHjson(in).toString(Stringify.FORMATTED);
-System.err.println("jsonString:"+jsonString);
 		Map<String, List> ssMap = (Map) ds.deserialize(jsonString);
 		List<Map> stencilList = ssMap.get("stencils");
 		Map<String,Object> definitions = (Map)ssMap.get("definitions");
