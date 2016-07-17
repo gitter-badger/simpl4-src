@@ -38,9 +38,12 @@ qx.Theme.define("ms123.theme.simpl4.Color",
     "table-row-background-selected" : "#607d8b",
     "table-row-line" : "#c2c2c2",
     "text" : "#212121",
+  	"tooltip" : "#f0f3f5",
+    "tooltip-text" : "#212121",
     "text-disabled" : "#57565A",
     "text-selected" : "white",
     "text-title" : "#314a6e",
+    "background-tip" : "#ffffff",
     "window-border-inner" : "white",
     "window-border" : "white"
   }

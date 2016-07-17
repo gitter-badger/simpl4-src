@@ -60,7 +60,7 @@ qx.Theme.define("ms123.theme.ms.Color",
     "background-splitpane" : "#AFAFAF",
 
     // tooltip, ...
-    "background-tip" : "#ffffdd",
+    "background-tip" : "#ffffff",
 
     // error tooltip
     "background-tip-error": "#C72B2B",
