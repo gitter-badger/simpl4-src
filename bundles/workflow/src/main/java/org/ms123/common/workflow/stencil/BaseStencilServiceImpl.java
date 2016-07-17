@@ -51,6 +51,9 @@ import org.osgi.service.event.Event;
 import net.sf.sojo.common.ObjectGraphWalker;
 import net.sf.sojo.interchange.SerializerException;
 import org.ms123.common.libhelper.Inflector;
+import static org.hjson.JsonValue.readHjson;
+import org.ms123.common.docbook.DocbookService;
+import org.hjson.Stringify;
 
 /**
  *
@@ -60,6 +63,8 @@ class BaseStencilServiceImpl {
 
 	protected MetaData m_gitMetaData;
 	protected EventAdmin m_eventAdmin;
+	protected DocbookService m_docbookService;
+
 	protected Inflector m_inflector = Inflector.getInstance();
 
 	public static String CONVERTER_CLAZZTEMPLATE = "{0}.activiti.jsonconverter.{1}StencilJsonConverter";
@@ -285,7 +290,9 @@ class BaseStencilServiceImpl {
 		File file = new File(gitSpace + "/global/stencilsets", name + ".json");
 		InputStream is = new FileInputStream(file);
 		Reader in = new InputStreamReader(is, "UTF-8");
-		Map<String, List> ssMap = (Map) ds.deserialize(in);
+		String jsonString = readHjson(in).toString(Stringify.FORMATTED);
+System.err.println("jsonString:"+jsonString);
+		Map<String, List> ssMap = (Map) ds.deserialize(jsonString);
 		List<Map> stencilList = ssMap.get("stencils");
 		Map<String,Object> definitions = (Map)ssMap.get("definitions");
 		ssMap.remove("definitions");
@@ -301,7 +308,7 @@ class BaseStencilServiceImpl {
 			//stencilList.addAll(stencils);
 		}
 		long start = new Date().getTime();
-		String s = JsonFilterSerializer.toJson(ssMap,definitions);
+		String s = JsonFilterSerializer.toJson(ssMap,definitions,m_docbookService);
 		return s;
 	}
 
@@ -328,14 +335,16 @@ class BaseStencilServiceImpl {
 	private static class JsonFilterSerializer extends net.sf.sojo.interchange.json.JsonWalkerInterceptor {
 		private JSONSerializer m_js = new JSONSerializer();
 		private Map<String,Object> m_definitions;
-		private JsonFilterSerializer(Map<String,Object> defs){
+		private DocbookService m_docbookService;
+		private JsonFilterSerializer(Map<String,Object> defs, DocbookService docbookService){
 			m_definitions = defs;
+			m_docbookService = docbookService;
 		}
 
-		private static String toJson(Object o,Map<String,Object> definitions) {
+		private static String toJson(Object o,Map<String,Object> definitions, DocbookService docbookService) {
 			ObjectGraphWalker walker = new ObjectGraphWalker();
 			walker.setIgnoreNullValues(true);
-			JsonFilterSerializer interceptor = new JsonFilterSerializer(definitions);
+			JsonFilterSerializer interceptor = new JsonFilterSerializer(definitions, docbookService);
 			walker.addInterceptor(interceptor);
 			walker.walk(o);
 			return interceptor.getJsonString();
@@ -352,6 +361,14 @@ class BaseStencilServiceImpl {
 					String defKey = ((String)pvValue).substring(3);
 					if( m_definitions.get(defKey) != null){
 						jsonString.append(m_js.deepSerialize( m_definitions.get(defKey))).append(",");
+					}
+				}else if( pvValue instanceof String && ((String)pvValue).startsWith("#adoc#")){
+					System.out.println("pvValue"+pvValue);
+					String adoc = ((String)pvValue).substring(6);
+					try{
+						jsonString.append(handleJsonValue(m_docbookService.adocToHtml(adoc))).append(",");
+					}catch(Exception e){
+						jsonString.append(handleJsonValue(e.getMessage())).append(",");
 					}
 				}else{
 					jsonString.append(handleJsonValue(pvValue)).append(",");

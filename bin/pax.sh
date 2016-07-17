@@ -300,6 +300,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/org.eclipse.jgit-4.1.1.201511131810-r.jar \
 	scan-bundle:file:$REPOSITORY/JavaEWAH-0.7.9.jar \
 	scan-bundle:file:$REPOSITORY/org.json_2.0.jar \
+	scan-bundle:file:$REPOSITORY/hjson-1.1.4.bar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.auth-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.auth.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.data-1.0.0.jar \

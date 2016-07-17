@@ -132,7 +132,7 @@ qx.Class.define("ms123.shell.FileType", {
 				{ label: qx.locale.Manager.tr("shell.nt_document"),   value: ms123.shell.Config.DOCUMENT_FT},
 				{ label: qx.locale.Manager.tr("shell.nt_rule"),   value: ms123.shell.Config.RULE_FT},
 				{ label: qx.locale.Manager.tr("shell.nt_camel"),   value: ms123.shell.Config.CAMEL_FT},
-				{ label: qx.locale.Manager.tr("Stencil"),   value: ms123.shell.Config.STENCIL_FT},
+//				{ label: qx.locale.Manager.tr("Stencil"),   value: ms123.shell.Config.STENCIL_FT},
 				{ label: qx.locale.Manager.tr("Groovy"),   value: ms123.shell.Config.GROOVY_FT},
 				{ label: qx.locale.Manager.tr("Nashorn/Javascript"),   value: ms123.shell.Config.NJS_FT},
 				{ label: qx.locale.Manager.tr("Groovy/Bean"),   value: ms123.shell.Config.GROOVY_FT+"/Bean"},

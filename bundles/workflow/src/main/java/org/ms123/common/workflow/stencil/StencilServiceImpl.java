@@ -25,6 +25,7 @@ import java.util.*;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.git.GitService;
+import org.ms123.common.docbook.DocbookService;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PDefaultFloat;
 import org.ms123.common.rpc.PDefaultInt;
@@ -167,5 +168,10 @@ public class StencilServiceImpl extends BaseStencilServiceImpl implements org.ms
 	public void setGitService(GitService gitService) {
 		System.out.println("StencilServiceImpl.setGitService:" + gitService);
 		m_gitMetaData = new GitMetaDataImpl(gitService);
+	}
+	@Reference(dynamic = true, optional = true)
+	public void setDocbookService(DocbookService docbookService) {
+		System.out.println("StencilServiceImpl.setDocbookService:" + docbookService);
+		m_docbookService = docbookService;
 	}
 }
