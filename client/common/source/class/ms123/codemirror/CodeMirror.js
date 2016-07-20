@@ -111,6 +111,9 @@ qx.Class.define( "ms123.codemirror.CodeMirror", {
 			if ( context.helper == "DocumentMarkdown" ) {
 				return new ms123.codemirror.helper.DocumentMarkdown( context );
 			}
+			if ( context.helper == "DocumentAsciidoctor" ) {
+				return new ms123.codemirror.helper.DocumentAsciidoctor( context );
+			}
 			ms123.form.Dialog.alert( "CodeMirror.helper not found:" + context.helper );
 		},
 

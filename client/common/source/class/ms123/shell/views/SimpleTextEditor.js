@@ -44,6 +44,9 @@ qx.Class.define("ms123.shell.views.SimpleTextEditor", {
 		if( type= "text/html"){
 			config.htmlMode=true;
 		}
+		if( type= "text/x-asciidoc"){
+			config.helper = "DocumentAsciidoctor";
+		}
 		
 		this.msgArea = new ms123.codemirror.CodeMirror(config);
 		this.msgArea.set({
