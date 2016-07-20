@@ -157,6 +157,7 @@ cp $FROMCLIENT/legacy/css/xaddr.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/css/style.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/css/images/* $CLIENTLECACYDIRECTORY/css/images
 cp $FROMCLIENT/legacy/css/codemirror.css $CLIENTLECACYDIRECTORY/css
+cp $FROMCLIENT/legacy/css/font-awesome.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/css/asciidoc.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/css/simple-hint.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/js/ckeditor.js.gz $CLIENTLECACYDIRECTORY/js
