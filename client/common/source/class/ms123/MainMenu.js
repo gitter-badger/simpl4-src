@@ -236,8 +236,10 @@ if( _module == null) console.trace();
 				for (var i = 0; i < packs.length; i++) {
 					var pack = packs[i];
 					var namespaceDataStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
-					var modules = new ms123.config.ConfigManager().getEntities(namespaceDataStoreDesc);
-					entityButtons[pack]  = this._createEntityButtons(modules, namespaceDataStoreDesc, null);
+					if( namespaceDataStoreDesc){
+						var modules = new ms123.config.ConfigManager().getEntities(namespaceDataStoreDesc);
+						entityButtons[pack]  = this._createEntityButtons(modules, namespaceDataStoreDesc, null);
+					}
 				}
 				this._createMenu(menu, entityButtons, extraButtons);
 			}
@@ -465,7 +467,7 @@ console.log("modules:",modules);
 					var packMenu = new qx.ui.menu.Menu;
 
 					var entityButtons = entityButtonsMap[pack];
-					if( entityButtons.length==0) continue;
+					if( entityButtons==null || entityButtons.length==0) continue;
 					for (var b = 0; b < entityButtons.length; b++) {
 						var eb = entityButtons[b];
 						if (!eb.getUserData("not_in_menu")) {
