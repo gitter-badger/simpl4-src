@@ -42,6 +42,7 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 	private String output = "html";
 	private String source = null ;
 	private String destination = null ;
+	private boolean enclosingDiv=false;
 
 	public AsciidoctorEndpoint() {
 	}
@@ -75,6 +76,14 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 		 return this.source;
 	}
 
+	public void setEnclosingDiv(boolean b){
+		 this.enclosingDiv = b;
+	}
+
+	public boolean isEnclosingDiv(){
+		 return this.enclosingDiv;
+	}
+
 	@Override
 	public boolean isSingleton() {
 		return true;
@@ -93,6 +102,9 @@ public class AsciidoctorEndpoint extends ResourceEndpoint {
 		Message out = exchange.getIn();
 		if( "html".equals(this.output)){
 			String html = ds.adocToHtml( text);
+			if( isEnclosingDiv()){
+				html = "<div>" + html + "</div>";
+			}
 		  ExchangeUtils.setDestination(this.destination,html , exchange);
 		}else{
 			String docbook = ds.adocToDocbook( text);
