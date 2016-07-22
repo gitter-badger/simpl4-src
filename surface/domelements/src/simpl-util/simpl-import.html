@@ -29,6 +29,9 @@
 				data: {
 					type: Object
 				},
+				type: {
+					type: String
+				},
 				method: {
 					type: String
 				},
@@ -113,6 +116,7 @@
 				this.setStyleScope( insertPoint, scope );
 			},
 			isAsciidoc: function( url ) {
+				if( this.type == "adoc") return true;
 				if( url == null) return false;
 				return url.indexOf( ".adoc" ) > 0;
 			}
