@@ -261,8 +261,8 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 
 			toolbar.setSpacing(5);
 			toolbar.addSpacer();
-			var buttonDel = new qx.ui.toolbar.Button(this.tr("entitytypes.delete"), "icon/16/places/user-trash.png");
-			buttonDel.addListener("execute", function () {
+			var buttonDelEntityType = new qx.ui.toolbar.Button(this.tr("entitytypes.delete"), "icon/16/places/user-trash.png");
+			buttonDelEntityType.addListener("execute", function () {
 				var x = this._deleteIsOk(this._classForm.getData());
 				if (x) {
 					ms123.form.Dialog.alert(this.tr("entitytypes.delete_not_possible") + ":" + x);
@@ -270,13 +270,10 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 				}
 				this._confirmDelete();
 			}, this);
-			toolbar._add(buttonDel);
+			toolbar._add(buttonDelEntityType);
 			if (this._isNew) {
-				buttonDel.setEnabled(false);
+				buttonDelEntityType.setEnabled(false);
 			}
-			this._buttonDel = buttonDel;
-
-
 
 			toolbar.add(new qx.ui.core.Spacer(), {
 				flex: 1
