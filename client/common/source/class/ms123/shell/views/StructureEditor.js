@@ -37,11 +37,12 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 		this._model = model;
 		this._etdata = null;
 		this.storeDesc = context.storeDesc;
-		this._createLevelList();
 		this._createUseList();
 		qx.Class.include( qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode );
 
+		console.log( "_createTable.this:", this );
 		var columnmodel = this._createColumnModel();
+		console.log( "_createTable:", this._createTable );
 		var table = this._createTable( columnmodel );
 		this._doLayout( table, columnmodel );
 	},
@@ -160,21 +161,6 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				"label": "Menu,Doc"
 			} ];
 		},
-		_createLevelList: function() {
-			this._levelList = [ {
-				"value": "2",
-				"label": "=="
-			}, {
-				"value": "3",
-				"label": "==="
-			}, {
-				"value": "4",
-				"label": "===="
-			}, {
-				"value": "5",
-				"label": "====="
-			} ];
-		},
 		_translate: function( o ) {
 			if ( typeof o == "string" ) {
 				if ( o.match( /^%/ ) ) {
@@ -190,8 +176,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				o[ i ] = this._translate( o[ i ] );
 			}
 			return o;
-		}
-	},
+		},
 		/**
 		---------------------------------------------------------------------------
 		   DRAG & DROP
@@ -703,4 +688,5 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 		_load: function() {
 			return [];
 		}
-} );
+	}
+} )
