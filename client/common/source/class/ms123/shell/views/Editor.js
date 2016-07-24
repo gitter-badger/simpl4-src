@@ -51,6 +51,8 @@ qx.Class.define("ms123.shell.views.Editor", {
 			widget = this._handleDatamapper(model);
 		}else if( model.getType() == ms123.shell.Config.DATASOURCE_FT ){
 			widget = this._handleDatasource(model);
+		}else if( model.getType() == ms123.shell.Config.STRUCTURE_FT ){
+			widget = this._handleStructure(model);
 		}else if( model.getType() == ms123.shell.Config.GROOVY_FT ){
 			widget = this._handleGroovy(model);
 		}else if( model.getType() == ms123.shell.Config.NJS_FT ){
@@ -215,6 +217,21 @@ qx.Class.define("ms123.shell.views.Editor", {
 			re.init(content);
 			return re;
 		},
+		_handleStructure:function(model){
+			var context = {};
+			context.storeDesc = this.facade.storeDesc;
+			context.name = model.getValue();
+			context.model = model;
+			var re = new ms123.shell.views.StructureEditor(context);
+			this._realEditor = re;
+			re.addListener("save", function(e){
+				var data = e.getData();
+				this._saveStructure( model, data);
+			}, this);
+			var content = this._getContent(model.getPath());
+			re.init(content);
+			return re;
+		},
 		_handleStencil:function(model){
 			console.log("_handleStencil:"+model);
 			var context = {};
@@ -332,6 +349,33 @@ qx.Class.define("ms123.shell.views.Editor", {
 			var params = {
 				method:"saveAddonStencil",
 				service:"stencil",
+				parameter:rpcParams,
+				async: false,
+				context: this,
+				completed: completed,
+				failed: failed
+			}
+			ms123.util.Remote.rpcAsync(params);
+		},
+		_saveStructure: function (model, content) {
+			var path = model.getPath();
+			var completed = (function (e) {
+				ms123.form.Dialog.alert(this.tr("shell.structure_saved"));
+			}).bind(this);
+
+			var failed = (function (e) {
+				ms123.form.Dialog.alert(this.tr("shell.structure_save_failed")+":"+e.message);
+			}).bind(this);
+
+			var rpcParams = {
+				namespace:this.facade.storeDesc.getNamespace(),
+				name:path,
+				data: content
+			};
+
+			var params = {
+				method:"saveStructure",
+				service:"docbook",
 				parameter:rpcParams,
 				async: false,
 				context: this,
