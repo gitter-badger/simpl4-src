@@ -26,12 +26,13 @@
 /**
  */
 qx.Class.define( "ms123.shell.views.StructureEditor", {
-	extend: ms123.util.TableEdit,
+	extend: qx.ui.container.Composite,
 
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
 	construct: function( context ) {
+		this.base( arguments );
 		var model = context.model;
 		this._model = model;
 		this._etdata = null;
@@ -40,7 +41,9 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 		this._createUseList();
 		qx.Class.include( qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode );
 
-		this.base( arguments );
+		var columnmodel = this._createColumnModel();
+		var table = this._createTable( columnmodel );
+		this._doLayout( table, columnmodel );
 	},
 	/******************************************************************************
 	 EVENTS
@@ -63,7 +66,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 
 			var dataModel = this._dataModel;
 			var tree = this._table;
-						tree.setRowHeight( 24 );
+			tree.setRowHeight( 24 );
 
 			var tm = new TreeModel();
 			var root = tm.parse( {
@@ -77,7 +80,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				var parentTreeNode = node.parent ? map[ this._getPath( node.parent.getPath() ) ] : 0;
 				var treeNode = null;
 				if ( isLeaf ) {
-					treeNode = dataModel.addLeaf( parentTreeNode, node.model.name );
+					treeNode = dataModel.addLeaf( parentTreeNode, this._getTitle( node ) );
 				} else {
 					treeNode = dataModel.addBranch( parentTreeNode, this._getTitle( node ), parentTreeNode == 0 ? true : false );
 					map[ path ] = treeNode;
@@ -88,21 +91,22 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 
 			dataModel.setData();
 		},
-		_init: function( content ) {},
+		/**
+		---------------------------------------------------------------------------
+		   COLUMNMODEL
+		---------------------------------------------------------------------------
+		*/
 		_createColumnModel: function() {
 			var columnmodel = [ {
-				name: "title",
+				name: "title_tr",
 				type: "TextField",
 				width: 180,
-				label: this.tr( "structure.title" )
+				label: "x"
 			}, {
-				name: "use",
-				type: "SelectBox",
-				width: 15,
-				value: "m",
-				readonly: false,
-				options: this._useList,
-				label: this.tr( "structure.use" )
+				name: "title",
+				type: "TextField",
+				width: 120,
+				label: this.tr( "structure.title" )
 			}, {
 				name: "description",
 				type: "TextField",
@@ -115,7 +119,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				label: this.tr( "structure.uri" ),
 				width: 120,
 				validation: {
-		//			required: true
+					//			required: true
 				},
 				'value': ""
 			}, {
@@ -124,6 +128,14 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				label: this.tr( "structure.icon" ),
 				width: 40,
 				'value': ""
+			}, {
+				name: "use",
+				type: "SelectBox",
+				width: 15,
+				value: "m",
+				readonly: false,
+				options: this._useList,
+				label: this.tr( "structure.use" )
 			}, {
 				name: "enabled",
 				type: "CheckBox",
@@ -139,39 +151,71 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			}
 			return this._columnModel;
 		},
-		/*
+		_createUseList: function() {
+			this._useList = [ {
+				"value": "m",
+				"label": "Menu"
+			}, {
+				"value": "md",
+				"label": "Menu,Doc"
+			} ];
+		},
+		_createLevelList: function() {
+			this._levelList = [ {
+				"value": "2",
+				"label": "=="
+			}, {
+				"value": "3",
+				"label": "==="
+			}, {
+				"value": "4",
+				"label": "===="
+			}, {
+				"value": "5",
+				"label": "====="
+			} ];
+		},
+		_translate: function( o ) {
+			if ( typeof o == "string" ) {
+				if ( o.match( /^%/ ) ) {
+					var tr = this.tr( o.substring( 1 ) ).toString();
+					if ( tr ) {
+						o = tr;
+					}
+				}
+				return o;
+			}
+			for ( var i in o ) {
+				if ( typeof o[ i ] == "function" ) continue;
+				o[ i ] = this._translate( o[ i ] );
+			}
+			return o;
+		}
+	},
+		/**
 		---------------------------------------------------------------------------
 		   DRAG & DROP
 		---------------------------------------------------------------------------
 		*/
-
-		/**
-		 * Called when the user starts dragging a node
-		 * @param e {qx.event.type.Drag}
-		 */
 		_on_dragstart: function( e ) {
 			this.__dragsession = true;
 		},
 
-		/**
-		 * Called when the drag session ends
-		 * @param e {qx.event.type.Drag}
-		 */
 		_on_dragend: function( e ) {
 			this.__dragsession = false;
 		},
 
-		/**
-		 * Called when a dragged element is dropped onto the tree widget.
-		 * Override for your own behavior
-		 * @param e {qx.event.type.Drag}
-		 */
 		_on_drop: function( e ) {
 			if ( e.supportsType( "qx/treevirtual-node" ) ) {
 				this._table.moveNode( e );
 			}
 		},
 
+		/**
+		---------------------------------------------------------------------------
+		   DATAMODEL ACCESS
+		---------------------------------------------------------------------------
+		*/
 		_colIndex: function( name ) {
 			return this._columnMap[ name ];
 		},
@@ -185,10 +229,21 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			return ret;
 		},
 		_getTitle: function( node ) {
-			if( !node.model ){
-				return node.title;
+			if ( !node.model ) {
+				return this.tr( node.title_tr );
 			}
-			return node.model.name || "";
+			if ( node.model.name ) {
+				return this.tr( node.model.name );
+			}
+			return "";
+		},
+		_getDefaultValues: function() {
+			var fdata = {};
+			for ( var i = 0; i < this._columnModel.length; i++ ) {
+				var col = this._columnModel[ i ];
+				fdata[ col.name ] = col.value;
+			}
+			return fdata;
 		},
 		_setNodeData: function( nodeId, _data ) {
 			var data = this._getDefaultValues();
@@ -197,11 +252,14 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				var name = this._columnModel[ i ].name;
 				this._dataModel.setColumnData( nodeId, i, data[ name ] );
 			}
-			if( data.url ){
+			if ( data.url ) {
 				this._dataModel.setColumnData( nodeId, this._colIndex( "uri" ), data.url );
 			}
 			if ( _data.disabled === true ) {
 				this._dataModel.setColumnData( nodeId, this._colIndex( "enabled" ), false );
+			}
+			if ( data.name ) {
+				this._dataModel.setColumnData( nodeId, this._colIndex( "title" ), data.name );
 			}
 		},
 		_getNodeData: function( nodeId ) {
@@ -214,43 +272,53 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 		},
 		_deleteRecordAtPos: function( pos ) {
 			var dataModel = this._dataModel;
-			var node = dataModel.getNode(pos);
-			dataModel.prune(node, true );
+			var node = dataModel.getNode( pos );
+			dataModel.prune( node, true );
 			dataModel.setData();
 		},
 		_addRecordAtPos: function( pos, data ) {
 			var dataModel = this._dataModel;
-			var node = pos ? dataModel.getNode(pos) : {};
-			var pnode = node.parentNodeId||0;
+			var node = pos ? dataModel.getNode( pos ) : {};
+			var pnode = node.parentNodeId || 0;
 			var newNode = null;
-			if ( data.uri == null || data.uri == "") {
-				newNode = dataModel.addLeaf( pnode, node.model.name );
+			if ( data.uri == null || data.uri == "" ) {
+				newNode = dataModel.addLeaf( pnode, this.tr( data.title ) );
 			} else {
-				newNode = dataModel.addBranch( pnode, this._getTitle( data ), pnode == 0 ? true : false );
+				newNode = dataModel.addBranch( pnode, this.tr( data.title ), pnode == 0 ? true : false );
 			}
-			newNode.label = data.title;
 			this._setNodeData( newNode, data );
 			dataModel.setData();
 		},
 		_setRecordAtPos: function( pos, data ) {
-			var node = this._dataModel.getNode(pos);
-			this._setNodeData(node.nodeId, data);
-			node.label = data.title;
+			var node = this._dataModel.getNode( pos );
+			this._setNodeData( node.nodeId, data );
+			node.label = this.tr( data.title );
 			this._dataModel.setData();
 		},
 		_getRecordAtPos: function( pos ) {
-			var node = this._dataModel.getNode(pos);
-			console.log("node:",node);
+			var node = this._dataModel.getNode( pos );
 			var nodeId = node.nodeId;
 			var data = this._getDefaultValues();
-			var ndata = this._getNodeData(nodeId);
+			var ndata = this._getNodeData( nodeId );
 			qx.lang.Object.mergeWith( data, ndata );
-			console.log("data:",data);
-			data.title = node.label;
+			data.title_tr = node.label;
 			return data;
 		},
+		/**
+		---------------------------------------------------------------------------
+		   LAYOUT
+		---------------------------------------------------------------------------
+		*/
 		_doLayout: function( table, columnmodel ) {
-			this.base( arguments, table, columnmodel );
+			this.setLayout( new qx.ui.layout.Dock() );
+			this.add( table, {
+				edge: "center"
+			} );
+			var tb = this._createToolbar();
+			this.add( tb, {
+				edge: "south"
+			} );
+
 			var sp = this._createGlobalForm();
 			this.add( sp, {
 				edge: "north"
@@ -287,7 +355,11 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			return form;
 		},
 
-		_createFieldEdit: function() {},
+		/**
+		---------------------------------------------------------------------------
+		   TOOLBAR
+		---------------------------------------------------------------------------
+		*/
 		_createToolbar: function() {
 			var toolbar = new qx.ui.toolbar.ToolBar();
 
@@ -299,7 +371,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				this._table.stopEditing();
 				if ( !this._editForm ) {
 					this._editForm = this._createEditForm( this._columnModel );
-					this._editWindow = this._createPropertyEditWindow();
+					this._editWindow = this._createEditWindow();
 					this._editWindow.add( this._editForm );
 				}
 				this._configButtons();
@@ -320,7 +392,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				var curRecord = this._getRecordAtPos( this._currentTableIndex );
 				if ( !this._editForm ) {
 					this._editForm = this._createEditForm( this._columnModel );
-					this._editWindow = this._createPropertyEditWindow();
+					this._editWindow = this._createEditWindow();
 					this._editWindow.add( this._editForm );
 				}
 				this._configButtons();
@@ -339,7 +411,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				var curRecord = this._getRecordAtPos( this._currentTableIndex );
 				this._insertRecordAtPos( curRecord, this._currentTableIndex + 1 );
 			}, this );
-			toolbar._add( this._buttonCopy );
+			//toolbar._add( this._buttonCopy );
 			this._buttonCopy.setEnabled( false );
 
 
@@ -354,8 +426,6 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			toolbar.setSpacing( 5 );
 			toolbar.addSpacer();
 
-
-
 			toolbar.add( new qx.ui.core.Spacer(), {
 				flex: 1
 			} );
@@ -368,24 +438,15 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			this._toolbar = toolbar;
 			return toolbar;
 		},
+		/**
+		---------------------------------------------------------------------------
+		   TREETABLE
+		---------------------------------------------------------------------------
+		*/
 		_createTable: function( tableColumns ) {
-			var colIds = new Array();
-			var colHds = new Array();
-
-			for ( var i = 0; i < tableColumns.length; i++ ) {
-				var col = tableColumns[ i ];
-				colIds.push( col.name );
-				colHds.push( col.header || col.label );
-			}
-			//			this._dataModel = this._createTableModel();
-			//			this._dataModel.setColumns(colHds, colIds);
-
 			var customMap = {
 				tableColumnModel: function( obj ) {
 					return new qx.ui.table.columnmodel.Resize( obj );
-				},
-				tablePaneScroller: function( obj ) {
-					return new qx.ui.table.pane.Scroller( obj );
 				}
 			};
 			var colArr = [];
@@ -403,11 +464,9 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 
 			var tcm = table.getTableColumnModel();
 
-			console.log( "TCM:", this._dataModel );
 			var booleanCellRendererFactory = new qx.ui.table.cellrenderer.Dynamic( this._booleanCellRendererFactoryFunc );
 			var booleanCellEditorFactory = new qx.ui.table.celleditor.Dynamic( this._booleanCellEditorFactoryFunc );
 
-			table.addListener( "cellTap", this._onCellClick, this, false );
 			this._booleanCols = [];
 			for ( var i = 0; i < tableColumns.length; i++ ) {
 				var col = tableColumns[ i ];
@@ -478,49 +537,61 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				}
 				if ( col.width !== undefined ) {
 					var resizeBehavior = tcm.getBehavior();
-					//resizeBehavior.setWidth(i, col.width);
 					resizeBehavior.setMinWidth( i, col.width );
 				}
 			}
-			this._createTableListener( table );
 			this._table = table;
-			this._createPropertyEdit( tableColumns );
+			this._dataModel = table.getTableModel();
+
+			this._createTableListener( table );
 			return table;
 		},
 		_createTableListener: function( table ) {
-			this._dataModel = table.getTableModel();
+			table.addListener( 'dataEdited', function( e ) {
+				var data = e.getData();
+				if ( data.col != this._colIndex( "title" ) ) {
+					return;
+				}
+				var node = this._dataModel.getNode( data.row );
+				node.label = this.tr( data.value );
+				this._dataModel.setData();
+			}, this );
+
 			var selModel = table.getSelectionModel();
 			selModel.setSelectionMode( qx.ui.table.selection.Model.SINGLE_SELECTION );
 			selModel.addListener( "changeSelection", function( e ) {
-				var index = selModel.getLeadSelectionIndex();
-				console.log( "Index:", index );
 
-				//			var map = this._dataModel.getRowDataAsMap( index );
 				var count = selModel.getSelectedCount();
 				if ( count == 0 ) {
 					if ( this._buttonEdit ) this._buttonEdit.setEnabled( false );
-					//					if (this._buttonSave) this._buttonSave.setEnabled(false);
 					if ( this._buttonDel ) this._buttonDel.setEnabled( false );
 					if ( this._buttonCopy ) this._buttonCopy.setEnabled( false );
 					return;
 				}
+				var index = selModel.getLeadSelectionIndex();
 				this._currentTableIndex = index;
 				this._currentNodeId = this._dataModel.getNodeFromRow( index );
 				this._currentRowData = this._dataModel.getRowData( index );
-				console.log( "Node:", this._currentNodeId );
-				console.log( "Data:", this._currentRowData );
 				if ( this._buttonEdit ) this._buttonEdit.setEnabled( true );
 				if ( this._buttonSave ) this._buttonSave.setEnabled( true );
 				if ( this._buttonDel ) this._buttonDel.setEnabled( true );
 				if ( this._buttonCopy ) this._buttonCopy.setEnabled( true );
 			}, this );
-			for ( var i = 0; i < this._columnModel.length; i++ ) {
-				//		this._dataModel.setColumnSortable( i, false );
-			}
 		},
+		_booleanCellRendererFactoryFunc: function( cellInfo ) {
+			return new qx.ui.table.cellrenderer.Boolean;
+		},
+		_booleanCellEditorFactoryFunc: function( cellInfo ) {
+			return new qx.ui.table.celleditor.CheckBox;
+		},
+		/**
+		---------------------------------------------------------------------------
+		   EDITFORM
+		---------------------------------------------------------------------------
+		*/
 		_createEditForm: function() {
 			var formData = {};
-			for ( var i = 0; i < this._columnModel.length; i++ ) {
+			for ( var i = 1; i < this._columnModel.length; i++ ) {
 				var col = this._columnModel[ i ];
 				formData[ col.name ] = col;
 			}
@@ -550,6 +621,24 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			} ];
 			var form = new ms123.widgets.Form( context );
 			return form;
+		},
+		_createEditWindow: function() {
+			var win = new qx.ui.window.Window( "", "" ).set( {
+				resizable: true,
+				useMoveFrame: true,
+				useResizeFrame: true
+			} );
+			win.setLayout( new qx.ui.layout.Grow );
+			win.setWidth( 600 );
+			win.setHeight( 300 );
+			win.setAllowMaximize( false );
+			win.setAllowMinimize( false );
+			win.setModal( true );
+			win.setActive( false );
+			win.minimize();
+			win.center();
+			this.getApplicationRoot().add( win );
+			return win;
 		},
 		_configButtons: function() {
 			var buttons = this._editForm.getButtons();
@@ -596,44 +685,17 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 						index = this._currentTableIndex;
 					}
 				}
-				//this._dataModel.addRowsAsMapArray( [ m ], index, true );
 				this._addRecordAtPos( index, m );
 				form.fillForm( this._getDefaultValues() );
 			}
 		},
-		_getDefaultValues: function() {
-			var fdata = {};
-			for ( var i = 0; i < this._columnModel.length; i++ ) {
-				var col = this._columnModel[ i ];
-				fdata[ col.name ] = col.value;
-			}
-			return fdata;
-		},
-		_createUseList: function() {
-			this._useList = [ {
-				"value": "m",
-				"label": "Menu"
-			}, {
-				"value": "md",
-				"label": "Menu,Doc"
-			} ];
-		},
-		_createLevelList: function() {
-			this._levelList = [ {
-				"value": "2",
-				"label": "=="
-			}, {
-				"value": "3",
-				"label": "==="
-			}, {
-				"value": "4",
-				"label": "===="
-			}, {
-				"value": "5",
-				"label": "====="
-			} ];
-		},
+		/**
+		---------------------------------------------------------------------------
+		   SAVE/LOAD
+		---------------------------------------------------------------------------
+		*/
 		_save: function() {
+			this._table.stopEditing();
 			var data = this._getRecords();
 			console.log( "Data:" + JSON.stringify( data, null, 2 ) );
 			this.fireDataEvent( "save", JSON.stringify( data, null, 2 ) );
@@ -641,5 +703,4 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 		_load: function() {
 			return [];
 		}
-	}
 } );
