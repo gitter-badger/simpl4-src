@@ -22,7 +22,7 @@
  * Provides drag&drop to TreeVirtual. Currently, only the "move" action is
  * supported.
  */
-qx.Class.define( "ms123.shell.views.DragDropTree", {
+qx.Class.define( "ms123.util.DragDropTree", {
 
 	extend: qx.ui.treevirtual.TreeVirtual,
 	include: [ qx.ui.treevirtual.MNode ],
@@ -240,7 +240,7 @@ qx.Class.define( "ms123.shell.views.DragDropTree", {
 		_createIndicator: function() {
 			this._indicator = new qx.ui.core.Widget();
 			this._indicator.set( {
-				backgroundColor: "#cfd8dc",
+				backgroundColor: "#ff5252",
 				zIndex: 100,
 				droppable: true
 			} );
@@ -260,7 +260,7 @@ qx.Class.define( "ms123.shell.views.DragDropTree", {
 		 * Show indicator
 		 */
 		_showIndicator: function() {
-			this._indicator.setOpacity( 0.5 );
+			this._indicator.setOpacity( 1.0 );
 		},
 
 		/**
@@ -424,6 +424,12 @@ qx.Class.define( "ms123.shell.views.DragDropTree", {
 			}
 		},
 
+    setIndicatorHeight : function(widget, value) {
+      var domEl = this._indicator.getContentElement().getDomElement();
+      if (domEl) {
+        domEl.style.height =  "8px";
+      }
+    },
 		/**
 		 * Handle the bahavior of the indicator in between tree nodes
 		 * @param dragDetails {Map}
@@ -431,6 +437,7 @@ qx.Class.define( "ms123.shell.views.DragDropTree", {
 		 */
 		_processDragInBetween: function( dragDetails ) {
 			var result = 0;
+			this.setIndicatorHeight();
 			if ( this.getAllowDropBetweenNodes() ) {
 				if ( dragDetails.deltaY < 13 || dragDetails.deltaY > ( dragDetails.rowHeight - 13 ) ) {
 					if ( dragDetails.deltaY < 13 ) {

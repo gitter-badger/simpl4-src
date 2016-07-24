@@ -222,7 +222,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 			context.storeDesc = this.facade.storeDesc;
 			context.name = model.getValue();
 			context.model = model;
-			var re = new ms123.shell.views.StructureEditor(context);
+			var re = new ms123.structureditor.StructureEditor(context);
 			this._realEditor = re;
 			re.addListener("save", function(e){
 				var data = e.getData();

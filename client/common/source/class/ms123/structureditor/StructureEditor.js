@@ -25,7 +25,7 @@
 
 /**
  */
-qx.Class.define( "ms123.shell.views.StructureEditor", {
+qx.Class.define( "ms123.structureditor.StructureEditor", {
 	extend: qx.ui.container.Composite,
 
 	/******************************************************************************
@@ -102,7 +102,7 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 				name: "title_tr",
 				type: "TextField",
 				width: 180,
-				label: "x"
+				label: ""
 			}, {
 				name: "title",
 				type: "TextField",
@@ -182,15 +182,15 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 		   DRAG & DROP
 		---------------------------------------------------------------------------
 		*/
-		_on_dragstart: function( e ) {
+		_onDragstart: function( e ) {
 			this.__dragsession = true;
 		},
 
-		_on_dragend: function( e ) {
+		_onDragend: function( e ) {
 			this.__dragsession = false;
 		},
 
-		_on_drop: function( e ) {
+		_onDrop: function( e ) {
 			if ( e.supportsType( "qx/treevirtual-node" ) ) {
 				this._table.moveNode( e );
 			}
@@ -275,10 +275,11 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			dataModel.setData();
 		},
 		_setRecordAtPos: function( pos, data ) {
-			var node = this._dataModel.getNode( pos );
+			var dataModel = this._dataModel;
+			var node = dataModel.getNode( pos );
 			this._setNodeData( node.nodeId, data );
 			node.label = this.tr( data.title );
-			this._dataModel.setData();
+			dataModel.setData();
 		},
 		_getRecordAtPos: function( pos ) {
 			var node = this._dataModel.getNode( pos );
@@ -438,14 +439,14 @@ qx.Class.define( "ms123.shell.views.StructureEditor", {
 			for ( var i = 0; i < this._columnModel.length; i++ ) {
 				colArr.push( this._columnModel[ i ].label );
 			}
-			var table = new ms123.shell.views.DragDropTree( colArr, customMap );
+			var table = new ms123.util.DragDropTree( colArr, customMap );
 			table.setEnableDragDrop( true );
 			table.setStatusBarVisible( false );
 			this._dataModel = table.getDataModel();
 
-			table.addListener( "dragstart", this._on_dragstart, this );
-			table.addListener( "dragend", this._on_dragend, this );
-			table.addListener( "drop", this._on_drop, this );
+			table.addListener( "dragstart", this._onDragstart, this );
+			table.addListener( "dragend", this._onDragend, this );
+			table.addListener( "drop", this._onDrop, this );
 
 			var tcm = table.getTableColumnModel();
 
