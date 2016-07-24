@@ -122,6 +122,7 @@ public class GitServiceImpl implements GitService {
 			add("sw.enum");
 			add("sw.messageslang");
 			add("sw.datasource");
+			add("sw.structure");
 		}
 	};
 

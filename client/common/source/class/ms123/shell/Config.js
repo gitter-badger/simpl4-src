@@ -91,6 +91,7 @@ qx.Class.define("ms123.shell.Config", {
 		NJS_FT: "sw.njs",
 		DATAMAPPER_FT: "sw.datamapper",
 		DATASOURCE_FT: "sw.datasource",
+		STRUCTURE_FT: "sw.structure",
 		DOCUMENT_FT: "sw.document"
 
 	}

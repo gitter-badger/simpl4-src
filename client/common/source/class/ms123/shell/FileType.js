@@ -57,6 +57,8 @@ qx.Class.define("ms123.shell.FileType", {
 					return "resource/ms123/datamapper.png";
 				}else if (type == ms123.shell.Config.DATASOURCE_FT) {
 					return "resource/ms123/datasource.png";
+				}else if (type == ms123.shell.Config.STRUCTURE_FT) {
+					return "resource/ms123/structure.png";
 				}else if (type == "image/svg+xml") {
 					return "resource/ms123/svg.png";
 				}else if (type == "image/png") {
@@ -82,7 +84,7 @@ qx.Class.define("ms123.shell.FileType", {
 			return "resource/ms123/file.png";
 		},
 		getAllEditables:function(){
-				return  ["sw.rule","sw.process","sw.filter", "sw.form", "sw.camel", "sw.groovy", "sw.njs", "sw.java", "sw.datamapper", "sw.datasource", "sw.document"];
+				return  ["sw.rule","sw.process","sw.filter", "sw.form", "sw.camel", "sw.groovy", "sw.njs", "sw.java", "sw.datamapper", "sw.datasource", "sw.structure", "sw.document"];
 		},
 		getAllJsonEditables:function(){
 				return  ["sw.rule","sw.process","sw.filter", "sw.form","sw.camel",  "sw.datamapper", "sw.document"];
@@ -119,6 +121,7 @@ qx.Class.define("ms123.shell.FileType", {
 			iconMap[ms123.shell.Config.JAVA_FT]= "resource/ms123/java.png";
 			iconMap[ms123.shell.Config.DATAMAPPER_FT]= "resource/ms123/datamapper.png";
 			iconMap[ms123.shell.Config.DATASOURCE_FT]= "resource/ms123/datasource.png";
+			iconMap[ms123.shell.Config.STRUCTURE_FT]= "resource/ms123/structure.png";
 			iconMap[ms123.shell.Config.RULE_FT] = ms123.shell.FileType._getIconUrl("bpmn/activity/list/type.business.rule.png");
 			iconMap[ms123.shell.Config.FORM_FT] = ms123.shell.FileType._getIconUrl("bpmn/activity/list/type.user.png");
 			iconMap[ms123.shell.Config.DOCUMENT_FT] = ms123.shell.FileType._getIconUrl("bpmn/activity/list/type.document.png");
@@ -142,6 +145,7 @@ qx.Class.define("ms123.shell.FileType", {
 				{ label: qx.locale.Manager.tr("Java/Processor"),   value: ms123.shell.Config.JAVA_FT+"/Processor"},
 				{ label: qx.locale.Manager.tr("shell.nt_datamapper"),   value: ms123.shell.Config.DATAMAPPER_FT},
 				{ label: qx.locale.Manager.tr("shell.nt_datasource"),   value: ms123.shell.Config.DATASOURCE_FT},
+				{ label: qx.locale.Manager.tr("shell.nt_structure"),   value: ms123.shell.Config.STRUCTURE_FT},
 				{ label: qx.locale.Manager.tr("shell.nt_filter"),   value: ms123.shell.Config.FILTER_FT},
 				{ label: "Text",   value: "text/plain"}
 			]
