@@ -261,10 +261,12 @@ qx.Class.define("ms123.form.Form", {
 			this.buttonPane = buttonPane;
 			groupboxContainer.add(buttonPane);
 
+			this._buttonMap = {};
 			if (this._buttons) {
 				for (var i = 0; i < this._buttons.length; i++) {
 					var b = this._createButton(this._buttons[i]);
 					buttonPane.add(b);
+					this._buttonMap[this._buttons[i].value] = b;
 				}
 			} else {
 				/**
@@ -1127,6 +1129,10 @@ qx.Class.define("ms123.form.Form", {
 			}, this);
 			b.button = button;
 			return button;
+		},
+
+		getButtons:function(){
+			return this._buttonMap;
 		},
 
 		setReadonly: function (readonly) {

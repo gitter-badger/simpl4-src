@@ -678,6 +678,9 @@ qx.Class.define('ms123.widgets.Form', {
 			}
 			return map;
 		},
+		getButtons:function(){
+			return this.form.getButtons();
+		},
 		setMode: function (mode) {
 			this._mode = mode;
 		},
@@ -981,7 +984,7 @@ console.log("setName2:"+name);
 						for (var i = 0; i < buttons.length; i++) {
 							var b = buttons[i];
 							if (b.value == v && b.callback) {
-								b.callback.call(self, map);
+								b.callback.call(self, map, v);
 							}
 						}
 					} else {
