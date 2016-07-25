@@ -43,10 +43,10 @@
 			--iron-icon-height: 24px;
 			--iron-icon-width: 24px;
 		}
-
 		iron-icon {
 			pointer-events: none;
 		}
+
 	</style>
 	<template>
 		<content></content>
@@ -69,15 +69,14 @@
 			behaviors: [
 				StyleScopeBehavior
 			],
-			attached: function() {
-			},
+			attached: function() {},
 			ready: function() {
 				this.context = null;
 				this.backgroundColor = "invalid";
 				this.classes = "mm-white mm-zoom-panels";
 				//console.log( "mmenu.globalsChanged:", simpl4Globals.getAll() );
 				var nodes = this._getMenuYaml();
-				this._createTree(nodes);
+				this._createTree( nodes );
 				this._createMenu()
 					//				this.context = "class2";
 				this.setStyleScope( this._mainmenu, "style-scope", this.tagName.toLowerCase() );
@@ -94,7 +93,7 @@
 				var li = $( document.querySelector( '#x' + page.hash ) );
 				var i = 0;
 				var $e = li.parent();
-				while ( $e.length>0 && i++ < 10 ) {
+				while ( $e.length > 0 && i++ < 10 ) {
 					if ( $e.prop( "tagName" ) === "DIV" ) {
 						this.openPanel( $e );
 						break;
@@ -140,7 +139,7 @@
 				} ).bind( this ), 5000 );
 				this.async( function() {} );
 			},
-			_createTree: function(nodes) {
+			_createTree: function( nodes ) {
 				var nav = document.createElement( 'nav' );
 				this._mainmenu = nav;
 				var ul = document.createElement( 'ul' );
@@ -252,11 +251,28 @@
 				} ).bind( this ) );
 			},
 			_getMenuYaml: function() {
-				var nodes = jQuery.ajax( {
+				var nodes = null;
+				nodes = jQuery.ajax( {
 					url: this.name + ".yaml",
 					async: false,
+					error: function() {
+						console.log( this.name + '.yaml not found.' );
+					},
 					dataType: "json"
 				} ).responseText;
+
+				console.log( "nodes:", _.isEmpty( nodes ) );
+				if ( _.isEmpty( nodes ) ) {
+					var nodes = jQuery.ajax( {
+						url: this.name + ".json",
+						async: false,
+						error: function() {
+							console.log( this.name + '.json not found.' );
+						},
+						dataType: "json"
+					} ).responseText;
+				}
+
 				try {
 					nodes = JSON.parse( nodes );
 				} catch ( e ) {
@@ -265,31 +281,35 @@
 					return;
 				}
 				var pages = [];
-				this._traverse( nodes,pages );
+				this._traverse( nodes, pages );
 				return nodes;
 			},
-			_traverse: function( nodes,pages ) {
+			_traverse: function( nodes, pages ) {
 				for ( var i = 0; i < nodes.length; i++ ) {
 					var node = nodes[ i ];
-					if ( node.name ) {
-						node.name = tr( node.name );
+					var name = node.name || node.title;
+					console.log( "name:", name );
+					if ( name ) {
+						node.name = name = tr( name );
 					}
 
 					if ( node.hash == null ) {
-						if ( node.name ) {
-							var lc = node.name.toLowerCase();
+						if ( name ) {
+							var lc = name.toLowerCase();
 							node.hash = lc.replace( /[^a-z0-9_.]/g, "" );
 						} else {
 							alert( "Warning.menu:name and hash are empty" );
 						}
 					}
+					node.url = node.uri || node.url;
 					if ( node.url && node.url.indexOf( "%l" ) != -1 ) {
 						node.url = node.url.replace( "%l", simpl4Globals.get( "lang" ) );
 					}
-					if ( node.disabled !== true ) {
+					node.disabled = node.disabled === true || node.enabled === false;
+					if ( !node.disabled ) {
 						if ( node.children && node.children.length > 0 ) {
 							pages.push( node );
-							this._traverse( node.children,pages );
+							this._traverse( node.children, pages );
 						} else {
 							pages.push( node );
 						}
