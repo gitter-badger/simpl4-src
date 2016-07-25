@@ -872,17 +872,15 @@ qx.Class.define( "ms123.util.DragDropTree", {
 			}
 
 			/*
-			 * move nodes
+			 * copy nodes
 			 */
-			var nodeArr = this.getDataModel().getData();
-
 			for ( var i = 0, l = nodes.length; i < l; i++ ) {
 				/*
 				 * import the node into the tree's node array
 				 */
-				var node = qx.lang.Object.clone( nodes[ i ] );
-				node.nodeId = nodeArr.length;
-				nodeArr.push( node );
+				var nodeId = this.deepCopyNode( nodes[ i ] );
+				var nodeArr = this.getDataModel().getData();
+				var node = nodeArr[ nodeId ];
 
 				if ( this.getAllowDropBetweenNodes() ) {
 					var targetParentNode = nodeArr[ dropTarget.parentNodeId ]
@@ -894,17 +892,28 @@ qx.Class.define( "ms123.util.DragDropTree", {
 				}
 			}
 
-			/*
-			 * event
-			 */
 			this.fireDataEvent( "beforeAddNode", node );
-
-			/*
-			 * re-render the tree
-			 */
 			this.getDataModel().setData();
 		},
 
+		deepCopyNode: function( node ) {
+			var nodeArr = this.getDataModel().getData();
+			var node = qx.lang.Object.clone( node );
+			node.nodeId = nodeArr.length;
+			nodeArr.push( node );
+			var children = node.children;
+			if ( children == null || children.length == 0 ) {
+				return node.nodeId;
+			}
+			var newChildren = [];
+			node.children = newChildren;
+			for ( var i = 0; i < children.length; i++ ) {
+				var nodeId = children[ i ];
+				var newNodeId = this.deepCopyNode( nodeArr[ nodeId ] );
+				newChildren.push( newNodeId );
+			}
+			return node.nodeId;
+		},
 
 
 		/**
