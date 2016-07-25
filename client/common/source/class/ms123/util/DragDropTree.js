@@ -213,11 +213,10 @@ qx.Class.define( "ms123.util.DragDropTree", {
 		 */
 
 		/**
-		 * Patch the codebase to make drag & drop in the table possible in
-		 * the first place
-		 * FIXME get rid of patches
+		 * Patch the codebase to make drag & drop in the table possible in the first place
 		 */
 		_patchCodebase: function() {
+			qx.Class.include( qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode );
 			/*
 			 * have not found official way to set validness check for events within widget.
 			 * this only works with private optimization turned off

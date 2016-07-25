@@ -38,11 +38,8 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		this._etdata = null;
 		this.storeDesc = context.storeDesc;
 		this._createUseList();
-		qx.Class.include( qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode );
 
-		console.log( "_createTable.this:", this );
 		var columnmodel = this._createColumnModel();
-		console.log( "_createTable:", this._createTable );
 		var table = this._createTable( columnmodel );
 		this._doLayout( table, columnmodel );
 	},
@@ -75,7 +72,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			} );
 			var map = {};
 			root.walk( ( function( node ) {
-				if ( node.model.name == null ) return true;
+				if ( node.model.name == null && node.model.title == null ) return true;
 				var path = this._getPath( node.getPath() );
 				var isLeaf = !node.hasChildren();
 				var parentTreeNode = node.parent ? map[ this._getPath( node.parent.getPath() ) ] : 0;
@@ -117,6 +114,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			}, {
 				name: "uri",
 				type: "TextField",
+				tooltip: this.tr( "structure.uri_help" ),
 				label: this.tr( "structure.uri" ),
 				width: 120,
 				validation: {
@@ -127,6 +125,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				name: "icon",
 				type: "TextField",
 				label: this.tr( "structure.icon" ),
+				tooltip: this.tr( "structure.icon_help" ),
 				width: 40,
 				'value': ""
 			}, {
@@ -136,6 +135,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				value: "m",
 				readonly: false,
 				options: this._useList,
+				tooltip: this.tr( "structure.use_help" ),
 				label: this.tr( "structure.use" )
 			}, {
 				name: "enabled",
@@ -204,11 +204,15 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		_colIndex: function( name ) {
 			return this._columnMap[ name ];
 		},
+		_colName: function( index ) {
+			return this._columnModel[ index ].name || this._columnModel[ index ].title;
+		},
 		_getPath: function( arr ) {
 			var ret = "";
 			for ( var i = 0; i < arr.length; i++ ) {
-				if ( arr[ i ].model.name ) {
-					ret += "/" + arr[ i ].model.name;
+				var name = arr[ i ].model.name || arr[ i ].model.title;
+				if ( name ) {
+					ret += "/" + name;
 				}
 			}
 			return ret;
@@ -217,8 +221,9 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			if ( !node.model ) {
 				return this.tr( node.title_tr );
 			}
-			if ( node.model.name ) {
-				return this.tr( node.model.name );
+			var name = node.model.name || node.model.title;
+			if ( name ) {
+				return this.tr( name );
 			}
 			return "";
 		},
@@ -234,7 +239,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			var data = this._getDefaultValues();
 			qx.lang.Object.mergeWith( data, _data, true );
 			for ( var i = 0; i < this._columnModel.length; i++ ) {
-				var name = this._columnModel[ i ].name;
+				var name = this._columnModel[ i ].name || this._columnModel[ i ].title;
 				this._dataModel.setColumnData( nodeId, i, data[ name ] );
 			}
 			if ( data.url ) {
@@ -250,7 +255,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		_getNodeData: function( nodeId ) {
 			var data = {};
 			for ( var i = 0; i < this._columnModel.length; i++ ) {
-				var name = this._columnModel[ i ].name;
+				var name = this._columnModel[ i ].name || this._columnModel[ i ].title;
 				data[ name ] = this._dataModel.getColumnData( nodeId, i );
 			}
 			return data;
@@ -677,17 +682,42 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		},
 		/**
 		---------------------------------------------------------------------------
-		   SAVE/LOAD
+		   SAVE
 		---------------------------------------------------------------------------
 		*/
+		_getColumnData: function( child ) {
+			var obj = {};
+			if ( !child.columnData ) return obj;
+			for ( var i = 1; i < child.columnData.length; i++ ) {
+				var name = this._colName( i )
+				var val = child.columnData[ i ];
+				obj[ name ] = val;
+			}
+			return obj;
+		},
+		_convertBack: function( nodeMap, obj ) {
+			var children = obj.children;
+			if ( children == null || !children.length ) {
+				return null;
+			}
+			var newArray = [];
+			for ( var i = 0; i < children.length; i++ ) {
+				var child = nodeMap[ children[ i ] ];
+				var newChild = this._getColumnData( child );
+				var c = this._convertBack( nodeMap, child );
+				if ( c != null ) {
+					newChild.children = c;
+				}
+				newArray.push( newChild );
+			}
+			return newArray;
+		},
 		_save: function() {
 			this._table.stopEditing();
-			var data = this._getRecords();
-			console.log( "Data:" + JSON.stringify( data, null, 2 ) );
-			this.fireDataEvent( "save", JSON.stringify( data, null, 2 ) );
-		},
-		_load: function() {
-			return [];
+			var data = this._dataModel.getData();
+			var res = this._convertBack( data, data[ 0 ] );
+			console.log( "Data:" + JSON.stringify( res, null, 2 ) );
+			this.fireDataEvent( "save", JSON.stringify( res, null, 2 ) );
 		}
 	}
 } )

@@ -370,7 +370,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 			var rpcParams = {
 				namespace:this.facade.storeDesc.getNamespace(),
 				name:path,
-				data: content
+				content: content
 			};
 
 			var params = {
