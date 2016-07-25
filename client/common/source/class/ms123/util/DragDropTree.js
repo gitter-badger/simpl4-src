@@ -423,37 +423,17 @@ qx.Class.define( "ms123.util.DragDropTree", {
 			}
 		},
 
-    setIndicatorHeight : function(widget, value) {
-      var domEl = this._indicator.getContentElement().getDomElement();
-      if (domEl) {
-        domEl.style.height =  "8px";
-      }
-    },
-		/**
-		 * Handle the bahavior of the indicator in between tree nodes
-		 * @param dragDetails {Map}
-		 * @return {Integer}
-		 */
-		_processDragInBetween: function( dragDetails ) {
-			var result = 0;
-			this.setIndicatorHeight();
-			if ( this.getAllowDropBetweenNodes() ) {
-				if ( dragDetails.deltaY < 13 || dragDetails.deltaY > ( dragDetails.rowHeight - 13 ) ) {
-					if ( dragDetails.deltaY < 13 ) {
-						this._indicator.setDomTop( ( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2 );
-						result = -1;
-					} else {
-						this._indicator.setDomTop( ( dragDetails.row - dragDetails.firstRow + 1 ) * dragDetails.rowHeight - 2 );
-						result = 1;
-					}
-					this._showIndicator();
-				} else {
-					this._indicator.setDomTop( -1000 );
-					this._hideIndicator();
-				}
+		setIndicatorHeight: function( widget, value ) {
+			var domEl = this._indicator.getContentElement().getDomElement();
+			if ( domEl ) {
+				domEl.style.height = "8px";
 			}
-
-			return result;
+		},
+		_processDragInBetween: function( dragDetails ) {
+			this.setIndicatorHeight();
+			this._indicator.setDomTop( ( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2 );
+			this._showIndicator();
+			return -1;
 		},
 
 		/**
@@ -561,6 +541,33 @@ qx.Class.define( "ms123.util.DragDropTree", {
 		__onDragStart: function( event ) {
 
 			var selection = this.getDataModel().getSelectedNodes();
+			var scroller = this._getTreePaneScroller();
+
+			var wrongSelection = false;
+			var dataModel = scroller.getTable().getTableModel();
+			if ( selection.length > 0 ) {
+				var nodeId = selection[ 0 ].nodeId;
+				var row = dataModel.getRowFromNodeId( nodeId );
+				var frow = this.getFocusedRow();
+				if ( row != frow ) {
+					wrongSelection = true;
+				}
+			}
+
+			if ( wrongSelection || selection == null || selection.length == 0 ) {
+				var row = this.getFocusedRow();
+				if ( qx.lang.Type.isNumber( row ) ) {
+					this.resetCellFocus();
+					this.getSelectionModel().setSelectionInterval( row, row );
+					selection = this.getDataModel().getSelectedNodes();
+				}
+			}
+			if ( selection == null || selection.length == 0 ) {
+				return event.preventDefault();
+			}
+
+
+
 			var types = this.getAllowDragTypes();
 
 			/*
@@ -762,6 +769,9 @@ qx.Class.define( "ms123.util.DragDropTree", {
 				 * move nodes
 				 */
 				var nodeArr = this.getDataModel().getData();
+				if ( dropPosition === 0 ) {
+					return;
+				}
 				for ( var i = 0, l = nodes.length; i < l; i++ ) {
 					var node = nodes[ i ];
 
@@ -773,27 +783,16 @@ qx.Class.define( "ms123.util.DragDropTree", {
 					var pnc = parentNode.children;
 					pnc.splice( pnc.indexOf( node.nodeId ), 1 );
 
-					/*
-					 * drop on the node itself: add to the children of the target node
-					 */
-					if ( dropPosition === 0 ) {
-						var position = dropTarget.children;
-						dropTarget.children.push( node.nodeId );
-						node.parentNodeId = dropTarget.nodeId;
-						this.fireDataEvent( "changeNodePosition", {
-							'node': node,
-							'position': position
-						} );
-					}
 
 					/*
 					 * drop between nodes: add as a sibling of the drop target
 					 */
-					else if ( this.getAllowDropBetweenNodes() ) {
+					if ( this.getAllowDropBetweenNodes() ) {
 						var targetParentNode = nodeArr[ dropTarget.parentNodeId ]
 						if ( !targetParentNode ) this.error( "Cannot find the target node's parent node!" );
 						var tpnc = targetParentNode.children;
 						var delta = dropPosition > 0 ? 1 : 0;
+						console.log( "dropTarget:", dropTarget.label + "" );
 						var position = tpnc.indexOf( dropTarget.nodeId ) + delta;
 						tpnc.splice( position, 0, node.nodeId );
 						node.parentNodeId = targetParentNode.nodeId;
