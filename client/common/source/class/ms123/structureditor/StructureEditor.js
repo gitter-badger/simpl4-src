@@ -35,7 +35,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		this.base( arguments );
 		var model = context.model;
 		this._model = model;
-		this._etdata = null;
+		this._globalData = null;
 		this.storeDesc = context.storeDesc;
 		this._createUseList();
 
@@ -60,6 +60,22 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				arr = window.hjson.parse( content );
 			} else {
 				arr = window.yaml.load( content );
+			}
+
+			if ( arr && arr.length > 0 && arr[ 0 ].menu_file ) {
+				var gd = arr.shift();
+				if ( gd ) {
+					this._globalForm.setData( gd );
+				}
+			} else {
+				var file = this._model.getPath();
+				var menu = file.substr( 0, file.lastIndexOf( "." ) ) + ".json";
+				var doc = file.substr( 0, file.lastIndexOf( "." ) ) + ".adoc";
+				var gd = {
+					doc_file: doc,
+					menu_file: menu
+				}
+				this._globalForm.setData( gd );
 			}
 
 			var dataModel = this._dataModel;
@@ -253,6 +269,9 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			}
 		},
 		_getNodeData: function( nodeId ) {
+			if ( qx.lang.Type.isObject( nodeId ) ) {
+				nodeId = nodeId.nodeId;
+			}
 			var data = {};
 			for ( var i = 0; i < this._columnModel.length; i++ ) {
 				var name = this._columnModel[ i ].name || this._columnModel[ i ].title;
@@ -271,7 +290,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			var node = pos ? dataModel.getNode( pos ) : {};
 			var pnode = node.parentNodeId || 0;
 			var newNode = null;
-			if ( data.uri == null || data.uri == "" ) {
+			if ( data.uri != null && data.uri.length > 0 ) {
 				newNode = dataModel.addLeaf( pnode, this.tr( data.title ) );
 			} else {
 				newNode = dataModel.addBranch( pnode, this.tr( data.title ), pnode == 0 ? true : false );
@@ -315,11 +334,24 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				edge: "north"
 			} );
 		},
+		/**
+		---------------------------------------------------------------------------
+		   GLOBALFORM
+		---------------------------------------------------------------------------
+		*/
 		_createGlobalForm: function() {
 			var formData = {
-				"description": {
+				"menu_file": {
 					'type': "TextField",
-					'label': this.tr( "structure.description" ),
+					'label': this.tr( "structure.menu_file" ),
+					'validation': {
+						required: false
+					},
+					'value': ""
+				},
+				"doc_file": {
+					'type': "TextField",
+					'label': this.tr( "structure.doc_file" ),
 					'validation': {
 						required: false
 					},
@@ -340,9 +372,6 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				"context": self
 			} );
 			this._globalForm = form;
-			if ( this._etdata ) {
-				this._globalForm.setData( this._etdata );
-			}
 			return form;
 		},
 
@@ -400,9 +429,10 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			this._buttonCopy.setToolTipText( this.tr( "ge.Edit.copy" ) );
 			this._buttonCopy.addListener( "execute", function() {
 				var curRecord = this._getRecordAtPos( this._currentTableIndex );
-				this._insertRecordAtPos( curRecord, this._currentTableIndex + 1 );
+				var node = this._dataModel.getNode( this._currentTableIndex );
+				this._table.importNode( node, 1, [ node ] );
 			}, this );
-			//toolbar._add( this._buttonCopy );
+			toolbar._add( this._buttonCopy );
 			this._buttonCopy.setEnabled( false );
 
 
@@ -458,6 +488,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			var booleanCellRendererFactory = new qx.ui.table.cellrenderer.Dynamic( this._booleanCellRendererFactoryFunc );
 			var booleanCellEditorFactory = new qx.ui.table.celleditor.Dynamic( this._booleanCellEditorFactoryFunc );
 
+			table.addListener( "cellTap", this._onCellClick, this, false );
 			this._booleanCols = [];
 			for ( var i = 0; i < tableColumns.length; i++ ) {
 				var col = tableColumns[ i ];
@@ -561,8 +592,6 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				}
 				var index = selModel.getLeadSelectionIndex();
 				this._currentTableIndex = index;
-				this._currentNodeId = this._dataModel.getNodeFromRow( index );
-				this._currentRowData = this._dataModel.getRowData( index );
 				if ( this._buttonEdit ) this._buttonEdit.setEnabled( true );
 				if ( this._buttonSave ) this._buttonSave.setEnabled( true );
 				if ( this._buttonDel ) this._buttonDel.setEnabled( true );
@@ -574,6 +603,16 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		},
 		_booleanCellEditorFactoryFunc: function( cellInfo ) {
 			return new qx.ui.table.celleditor.CheckBox;
+		},
+		_onCellClick: function( e ) {
+			var colnum = this._table.getFocusedColumn();
+			var rownum = this._table.getFocusedRow();
+			if ( this._booleanCols.indexOf( colnum ) < 0 ) return;
+			if ( this._dataModel.getValue( colnum, rownum ) === true ) {
+				this._dataModel.setValue( colnum, rownum, false );
+			} else {
+				this._dataModel.setValue( colnum, rownum, true );
+			}
 		},
 		/**
 		---------------------------------------------------------------------------
@@ -713,9 +752,11 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			return newArray;
 		},
 		_save: function() {
+			var gd = this._globalForm.getData();
 			this._table.stopEditing();
 			var data = this._dataModel.getData();
 			var res = this._convertBack( data, data[ 0 ] );
+			res.splice( 0, 0, gd );
 			console.log( "Data:" + JSON.stringify( res, null, 2 ) );
 			this.fireDataEvent( "save", JSON.stringify( res, null, 2 ) );
 		}

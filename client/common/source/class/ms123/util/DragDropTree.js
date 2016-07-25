@@ -801,12 +801,6 @@ qx.Class.define( "ms123.util.DragDropTree", {
 							'position': position
 						} );
 					}
-					/*
-					 * else, we have a logic error
-					 */
-					else {
-						this.error( "Dropping in between nodes is not allowed!" );
-					}
 				}
 
 				/*
@@ -858,9 +852,9 @@ qx.Class.define( "ms123.util.DragDropTree", {
 		 * @param e {qx.event.type.Drag}
 		 * @param nodes {Object[]} Array of node data.
 		 */
-		importNode: function( e, nodes ) {
-			var dropTarget = this.getDropTarget();
-			var dropPosition = this.getDropTargetRelativePosition();
+		importNode: function( target, position, nodes ) {
+			var dropTarget = target || this.getDropTarget();
+			var dropPosition = position != null ? position : this.getDropTargetRelativePosition();
 
 			if ( !qx.lang.Type.isObject( dropTarget ) ) {
 				//this.warn("No valid drop target!");
@@ -890,29 +884,13 @@ qx.Class.define( "ms123.util.DragDropTree", {
 				node.nodeId = nodeArr.length;
 				nodeArr.push( node );
 
-				/*
-				 * drop on the node itself: add to the children of the target node
-				 */
-				if ( dropPosition === 0 ) {
-					dropTarget.children.push( node.nodeId );
-					node.parentNodeId = dropTarget.nodeId;
-				}
-				/*
-				 * drop between nodes: add as a sibling of the drop target
-				 */
-				else if ( this.getAllowDropBetweenNodes() ) {
+				if ( this.getAllowDropBetweenNodes() ) {
 					var targetParentNode = nodeArr[ dropTarget.parentNodeId ]
 					if ( !targetParentNode ) this.error( "Cannot find the target node's parent node!" );
 					var tpnc = targetParentNode.children;
 					var delta = dropPosition > 0 ? 1 : 0;
 					tpnc.splice( tpnc.indexOf( dropTarget.nodeId ) + delta, 0, node.nodeId );
 					node.parentNodeId = targetParentNode.nodeId;
-				}
-				/*
-				 * else, we have a logic error
-				 */
-				else {
-					this.error( "Dropping in between nodes is not allowed!" );
 				}
 			}
 
