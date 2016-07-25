@@ -259,6 +259,9 @@ qx.Class.define("ms123.form.FormTabRenderer", {
 				if (full) labelText = null;
 				if (labelText && item.getUserData("excluded")) {
 					var label = new qx.ui.basic.Label(labelText);
+					if (item.getUserData("tooltip")) {
+						label.setToolTipText(item.getUserData("tooltip"));
+					}
 					label.setRich(true);
 					page._add(label, {
 						row: this._row,
@@ -284,6 +287,9 @@ qx.Class.define("ms123.form.FormTabRenderer", {
 				 */
 				else {
 					var label = this._createLabel(labelText, item);
+					if (item.getUserData("tooltip")) {
+						label.setToolTipText(item.getUserData("tooltip"));
+					}
 					label.setRich(true);
 					var column, row;
 					if (_col != -1) {

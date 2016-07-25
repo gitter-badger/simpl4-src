@@ -762,6 +762,7 @@ qx.Class.define("ms123.form.Form", {
 				formElement.setUserData("position", fieldData.position);
 				formElement.setUserData("height", fieldData.height);
 				formElement.setUserData("enabled", fieldData.enabled);
+				formElement.setUserData("tooltip", fieldData.tooltip);
 				formElement.setUserData("exclude", fieldData.exclude);
 				formElement.setUserData("requiredExpr", fieldData.requiredExpr);
 

@@ -256,6 +256,7 @@ qx.Class.define('ms123.widgets.Form', {
 			}
 			fieldData.exclude = col["form_exclude_expr"];
 			fieldData.label = col.label;
+			fieldData.tooltip = col.tooltip;
 			fieldData.header = col.mainform_header ? this.tr(col.mainform_header) : null;
 			fieldData.datatype = col.datatype;
 			fieldData.value = "";
