@@ -952,7 +952,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 					if( t!= null){
 						w.write("<template is=\"dom-bind\" bind>");
 					}
-					m_docbookService.adocToHtml(asset, w );
+					m_docbookService.adocToHtml(asset, w, request.getParameterMap() );
 					if( t!= null){
 						w.write("</template>");
 					}
