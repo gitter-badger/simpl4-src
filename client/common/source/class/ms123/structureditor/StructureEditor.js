@@ -282,6 +282,14 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			var node = dataModel.getNode( pos );
 			dataModel.prune( node, true );
 			dataModel.setData();
+			this._selectionModel.resetSelection();
+			for( var i=pos-1; i >=0; i--){
+				var node = dataModel.getNode( i );
+				if( node != null){
+					this._selectionModel.setSelectionInterval(i,i);
+					break;
+				}
+			}
 		},
 		_addRecordAtPos: function( pos, data ) {
 			var dataModel = this._dataModel;
@@ -580,21 +588,25 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			var selModel = table.getSelectionModel();
 			selModel.setSelectionMode( qx.ui.table.selection.Model.SINGLE_SELECTION );
 			selModel.addListener( "changeSelection", function( e ) {
-
-				var count = selModel.getSelectedCount();
-				if ( count == 0 ) {
-					if ( this._buttonEdit ) this._buttonEdit.setEnabled( false );
-					if ( this._buttonDel ) this._buttonDel.setEnabled( false );
-					if ( this._buttonCopy ) this._buttonCopy.setEnabled( false );
-					return;
-				}
-				var index = selModel.getLeadSelectionIndex();
-				this._currentTableIndex = index;
-				if ( this._buttonEdit ) this._buttonEdit.setEnabled( true );
-				if ( this._buttonSave ) this._buttonSave.setEnabled( true );
-				if ( this._buttonDel ) this._buttonDel.setEnabled( true );
-				if ( this._buttonCopy ) this._buttonCopy.setEnabled( true );
+				this._checkButtonState();
 			}, this );
+			this._selectionModel = selModel;
+		},
+		_checkButtonState:function(){
+			var count = this._selectionModel.getSelectedCount();
+			if ( count == 0 ) {
+				if ( this._buttonEdit ) this._buttonEdit.setEnabled( false );
+				if ( this._buttonDel ) this._buttonDel.setEnabled( false );
+				if ( this._buttonCopy ) this._buttonCopy.setEnabled( false );
+				return;
+			}
+			var index = this._selectionModel.getLeadSelectionIndex();
+			this._currentTableIndex = index;
+			if ( this._buttonEdit ) this._buttonEdit.setEnabled( true );
+			if ( this._buttonSave ) this._buttonSave.setEnabled( true );
+			if ( this._buttonDel ) this._buttonDel.setEnabled( true );
+			if ( this._buttonCopy ) this._buttonCopy.setEnabled( true );
+			var node = this._dataModel.getNode( index );
 		},
 		_booleanCellRendererFactoryFunc: function( cellInfo ) {
 			return new qx.ui.table.cellrenderer.Boolean;
