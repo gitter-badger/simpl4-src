@@ -145,14 +145,12 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				width: 40,
 				'value': ""
 			}, {
-				name: "use",
-				type: "SelectBox",
-				width: 15,
-				value: "m",
-				readonly: false,
-				options: this._useList,
-				tooltip: this.tr( "structure.use_help" ),
-				label: this.tr( "structure.use" )
+				name: "adoc_include",
+				type: "CheckBox",
+				value: false,
+				width: 5,
+				tooltip: this.tr( "structure.adoc_include_help" ),
+				label: this.tr( "structure.adoc_include" )
 			}, {
 				name: "enabled",
 				type: "CheckBox",
@@ -724,6 +722,12 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		   SAVE
 		---------------------------------------------------------------------------
 		*/
+		_createAppendix:function(obj){
+			if( obj.adoc_include === true){
+				obj.appendix = "'title='+title";
+			}
+			return obj;
+		},
 		_getColumnData: function( child ) {
 			var obj = {};
 			if ( !child.columnData ) return obj;
@@ -732,7 +736,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				var val = child.columnData[ i ];
 				obj[ name ] = val;
 			}
-			return obj;
+			return this._createAppendix(obj);
 		},
 		_convertBack: function( nodeMap, obj ) {
 			var children = obj.children;
