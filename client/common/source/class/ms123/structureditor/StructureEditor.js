@@ -90,7 +90,8 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			root.walk( ( function( node ) {
 				if ( node.model.name == null && node.model.title == null ) return true;
 				var path = this._getPath( node.getPath() );
-				var isLeaf = !node.hasChildren();
+				var uri = node.model.uri || node.model.url;
+				var isLeaf = !node.hasChildren() && !this._isEmpty( uri );
 				var parentTreeNode = node.parent ? map[ this._getPath( node.parent.getPath() ) ] : 0;
 				var treeNode = null;
 				if ( isLeaf ) {
@@ -283,10 +284,10 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			dataModel.prune( node, true );
 			dataModel.setData();
 			this._selectionModel.resetSelection();
-			for( var i=pos-1; i >=0; i--){
+			for ( var i = pos - 1; i >= 0; i-- ) {
 				var node = dataModel.getNode( i );
-				if( node != null){
-					this._selectionModel.setSelectionInterval(i,i);
+				if ( node != null ) {
+					this._selectionModel.setSelectionInterval( i, i );
 					break;
 				}
 			}
@@ -294,7 +295,12 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		_addRecordAtPos: function( pos, data ) {
 			var dataModel = this._dataModel;
 			var node = pos ? dataModel.getNode( pos ) : {};
-			var pnode = node.parentNodeId || 0;
+			var pnode = null;
+			if ( node.type === qx.ui.treevirtual.MTreePrimitive.Type.LEAF ) {
+				pnode = node.parentNodeId || 0;
+			} else {
+				pnode = node.nodeId || 0;
+			}
 			var newNode = null;
 			if ( data.uri != null && data.uri.length > 0 ) {
 				newNode = dataModel.addLeaf( pnode, this.tr( data.title ) );
@@ -319,6 +325,10 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			qx.lang.Object.mergeWith( data, ndata );
 			data.title_tr = node.label;
 			return data;
+		},
+		_isEmpty: function( content ) {
+			if ( !content || content.trim().length === 0 ) return true;
+			return false;
 		},
 		/**
 		---------------------------------------------------------------------------
@@ -481,7 +491,10 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				colArr.push( this._columnModel[ i ].label );
 			}
 			var table = new ms123.util.DragDropTree( colArr, customMap );
+			table.setOpenCloseClickSelectsRow( false );
 			table.setEnableDragDrop( true );
+			table.setUseTreeLines( true );
+			table.setAlwaysShowOpenCloseSymbol( false );
 			table.setStatusBarVisible( false );
 			this._dataModel = table.getDataModel();
 
@@ -592,7 +605,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			}, this );
 			this._selectionModel = selModel;
 		},
-		_checkButtonState:function(){
+		_checkButtonState: function() {
 			var count = this._selectionModel.getSelectedCount();
 			if ( count == 0 ) {
 				if ( this._buttonEdit ) this._buttonEdit.setEnabled( false );
@@ -606,7 +619,8 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			if ( this._buttonSave ) this._buttonSave.setEnabled( true );
 			if ( this._buttonDel ) this._buttonDel.setEnabled( true );
 			if ( this._buttonCopy ) this._buttonCopy.setEnabled( true );
-			var node = this._dataModel.getNode( index );
+			//var node = this._dataModel.getNode( index );
+			//console.log( "current:", node );
 		},
 		_booleanCellRendererFactoryFunc: function( cellInfo ) {
 			return new qx.ui.table.cellrenderer.Boolean;
@@ -734,9 +748,9 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 		   SAVE
 		---------------------------------------------------------------------------
 		*/
-		_createAppendix:function(obj){
-			if( obj.adoc_include === true){
-				obj.appendix = "'title='+title";
+		_createAppendix: function( obj ) {
+			if ( obj.adoc_include === true ) {
+				obj.appendix = "'title='+tr(title)";
 			}
 			return obj;
 		},
@@ -748,7 +762,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				var val = child.columnData[ i ];
 				obj[ name ] = val;
 			}
-			return this._createAppendix(obj);
+			return this._createAppendix( obj );
 		},
 		_convertBack: function( nodeMap, obj ) {
 			var children = obj.children;

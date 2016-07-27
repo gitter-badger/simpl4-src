@@ -52,6 +52,7 @@ qx.Class.define( "ms123.util.DragDropTree", {
 			return new qx.ui.table.pane.Header( obj );
 		};
 
+		custom.treeDataCellRenderer = new ms123.util.SimpleTreeDataCellRenderer();
 		this.base( arguments, headings, custom );
 
 		this.setAllowDragTypes( [ "*" ] );
@@ -788,14 +789,19 @@ qx.Class.define( "ms123.util.DragDropTree", {
 					 * drop between nodes: add as a sibling of the drop target
 					 */
 					if ( this.getAllowDropBetweenNodes() ) {
-						var targetParentNode = nodeArr[ dropTarget.parentNodeId ]
-						if ( !targetParentNode ) this.error( "Cannot find the target node's parent node!" );
-						var tpnc = targetParentNode.children;
-						var delta = dropPosition > 0 ? 1 : 0;
-						console.log( "dropTarget:", dropTarget.label + "" );
-						var position = tpnc.indexOf( dropTarget.nodeId ) + delta;
-						tpnc.splice( position, 0, node.nodeId );
-						node.parentNodeId = targetParentNode.nodeId;
+						if ( dropTarget.type === qx.ui.treevirtual.SimpleTreeDataModel.Type.BRANCH ) {
+							dropTarget.children.push( node.nodeId );
+							node.parentNodeId = dropTarget.nodeId;
+						} else {
+							var targetParentNode = nodeArr[ dropTarget.parentNodeId ]
+							if ( !targetParentNode ) this.error( "Cannot find the target node's parent node!" );
+							var tpnc = targetParentNode.children;
+							var delta = dropPosition > 0 ? 1 : 0;
+							console.log( "dropTarget:", dropTarget.label + "" );
+							var position = tpnc.indexOf( dropTarget.nodeId ) + delta;
+							tpnc.splice( position, 0, node.nodeId );
+							node.parentNodeId = targetParentNode.nodeId;
+						}
 						this.fireDataEvent( "changeNodePosition", {
 							'node': node,
 							'position': position
