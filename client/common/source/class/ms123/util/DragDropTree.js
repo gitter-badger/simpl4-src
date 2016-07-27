@@ -898,7 +898,7 @@ qx.Class.define( "ms123.util.DragDropTree", {
 
 		deepCopyNode: function( node ) {
 			var nodeArr = this.getDataModel().getData();
-			var node = qx.lang.Object.clone( node );
+			var node = qx.lang.Object.clone( node, true );
 			node.nodeId = nodeArr.length;
 			nodeArr.push( node );
 			var children = node.children;
