@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -283,13 +284,27 @@ class BaseDocbookServiceImpl {
 		return retList;
 	}
 	public void adocToHtml( File adocFile, Writer w) throws Exception {
+		adocToHtml(adocFile, w, null );
+	}
+	public void adocToHtml( File adocFile, Writer w,Map params) throws Exception {
+		info(this, "adocToHtml:"+adocFile+"/"+params);
 		Reader in = new InputStreamReader(new FileInputStream(adocFile), "UTF-8");
 		Map<String, Object> options = new HashMap();
 		Map<String, Object> attributes = new HashMap();
 		attributes.put("icons", org.asciidoctor.Attributes.FONT_ICONS);
 		options.put("attributes", attributes);
 		options.put("safe", 0);
-		getAsciidoctor().convert( in, w, options);
+		options.put("bla", "bla");
+		Object titleParam = params.get("title");
+		if( titleParam != null){
+			String title = ((String[])titleParam)[0];
+			String prefix = "=== " + title + " ===" + "\n\n";
+			String content = IOUtils.toString(in);
+			StringReader sr= new StringReader(prefix + content);
+			getAsciidoctor().convert( sr, w, options);
+		}else{
+			getAsciidoctor().convert( in, w, options);
+		}
 	}
 
 	public String adocToHtml( String adoc) throws Exception {
@@ -344,9 +359,18 @@ class BaseDocbookServiceImpl {
 		debug(this,"loadPaths:"+loadPaths);
 		sc.setLoadPaths(loadPaths);
 		m_asciidoctor = create(sc.getProvider().getRuntime());
-		new AsciidoctorX(m_asciidoctor).register();
+		new AsciidoctorX(m_asciidoctor,(DocbookService)this).register();
 		new GroovyExtensionRegistry().register(m_asciidoctor);
 		return m_asciidoctor;
+	}
+
+	public String  loadContent(String namespace, String target){ //@@@MS Hack for AsciidoctorX, Exception can't be caught?!?
+		try{
+			return m_gitService.searchContent(namespace, target,"text/x-asciidoc");
+		}catch( Throwable e){
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	protected void _getAsset(String namespace, String name, String type, HttpServletRequest request, HttpServletResponse response) throws Exception {

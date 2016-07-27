@@ -39,7 +39,11 @@ public interface DocbookService {
 	public void getAsset( String namespace, String name, String type, HttpServletRequest request, HttpServletResponse response) throws RpcException;
 	public void adocToHtml( File adocFile, Writer w) throws Exception;
 	public String adocToHtml( String adoc) throws Exception;
+	public void adocToHtml( File adocFile, Writer w,Map params) throws Exception;
 
 	public void adocToDocbook( File adocFile, Writer w) throws Exception;
 	public String adocToDocbook( String adoc ) throws Exception;
+	public void saveStructure( String ns, String path, String data ) throws Exception;
+
+	public String  loadContent(String namespace, String target);
 }

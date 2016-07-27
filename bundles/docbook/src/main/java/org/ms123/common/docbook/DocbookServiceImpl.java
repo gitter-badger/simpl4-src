@@ -56,6 +56,7 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
 
 
 /** DocbookService implementation
@@ -301,6 +302,32 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 				return readFileToString(indexFile);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.getAsset:", e);
+		}
+	}
+	@RequiresRoles("admin")
+	public void saveStructure(
+			@PName(StoreDesc.NAMESPACE) String namespace, 
+			@PName("name")         String path,
+			@PName("content")         String content 
+			) throws RpcException {
+		try {
+			m_gitService.putContent(namespace,path, "sw.structure", content);
+			List<Map> list = (List)m_ds.deserialize( content);
+				System.err.println("list:"+list);
+			if(list.size() > 0){
+				Map<String,String> gd = list.get(0);
+				String menuFile = gd.get("menu_file");
+				String docFile = gd.get("doc_file");
+				String gitSpace = System.getProperty("git.repos");
+				File mfile = new File( gitSpace, new File( namespace, menuFile).toString());
+				File dfile = new File( gitSpace, new File( namespace, docFile).toString());
+				System.err.println("mfile:"+mfile);
+				list.remove(gd);
+				String s = m_js.deepSerialize( list);
+				writeStringToFile( mfile, s, "UTF-8");
+			}
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.saveStructure:", e);
 		}
 	}
 

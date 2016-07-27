@@ -23,15 +23,18 @@ import java.util.*;
 import groovy.lang.*;
 import org.asciidoctor.groovydsl.AsciidoctorExtensions
 import org.asciidoctor.Asciidoctor
+import org.ms123.common.docbook.DocbookService;
 
 //@groovy.transform.CompileStatic
 public class AsciidoctorX{
 	private Asciidoctor asciidoctor;
-	public AsciidoctorX(Asciidoctor ad){
+	private DocbookService docbookService;
+	public AsciidoctorX(Asciidoctor ad, DocbookService ds){
 		asciidoctor = ad;
+		docbookService = ds;
 	}
 
-	def ext1 = {
+	def bigBlock = {
 		block(name: 'BIG', contexts: [':paragraph', ':open']) { parent, reader, attributes ->
 			def upperLines = reader.readLines()
 				.collect {it.toUpperCase()}
@@ -42,8 +45,8 @@ public class AsciidoctorX{
 		}
 	}
 
-	def ext2 = {
-		blockmacro (name: 'imagezoom') { parent, target, attributes ->
+	def imageZoomBlockMacro = {
+		block_macro (name: 'imagezoom') { parent, target, attributes ->
 			def classes= attributes.get(1);
 			if( classes == null ){
 				classes="";
@@ -53,7 +56,7 @@ public class AsciidoctorX{
 			createBlock(parent, "pass", [content], attributes, config);
 		}
 	}
-	def extCollapseItem = {
+	def collapseItemBlock = {
 		block(name: 'CI', contexts: [':paragraph', ':open']) { parent, reader, attributes ->
 			try{
 				def lines = reader.readLines();
@@ -95,10 +98,29 @@ public class AsciidoctorX{
 			}
 		}
 	}
+
+	def includeProcessor = {
+		include_processor (filter: {true}) { document, reader, target, attributes -> 
+			def namespace = attributes.get("namespace");
+			System.err.println("include_processor:"+target+"/"+attributes+"/"+namespace);
+			if( namespace == null){
+				reader.push_include("IncludeProcessor: namespace is null:target:"+target, target, target, 1, attributes);
+			}else{
+				def content = docbookService.loadContent( namespace, target);
+				if( content != null && content.length() > 0){
+					reader.push_include(content, target, target, 1, attributes);
+				}else{
+					reader.push_include("IncludeProcessor: file("+namespace+","+target+") not found or the file has no content", target, target, 1, attributes);
+				}
+			}
+		}
+	}
+
 	public void register(){
-		AsciidoctorExtensions.extensions(ext1);
-		AsciidoctorExtensions.extensions(ext2);
-		AsciidoctorExtensions.extensions(extCollapseItem);
+		AsciidoctorExtensions.extensions(bigBlock);
+		AsciidoctorExtensions.extensions(imageZoomBlockMacro);
+		AsciidoctorExtensions.extensions(collapseItemBlock);
+		AsciidoctorExtensions.extensions(includeProcessor);
 	}
 	private String adocToHtml( String adoc) throws Exception {
 		Map<String, Object> options = new HashMap();
