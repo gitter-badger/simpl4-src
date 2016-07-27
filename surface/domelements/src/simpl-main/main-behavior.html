@@ -230,8 +230,14 @@
 				Polymer.dom( insertPoint ).appendChild( head.firstElementChild );
 			}
 			if ( body.firstElementChild ) {
-				//console.log("BODY;", body.innerHTML);
-				Polymer.dom( insertPoint ).appendChild( body.firstElementChild );
+				if( body.childNodes.length>1){
+					for (var i = 0; i < body.childNodes.length; i++) {
+						var node = body.childNodes[i];
+						Polymer.dom( insertPoint ).appendChild( node );
+					}
+				}else{
+					Polymer.dom( insertPoint ).appendChild( body.firstElementChild );
+				}
 			}
 			this.$.dispatcherId.filterLocalLinks( insertPoint.firstElementChild );
 			this.async( function() {
@@ -277,6 +283,7 @@
 		_maskedEval: function( scr, env, def ) {
 			try {
 				env._ = _;
+				env.tr = tr;
 				env.moment = moment;
 				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
