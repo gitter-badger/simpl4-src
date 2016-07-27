@@ -240,6 +240,30 @@
 				if ( this.context == null ) return;
 				this._applyMenuContext( this._mainmenu );
 			},
+			_loadMenu:function(name){
+				var nodes = null;
+				nodes = jQuery.ajax( {
+					url: name + ".yaml",
+					async: false,
+					error: function() {
+						console.log( name + '.yaml not found.' );
+					},
+					dataType: "json"
+				} ).responseText;
+
+				console.log( "nodes:", _.isEmpty( nodes ) );
+				if ( _.isEmpty( nodes ) ) {
+					nodes = jQuery.ajax( {
+						url: name + ".json",
+						async: false,
+						error: function() {
+							console.log( name + '.json not found.' );
+						},
+						dataType: "json"
+					} ).responseText;
+				}
+				return nodes;
+			},
 			_applyMenuContext: function( main_el ) {
 				this._domVisitor( main_el, ( function( el ) {
 					if ( el.tagName === "LI" ) {
@@ -251,28 +275,7 @@
 				} ).bind( this ) );
 			},
 			_getMenuYaml: function() {
-				var nodes = null;
-				nodes = jQuery.ajax( {
-					url: this.name + ".yaml",
-					async: false,
-					error: function() {
-						console.log( this.name + '.yaml not found.' );
-					},
-					dataType: "json"
-				} ).responseText;
-
-				console.log( "nodes:", _.isEmpty( nodes ) );
-				if ( _.isEmpty( nodes ) ) {
-					var nodes = jQuery.ajax( {
-						url: this.name + ".json",
-						async: false,
-						error: function() {
-							console.log( this.name + '.json not found.' );
-						},
-						dataType: "json"
-					} ).responseText;
-				}
-
+				var nodes = this._loadMenu(this.name);
 				try {
 					nodes = JSON.parse( nodes );
 				} catch ( e ) {
@@ -287,12 +290,20 @@
 			_traverse: function( nodes, pages ) {
 				for ( var i = 0; i < nodes.length; i++ ) {
 					var node = nodes[ i ];
+
+					if( node.uri && node.uri.startsWith("structure:")){
+						node.children = this._loadMenu(node.uri.substring(10));
+					}
+
 					var name = node.name || node.title;
 					console.log( "name:", name );
 					if ( name ) {
 						node.name = name = tr( name );
 					}
 
+					if( _.isEmpty(node.icon)){
+						node.icon = "av:web-asset";
+					}
 					if ( node.hash == null ) {
 						if ( name ) {
 							var lc = name.toLowerCase();
