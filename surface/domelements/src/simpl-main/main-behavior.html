@@ -195,7 +195,7 @@
 				this.selectedPage = page;
 				this.route = page.hash;
 				if ( this.pageCache[ page.url ] !== true ) {
-					this.importHref( page.url, this.onResponse.bind( this ) );
+					this.importHref( this._buildUrl(page), this.onResponse.bind( this ) );
 				} else {
 					var toolbarBottom = this.querySelector( ".toolbar.bottom" );
 					var tb = this.toolbarBottomCache[ page.url ];
@@ -213,21 +213,7 @@
 			var body = _import.body;
 			var head = _import.head;
 
-			var newToolbarBottom = body.querySelector( ".toolbar.bottom" );
-			this.setToolbarClass( newToolbarBottom );
-			this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;
-			if ( newToolbarBottom == null ) {
-				newToolbarBottom = this.getEmptyToolbarBottom();
-			}
-			var toolbarBottom = this.querySelector( "div.toolbar.bottom" );
-			if ( toolbarBottom != null ) {
-				toolbarBottom.parentNode.replaceChild( newToolbarBottom, toolbarBottom );
-				var buttons = newToolbarBottom.querySelectorAll( "[on-tap]" );
-				for ( var i = 0; i < buttons.length; i++ ) {
-					var button = buttons[ i ];
-					button.addEventListener( 'tap', this.externalButtonEventHandler );
-				}
-			}
+			this._toolbarStuff( body ); //@@@MS remove
 
 			this.pageCache[ this.selectedPage.url ] = true;
 			var insertPoint = this.neonPages.selectedItem.firstElementChild;
@@ -278,6 +264,28 @@
 			}
 			return url;
 		},
+		_buildUrl: function(page) {
+			if( _.isEmpty(page.appendix)){
+				return page.url;
+			}
+			var url = page.url;
+			var hasQuery = url.indexOf("?") >= 0;
+			var hasHash = url.indexOf("#") >= 0;
+			var appendix = (hasQuery ? "&" : "?") + this._maskedEval(page.appendix,page,"paramError=1");
+			return hasHash ? url.replace("#", appendix + "#") : url + appendix;
+		},
+		_maskedEval: function( scr, env, def ) {
+			try {
+				env._ = _;
+				env.moment = moment;
+				return metaes.evaluate( scr.toString(), env );
+			} catch ( e ) {
+				console.error( "\t" + e );
+				console.debug( "Main._maskedEval.script:" + scr );
+				console.debug( "Main._maskedEval.env:" + JSON.stringify( env, null, 2 ) );
+			}
+			return def;
+		},
 		getHelpDialogStyle: function() {
 			var h = $( window ).height() * 0.9;
 			return "height:" + h + "px;";
@@ -293,6 +301,23 @@
 			this.fire( 'toolbar-button-pressed', e.target || e.srcElement, {
 				key1: "value1"
 			} );
+		},
+		_toolbarStuff:function(body){
+			var newToolbarBottom = body.querySelector( ".toolbar.bottom" );
+			this.setToolbarClass( newToolbarBottom );
+			this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;
+			if ( newToolbarBottom == null ) {
+				newToolbarBottom = this.getEmptyToolbarBottom();
+			}
+			var toolbarBottom = this.querySelector( "div.toolbar.bottom" );
+			if ( toolbarBottom != null ) {
+				toolbarBottom.parentNode.replaceChild( newToolbarBottom, toolbarBottom );
+				var buttons = newToolbarBottom.querySelectorAll( "[on-tap]" );
+				for ( var i = 0; i < buttons.length; i++ ) {
+					var button = buttons[ i ];
+					button.addEventListener( 'tap', this.externalButtonEventHandler );
+				}
+			}
 		},
 		setToolbarClass: function( newToolbarBottom ) {
 			var mainToolbar = this.querySelector( "#mainToolbar" );
