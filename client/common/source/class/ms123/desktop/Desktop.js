@@ -43,8 +43,8 @@ qx.Class.define('ms123.desktop.Desktop', {
 	 MEMBERS
 	 ******************************************************************************/
 	members: {
-		add: function (element) {
-			this.base(arguments, element);
+		add: function (element,opt) {
+			this.base(arguments, element,opt);
 
 			if (element instanceof ms123.desktop.Window) {
 				this.fireDataEvent('windowAdded', element);

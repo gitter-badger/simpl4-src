@@ -141,8 +141,8 @@ qx.Class.define("ms123.Application", {
 				page.add(desktop, {
 					edge: "center"
 				});
-				page.add(bottomPanel, {
-					edge: "south"
+				desktop.add(bottomPanel, {
+					left: 0, bottom: 0
 				});
 			}
 			return pageList;
