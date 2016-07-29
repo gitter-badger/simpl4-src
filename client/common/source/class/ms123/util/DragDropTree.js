@@ -428,11 +428,12 @@ qx.Class.define( "ms123.util.DragDropTree", {
 			var domEl = this._indicator.getContentElement().getDomElement();
 			if ( domEl ) {
 				domEl.style.height = "8px";
+				domEl.style.width = "24px";
 			}
 		},
 		_processDragInBetween: function( dragDetails ) {
 			this.setIndicatorHeight();
-			this._indicator.setDomTop( ( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2 );
+			this._indicator.setDomTop( (( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2) + ((dragDetails.rowHeight-4)/2) );
 			this._showIndicator();
 			return -1;
 		},
