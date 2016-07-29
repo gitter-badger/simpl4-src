@@ -243,10 +243,10 @@
 			_loadMenu:function(name){
 				var nodes = null;
 				nodes = jQuery.ajax( {
-					url: name + ".yaml",
+					url: name + ".json",
 					async: false,
 					error: function() {
-						console.log( name + '.yaml not found.' );
+						console.log( name + '.json not found.' );
 					},
 					dataType: "json"
 				} ).responseText;
@@ -254,10 +254,10 @@
 				console.log( "nodes:", _.isEmpty( nodes ) );
 				if ( _.isEmpty( nodes ) ) {
 					nodes = jQuery.ajax( {
-						url: name + ".json",
+						url: name + ".yaml",
 						async: false,
 						error: function() {
-							console.log( name + '.json not found.' );
+							console.log( name + '.yaml not found.' );
 						},
 						dataType: "json"
 					} ).responseText;
@@ -292,7 +292,7 @@
 					var node = nodes[ i ];
 
 					if( node.uri && node.uri.startsWith("structure:")){
-						node.children = this._loadMenu(node.uri.substring(10));
+						node.children = JSON.parse(this._loadMenu(node.uri.substring(10)));
 					}
 
 					var name = node.name || node.title;
@@ -309,7 +309,7 @@
 							var lc = name.toLowerCase();
 							node.hash = lc.replace( /[^a-z0-9_.]/g, "" );
 						} else {
-							alert( "Warning.menu:name and hash are empty" );
+							console.error( "Warning.menu:name and hash are empty:", node );
 						}
 					}
 					node.url = node.uri || node.url;
