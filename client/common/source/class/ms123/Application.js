@@ -74,7 +74,7 @@ qx.Class.define("ms123.Application", {
 					}
 				}
 
-				var pageList = self._initDesktops(tabView, nsList);
+				var pageList = self._initDesktops(tabView, nsList, loginData.theme);
 				self._removeTabIfOnlyOne(tabView, nsList);
 				self._prepareMessages(nsList, loginData.language);
 				//self._initTheme("ea");
@@ -113,7 +113,7 @@ qx.Class.define("ms123.Application", {
 				});
 			}
 		},
-		_initDesktops: function (tabView, nsList) {
+		_initDesktops: function (tabView, nsList,theme) {
 			var pageList = [];
 			for (var i = 0; i < nsList.length; i++) {
 				var page = new qx.ui.tabview.Page(nsList[i], "icon/16/actions/go-home.png");
@@ -126,8 +126,8 @@ qx.Class.define("ms123.Application", {
 				tabView.setSelection([page]);
 
 
-				var desktop = new ms123.desktop.Desktop(nsList[i], new qx.ui.window.Manager());
-				//desktop.setBackgroundColor('#ffffff');
+				var bg = theme=="simpl4" ? "#93B0BE" : null;
+				var desktop = new ms123.desktop.Desktop(nsList[i], new qx.ui.window.Manager(),bg);
 
 				var topPanel = new ms123.desktop.Panel();
 				var bottomPanel = new ms123.desktop.Panel();

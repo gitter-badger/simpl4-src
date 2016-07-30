@@ -179,7 +179,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 						win.add(buttons, {
 							edge: "south"
 						});
-						app.getRoot().add(win);
+						app.getDesktop(ms123.StoreDesc.getCurrentNamespace()).add(win);
 						win.open();
 						if( this._lp){ 
 							win.moveTo( this._lp.left, this._lp.top);

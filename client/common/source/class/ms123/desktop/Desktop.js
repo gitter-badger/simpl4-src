@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-qx.Class.define('ms123.desktop.Desktop', {
+qx.Class.define( 'ms123.desktop.Desktop', {
 	extend: qx.ui.window.Desktop,
-	include: [ms123.desktop.MDesktopPersist],
+	include: [ ms123.desktop.MDesktopPersist ],
 
-	construct: function (namespace, manager) {
-		this.base(arguments, manager);
+	construct: function( namespace, manager,bg ) {
+		this.base( arguments, manager );
 
 		var am = qx.util.AliasManager.getInstance();
-		var file = am.resolve("resource/ms123/wallpaper1.png");
-		var deco = new ms123.desktop.Background();
-		this.setDecorator(deco);
+		var file = am.resolve( "resource/ms123/wallpaper1.png" );
+		var deco = new ms123.desktop.Background(bg);
+		this.setDecorator( deco );
 
 		this._namespace = namespace;
 
@@ -43,25 +43,28 @@ qx.Class.define('ms123.desktop.Desktop', {
 	 MEMBERS
 	 ******************************************************************************/
 	members: {
-		add: function (element,opt) {
-			this.base(arguments, element,opt);
+		_createBlocker: function() {
+			return new ms123.desktop.Blocker( this );
+		},
+		add: function( element, opt ) {
+			this.base( arguments, element, opt );
 
-			if (element instanceof ms123.desktop.Window) {
-				this.fireDataEvent('windowAdded', element);
-				element.addListener('move', function () {
+			if ( element instanceof ms123.desktop.Window ) {
+				this.fireDataEvent( 'windowAdded', element );
+				element.addListener( 'move', function() {
 					var bounds = this.getBounds();
 
-					if (bounds.top < 0) {
-						this.moveTo(bounds.left, 0);
+					if ( bounds.top < 0 ) {
+						this.moveTo( bounds.left, 0 );
 					}
-				});
+				} );
 
-				element.addListener('close', function () {
-					this.fireDataEvent('windowRemoved', element);
-					this.remove(element);
+				element.addListener( 'close', function() {
+					this.fireDataEvent( 'windowRemoved', element );
+					this.remove( element );
 					delete element;
-				}, this);
+				}, this );
 			}
 		}
 	}
-});
+} );
