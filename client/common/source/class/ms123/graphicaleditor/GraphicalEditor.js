@@ -110,6 +110,7 @@ qx.Class.define("ms123.graphicaleditor.GraphicalEditor", {
 				new ms123.graphicaleditor.plugins.Overlay(this._facade);
 				new ms123.graphicaleditor.plugins.camel.Plugin(this._facade);
 				new ms123.graphicaleditor.plugins.SyntaxChecker(this._facade);
+				new ms123.graphicaleditor.plugins.ServiceTest(this._facade);
 			}
 
 			var save = new ms123.graphicaleditor.plugins.Save(this._facade, this);
