@@ -54,6 +54,9 @@ qx.Mixin.define("ms123.desktop.MDesktopPersist", {
 			var windowList = this.getWindows();
 			var stateList = [];
 			for (var i = 0; i < windowList.length; i++) {
+				if( !windowList[i].getContext ){
+					continue;
+				}
 				var c = windowList[i].getContext();
 				var entityName = null;
 				var pack = null;
