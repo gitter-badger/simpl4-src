@@ -106,7 +106,7 @@ public class BaseBuilder {
 			return "";
 		}
 		Map binding = paramsIn != null ? new HashMap(paramsIn) : new HashMap();
-		executeFilter(namespace,filter, binding);
+		//executeFilter(namespace,filter, binding);
 		try {
 			TemplateEvaluator te = new GroovyMarkupTemplate();
 			return te.render(source, binding);
