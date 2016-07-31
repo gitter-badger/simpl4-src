@@ -19,6 +19,9 @@
 /**
  * Specific data cell renderer for dates.
  */
+/**
+ * @ignore(jQuery.*)
+ */
 qx.Class.define("ms123.util.Remote", {
 
 /*
@@ -36,6 +39,11 @@ qx.Class.define("ms123.util.Remote", {
 		_lastuse: 0,
 		_sessionTimeout:60*1000*30,
 		_getPassword: function () {
+			if( !this.isEmpty(ms123.util.Remote._passwordTmp) ){
+				var ret = ms123.util.Remote._passwordTmp;
+				ms123.util.Remote._passwordTmp = null;
+				return ret;
+			}
 			var now = new Date().getTime();
 			var time = now - ms123.util.Remote._lastuse;
 			if( ms123.util.Remote._lastuse!=0 && time  > ms123.util.Remote._sessionTimeout){
@@ -49,11 +57,20 @@ qx.Class.define("ms123.util.Remote", {
 			return ms123.util.Remote._password;
 		},
 		_getUserName: function () {
+			if( !this.isEmpty(ms123.util.Remote._usernameTmp) ){
+				var ret = ms123.util.Remote._usernameTmp;
+				ms123.util.Remote._usernameTmp = null;
+				return ret;
+			}
 			return ms123.util.Remote._username;
 		},
 		getPrefix:function(){
 			var i = location.pathname.indexOf("/sw/start");
 			return location.pathname.substring(0,i);
+		},
+		isEmpty: function (s) {
+			if (!s || jQuery.trim(s) == '') return true;
+			return false;
 		},
 		sendSync: function (url, method, type, data, msg) {
 			var params = {
@@ -176,6 +193,10 @@ qx.Class.define("ms123.util.Remote", {
 			ms123.util.Remote._username = username;
 			ms123.util.Remote._password = password;
 			ms123.util.Remote._lastuse = new Date().getTime();
+		},
+		setCredentialsTmp: function (username, password) {
+			ms123.util.Remote._usernameTmp = username;
+			ms123.util.Remote._passwordTmp = password;
 		}
 	}
 
