@@ -33,6 +33,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 	construct: function( facade, main ) {
 		this.base( arguments );
 		this.facade = facade;
+		this.ns = ms123.StoreDesc.getCurrentNamespace();
 		this.serviceTestData = {};
 
 
@@ -73,27 +74,59 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			var serviceShapes = this._getServiceShapes();
 			var json = this.facade.getJSON();
 			var id = json.properties.overrideid.replace( /\.camel$/, "" );
+			this.id = id;
+			this.serviceTestData = this._getHistory();
 			var ssMap = this._filterServiceShapes( id, serviceShapes );
-			var container = new qx.ui.container.Composite( new qx.ui.layout.Dock() );
-			var selectBox = this._createServiceSelector( container, ssMap );
-			var win = this._createTestWindow( container );
+			var mainContainer = new qx.ui.container.Composite( new qx.ui.layout.Dock() );
+			var northContainer = new qx.ui.container.Composite( new qx.ui.layout.VBox( 5 ) );
+
+			northContainer.add( this._createUserNamePassword() );
+			mainContainer.add( northContainer, {
+				edge: "north"
+			} );
+			var selectBox = this._createServiceSelector( northContainer, ssMap );
+			var win = this._createTestWindow( mainContainer );
 			this._win = win;
 
 			selectBox.addListener( "changeSelection", function( e ) {
 				var key = selectBox.getSelection()[ 0 ].getModel();
 				if ( key == "" ) return;
 				console.log( "key:", key );
-				this._createServiceTestForm( win, container, key, ssMap[ key ] );
+				this._createServiceTestForm( win, mainContainer, key, ssMap[ key ] );
 			}, this );
+			var ns = ms123.StoreDesc.getCurrentNamespace();
 			var app = qx.core.Init.getApplication();
-			app.getDesktop( ms123.StoreDesc.getCurrentNamespace() ).add( win );
-			container.add( this._createServiceReturnView( null ), {
+			var dt = app.getDesktop( ns );
+			dt.add( win );
+			var tb = app.getTaskbar( ns );
+			tb.addWindow( win );
+			mainContainer.add( this._createServiceReturnView( null ), {
 				edge: "south"
 			} );
 		},
+		_createUserNamePassword: function( parent, ssMap ) {
+			var container = new qx.ui.container.Composite( new qx.ui.layout.HBox() );
+			container.add( new qx.ui.basic.Label( "Username:" ), {
+				width: "15%"
+			} );
+			this._usernameTF = new qx.ui.form.TextField();
+			container.add( this._usernameTF, {
+				width: "35%"
+			} );
+			container.add( new qx.ui.basic.Label( "Password:" ), {
+				width: "15%"
+			} );
+			this._passwordTF = new qx.ui.form.TextField();
+			container.add( this._passwordTF, {
+				width: "35%"
+			} );
+			return container;
+		},
 		_createServiceSelector: function( parent, ssMap ) {
 			var container = new qx.ui.container.Composite( new qx.ui.layout.HBox() );
-			container.add( new qx.ui.basic.Label( "Service:" ) );
+			container.add( new qx.ui.basic.Label( "Service:" ), {
+				width: "15%"
+			} );
 			var selectBox = new qx.ui.form.SelectBox();
 			var item = new qx.ui.form.ListItem( "", null, "" );
 			selectBox.add( item );
@@ -104,11 +137,9 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 				selectBox.add( item );
 			}
 			container.add( selectBox, {
-				flex: true
+				width: "85%"
 			} );
-			parent.add( container, {
-				edge: "north"
-			} );
+			parent.add( container, {} );
 			return selectBox;
 		},
 		_createServiceTestForm: function( win, parent, key, ss ) {
@@ -134,6 +165,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 				'callback': ( function( m ) {
 					console.log( "callback:", m );
 					this.serviceTestData[ key ] = m;
+					this._saveHistory( this.serviceTestData );
 					this._callService( key, m );
 				} ).bind( this ),
 				'value': "execute"
@@ -262,6 +294,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 		_callService: function( method, params ) {
 			var result;
 			try {
+				ms123.util.Remote.setCredentialsTmp( this._usernameTF.getValue(), this._passwordTF.getValue() );
 				var ns = ms123.StoreDesc.getCurrentNamespace();
 				result = ms123.util.Remote.rpcSync( "camelRoute:" + ns + "." + method, params );
 			} catch ( e ) {
@@ -315,7 +348,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 
 
 		_createTestWindow: function( c ) {
-			var win = new qx.ui.window.Window( "ServiceTest", "" ).set( {
+			var win = new ms123.desktop.Window( null, "ServiceTest", "" ).set( {
 				resizable: true,
 				useMoveFrame: true,
 				useResizeFrame: true
@@ -323,9 +356,9 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			win.setLayout( new qx.ui.layout.Dock );
 			win.setWidth( 700 );
 			win.setHeight( 600 );
-			win.setAllowMaximize( false );
-			win.setAllowMinimize( false );
-			win.setModal( true );
+			win.setAllowMaximize( true );
+			win.setAllowMinimize( true );
+			win.setModal( false );
 			win.setActive( true );
 			win.minimize();
 			win.center();
@@ -336,6 +369,43 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			return win;
 		},
 
+		_getHistory: function() {
+			var value = null;
+			try {
+				value = ms123.util.Remote.rpcSync( "git:getContent", {
+					reponame: this.ns + "_data",
+					path: "/tmp/history_" + this.id + ".json"
+				} );
+			} catch ( e ) {
+				return {};
+			}
+			return JSON.parse( value );
+		},
+		_saveHistory: function( content ) {
+			var completed = ( function( e ) {} ).bind( this );
+
+			var failed = ( function( e ) {
+				console.error( "_saveHistory.failed:", e );
+			} ).bind( this );
+
+			var rpcParams = {
+				reponame: this.ns + "_data",
+				path: "/tmp/history_" + this.id + ".json",
+				type: "json",
+				content: JSON.stringify( content, null, 2 )
+			};
+
+			var params = {
+				method: "putContent",
+				service: "git",
+				parameter: rpcParams,
+				async: false,
+				context: this,
+				completed: completed,
+				failed: failed
+			}
+			ms123.util.Remote.rpcAsync( params );
+		},
 		__getResourceUrl: function( name ) {
 			var am = qx.util.AliasManager.getInstance();
 			return am.resolve( "resource/ms123/" + name );
