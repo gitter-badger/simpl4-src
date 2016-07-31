@@ -155,18 +155,28 @@ public class DocbookEndpoint extends ResourceEndpoint {
 		ExchangeUtils.setDestination(this.destination,bos.toByteArray() , exchange);
 	}
 	private Map<String,Object> getVariablenMap(Exchange exchange){
-		List<String> headerList=null;
+		List<String> _headerList=null;
 		if( this.headerFields!=null){
-			headerList = Arrays.asList(this.headerFields.split(","));
+			_headerList = Arrays.asList(this.headerFields.split(","));
 		}else{
-			headerList = new ArrayList();
+			_headerList = new ArrayList();
 		}
+		Map<String,String> modMap = new HashMap<String,String>();
+		List<String> headerList = new ArrayList<String>();
+		for( String h : _headerList){
+			String[]  _tmp = h.split(":");
+			String key = _tmp[0];
+			String mod = _tmp.length>1 ? _tmp[1] : "";
+			headerList.add(key);
+			modMap.put(key,mod);
+		}
+	
 		Map<String, Object> variableMap = exchange.getIn().getHeader(DocbookConstants.DOCBOOK_DATA, Map.class);
 		if (variableMap == null) {
 			variableMap = new HashMap();
 			for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
 				if( headerList.size()==0 || headerList.contains( header.getKey())){
-					if( header.getValue() instanceof Map){
+					if( header.getValue() instanceof Map && !"asMap".equals(modMap.get(header.getKey()) )){
 						variableMap.putAll((Map)header.getValue());
 					}else{
 						variableMap.put(header.getKey(), header.getValue());
