@@ -27,6 +27,8 @@ import java.util.Map;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -75,6 +77,10 @@ public class HazelcastServiceImpl  implements HazelcastService {
 
 	private HazelcastInstance createInstance() {
 		Config config = new XmlConfigBuilder().build();
+		NetworkConfig nconfig = config.getNetworkConfig();
+		JoinConfig join = nconfig.getJoin();
+		join.getMulticastConfig().setEnabled(false);
+		join.getTcpIpConfig().setEnabled(false);
 		config.getProperties().setProperty("hazelcast.version.check.enabled", "false");
 		HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
 		info(this, "createInstance:"+hi);
