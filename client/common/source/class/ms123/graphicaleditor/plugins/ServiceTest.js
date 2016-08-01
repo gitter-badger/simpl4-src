@@ -88,6 +88,11 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			var win = this._createTestWindow( mainContainer );
 			this._win = win;
 
+			win.addListener( 'close', function() {
+				this._win = null;
+				this._oldForm = null;
+				console.log("close win");
+			}, this );
 			selectBox.addListener( "changeSelection", function( e ) {
 				var key = selectBox.getSelection()[ 0 ].getModel();
 				if ( key == "" ) return;
@@ -298,7 +303,19 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 				var ns = ms123.StoreDesc.getCurrentNamespace();
 				result = ms123.util.Remote.rpcSync( "camelRoute:" + ns + "." + method, params );
 			} catch ( e ) {
-				ms123.form.Dialog.alert( "ServiceTest._callService:" + e );
+				var msg = e+"";
+				msg = msg.replace(/Script[0-9]{1,2}/g, "");
+				msg = msg.replace(/Application error 500:/g, "");
+				msg = msg.replace(/:java.lang.RuntimeException/g, "");
+				var message = "<pre style='font-size:10px;white-space:pre;'>" + msg + "</pre></div>";
+				var alert = new ms123.form.Alert({
+					"message": message,
+					"windowWidth": 700,
+					"windowHeight": 500,
+					"useHtml": true,
+					"inWindow": true
+				});
+				alert.show();
 				return null;
 			}
 
@@ -348,7 +365,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 
 
 		_createTestWindow: function( c ) {
-			var win = new ms123.desktop.Window( null, "ServiceTest", "" ).set( {
+			var win = new ms123.desktop.Window( null, "Test("+this.id+")", "" ).set( {
 				resizable: true,
 				useMoveFrame: true,
 				useResizeFrame: true
