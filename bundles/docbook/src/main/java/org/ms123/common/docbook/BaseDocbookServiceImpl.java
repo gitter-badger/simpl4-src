@@ -137,6 +137,7 @@ class BaseDocbookServiceImpl {
 		}
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Map paramsOut = new HashMap();
+		_setLang( paramsIn, paramsOut);
 		jsonToDocbook(namespace, json, paramsIn, paramsOut, out);
 		out.close();
 		InputStream is = new ByteArrayInputStream(out.toByteArray());
@@ -145,12 +146,22 @@ class BaseDocbookServiceImpl {
 	public void jsonToPdf(String namespace, InputStream is, Map<String, Object> paramsIn, OutputStream os) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Map paramsOut = new HashMap();
+		_setLang( paramsIn, paramsOut);
 		jsonToDocbook(namespace, is, paramsIn, paramsOut, out);
 		out.close();
 		docbookToPdf(namespace,new ByteArrayInputStream(out.toByteArray()), paramsOut,os);
 	}
 
 
+	private void _setLang( Map<String, Object> paramsIn, Map<String, Object> paramsOut){
+		String lang = (String)paramsIn.get("lang");
+		if( lang == null){
+			lang = (String)paramsIn.get("language");
+		}
+		if( lang != null){
+			paramsOut.put("l10n.gentext.language", lang );
+		}
+	}
 	protected void markdownToDocbook(String markdown, OutputStream out) throws Exception{
 		Context ctx = new Context(null, null, false, new HashMap(), new HashMap());
 		String html = BaseBuilder.xwikiToHtml(ctx,markdown);

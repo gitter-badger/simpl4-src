@@ -394,13 +394,35 @@
 <xsl:param name="show.bookmarks">0</xsl:param>
 <xsl:param name="marker.section.level">0</xsl:param>
 
+
+<xsl:param name="generate.toc">
+/appendix toc,title
+article/appendix  nop
+article  toc,title
+book      toc,title,figure,table,example,equation
+/chapter  toc,title
+part      toc,title
+/preface  toc,title
+reference toc,title
+/sect1    toc
+/sect2    toc
+/sect3    toc
+/sect4    toc
+/sect5    toc
+section  toc,title
+set       toc,title
+</xsl:param>
+
+<xsl:param name="informal.object.space.before">0.5em</xsl:param>
+<xsl:param name="informal.object.space.after">0.5em</xsl:param>
+
 <xsl:attribute-set name="informal.object.properties">
   <xsl:attribute name="space-before.minimum">0.0em</xsl:attribute>
-  <xsl:attribute name="space-before.optimum">0em</xsl:attribute>
-  <xsl:attribute name="space-before.maximum">0em</xsl:attribute>
+  <xsl:attribute name="space-before.optimum"><xsl:value-of select="$informal.object.space.before"/></xsl:attribute>
+  <xsl:attribute name="space-before.maximum">3em</xsl:attribute>
   <xsl:attribute name="space-after.minimum">0em</xsl:attribute>
-  <xsl:attribute name="space-after.optimum">0em</xsl:attribute>
-  <xsl:attribute name="space-after.maximum">0em</xsl:attribute>
+  <xsl:attribute name="space-after.optimum"><xsl:value-of select="$informal.object.space.after"/></xsl:attribute>
+  <xsl:attribute name="space-after.maximum">3em</xsl:attribute>
 </xsl:attribute-set>
 
 <xsl:template name="select.user.pagemaster">

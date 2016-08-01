@@ -75,12 +75,8 @@
   Table of contents inserted by <?asciidoc-toc?> processing instruction.
 -->
 <xsl:param name="generate.toc">
-  <xsl:choose>
-    <xsl:when test="/processing-instruction('asciidoc-toc')">
 article toc,title
 book    toc,title,figure,table,example,equation
-      <!-- The only way I could find that suppressed book chapter TOCs -->
-      <xsl:if test="$generate.section.toc.level != 0">
 chapter   toc,title
 part      toc,title
 preface   toc,title
@@ -94,13 +90,6 @@ sect4     toc
 sect5     toc
 section   toc
 set       toc,title
-      </xsl:if>
-    </xsl:when>
-    <xsl:otherwise>
-article nop
-book    nop
-    </xsl:otherwise>
-  </xsl:choose>
 </xsl:param>
 
 </xsl:stylesheet>
