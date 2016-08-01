@@ -284,6 +284,9 @@
 					return;
 				}
 				var pages = [];
+				if( nodes.length>0){
+					nodes[0].hash="0";
+				}
 				this._traverse( nodes, pages );
 				return nodes;
 			},
