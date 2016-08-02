@@ -102,12 +102,14 @@ qx.Theme.define("ms123.theme.simpl4.Decoration", {
       decorator: [
         qx.ui.decoration.MDoubleBorder,
         qx.ui.decoration.MBoxShadow,
+        qx.ui.decoration.MBorderRadius,
         qx.ui.decoration.MBackgroundColor
       ],
 
       style :
       {
         width : 1,
+        radius : 3,
         color : "window-border",
         innerWidth : 1,
         innerColor: "window-border-inner",
