@@ -531,7 +531,7 @@ qx.Class.define("ms123.filtereditor.FilterEditor", {
 
 			var newModel = [];
 			c.columns.forEach( (function(col,ind){
-				var colNew = ms123.util.Clone.clone( col );
+				var colNew = qx.lang.Object.clone( col, false );
 				var name = c.aliasColumns[ind] || col.name;
 				colNew.name = name;
 				colNew.id = name;
