@@ -152,7 +152,7 @@ class BasePermissionServiceImpl implements Constants {
 			return fieldMap;
 		}
 		Map ret = new HashMap();
-		WildcardPermission wp = new WildcardPermission(sdesc.getNamespace() + ":entities:" + sdesc.getPack() + ":" + entity + ":dummy", actions);
+		WildcardPermission wp = new WildcardPermission(sdesc.getNamespace() + ":entities:" + StoreDesc.getFqEntityName(entity,sdesc)+ ":dummy", actions);
 		Iterator<String> it = fieldMap.keySet().iterator();
 		while (it.hasNext()) {
 			String key = it.next();
@@ -170,7 +170,7 @@ class BasePermissionServiceImpl implements Constants {
 			return fieldList;
 		}
 		List<Map> ret = new ArrayList();
-		WildcardPermission wp = new WildcardPermission(sdesc.getNamespace() + ":entities:" + sdesc.getPack() + ":" + entity + ":dummy", actions);
+		WildcardPermission wp = new WildcardPermission(sdesc.getNamespace() + ":entities:" + StoreDesc.getFqEntityName(entity,sdesc) + ":dummy", actions);
 		Iterator<Map> it = fieldList.iterator();
 		while (it.hasNext()) {
 			Map map = it.next();
@@ -188,7 +188,7 @@ class BasePermissionServiceImpl implements Constants {
 			return fieldList;
 		}
 		List<String> ret = new ArrayList();
-		WildcardPermission wp = new WildcardPermission(sdesc.getNamespace() + ":entities:" + sdesc.getPack() + ":" + entity + ":dummy", actions);
+		WildcardPermission wp = new WildcardPermission(sdesc.getNamespace() + ":entities:" + StoreDesc.getFqEntityName(entity,sdesc) + ":dummy", actions);
 		for (String fieldName : fieldList) {
 			if (!hasFieldPermissions(wp, fieldName)) {
 				continue;
