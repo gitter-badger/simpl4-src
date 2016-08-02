@@ -57,6 +57,7 @@ import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 
 /** DocbookService implementation
@@ -317,10 +318,13 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 			if(list.size() > 0){
 				Map<String,String> gd = list.get(0);
 				String menuFile = gd.get("menu_file");
+				if( isEmpty(menuFile)){
+					throw new Exception("menu_file is empty");
+				}
 				String docFile = gd.get("doc_file");
 				String gitSpace = System.getProperty("git.repos");
 				File mfile = new File( gitSpace, new File( namespace, menuFile).toString());
-				File dfile = new File( gitSpace, new File( namespace, docFile).toString());
+				//File dfile = new File( gitSpace, new File( namespace, docFile).toString());
 				System.err.println("mfile:"+mfile);
 				list.remove(gd);
 				String s = m_js.deepSerialize( list);
