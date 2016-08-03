@@ -18,6 +18,7 @@
  */
 /**
 	@ignore($)
+	@ignore(jQuery.*)
 	@asset(qx/icon/${qx.icontheme}/16/actions/*)
 	@asset(qx/icon/${qx.icontheme}/16/places/*)
 */
@@ -186,6 +187,9 @@ qx.Class.define("ms123.messages.Editor", {
 				'label': this.tr("messages.takeover"),
 				'icon': "icon/22/actions/dialog-ok.png",
 				'callback': function (m) {
+					if( self.isEmpty(m.msgid) || self.isEmpty(m.msgstr)){
+						return;
+					} 
 					var map = {};
 					qx.lang.Object.mergeWith(map, m);
 					self._messagesChange(map);
@@ -202,6 +206,10 @@ qx.Class.define("ms123.messages.Editor", {
 				'label': this.tr("meta.lists.savebutton"),
 				'icon': "icon/16/actions/document-save.png",
 				'callback': function (m) {
+					if( self.isEmpty(m.msgid) || self.isEmpty(m.msgstr)){
+						self._save();
+						return;
+					} 
 					var map = {};
 					qx.lang.Object.mergeWith(map, m);
 					self._messagesChange(map);
@@ -224,6 +232,10 @@ qx.Class.define("ms123.messages.Editor", {
 				id: "tab1"
 			}];
 			return new ms123.widgets.Form(context);
+		},
+		isEmpty: function (s) {
+			if (!s || jQuery.trim(s) == '') return true;
+			return false;
 		},
 		_messagesChange: function (rec) {
 			if( rec === null || rec === undefined ) return;
