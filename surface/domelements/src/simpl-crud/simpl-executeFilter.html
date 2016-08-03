@@ -27,19 +27,22 @@
 			is: 'simpl-executefilter',
 			properties: {
 				pagesize: {
-					type:Number,
+					type: Number,
 					value: 100
 				},
 				offset: {
-					type:Number,
+					type: Number,
 					value: 0
 				},
 				params: {
 					type: Object,
+					value: function() {
+						return {};
+					},
 					notify: true
 				},
 				meta: {
-					notify:true,
+					notify: true,
 					type: Object
 				},
 				data: {
@@ -56,10 +59,9 @@
 				}
 			},
 			observers: [
-				'paramsChanged(params.*)'
+				'paramsChanged(params.*,name,namespace)'
 			],
-			ready: function() {
-			},
+			ready: function() {},
 			paramsChanged: function() {
 				console.log( "executefilter.paramsChanged:", this.params );
 				this.execute( true );
@@ -79,19 +81,25 @@
 				console.debug( "execute.params:", params );
 				console.debug( "execute.pagesize:", this.pagesize );
 				console.debug( "execute.offset:", this.offset );
-				var map = simpl4.util.Rpc.rpcSync( "data:executeFilterByName", {
-					storeId: namespace + "_data",
-					withMeta: withMeta,
-					pageSize: this.pagesize,
-					offset: this.offset,
-					params: params,
-					name: this.name
-				} );
+				var map = nul;
+				try {
+					map = simpl4.util.Rpc.rpcSync( "data:executeFilterByName", {
+						storeId: namespace + "_data",
+						withMeta: withMeta,
+						pageSize: this.pagesize,
+						offset: this.offset,
+						params: params,
+						name: this.name
+					} );
+				} catch ( e ) {
+					console.error( "executefilter:", e.stack );
+					return;
+				}
 				if ( withMeta ) {
 					this.meta = map.meta;
 					console.log( "Meta:", this.meta );
 				}
-console.log("executeFilter.data:",map.rows);
+				console.log( "executeFilter.data:", map.rows );
 				this.data = map.rows;
 			}
 		} );
