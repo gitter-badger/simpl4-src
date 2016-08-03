@@ -949,6 +949,9 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 					response.setContentType( "text/html; charset=UTF-8" );
 					Writer w  = response.getWriter();
 					String t = request.getParameter("t");
+					if( t== null){
+						t = request.getParameter("template");
+					}
 					if( t!= null){
 						w.write("<template is=\"dom-bind\" bind>");
 					}
