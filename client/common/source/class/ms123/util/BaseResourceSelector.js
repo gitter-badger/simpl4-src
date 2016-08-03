@@ -391,6 +391,13 @@ qx.Class.define("ms123.util.BaseResourceSelector", {
 		_onClickTree: function (e) {
 			var model = this._resourceSelector.getSelection().getItem(0);
 
+			var target= e.getTarget();
+			var classname= target.classname;
+			
+			if( classname === "qx.ui.tree.core.FolderOpenButton" ){
+				return;
+			}
+
 			var type = model.getType();
 			var icons = this._iconMapping[type];
 			console.log("_onClickTree:" + type);
