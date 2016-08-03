@@ -197,6 +197,23 @@ qx.Class.define("ms123.messages.Editor", {
 						self._currentForm.fillForm({});
 					}
 				},
+				'value': "takeover"
+			}, {
+				'label': this.tr("meta.lists.savebutton"),
+				'icon': "icon/16/actions/document-save.png",
+				'callback': function (m) {
+					var map = {};
+					qx.lang.Object.mergeWith(map, m);
+					self._messagesChange(map);
+					if (self._isEditMode) {
+						self._tableModel.setRowsAsMapArray([m], self._currentTableIndex, true);
+						self._propertyEditWindow.close();
+					} else {
+						self._tableModel.addRowsAsMapArray([m], null, true);
+						self._currentForm.fillForm({});
+					}
+					self._save();
+				},
 				'value': "save"
 			}];
 
