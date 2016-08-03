@@ -52,9 +52,9 @@
 				this.xhr = document.createElement( 'simpl-xhr' );
 			},
 			receive: function( response, xhr ) {
-				console.log( "rpc.receive(" + this.method + "):", xhr );
 				if ( this.isSuccess( xhr ) ) {
 					var resp = this.evalResponse( xhr );
+					console.log( "rpc.receive(" + this.method + "):", resp );
 					if ( resp.error ) {
 						this.error2( resp.error, xhr );
 					} else {

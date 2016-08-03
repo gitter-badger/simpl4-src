@@ -62,6 +62,7 @@ clazz.construct.extend( "simpl4.util.Rpc", {
 			throw "Networkerror:result is null";
 		}
 		if ( result.error ) {
+			console.log("Rpc.error:",result);
 			throw result.error;
 		}
 		if ( typeof result.result == 'string' ) {
