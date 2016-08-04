@@ -19,6 +19,8 @@
 package org.ms123.common.system.log;
 
 import java.io.FileInputStream;
+import java.io.File;
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Dictionary;
@@ -55,10 +57,13 @@ import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.info;
+import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.apache.commons.io.input.ReversedLinesFileReader;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /** LogService implementation
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=log" })
 public class LogServiceImpl extends BaseLogServiceImpl implements LogService, EventHandler {
 
@@ -115,6 +120,31 @@ public class LogServiceImpl extends BaseLogServiceImpl implements LogService, Ev
 	protected void deactivate() throws Exception {
 		info(this,"LogServiceImpl.deactivate");
 		m_serviceRegistration.unregister();
+	}
+
+	@RequiresRoles("admin")
+	public String getLastNLinesFromStdout( @PName("lines")          Integer lines ) throws RpcException {
+		try {
+			if( lines <= 0 ) return "";
+			if( lines > 10000) lines = 10000;
+			StringBuilder sb = new StringBuilder(4096);
+			String simpl4Dir = (String) System.getProperty("simpl4.dir");
+			File file = new File( simpl4Dir, "log/stdout.log" );
+			int counter = 0; 
+			ReversedLinesFileReader object = new ReversedLinesFileReader(file);
+			while(counter < lines) {
+				String line = object.readLine();
+				if( isEmpty(line)){
+					break;
+				}
+				sb.insert(0, line+"\n");
+				counter++;
+			}
+			object.close();
+			return sb.toString();
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "LogServiceImpl.getLastNLinesFromStdout:", e);
+		}
 	}
 
 	public Map<String, List<Map>> getLogKeyList(
