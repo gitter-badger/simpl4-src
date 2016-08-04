@@ -45,6 +45,11 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 			var defaultOptions = {
 				buttons: ['undo', 'redo', 'find', 'findNext', 'replace', 'replaceAll', 'vimMode','reindent', "foldAll", "wrapLines" ]
 			}
+			if( options.readOnly){
+				defaultOptions = {
+					buttons: []
+				}
+			}
 			this.options = options;
 			this.setDefaults(this.options, defaultOptions);
 			this._vimMode = ms123.config.ConfigManager.isVimMode();
@@ -126,6 +131,7 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 			if (!this.mirror) {
 				return
 			}
+			if( !this.undoButton) return;
 			var his = this.mirror.historySize();
 			if (his['undo'] > 0) {
 				this.undoButton.setEnabled(true);

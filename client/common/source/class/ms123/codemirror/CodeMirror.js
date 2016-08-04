@@ -34,6 +34,9 @@ qx.Class.define( "ms123.codemirror.CodeMirror", {
 	construct: function( context ) {
 		this.base( arguments );
 		this.__mode = context.mode;
+		this.__readOnly = context.readOnly===true;
+		this.__lineWrap = context.lineWrap!==false;
+		this.__gotoEnd = context.gotoEnd===true;
 		if ( this.__mode ) {
 			if ( this.__mode.name == "htmlembedded" ) {
 				this.__mode.scriptTypes = [ {
@@ -88,7 +91,7 @@ qx.Class.define( "ms123.codemirror.CodeMirror", {
 
 			this.__textarea.addListenerOnce( "appear", function() {
 				this.__onEditorAppear();
-				this.__toolbar = new ms123.codemirror.CodeMirrorUI( this.__codemirror, {}, {} );
+				this.__toolbar = new ms123.codemirror.CodeMirrorUI( this.__codemirror, {readOnly:this.__readOnly}, {} );
 				if ( context.toolbarAddon ) {
 					this._addToToolbar( this.__toolbar, context );
 				}
@@ -147,7 +150,8 @@ qx.Class.define( "ms123.codemirror.CodeMirror", {
 				//smartIndent: false,
 				matchBrackets: true,
 				mode: this.__mode,
-				lineWrapping: true,
+				readOnly: this.__readOnly,
+				lineWrapping: this.__lineWrap,
 				foldGutter: true,
 				gutters: [ "CodeMirror-linenumbers", "CodeMirror-foldgutter" ],
 				extraKeys: {
@@ -166,6 +170,9 @@ qx.Class.define( "ms123.codemirror.CodeMirror", {
 			} );
 			if ( this.__value ) {
 				this.__codemirror.setValue( this.__value );
+			}
+			if( this.__gotoEnd){
+				this.__codemirror.scrollTo( null, 10000 );
 			}
 
 			this.__setCodeMirrorHeight();

@@ -1078,7 +1078,6 @@ qx.Class.define("ms123.oryx.Editor", {
 		_isFocused:function(){
 			var fh = qx.ui.core.FocusHandler.getInstance()
 			var isFocused = fh.isFocused(this);
-			console.log("catchKeyDownEvents:"+isFocused+"/"+fh.getFocusedWidget());
 			return isFocused;
 		},
 

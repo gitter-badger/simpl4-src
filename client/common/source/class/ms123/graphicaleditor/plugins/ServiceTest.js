@@ -71,6 +71,41 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			this._win.open();
 		},
 		init: function() {
+
+			this._tabView = new qx.ui.tabview.TabView().set( {} );
+			this._tabView.addListener( "changeSelection", function( e ) {
+				var logViewer = e._target.getSelection()[ 0 ].getUserData( "logViewer" );
+				if ( logViewer ) {
+					window.setTimeout( function() {
+						logViewer.reload();
+					}, 100 );
+				}
+			}, this );
+
+			var testPage = new qx.ui.tabview.Page( "Test" ).set( {
+				showCloseButton: false
+			} );
+			var logPage = new qx.ui.tabview.Page( "Log" ).set( {
+				showCloseButton: false
+			} );
+
+			testPage.setLayout( new qx.ui.layout.Grow() );
+			logPage.setLayout( new qx.ui.layout.Grow() );
+			var config = {};
+			config.mode = "text/plain";
+			config.readOnly = true;
+			config.lineWrap = false;
+			config.gotoEnd = true;
+			var logViewer = new ms123.graphicaleditor.plugins.LogViewer( config );
+			logPage.add( logViewer );
+			logPage.setUserData( "logViewer", logViewer );
+			this._tabView.add( testPage, {
+				edge: 0
+			} );
+			this._tabView.add( logPage, {
+				edge: 0
+			} );
+			this._tabView.setSelection( [ testPage ] );
 			var serviceShapes = this._getServiceShapes();
 			var json = this.facade.getJSON();
 			var id = json.properties.overrideid.replace( /\.camel$/, "" );
@@ -85,13 +120,14 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 				edge: "north"
 			} );
 			var selectBox = this._createServiceSelector( northContainer, ssMap );
-			var win = this._createTestWindow( mainContainer );
+			testPage.add( mainContainer );
+			var win = this._createTestWindow( this._tabView );
 			this._win = win;
 
 			win.addListener( 'close', function() {
 				this._win = null;
 				this._oldForm = null;
-				console.log("close win");
+				console.log( "close win" );
 			}, this );
 			selectBox.addListener( "changeSelection", function( e ) {
 				var key = selectBox.getSelection()[ 0 ].getModel();
@@ -303,18 +339,18 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 				var ns = ms123.StoreDesc.getCurrentNamespace();
 				result = ms123.util.Remote.rpcSync( "camelRoute:" + ns + "." + method, params );
 			} catch ( e ) {
-				var msg = e+"";
-				msg = msg.replace(/Script[0-9]{1,2}/g, "");
-				msg = msg.replace(/Application error 500:/g, "");
-				msg = msg.replace(/:java.lang.RuntimeException/g, "");
+				var msg = e + "";
+				msg = msg.replace( /Script[0-9]{1,2}/g, "" );
+				msg = msg.replace( /Application error 500:/g, "" );
+				msg = msg.replace( /:java.lang.RuntimeException/g, "" );
 				var message = "<pre style='font-size:10px;white-space:pre;'>" + msg + "</pre></div>";
-				var alert = new ms123.form.Alert({
+				var alert = new ms123.form.Alert( {
 					"message": message,
 					"windowWidth": 700,
 					"windowHeight": 500,
 					"useHtml": true,
 					"inWindow": true
-				});
+				} );
 				alert.show();
 				return null;
 			}
@@ -365,7 +401,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 
 
 		_createTestWindow: function( c ) {
-			var win = new ms123.desktop.Window( null, "Test("+this.id+")", "" ).set( {
+			var win = new ms123.desktop.Window( null, "Test(" + this.id + ")", "" ).set( {
 				resizable: true,
 				useMoveFrame: true,
 				useResizeFrame: true
