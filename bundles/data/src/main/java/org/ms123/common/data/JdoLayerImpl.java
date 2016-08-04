@@ -1314,7 +1314,6 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			Map fieldSets = m_settingService.getFieldSets(config, sdesc.getNamespace(), entityName);
 			boolean hasTeamSecurity = hasTeamSecurity(sessionContext, entityName, entityNameDetails);
 			boolean hasStateSelect = hasStateSelect(sdesc, entityName, entityNameDetails);
-			System.out.println("hasStateSelect:" + hasStateSelect + "," + params.get("state")); 
 			String orderBy = getOrderBy(params, entityName, detailFieldName);
 			Map filtersMap = null;
 			if (params.get("filters") != null && "".equals(params.get("filters")) == false) {
