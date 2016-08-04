@@ -92,10 +92,24 @@ qx.Class.define( "ms123.codemirror.CodeMirror", {
 				if ( context.toolbarAddon ) {
 					this._addToToolbar( this.__toolbar, context );
 				}
+				if ( context.buttons ) {
+					this._addButtons( this.__toolbar,context.buttons);	
+				}
 				this.add( this.__toolbar, {
 					edge: "north"
 				} );
 			}, this );
+		},
+		_addButtons: function (toolbar, buttons) {
+			for (var i = 0; i < buttons.length; i++) {
+				var bd = buttons[i];
+				var b = new qx.ui.toolbar.Button(bd.label, bd.icon);
+				if (bd.tooltip) {
+					b.setToolTipText(bd.tooltip);
+				}
+				b.addListener("execute", bd.callback, bd.context||this);
+				toolbar.add(b);
+			}
 		},
 		_addToToolbar: function( toolbar, context ) {
 			if ( context.toolbarAddon == "WikiMarkdown" ) {

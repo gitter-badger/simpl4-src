@@ -48,6 +48,17 @@ qx.Class.define("ms123.shell.views.SimpleTextEditor", {
 			config.helper = "DocumentAsciidoctor";
 		}
 		
+		config.buttons = [{
+			'label': "",
+			'tooltip': this.tr("meta.lists.savebutton"),
+			'icon': this.__getResourceUrl("save.png"),
+			'context': this,
+			'callback': function (m) {
+				var value =  this.msgArea.getValue();
+				this._saveContent(model, model.getType(), {json: value});
+			}
+		}];
+
 		this.msgArea = new ms123.codemirror.CodeMirror(config);
 		this.msgArea.set({
 			height: null,
@@ -131,6 +142,10 @@ qx.Class.define("ms123.shell.views.SimpleTextEditor", {
 				failed: failed
 			}
 			ms123.util.Remote.rpcAsync(params);
+		},
+		__getResourceUrl: function (name) {
+			var am = qx.util.AliasManager.getInstance();
+			return am.resolve("resource/ms123/" + name);
 		}
 	}
 });

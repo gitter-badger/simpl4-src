@@ -56,6 +56,16 @@ qx.Class.define("ms123.shell.views.TextEditor", {
 	 ******************************************************************************/
 	members: {
 		_createEditor:function(config, value){
+			config.buttons = [{
+				'label': "",
+				'tooltip': this.tr("meta.lists.savebutton"),
+				'icon': this.__getResourceUrl("save.png"),
+				'context': this,
+				'callback': function (m) {
+					var data = this._textArea.getValue();
+					this.fireDataEvent("save", data);
+				}
+			}];
 			var textArea = new ms123.codemirror.CodeMirror(config);
       textArea.set({
         height: null,
@@ -81,6 +91,10 @@ qx.Class.define("ms123.shell.views.TextEditor", {
 			toolbar.addSpacer();
 
 			return toolbar;
+		},
+		__getResourceUrl: function (name) {
+			var am = qx.util.AliasManager.getInstance();
+			return am.resolve("resource/ms123/" + name);
 		}
 	},
 	/******************************************************************************
