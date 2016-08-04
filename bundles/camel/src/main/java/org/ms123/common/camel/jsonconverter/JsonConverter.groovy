@@ -941,10 +941,13 @@ class ScriptProcessor implements Processor {
 
 		def params = this.scriptEngine.createBindings();
 		params.put("exchange", ex);
+		def ctx = ex.getContext();
+		def registry = ctx.getRegistry();
 		params.put("headers", ex.in.headers);
 		params.put("h", ex.in.headers);
 		params.put("min", ex.in);
 		params.put("msg", ex.in);
+		params.put("registry", registry);
 		params.put("properties", ex.properties);
 		params.put("p", ex.properties);
 		def env = [

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.io.File;
 import org.ms123.common.libhelper.FileSystemClassLoader;
 import org.osgi.framework.BundleContext;
+import org.ms123.common.libhelper.Inflector;
 import org.apache.camel.NoSuchBeanException;
 import org.osgi.framework.ServiceReference;
 import org.apache.camel.spi.Registry;
@@ -34,9 +35,10 @@ import static com.jcabi.log.Logger.debug;
 
 /**
  */
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class GroovyRegistry implements Registry {
 
+	protected Inflector m_inflector = Inflector.getInstance();
 	private ClassLoader m_fsClassLoader;
 
 	private BundleContext m_bundleContect;
@@ -53,21 +55,25 @@ public class GroovyRegistry implements Registry {
 		m_locations[2] = new File(basedir3);
 		m_locations[3] = new File(basedir4);
 		m_fsClassLoader = new FileSystemClassLoader(parent, m_locations);
-		m_bundleContect=bc;
+		m_bundleContect = bc;
 	}
 
-
-	private Object _lookupByNameType (String name,Class type) {
-		debug(this,"_lookupByNameAndType1:" + name+"/"+type);
+	private Object _lookupByNameType(String name, Class type) {
 		Object obj = getObjectFromFileSystemClassloader(name);
-		if( obj == null || !canCast(obj,type)){
+		if ((obj == null || !canCast(obj, type)) && name.startsWith("service:")) {
+			obj = getService(name);
+		}
+
+		if ((obj == null || !canCast(obj, type)) && (isDataSource(type) || name.startsWith("datasource:"))) {
 			obj = getDataSource(name);
 		}
-		debug(this,"_lookupByNameAndType2:" + obj);
+		debug(this, "_lookupByNameAndType(" + name + "," + type + "): " + obj);
 		return obj;
 	}
-	private boolean canCast(Object obj, Class type){
-		if( type == null) return true;
+
+	private boolean canCast(Object obj, Class type) {
+		if (type == null)
+			return true;
 		try {
 			return type.cast(obj) != null;
 		} catch (Throwable e) {
@@ -75,39 +81,78 @@ public class GroovyRegistry implements Registry {
 		}
 	}
 
-	private Object getDataSource(String name){
+	private boolean isDataSource(Class type) {
+		if (type == null){
+			return false;
+		}
+		return type.getName().equals("javax.sql.DataSource");
+	}
+
+	private String getServiceClassName(String serviceName) {
+		String serviceClassName = null;
+		int dot = serviceName.lastIndexOf(".");
+		if (dot != -1) {
+			String part1 = serviceName.substring(0, dot);
+			String part2 = serviceName.substring(dot + 1);
+			serviceClassName = "org.ms123.common." + part1 + "." + m_inflector.upperCamelCase(part2, '-') + "Service";
+		} else {
+			String s = m_inflector.upperCamelCase(serviceName, '-');
+			serviceClassName = "org.ms123.common." + s.toLowerCase() + "." + s + "Service";
+		}
+		debug(this, "ServiceClassName:" + serviceClassName);
+		return serviceClassName;
+	}
+
+	private Object getService(String name) {
 		try {
-			ServiceReference[] sr = m_bundleContect.getServiceReferences((String)null, "(&(objectClass=javax.sql.DataSource)(dataSourceName="+name+"))");
-			if( sr != null && sr.length>0){
-					debug(this,"ds:"+sr[0]);
-				return m_bundleContect.getService(sr[0]);
-			}else{
-				//error(this,"getDataSource1(" + name + "):not found");
+			name = name.substring("service:".length());
+			ServiceReference sr = m_bundleContect.getServiceReference(name);
+			if (sr == null) {
+				sr = m_bundleContect.getServiceReference(getServiceClassName(name));
+			}
+			if (sr != null) {
+				return m_bundleContect.getService(sr);
 			}
 		} catch (Throwable e) {
-			error(this,"getDataSource2(" + name + "):%[exception]s" , e);
+			error(this, "getService(" + name + "):%[exception]s", e);
 		}
 		return null;
 	}
 
-	private Object getObjectFromFileSystemClassloader(String name){
+	private Object getDataSource(String name) {
+		try {
+			if (name.startsWith("datasource:")) {
+				name = name.substring("datasource:".length());
+			}
+			ServiceReference[] sr = m_bundleContect.getServiceReferences((String) null, "(&(objectClass=javax.sql.DataSource)(dataSourceName=" + name + "))");
+			if (sr != null && sr.length > 0) {
+				return m_bundleContect.getService(sr[0]);
+			}
+		} catch (Throwable e) {
+			error(this, "getDataSource(" + name + "):%[exception]s", e);
+		}
+		return null;
+	}
+
+	private Object getObjectFromFileSystemClassloader(String name) {
 		try {
 			Class clazz = m_fsClassLoader.loadClass(name);
 			Object obj = clazz.newInstance();
-			debug(this,"getObjectFromFileSystemClassloader:" + clazz + "/" + obj);
+			debug(this, "getObjectFromFileSystemClassloader:" + clazz + "/" + obj);
 			return obj;
 		} catch (Throwable e) {
-			debug(this,"getObjectFromFileSystemClassloader(" + name + "):" + e);
+			debug(this, "getObjectFromFileSystemClassloader(" + name + "):" + e);
 		}
 		return null;
 	}
 
 	public Object lookupByName(String name) {
-		return _lookupByNameType(name,null);
+		return _lookupByNameType(name, null);
 	}
+
 	public <T> T lookupByNameAndType(String name, Class<T> type) {
-		debug(this,"lookupByNameAndType:" + name + "/" + type);
-		Object answer = _lookupByNameType(name,type);
+		debug(this, "lookupByNameAndType:" + name + "/" + type);
+		Object answer = _lookupByNameType(name, type);
 		if (answer == null) {
 			return null;
 		}
@@ -120,7 +165,7 @@ public class GroovyRegistry implements Registry {
 	}
 
 	public <T> Map<String, T> findByTypeWithName(Class<T> type) {
-		debug(this,"findByTypeWithName:" + type);
+		debug(this, "findByTypeWithName:" + type);
 		Map<String, T> result = new HashMap<String, T>();
 		T answer = lookupByNameAndType(type.getName(), type);
 		if (answer != null) {
@@ -130,7 +175,7 @@ public class GroovyRegistry implements Registry {
 	}
 
 	public <T> Set<T> findByType(Class<T> type) {
-		debug(this,"findByType:" + type);
+		debug(this, "findByType:" + type);
 		Set<T> result = new HashSet<T>();
 		T answer = lookupByNameAndType(type.getName(), type);
 		if (answer != null) {
@@ -155,3 +200,4 @@ public class GroovyRegistry implements Registry {
 		m_fsClassLoader = new FileSystemClassLoader(GroovyRegistry.class.getClassLoader(), m_locations);
 	}
 }
+
