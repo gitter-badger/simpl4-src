@@ -137,7 +137,6 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 							Map childMap = new HashMap();
 							childMap.put("name", o[1]);
 							String className = ((Class) o[0]).getName();
-System.out.println("className:"+className);
 							int dot = className.lastIndexOf(".");
 							String entityName = m_inflector.getEntityName(className.substring(dot + 1));
 							if (!m_permissionService.hasEntityPermissions(sdesc, entityName, "read")) {
@@ -901,11 +900,9 @@ System.out.println("className:"+className);
 	}
 
 	protected void debug(String msg) {
-		//System.out.println(msg);
 		m_logger.debug(msg);
 	}
 	protected void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(BaseEntityServiceImpl.class);

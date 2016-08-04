@@ -73,11 +73,9 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("EntityServiceImpl.activate.props:" + m_dataLayer);
 	}
 
 	protected void deactivate() throws Exception {
-		System.out.println("EntityServiceImpl deactivate");
 	}
 
 	/* BEGIN JSON-RPC-API*/
@@ -289,13 +287,13 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 	/* END JSON-RPC-API*/
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
 	public void setDataLayer(DataLayer dataLayer) {
-		System.out.println("EntityServiceImpl.setDataLayer:" + dataLayer);
+		info("EntityServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
-		System.out.println("EntityServiceImpl.setGitService:" + gitService);
+		info("EntityServiceImpl.setGitService:" + gitService);
 		m_gitMetaData = new GitMetaDataImpl(gitService);
 		this.m_gitService = gitService;
 	}
@@ -303,30 +301,30 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
-		System.out.println("EntityServiceImpl.setPermissionService:" + paramPermissionService);
+		info("EntityServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 
 	@Reference(dynamic = true)
 	public void setAuthService(AuthService paramService) {
 		this.m_authService = paramService;
-		System.out.println("EntityServiceImpl.setAuthService:" + paramService);
+		info("EntityServiceImpl.setAuthService:" + paramService);
 	}
 
 	@Reference(dynamic = true)
 	public void setUtilsService(UtilsService paramUtilsService) {
 		this.m_utilsService = paramUtilsService;
-		System.out.println("EntityServiceImpl.setUtilsService:" + paramUtilsService);
+		info("EntityServiceImpl.setUtilsService:" + paramUtilsService);
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setEnumerationService(EnumerationService param) {
 		this.m_enumerationService = param;
-		System.out.println("EntityServiceImpl.setEnumerationService:" + param);
+		info("EntityServiceImpl.setEnumerationService:" + param);
 	}
 
 	@Reference(dynamic = true)
 	public void setNucleusService(NucleusService paramService) {
 		this.m_nucleusService = paramService;
-		System.out.println("EntityServiceImpl.setNucleusService:" + paramService);
+		info("EntityServiceImpl.setNucleusService:" + paramService);
 	}
 }

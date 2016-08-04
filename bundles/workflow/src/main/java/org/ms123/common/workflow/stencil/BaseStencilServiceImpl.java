@@ -314,7 +314,6 @@ class BaseStencilServiceImpl {
 	private void _handleProperties(String ssname, Map<String, Object> stencil) throws Exception {
 		List<Map> properties = (List) stencil.get("properties");
 		if (properties == null) {
-			System.out.println("Stencil without properties:" + stencil);
 			return;
 		}
 		for (Map<String, Object> prop : properties) {
@@ -362,7 +361,6 @@ class BaseStencilServiceImpl {
 						jsonString.append(m_js.deepSerialize( m_definitions.get(defKey))).append(",");
 					}
 				}else if( pvValue instanceof String && ((String)pvValue).startsWith("#adoc#")){
-					System.out.println("pvValue"+pvValue);
 					String adoc = ((String)pvValue).substring(6);
 					try{
 						jsonString.append(handleJsonValue(m_docbookService.adocToHtml(adoc))).append(",");
@@ -413,7 +411,6 @@ class BaseStencilServiceImpl {
 	}
 
 	protected void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 
