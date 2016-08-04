@@ -371,7 +371,7 @@ public class JsonRpcServlet extends HttpServlet {
 		final String serviceName = (String) requestIntermediateObject.get("service");
 		final String methodName = (String) requestIntermediateObject.get("method");
 		final Object methodParams = requestIntermediateObject.get("params");
-		if( CallService.CAMELSERVICENAME.equals(serviceName) ||  CallService.CAMELSERVICENAME2.equals(serviceName)){
+		if (CallService.CAMELSERVICENAME.equals(serviceName) ||  CallService.CAMELSERVICENAME2.equals(serviceName) || (serviceName!=null && serviceName.startsWith("simpl4"))){
 			return m_callService.callCamel(methodName, methodParams, request, response);
 		}
 		return callProcedure(pathInfo, serviceName, methodName, methodParams, request, response);
