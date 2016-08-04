@@ -86,7 +86,6 @@ public class DirectEndpoint extends DefaultEndpoint {
 		if (consumerList != null) {
 			consumerList.remove(consumer);
 		}
-		System.out.println("DirectEndpoint.removeConsumer("+key+"):"+consumerList);
 	}
 
 	public boolean hasConsumer(DirectConsumer consumer) {

@@ -152,12 +152,10 @@ public class TemplateEndpoint extends ResourceEndpoint {
 	}
 
 	private void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	private void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(TemplateEndpoint.class);

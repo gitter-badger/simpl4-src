@@ -326,7 +326,6 @@ public class GitServiceImpl implements GitService {
 	public List getRepositories(
 		@PName("flags")  @POptional List<String> flags, 
 		@PName("all")        @PDefaultBool(false) @POptional Boolean all) throws RpcException {
-		System.out.println("getRepositories;"+flags+"/"+all);
 		try {
 			String gitSpace = System.getProperty("git.repos");
 			File dir = new File(gitSpace);
@@ -342,7 +341,6 @@ public class GitServiceImpl implements GitService {
 				if (!all && hasStoreCfg(file)==false) {
 					continue;
 				}
-				System.out.println("\nupdateavail---------------->" + fileName);
 				Map map = new HashMap();
 				if (flags!=null && flags.contains("updateAvailable")) {
 					Git gitObject = Git.open(new File(gitSpace, fileName));
@@ -1276,7 +1274,6 @@ public class GitServiceImpl implements GitService {
 			String ftype = null;
 			try{
 				ftype = tika.detect(bis);
-System.out.println("File:"+file+"="+ftype);
 			}catch(Throwable t){
 				return "sw.unknown";
 			}

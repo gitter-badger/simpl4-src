@@ -87,7 +87,6 @@ public class WampClientEndpoint extends DefaultEndpoint {
 
 	public Consumer createConsumer(Processor processor) throws Exception {
 		WampClientConsumer consumer = new WampClientConsumer(this, processor);
-		System.out.println("Consumer.createConsumer:"+consumer.hashCode());
 		configureConsumer(consumer);
 		return consumer;
 	}

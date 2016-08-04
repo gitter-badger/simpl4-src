@@ -326,11 +326,9 @@ public class RemoteCallUtils {
 
 	protected void debug(String message) {
 		m_logger.debug(message);
-		System.out.println(message);
 	}
 	protected void info(String message) {
 		m_logger.info(message);
-		System.out.println(message);
 	}
 	protected void error(String message,Throwable e) {
 		m_logger.error(message,e);
@@ -338,7 +336,6 @@ public class RemoteCallUtils {
 	}
 	protected void error(String message) {
 		m_logger.error(message);
-		System.out.println(message);
 	}
 	private static final Logger m_logger = LoggerFactory.getLogger(RemoteCallUtils.class);
 }

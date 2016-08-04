@@ -73,12 +73,10 @@ public class FreemarkerEngine extends Engine{
 		return m_configuration;
 	}
 	private void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	private void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(FreemarkerEngine.class);

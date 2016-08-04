@@ -490,7 +490,7 @@ debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 			}
 			if( e instanceof FailedToCreateRouteException){
 				String msg = e.getMessage();
-				println("msg:"+msg);
+				System.err.println("msg:"+msg);
 				int ind;
 				if( (ind=msg.indexOf("<<<")) != -1){
 					msg = msg.substring(ind+4);

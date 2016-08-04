@@ -79,12 +79,10 @@ public class FreemarkerTemplateLoader implements TemplateLoader {
 	}
 
 	private void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	private void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 

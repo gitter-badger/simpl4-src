@@ -30,6 +30,7 @@ import javax.sql.DataSource;
 import org.osgi.service.jdbc.DataSourceFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import static com.jcabi.log.Logger.info;
 
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=jdbc" })
@@ -56,8 +57,8 @@ public class JDBCServiceImpl implements JDBCService {
 		Dictionary<String, String> props = new Hashtable<String, String>();
 		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS, "com.ibm.as400.access.AS400JDBCDriver");
 		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "as400");
-		info("as400.register.dsf:" + dsf);
-		info("as400.register.props:" + props);
+		info(this,"as400.register.dsf:" + dsf);
+		info(this,"as400.register.props:" + props);
 		m_bundleContext.registerService(DataSourceFactory.class.getName(), dsf, props);
 	}
 	private void registerJTDS() throws Exception {
@@ -65,8 +66,8 @@ public class JDBCServiceImpl implements JDBCService {
 		Dictionary<String, String> props = new Hashtable<String, String>();
 		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS, "net.sourceforge.jtds.jdbc.Driver");
 		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "jtds");
-		info("jtds.register.dsf:" + dsf);
-		info("jtds.register.props:" + props);
+		info(this,"jtds.register.dsf:" + dsf);
+		info(this,"jtds.register.props:" + props);
 		m_bundleContext.registerService(DataSourceFactory.class.getName(), dsf, props);
 	}
 
@@ -90,7 +91,7 @@ public class JDBCServiceImpl implements JDBCService {
 			}
 		}
 		for (String name : jndiNames) {
-			info("JDBCServiceImpl.jndiLookup.name:" + name);
+			info(this,"JDBCServiceImpl.jndiLookup.name:" + name);
 			DataSource datasource = null;
 			try{
 				datasource = (DataSource) ctx.lookup(name);
@@ -98,16 +99,12 @@ public class JDBCServiceImpl implements JDBCService {
 			}catch( javax.naming.NameNotFoundException nne){
 			}
 			if (datasource != null) {
-				info("JDBCServiceImpl.DataSource:" + datasource);
+				info(this,"JDBCServiceImpl.DataSource:" + datasource);
 				Dictionary<String, String> props = new Hashtable<String, String>();
 				props.put("dataSourceName", name);
 				m_bundleContext.registerService(DataSource.class.getName(), datasource, props);
 			}
 		}
-	}
-
-	public void info(String msg) {
-		System.out.println(msg);
 	}
 
 	public void update(Map<String, Object> props) {

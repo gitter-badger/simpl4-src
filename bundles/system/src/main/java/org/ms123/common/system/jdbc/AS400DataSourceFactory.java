@@ -47,7 +47,6 @@ public class AS400DataSourceFactory implements DataSourceFactory {
 
 
     private void setProperties(CommonDataSource ds, Class<?> clazz, Properties properties) throws Exception {
-				System.out.println("As400.setProperties:"+properties);
         Properties props = (Properties) properties.clone();
 
         String databaseName = (String) props.remove(DataSourceFactory.JDBC_DATABASE_NAME);
@@ -79,7 +78,6 @@ public class AS400DataSourceFactory implements DataSourceFactory {
         try {
             DataSource ds = DataSource.class.cast(as400DataSourceClass.newInstance());
             setProperties(ds, as400DataSourceClass, props);
-						System.out.println("as400.createDataSource:"+ds.getClass());
             return ds;
         }
         catch (Exception ex) {
@@ -92,7 +90,6 @@ public class AS400DataSourceFactory implements DataSourceFactory {
         try {
             ConnectionPoolDataSource ds = ConnectionPoolDataSource.class.cast(as400ConnectionPoolDataSourceClass.newInstance());
             setProperties(ds, as400XaDataSourceClass, props);
-						System.out.println("as400.createPooledDataSource:"+ds);
             return ds;
         }
         catch (Exception ex) {
@@ -105,7 +102,6 @@ public class AS400DataSourceFactory implements DataSourceFactory {
         try {
             XADataSource ds = XADataSource.class.cast(as400XaDataSourceClass.newInstance());
             setProperties(ds, as400XaDataSourceClass, props);
-						System.out.println("as400.createXADataSource:"+ds);
             return ds;
         }
         catch (Exception ex) {
@@ -117,7 +113,6 @@ public class AS400DataSourceFactory implements DataSourceFactory {
     public Driver createDriver(Properties props) throws SQLException {
         try {
 					Driver driver = Driver.class.cast(as400DriverClass.newInstance());
-					System.out.println("as400.createDriver:"+driver);
             return driver;
         }
         catch (InstantiationException ex) {

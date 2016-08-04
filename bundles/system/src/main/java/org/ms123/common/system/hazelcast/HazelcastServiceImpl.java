@@ -53,7 +53,6 @@ public class HazelcastServiceImpl  implements HazelcastService {
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("HistoryEventHandlerService.activate.props:" + props);
 		this.bundleContext=bundleContext;
 	}
 

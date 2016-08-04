@@ -136,7 +136,6 @@ public class MVELEvaluator {
 		Map vars = new HashMap();
 		MVELEvaluator ana = new MVELEvaluator();
 		ana.eval(expression);
-		System.out.println("Input:" + ana.getInputs());
 		Map anredebeg = new HashMap();
 		anredebeg.put("BriefanredeBeginn", "XXXXX");
 		anredebeg.put("BriefanredeReihe1", "Reihe1");
@@ -154,7 +153,6 @@ public class MVELEvaluator {
 		e.setLocalVars(lvars);
 		e.setLocalVar("Reihe1", "ZYYY");
 		Object result = e.eval(expression);
-		System.out.println("Result:" + result);
 		lvars.put("Reihe1", "WYYY");
 		e.setLocalVars(lvars);
 		result = e.eval(expression);
@@ -164,8 +162,5 @@ public class MVELEvaluator {
 		 result = e.eval(expression);
 		 }*/
 		long end = new Date().getTime();
-		System.out.println("Dauer:" + (end - start));
-		System.out.println("Result:" + result);
-		System.out.println("It works:" + ("XXXXXWYYY".equals(result) ? "Yes" : "Not"));
 	}
 }

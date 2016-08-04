@@ -82,12 +82,10 @@ public class BitronixTransactionServiceImpl implements TransactionService{
 	}
 
 	protected static void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	protected static void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 

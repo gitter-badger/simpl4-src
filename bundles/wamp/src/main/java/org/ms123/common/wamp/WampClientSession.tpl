@@ -929,12 +929,10 @@ System.out.println("WampMessages.PublishMessage:"+msg);
 	}
 
 	protected static void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	protected static void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 

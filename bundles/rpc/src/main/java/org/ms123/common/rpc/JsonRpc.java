@@ -213,13 +213,11 @@ public class JsonRpc {
 		if (dot != -1) {
 			String part1 = serviceName.substring(0, dot);
 			String part2 = serviceName.substring(dot + 1);
-			System.out.println("serviceName:" + serviceName);
 			serviceClassName = "org.ms123.common." + part1 + "." + m_inflector.upperCamelCase(part2, '-') + "Service";
 		} else {
 			String s = m_inflector.upperCamelCase(serviceName, '-');
 			serviceClassName = "org.ms123.common." + s.toLowerCase() + "." + s + "Service";
 		}
-		System.out.println("ServiceClassName:" + serviceClassName);
 		Object service = null;
 		ServiceReference sr = m_bundleContext.getServiceReference(serviceClassName);
 		if (sr != null) {
@@ -232,17 +230,14 @@ public class JsonRpc {
 	}
 
 	private void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	private void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 
 	private void error(String msg) {
-		System.out.println(msg);
 		m_logger.error(msg);
 	}
 

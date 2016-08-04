@@ -73,7 +73,6 @@ public class LogServiceImpl extends BaseLogServiceImpl implements LogService, Ev
 	static final String[] topics = new String[] { "log" };
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("LogEventHandlerService.activate.props:" + props);
 		try {
 			Bundle b = bundleContext.getBundle();
 			m_bundleContext = bundleContext;

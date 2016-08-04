@@ -340,10 +340,8 @@ public abstract class BaseCamelBehavior extends BpmnActivityBehavior implements 
 		List<String> paramNames = getParameterNames();
 		paramNames.addAll(getRoutingVariables().keySet());
 		String script = buildScript(routing, paramNames);
-		System.out.println("m_routeBuilderScript:" + script);
 		GroovyShell gs = new GroovyShell();
 		m_routeBuilderClass = (Class) gs.evaluate(script);
-		System.out.println("m_routeBuilderClass:" + m_routeBuilderClass);
 	}
 
 	private String buildScript(String camelDSL, List<String> paramNames) {
@@ -371,7 +369,6 @@ public abstract class BaseCamelBehavior extends BpmnActivityBehavior implements 
 	protected RouteBuilder newRouteBuilder() {
 		try {
 			RouteBuilder rb = (RouteBuilder) m_routeBuilderClass.newInstance();
-			System.out.println("RouteBuilder:" + rb);
 			return rb;
 		} catch (Exception e) {
 			throw new RuntimeException("BaseCamelBehavior.newRouteBuilder", e);
@@ -410,12 +407,10 @@ public abstract class BaseCamelBehavior extends BpmnActivityBehavior implements 
 	}
 
 	protected void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 
 	protected static void info(String msg) {
-		System.err.println(msg);
 		m_logger.info(msg);
 	}
 

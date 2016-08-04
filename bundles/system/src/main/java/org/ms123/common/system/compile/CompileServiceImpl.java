@@ -49,7 +49,6 @@ public class CompileServiceImpl extends BaseCompileServiceImpl implements Compil
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("CompileEventHandlerService.activate.props:" + props);
 		try {
 			Bundle b = bundleContext.getBundle();
 			m_bundleContext = bundleContext;
@@ -97,7 +96,6 @@ public class CompileServiceImpl extends BaseCompileServiceImpl implements Compil
 	}
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
-		System.out.println("CompileServiceImpl.setGitService:" + gitService);
 		this.m_gitService = gitService;
 	}
 }

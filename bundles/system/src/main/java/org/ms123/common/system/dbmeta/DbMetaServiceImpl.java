@@ -199,7 +199,6 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			deleteDirectory(tdir);
 
 			DataSource ds = getDataSource(dataSourceName);
-			System.out.println("generate.call:" + ds);
 			GenerationTool gt = new GenerationTool();
 			synchronized (gt) {
 				gt.setConnection(conn = ds.getConnection());

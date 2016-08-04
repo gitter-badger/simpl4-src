@@ -82,7 +82,7 @@ public class DublettenCheckServicePGImpl implements DublettenCheckService {
 		String simpl4Dir = System.getProperty("simpl4.dir");
 		File out = new File( simpl4Dir, "log/"+name);
 		try{
-			return new PrintStream(new BufferedOutputStream(new FileOutputStream(out)));
+			return new PrintStream(new FileOutputStream(out));
 		}catch(Exception e){
 			e.printStackTrace();
 		}

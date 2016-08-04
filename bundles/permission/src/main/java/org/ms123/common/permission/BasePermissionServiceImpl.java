@@ -327,7 +327,6 @@ class BasePermissionServiceImpl implements Constants {
 		m_logger.debug(msg);
 	}
 	protected void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	protected void error(String msg, Exception e) {

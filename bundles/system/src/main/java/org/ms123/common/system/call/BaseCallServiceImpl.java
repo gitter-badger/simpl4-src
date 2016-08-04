@@ -244,7 +244,7 @@ abstract class BaseCallServiceImpl {
 			Boolean rpc = properties.get(RPC);
 			return rpc != null && rpc == true;
 		}catch(Exception e){
-			System.out.println("e:"+e);
+			System.err.println("e:"+e);
 			return false;
 		}
 	}

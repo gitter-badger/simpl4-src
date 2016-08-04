@@ -266,7 +266,6 @@ public class CassandraAccessImpl implements CassandraAccess,HistoryService {
 
 
 	protected static void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 

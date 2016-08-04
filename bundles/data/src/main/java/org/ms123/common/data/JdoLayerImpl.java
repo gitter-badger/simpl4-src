@@ -2550,11 +2550,9 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 
 	protected void debug(String message) {
 		m_logger.debug(message);
-		//System.out.println(message);
 	}
 	protected void info(String message) {
 		m_logger.info(message);
-		System.out.println(message);
 	}
 
 	/************************************ C O N V I N I E N T *************************************************/

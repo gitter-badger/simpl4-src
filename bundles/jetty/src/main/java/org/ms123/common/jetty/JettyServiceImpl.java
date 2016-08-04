@@ -187,7 +187,6 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				if (o != null) {
 					String[] objectClass = (String[]) sr[i].getProperty("objectClass");
 					m_rpcServlet.putServiceMapping(rpc_prefix, objectClass[0]);
-					System.out.println("Jetty.ServiceName:" + objectClass[0] + "/rpc_prefix:" + rpc_prefix);
 				}
 			}
 		} catch (Exception e) {
@@ -196,7 +195,6 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("JettyServiceImpl.activate2");
 		m_bundleContext = bundleContext;
 		m_bundleContext.addFrameworkListener(this);
 		__activate();
@@ -304,7 +302,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 
 
 			public String getInitParameter(String name){
-				System.out.println("getInitParameter:"+name+"="+super.getInitParameter(name));
+				//System.out.println("getInitParameter:"+name+"="+super.getInitParameter(name));
 				if("resourceBase".equals(name)) return m_basedir;
 				if("acceptRanges".equals(name)) return "true";
 				if("etags".equals(name)) return "true";
@@ -390,13 +388,13 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 		String fileName = segs[segs.length-1];
 		String ext = getExtension(fileName);
 		if( segs.length>4){
-			System.out.println("pathInfo:"+request.getPathInfo());
+			//System.out.println("pathInfo:"+request.getPathInfo());
 			int i = ("/repo/"+namespace+"/").length();
 			fileName = request.getPathInfo().substring(i);
-			System.out.println("Filename:"+fileName);
+			//System.out.println("Filename:"+fileName);
 		}
 		String mime =  FILETYPES.get(ext);
-		System.out.println("Mime:"+mime);
+		//System.out.println("Mime:"+mime);
 		if( mime == null){
 			throw new RuntimeException("Unknown Filetype");
 		}
@@ -1035,15 +1033,12 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 	}
 
 	protected void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 	protected void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	protected void error(String msg,Throwable t) {
-		System.out.println(msg);
 		t.printStackTrace();
 		m_logger.error(msg,t);
 	}

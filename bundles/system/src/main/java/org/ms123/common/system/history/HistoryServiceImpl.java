@@ -63,7 +63,6 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("HistoryEventHandlerService.activate.props:" + props);
 		m_bundleContext=bundleContext;
 		try {
 			Bundle b = bundleContext.getBundle();

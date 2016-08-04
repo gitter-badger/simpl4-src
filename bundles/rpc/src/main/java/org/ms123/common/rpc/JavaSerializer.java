@@ -494,7 +494,7 @@ public class JavaSerializer {
 
 	public Object serialize(final Object obj, final Map<Class, List<String>> wantedFields,int deep,int maxDeep) throws SerializationException {
 		if( deep >=maxDeep){
-			System.out.println("JavaSerializer.serialize: maxDeep reached:"+obj);
+			System.err.println("JavaSerializer.serialize: maxDeep reached:"+obj);
 			return obj;
 		}
 		Object res = null;

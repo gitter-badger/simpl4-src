@@ -260,7 +260,6 @@ public class VisGenerator {
 	}
 
 	private static void info(String msg) {
-		System.err.println(msg);
 		m_logger.info(msg);
 	}
 

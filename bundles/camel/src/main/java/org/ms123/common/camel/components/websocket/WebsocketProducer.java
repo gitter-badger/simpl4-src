@@ -42,7 +42,6 @@ public class WebsocketProducer extends DefaultProducer {
 	public void process(Exchange exchange) throws Exception {
 		Message in = exchange.getIn();
 		String message = ExchangeUtils.prepareBody(exchange);
-		System.out.println("message:" + message);
 		if (isSendToAllSet(in)) {
 			sendToAll(store, exchange, message);
 		} else {

@@ -112,7 +112,6 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 	public void process(Exchange exchange) throws Exception {
 		String ns = m_namespace;
 		if (ThreadContext.getThreadContext() == null) {
-			System.out.println("getThreadContext");
 			ThreadContext.loadThreadContext(ns, "admin");
 			m_permissionService.loginInternal(ns);
 		}

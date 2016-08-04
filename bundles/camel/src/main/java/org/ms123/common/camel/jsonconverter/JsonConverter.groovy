@@ -85,8 +85,6 @@ abstract class JsonConverterImpl implements JsonConverter{
 	def constructUri(ctx){
 		def uriValueMap = createMap(ctx,"urivalue_");
 		def uriParamMap = createMap(ctx,"uriparam_");
-		println("uriValueMap:"+uriValueMap);
-		println("uriParamMap:"+uriParamMap);
 		def extraParams = shapeProperties.extraParams;
 		if( extraParams != null && extraParams.totalCount>0){
 			def items = extraParams.items;
@@ -110,7 +108,6 @@ abstract class JsonConverterImpl implements JsonConverter{
 				}
 			}
 		}
-		println("URI:"+uri);
 		return uri;
 	}
 	def createExpression(exprText, language){
@@ -157,7 +154,6 @@ abstract class JsonConverterImpl implements JsonConverter{
 		def format = shapeProperties.format;
 		
 		def map = createMap(ctx,format+"_");
-		println("ParameterMap:"+map);
 		def dataFormatDef = null;
 		if( format == "univocity-fixed" ){
 			univocityFixedParameterConvert( map );
@@ -174,8 +170,6 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}
 		def routeContext = new DefaultRouteContext(ctx.modelCamelContext);
 		def dataFormat = dataFormatDef.getDataFormat(routeContext);
-		println("FormatName:"+getFormatName()+"="+dataFormat);
-		println("ClearedMap:"+map);
 		IntrospectionSupport.setProperties(dataFormat,map);
 		prettyPrint("dataFormatType",dataFormat);
 		return dataFormat;
@@ -319,7 +313,6 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}else{
 			code = buildScript(processMethodStr,importStr,false);
 		}
-		System.out.println("Processor.Code.java:" + code);
 		try {
 			def clazz = JavaCompiler.compile(namespace, bundleContext.getBundle(), getClassName(code), code);
 			return clazz.newInstance();
@@ -364,7 +357,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 	def prettyPrint(msg, obj){
 		def js = new JSONSerializer();
 		js.prettyPrint(true);
-		println(msg+js.deepSerialize(obj));
+		//println(msg+js.deepSerialize(obj));
 	}
 
 	def buildImport(addImport) {
@@ -430,10 +423,8 @@ abstract class JsonConverterImpl implements JsonConverter{
 				}
 				def constExpr = new ConstantExpression(constant as String);
 				if( "property".equals(dest)){
-					println("setting property:"+name+"="+constExpr);
 					routeDefinition.setProperty(name, constExpr);
 				}else{
-					println("setting header:"+name+"="+constExpr);
 					routeDefinition.setHeader(name, constExpr);
 				}
 			}
@@ -591,11 +582,9 @@ class VMEndpointJsonConverter extends EndpointJsonConverter{
 
 class FtpEndpointJsonConverter extends EndpointJsonConverter{
 	void convertToCamel(ctx){
-		System.out.println("FTP:"+shapeProperties);
 		if( shapeProperties.uriparam_protocol != "ftp"){
 			shapeProperties.remove("uriparam_ftpClient.defaultTimeout");
 		}
-		System.out.println("FTP2:"+shapeProperties);
 		super.convertToCamel(ctx);
 	}
 }
@@ -765,7 +754,6 @@ class RecipientListJsonConverter extends JsonConverterImpl{
 	void convertToCamel(ctx){
 		ctx.current = ctx.current.recipientList(createExpression(shapeProperties.expression,shapeProperties.language));
 		def options = createOptionMap();
-		println("options:"+options);
 		IntrospectionSupport.setProperties(ctx.current,options);
 		prettyPrint("RecipientListDefinition:", ctx.current);
 		ctx.current.id(resourceId);
@@ -790,7 +778,6 @@ class MessageAggregateJsonConverter extends JsonConverterImpl{
 			ctx.current.setCompletionTimeoutExpression(new ExpressionSubElementDefinition((Expression)createExpression(shapeProperties.completionTimeoutExpression,shapeProperties.completionTimeoutLanguage)));
 		}
 		def options = createOptionMap();
-		println("MessageAggregateJsonConverter:"+options);
 		IntrospectionSupport.setProperties(ctx.current,options);
 		//prettyPrint("AggregateDefinition:", ctx.current);
 		ctx.current.id(resourceId);
@@ -865,7 +852,6 @@ class ProcessorJsonConverter extends JsonConverterImpl{
 				}else{
 					processor = createProcessorGroovy(code,codeImport,namespace, codeKind=="completeClass");
 				}
-				println("processor:"+processor);
 				ctx.current = ctx.current.process(processor);
 			}
 		}else{
@@ -891,16 +877,13 @@ class DatamapperJsonConverter extends JsonConverterImpl{
 			def processor = new Processor(){
 				public void process(Exchange ex){
 					def dm = ctx.modelCamelContext.getRegistry().lookupByName("datamapper");
-					System.out.println("DataMapper.process:"+strategy+"/"+dm);
 					def answer = dm.transform(ex.getIn().getBody(),strategy, ex);
-					System.out.println("DataMapper.answer:"+answer);
 					ex.getIn().setBody(answer);
 				}
 				public String toString(){
 					return "Datamapper:"+strategy;
 				}
 			};
-			println("processor:"+processor);
 			ctx.current = ctx.current.process(processor);
 			ctx.current.id(resourceId);
 		}
@@ -931,7 +914,6 @@ class ScriptProcessor implements Processor {
 		if( curMod > this.lastMod){
 			def script = readFileToString(this.file);
 			this.scriptEngine = this.main.getScriptEngine(namespace,"nashorn")
-			println("newScriptEngine:"+this.scriptEngine);
 			this.compiledScript = this.scriptEngine.compile(script);
 			this.lastMod = curMod;
 		}

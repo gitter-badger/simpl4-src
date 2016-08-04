@@ -154,11 +154,10 @@ public class SessionManager implements org.ms123.common.system.thread.ThreadFina
 	}
 	protected void info(String message) {
 		m_logger.info(message);
-		System.out.println(message);
 	}
 	protected void error(String message) {
 		m_logger.error(message);
-		System.out.println(message);
+		System.err.println(message);
 	}
 	private static final Logger m_logger = LoggerFactory.getLogger(SessionManager.class);
 }

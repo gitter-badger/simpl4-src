@@ -47,7 +47,6 @@ public class JTDSDataSourceFactory implements DataSourceFactory {
 
 
     private void setProperties(CommonDataSource ds, Class<?> clazz, Properties properties) throws Exception {
-				System.out.println("JTDS.setProperties:"+properties);
         Properties props = (Properties) properties.clone();
 
         String databaseName = (String) props.remove(DataSourceFactory.JDBC_DATABASE_NAME);
@@ -71,7 +70,6 @@ public class JTDSDataSourceFactory implements DataSourceFactory {
         try {
             DataSource ds = DataSource.class.cast(jtdsDataSourceClass.newInstance());
             setProperties(ds, jtdsDataSourceClass, props);
-						System.out.println("jtds.createDataSource:"+ds.getClass());
             return ds;
         }
         catch (Exception ex) {
@@ -84,7 +82,6 @@ public class JTDSDataSourceFactory implements DataSourceFactory {
         try {
             ConnectionPoolDataSource ds = ConnectionPoolDataSource.class.cast(jtdsConnectionPoolDataSourceClass.newInstance());
             setProperties(ds, jtdsXADataSourceClass, props);
-						System.out.println("jtds.createPooledDataSource:"+ds);
             return ds;
         }
         catch (Exception ex) {
@@ -97,7 +94,6 @@ public class JTDSDataSourceFactory implements DataSourceFactory {
         try {
             XADataSource ds = XADataSource.class.cast(jtdsXADataSourceClass.newInstance());
             setProperties(ds, jtdsXADataSourceClass, props);
-						System.out.println("jtds.createXADataSource:"+ds);
             return ds;
         }
         catch (Exception ex) {
@@ -109,7 +105,6 @@ public class JTDSDataSourceFactory implements DataSourceFactory {
     public Driver createDriver(Properties props) throws SQLException {
         try {
 					Driver driver = Driver.class.cast(jtdsDriverClass.newInstance());
-					System.out.println("jtds.createDriver:"+driver);
             return driver;
         }
         catch (InstantiationException ex) {

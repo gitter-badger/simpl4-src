@@ -192,7 +192,6 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 		return true;
 	}
 	private void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(LocalDataEndpoint.class);

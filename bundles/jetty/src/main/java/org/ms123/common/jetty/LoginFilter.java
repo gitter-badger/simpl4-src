@@ -291,12 +291,10 @@ public class LoginFilter implements Filter {
 	}
 
 	private void infob(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 
 	protected void info(String msg) {
-		System.out.println("LoginFilter:" + msg);
 		m_logger.info(msg);
 	}
 

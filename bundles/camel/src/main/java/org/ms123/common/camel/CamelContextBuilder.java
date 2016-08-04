@@ -198,13 +198,6 @@ public class CamelContextBuilder {
 						props.put(ACC_ACTIVITI_ID, aci);
 						props.put(ACC_ROUTE_INSTANCE_ID, routeDef + "|" + bc );
 						eventAdmin.postEvent(new Event(HISTORY_TOPIC, props));
-							String s = "\nXXX:--------\nXXX:ev:"+event;
-							s += "\nXXX:fromEndpoint:"+ev.getExchange().getFromEndpoint();
-							s += "\nXXX:aci:"+aci;
-							s += "\nXXX:bc:"+bc;
-							s += "\nXXX:def:"+routeDef;
-							s += "\nXXX:fr:"+fr;
-							System.err.println(s);
 					}
 					ThreadContext tc = ThreadContext.getThreadContext();
 					debug("------>EventNotifierSupportStart:" + ev +"/"+tc);
@@ -245,7 +238,6 @@ public class CamelContextBuilder {
 	}
 
 	private static void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 }

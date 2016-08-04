@@ -41,7 +41,6 @@ public class LocalDataConsumer extends DefaultConsumer {
 		((LocalDataEndpoint) getEndpoint()).addConsumer(this);
 	}
 	private void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(LocalDataConsumer.class);

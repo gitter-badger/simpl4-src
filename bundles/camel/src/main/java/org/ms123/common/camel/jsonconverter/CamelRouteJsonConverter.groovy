@@ -102,7 +102,6 @@ class CamelRouteJsonConverter extends BaseRouteJsonConverter implements org.ms12
 				routeDef.setProperty("__logExceptionsOnly",expr);
 			}
 		}
-		println("RoutesDefinition:"+m_ctx.routesDefinition);
 	}
 	private def getStartList(Map rootShape) {
 		def outgoings =[];
@@ -119,7 +118,7 @@ class CamelRouteJsonConverter extends BaseRouteJsonConverter implements org.ms12
 		}
 		if( isStartShapeListOk(startList)){
 			sortStartShapeList(startList);
-			def ids = []; startList.each(){ f -> ids.add(getStencilId(f)); } println("startList:"+ids);
+//			def ids = []; startList.each(){ f -> ids.add(getStencilId(f)); } System.err.println("startList:"+ids);
 			return startList;
 		}
 		if( startList.size() == 0) throw new RuntimeException("CamelRouteJsonConverter("+m_path+"):no From Block");
@@ -204,15 +203,12 @@ class CamelRouteJsonConverter extends BaseRouteJsonConverter implements org.ms12
 		for ( e in m_shapeMap ) {
 			def shape = e.value;
 			String sharedRef = getSharedOriginRef(shape);
-			println("sharedRef:"+sharedRef);
 			if( sharedRef != null){
 				def id = getStencilId(shape);
 				def converter = m_typesMap[id];
-				println("converter:"+converter);
 				def jsonConverter = converter.newInstance(shapeProperties:shape.properties, resourceId:getId(shape));
 				def uri = jsonConverter.constructUri(m_ctx);
 				def endpoint = cc.getEndpoint(uri);
-				println("endpoint:"+endpoint);
 				//cc.addEndpoint( sharedRef, endpoint);
 				sharedEndpointMap[sharedRef] = endpoint;
 			}
@@ -231,8 +227,6 @@ class CamelRouteJsonConverter extends BaseRouteJsonConverter implements org.ms12
 		RouteDotGenerator generator = new RouteDotGenerator("/tmp/camel");
 		CamelContext cc = new DefaultCamelContext();
 		cc.addRouteDefinition(m_ctx.routeDefinition);
-		String text = generator.getRoutesText(cc);
-		System.out.println("Text:" + text);
 	}
 	protected boolean getBoolean(Map shape, String name,boolean _default) {
 		Map properties = (Map) shape.get(PROPERTIES);

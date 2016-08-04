@@ -270,7 +270,7 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 				try {
 					camelHook(ns, getUserName(), serviceName, methodName, action, sync, methodParams, result);
 				} catch (Exception e) {
-					System.out.println("callHooks:" + e);
+					System.err.println("callHooks:" + e);
 					throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "CallRemote:", e);
 				}
 			}
