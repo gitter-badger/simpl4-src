@@ -151,12 +151,13 @@ public class BaseSettingServiceImpl implements Constants {
 		return retMap;
 	}
 	protected void debug(String msg) {
-		//System.out.println(msg);
 		m_logger.debug(msg);
 	}
 	protected void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
+	}
+	protected void error(String msg) {
+		m_logger.error(msg);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(BaseSettingServiceImpl.class);
 }

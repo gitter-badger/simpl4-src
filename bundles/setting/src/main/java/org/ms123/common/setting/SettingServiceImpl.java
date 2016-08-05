@@ -77,11 +77,9 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("SettingServiceImpl.activate.props:" + m_dataLayer);
 	}
 
 	protected void deactivate() throws Exception {
-		System.out.println("SettingServiceImpl deactivate");
 	}
 
 	private StoreDesc getStoreDesc(String namespace){
@@ -203,7 +201,7 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 						List fields = m_gitMetaData.getFieldsForEntityView(namespace,settingsid, entity, view,null, null, null );
 						viewFields.put( view,fields);
 					}catch(Exception e){
-						System.out.println("getAllSettingsForEntity:Entity not found:"+entity);
+						error("getAllSettingsForEntity:Entity not found:"+entity);
 					}
 				}
 				entityMap.put("viewFields",viewFields);
@@ -214,7 +212,7 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 						Map props = m_gitMetaData.getPropertiesForEntityView(namespace,settingsid, entity, view );
 						viewProps.put( view,props);
 					}catch(Exception e){
-						System.out.println("getAllSettingsForEntity2:Entity not found:"+entity);
+						error("getAllSettingsForEntity2:Entity not found:"+entity);
 					}
 				}
 				entityMap.put("viewProps",viewProps);
@@ -230,13 +228,13 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 	/* END JSON-RPC-API*/
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
 	public void setDataLayer(DataLayer dataLayer) {
-		System.out.println("SettingServiceImpl.setDataLayer:" + dataLayer);
+		info("SettingServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
-		System.out.println("SettingServiceImpl.setGitService:" + gitService);
+		info("SettingServiceImpl.setGitService:" + gitService);
 		m_gitService = gitService;
 		m_gitMetaData = new GitMetaDataImpl(gitService,this);
 	}
@@ -244,22 +242,22 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
-		System.out.println("SettingServiceImpl.setPermissionService:" + paramPermissionService);
+		info("SettingServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 	@Reference(dynamic = true)
 	public void setNamespaceService(NamespaceService nss) {
-		System.out.println("SettingServiceImpl.setNamespaceService:" + nss);
+		info("SettingServiceImpl.setNamespaceService:" + nss);
 		m_isRuntimeSystem = nss.isRuntimeSystem();
 	}
 
 	@Reference(dynamic = true)
 	public void setUtilsService(UtilsService paramUtilsService) {
 		this.m_utilsService = paramUtilsService;
-		System.out.println("SettingServiceImpl.setUtilsService:" + paramUtilsService);
+		info("SettingServiceImpl.setUtilsService:" + paramUtilsService);
 	}
 	@Reference(dynamic = true)
 	public void setEntityService(EntityService paramEntityService) {
 		this.m_entityService = paramEntityService;
-		System.out.println("SettingServiceImpl.setEntityService:" + paramEntityService);
+		info("SettingServiceImpl.setEntityService:" + paramEntityService);
 	}
 }

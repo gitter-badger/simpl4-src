@@ -410,21 +410,21 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 	/* END JSON-RPC-API*/
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
-		System.out.println("PermissionServiceImpl.setGitService:" + gitService);
+		info("PermissionServiceImpl.setGitService:" + gitService);
 		m_gitService = gitService;
 		m_gitMetaData = new GitMetaDataImpl(this, gitService);
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setNamespaceService(NamespaceService nss) {
-		System.out.println("PermissionServiceImpl.setNamespaceService:" + nss);
+		info("PermissionServiceImpl.setNamespaceService:" + nss);
 		m_isRuntimeSystem = nss.isRuntimeSystem();
 		m_namespaceService = nss;
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setCallService(CallService callService) {
-		System.out.println("PermissionServiceImpl.setCallService:" + callService);
+		info("PermissionServiceImpl.setCallService:" + callService);
 		m_callService = callService;
 	}
 
