@@ -290,18 +290,26 @@
 				this._traverse( nodes, pages );
 				return nodes;
 			},
+			_hashExists:function(pages, hash){
+				for( var p=0; p < pages.length;p++){
+					if( pages[p].hash == hash){
+						 return true;
+					}
+				}
+				return false;
+			},
 			_traverse: function( nodes, pages ) {
 				for ( var i = 0; i < nodes.length; i++ ) {
 					var node = nodes[ i ];
 
 					if( node.uri && node.uri.startsWith("structure:")){
 						node.children = JSON.parse(this._loadMenu(node.uri.substring(10)));
+						node.uri = null;
 					}
 
 					var name = node.name || node.title;
-					console.log( "name:", name );
 					if ( name ) {
-						node.name = name = tr( name );
+						node.name = tr( name );
 					}
 
 					if( _.isEmpty(node.icon)){
@@ -310,7 +318,14 @@
 					if ( node.hash == null ) {
 						if ( name ) {
 							var lc = name.toLowerCase();
-							node.hash = lc.replace( /[^a-z0-9_.]/g, "" );
+							var hash = base = lc.replace( /[^a-z0-9_]/g, "-" );
+							var i=0;
+							while( this._hashExists( pages, hash)){
+								hash = base + i;	
+								i++;	
+							}
+							node.hash = hash;
+							console.log( "hash("+name+"):", hash );
 						} else {
 							console.error( "Warning.menu:name and hash are empty:", node );
 						}
