@@ -111,7 +111,9 @@
 			}
 
 			var pathElements = window.location.pathname.split("/");
-			var namespace = pathElements[ pathElements.length-2 ];
+			var repoIndex = pathElements.indexOf("repo");
+			//var namespace = pathElements[ pathElements.length-2 ];
+			var namespace = pathElements[ repoIndex+1 ];
 
 			if( pathElements.length > 4 ){
 				//console.log("base.pathname.split:",window.location.pathname.split("/"));
@@ -151,7 +153,7 @@
 			if ( qtheme ) {
 				Simpl4.Cache.setItem( "theme", qtheme );
 			}
-			var themeImport = document.querySelectorAll( "head > [href=\"theme.html\"]" );
+			var themeImport = document.querySelectorAll( "head > [href*=\"theme.html\"]" );
 			//console.log("hrefTheme:",themeImport);
 			if( themeImport.length == 0 ){
 				//console.log("themeCache:",Simpl4.Cache.getItem( "theme" ));
