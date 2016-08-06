@@ -19,12 +19,20 @@ package org.ms123.common.camel.components.websocket;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.ArrayList;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
+import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.ServiceHelper;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.system.thread.ThreadContext;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 
 public class WebsocketEndpoint extends DefaultEndpoint {
 
@@ -33,12 +41,19 @@ public class WebsocketEndpoint extends DefaultEndpoint {
 	private WebsocketComponent m_component;
 	private WebsocketConsumer m_consumer;
 	private Boolean sendToAll;
+	private String startableGroups;
+	private String startableUsers;
+	private PermissionService permissionService;
 
 	public WebsocketEndpoint(WebsocketComponent component, String uri, String remaining, Map<String, Object> parameters) {
 		super(uri, component);
 		this.m_memoryStore = new MemoryWebsocketStore();
 		this.m_sync = new DefaultNodeSynchronization(m_memoryStore);
 		this.m_component = component;
+		CamelContext cc = component.getCamelContext();
+		debug(this, "CamelContext:" + cc);
+		this.permissionService = getByType(cc, PermissionService.class);
+		debug(this, "PermissionService:" + this.permissionService);
 	}
 
 	@Override
@@ -65,6 +80,17 @@ public class WebsocketEndpoint extends DefaultEndpoint {
 	}
 
 	public Object createWebsocket(Map<String, String> parameterMap) {
+		List<String> permittedRoleList = getPermittedRoles();
+		List<String> permittedUserList = getPermittedUsers();
+		String userName = getUserName();
+		List<String> userRoleList = getUserRoles(userName);
+		debug(this, "WebsocketEndpoint.createWebsocket.userName:" + userName);
+		debug(this, "WebsocketEndpoint.createWebsocket.userRoleList:" + userRoleList);
+		debug(this, "WebsocketEndpoint.createWebsocket.permittedRoleList:" + permittedRoleList);
+		debug(this, "WebsocketEndpoint.createWebsocket.permittedUserList:" + permittedUserList);
+		if (!isPermitted(userName, userRoleList, permittedUserList, permittedRoleList)) {
+			throw new RuntimeException(PERMISSION_DENIED + ":User(" + userName + ") has no permission");
+		}
 		return new DefaultWebsocket(parameterMap, m_sync, m_consumer);
 	}
 
@@ -98,4 +124,65 @@ public class WebsocketEndpoint extends DefaultEndpoint {
 		ServiceHelper.stopService(m_memoryStore);
 		super.doStop();
 	}
+
+	private <T> T getByType(CamelContext ctx, Class<T> kls) {
+		return kls.cast(ctx.getRegistry().lookupByName(kls.getName()));
+	}
+
+	public String getStartableUsers() {
+		return this.startableUsers;
+	}
+
+	public void setStartableUsers(String s) {
+		this.startableUsers = s;
+	}
+
+	public String getStartableGroups() {
+		return this.startableGroups;
+	}
+
+	public void setStartableGroups(String s) {
+		this.startableGroups = s;
+	}
+
+	public List<String> getPermittedUsers() {
+		return getStringList(this.startableUsers);
+	}
+
+	public List<String> getPermittedRoles() {
+		return getStringList(this.startableGroups);
+	}
+
+	protected List<String> getStringList(String s) {
+		if (s == null)
+			return new ArrayList<String>();
+		return Arrays.asList(s.split(","));
+	}
+
+	protected String getUserName() {
+		return ThreadContext.getThreadContext().getUserName();
+	}
+
+	protected boolean isPermitted(String userName, List<String> userRoleList, List<String> permittedUserList, List<String> permittedRoleList) {
+		if (permittedUserList.contains(userName)) {
+			return true;
+		}
+		for (String userRole : userRoleList) {
+			if (permittedRoleList.contains(userRole)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected List<String> getUserRoles(String userName) {
+		List<String> userRoleList = null;
+		try {
+			userRoleList = this.permissionService.getUserRoles(userName);
+		} catch (Exception e) {
+			userRoleList = new ArrayList<>();
+		}
+		return userRoleList;
+	}
 }
+
