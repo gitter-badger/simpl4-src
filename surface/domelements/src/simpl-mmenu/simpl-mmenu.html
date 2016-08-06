@@ -88,8 +88,6 @@
 				return $( this._mainmenu ).data( "mmenu" );
 			},
 			setSelected: function( page ) {
-				console.log( "setSelected:", page );
-
 				var li = $( document.querySelector( '#x' + page.hash ) );
 				var i = 0;
 				var $e = li.parent();
@@ -243,7 +241,7 @@
 			_loadMenu:function(name){
 				var nodes = null;
 				var url = name;
-				if( name.endsWith(".json") == -1){
+				if( name.endsWith(".json") == -1 || name.endsWith(".yaml") == -1){
 					url += ".json";
 				}
 				console.log("_loadMenu:",url);
