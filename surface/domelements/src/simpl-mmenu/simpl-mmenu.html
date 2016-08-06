@@ -242,8 +242,13 @@
 			},
 			_loadMenu:function(name){
 				var nodes = null;
+				var url = name;
+				if( name.endsWith(".json") == -1){
+					url += ".json";
+				}
+				console.log("_loadMenu:",url);
 				nodes = jQuery.ajax( {
-					url: name + ".json",
+					url: url,
 					async: false,
 					error: function() {
 						console.log( name + '.json not found.' );
