@@ -18,6 +18,37 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 -->
+
+<!--
+Connects to a simpl4 service, with a websocket start endpoint
+
+		<simpl-websocket id="websocket" namespace="docu" 
+					websocket-name="ws1" connected="{{connected}}" 
+					recv-message="{{recvMessage}}"> </simpl-websocket>
+
+		attached: function() {
+			var params = { connectionKey: getShortId() };
+			this.$.websocket.openConnection( params, this.socketTimeoutCallback.bind( this ) );
+
+			...
+
+			this.$.websocket.closeConnection();
+		},
+
+		connectedChanged: function(e) {
+			if( this.connected){
+				this.$.websocket.sendMessage({msg: "Hello from simpl-websocket"});
+			}
+		},
+
+		recvMessageChanged: function(e) {
+		},
+
+		socketTimeoutCallback: function( e ) {
+		}
+
+-->
+
 <dom-module id="simpl-websocket">
 	<style>
 		:host {
@@ -35,24 +66,40 @@
 					namespace: {
 						type: String
 					},
+					/**
+					 * the websocketName is specified in the service definition
+					 */
 					websocketName: {
 						type: String
 					},
+					/**
+					 * is for future  use
+					 */
 					osgiService: {
 						type: String
 					},
+
+					/**
+					 * the websocket is connected
+					 */
 					connected: {
 						type: Boolean,
+						value: false,
 						notify: true
 					},
+					/**
+					 * contains the received message, a json object
+					 */
 					recvMessage: {
 						type: Object,
 						notify: true
 					}
 				},
 				observers: [],
-				connected: false,
 
+				/**
+				 * send a message, data is a json object
+				 */
 				sendMessage: function( data ) {
 					if ( !this.connected ) {
 						throw new Error( "simpl-websocket.send(...): not connected." );
@@ -64,6 +111,13 @@
 				closeConnection: function() {
 					this.socket.onCompleted();
 				},
+				/**
+				 * params: { connectionKey : 'KEY' }
+
+				 * the connectionKey can here overriden, otherwise a default key is generated
+
+				 * timeoutCallback : function is called , if a timeout occurs
+				 */
 				openConnection: function( params, timeoutCallback ) {
 					var password = simpl4.util.BaseManager.getPassword();
 					var username = simpl4.util.BaseManager.getUser();
@@ -72,12 +126,17 @@
 					baseUrl = baseUrl.replace( "http", "ws" );
 					params = params || {};
 					params[ "credentials" ] = credentials;
-					params[ "namespace" ] = this.namespace;
-					params[ "osgiService" ] = this.osgiService;
-					params[ "name" ] = this.websocketName;
+
+					if ( !params[ "namespace" ] ) {
+						params[ "namespace" ] = this.namespace;
+					}
+					if ( !params[ "name" ] ) {
+						params[ "name" ] = this.websocketName;
+					}
 					if ( !params[ "connectionKey" ] ) {
 						params[ "connectionKey" ] = getShortId();
 					}
+					params[ "osgiService" ] = this.osgiService;
 
 					var qs = $.param( params );
 					this.url = baseUrl + "/ws/xyz?" + qs;
