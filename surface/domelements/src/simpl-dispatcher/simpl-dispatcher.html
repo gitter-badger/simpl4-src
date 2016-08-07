@@ -116,7 +116,7 @@
 							a.element=a;
 							$( a ).tap( this.tapListener.bind( this ), false );
 						}
-					}else if( href.startsWith("#_")){
+					}else if( href && href.startsWith("#_")){
 						a.removeAttribute("href");
 						a.params = { id: href};
 						$( a ).tap( this.tapListener.bind( this ), false );
