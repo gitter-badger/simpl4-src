@@ -146,6 +146,12 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				width: 40,
 				'value': ""
 			}, {
+				name: "help",
+				type: "TextField",
+				label: this.tr( "structure.help" ),
+				width: 60,
+				'value': ""
+			}, {
 				name: "adoc_include",
 				type: "CheckBox",
 				value: false,
