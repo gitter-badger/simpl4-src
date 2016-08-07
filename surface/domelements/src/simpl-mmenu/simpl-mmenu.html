@@ -241,7 +241,7 @@
 			_loadMenu:function(name){
 				var nodes = null;
 				var url = name;
-				if( name.endsWith(".json") == -1 || name.endsWith(".yaml") == -1){
+				if( !name.endsWith(".json")  && !name.endsWith(".yaml") ){
 					url += ".json";
 				}
 				console.log("_loadMenu:",url);
@@ -254,10 +254,15 @@
 					dataType: "json"
 				} ).responseText;
 
-				console.log( "nodes:", _.isEmpty( nodes ) );
+				url = name;
+				if( !name.endsWith(".json")  && !name.endsWith(".yaml") ){
+					url += ".yaml";
+				}
+
+				console.log("_loadMenu2:",url);
 				if ( _.isEmpty( nodes ) ) {
 					nodes = jQuery.ajax( {
-						url: name + ".yaml",
+						url: url,
 						async: false,
 						error: function() {
 							console.log( name + '.yaml not found.' );
