@@ -1,7 +1,7 @@
 var hydrolysis = require( 'hydrolysis' );
 
 //hydrolysis.Analyzer.analyze( '/opt/dev/simpl4-src/surface/domelements/bower_components/iron-collapse/iron-collapse.html' )
-hydrolysis.Analyzer.analyze( '/opt/dev/simpl4-src/surface/domelements/src/simpl-websocket/simpl-websocket.html' )
+hydrolysis.Analyzer.analyze( 'docindex.html' )
 	.then( function( analyzer ) {
 		try {
 			removeProps( analyzer, [ 'javascriptNode', 'scriptElement', 'html', 'parsedDocuments', 'parsedScripts', "_content", 'loader', 'contentHref', 'observerNode' ], 0 );
@@ -13,7 +13,7 @@ hydrolysis.Analyzer.analyze( '/opt/dev/simpl4-src/surface/domelements/src/simpl-
 
 
 function removeProps( obj, keys, level ) {
-	if ( level > 20 ) return;
+	if ( level > 40 ) return;
 	if ( obj instanceof Array ) {
 		obj.forEach( function( item ) {
 			removeProps( item, keys, level++ )
