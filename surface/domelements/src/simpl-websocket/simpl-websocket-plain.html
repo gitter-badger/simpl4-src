@@ -18,7 +18,7 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 -->
-<dom-module id="simpl-websocket" attributes="namespace service routeSpec connected recvMessage" constructor="SimplWebsocket">
+<dom-module id="simpl-websocket-plain">
 	<template>
 		<style>
 			:host {
@@ -29,12 +29,32 @@
 	</template>
 	<script type="text/javascript">
 		( function() {
-			Polymer({ is:"simpl-websocket",
+			Polymer( {
+				is: "simpl-websocket-plain",
+				properties: {
+					namespace: {
+						type: String
+					},
+					websocketName: {
+						type: String
+					},
+					osgiservice: {
+						type: String
+					},
+					connected: {
+						type: Boolean,
+						notify: true
+					},
+					recvMessage: {
+						type: Object,
+						notify: true
+					}
+				},
 				connected: false,
 
 				send: function( data ) {
 					if ( !this.connected ) {
-						throw new Error( "simpl-websocket.send(...): not connected." );
+						throw new Error( "simpl-websocket-plain.send(...): not connected." );
 					}
 					data = JSON.stringify( data );
 					console.log( "<- sendMessage:", data );
@@ -43,23 +63,25 @@
 				sendMessage: function( msg ) {
 					this.send( msg );
 				},
-				go: function( user, pw, resourceId, timeoutCallback ) {
+				closeConnection: function() {
+					this.wssocket.close();
+				},
+				openConnection: function( params, timeoutCallback ) {
 					var password = simpl4.util.BaseManager.getPassword();
 					var username = simpl4.util.BaseManager.getUser();
 					var credentials = simpl4.util.Base64.encode( username + ":" + password );
 					var baseUrl = simpl4.util.BaseManager.getBaseUrl();
 					baseUrl = baseUrl.replace( "http", "ws" );
-					var params = {};
+					params = params || {};
 					params[ "namespace" ] = this.namespace;
-					params[ "username" ] = user;
-					params[ "password" ] = pw;
-					params[ "routes" ] = this.routeSpec;
 					params[ "credentials" ] = credentials;
-					params[ "resourceId" ] = resourceId;
-					params[ "service" ] = this.service;
+					params[ "osgiService" ] = this.osgiService;
+					params[ "name" ] = this.websocketName;
+					if ( !params[ "connectionKey" ] ) {
+						params[ "connectionKey" ] = getShortId();
+					}
 
 					var qs = $.param( params );
-
 					this.url = baseUrl + "/ws/xyz?" + qs;
 
 					var options = {
