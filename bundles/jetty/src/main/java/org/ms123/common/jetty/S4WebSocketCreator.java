@@ -34,6 +34,7 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
 import org.apache.camel.Consumer;
 import org.apache.commons.lang3.StringUtils;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static com.jcabi.log.Logger.info;
 
 /**
@@ -191,8 +192,10 @@ public class S4WebSocketCreator implements WebSocketCreator {
 		try {
 			Object socket = null;
 			Map<String, String> parameterMap = convertMap(req.getParameterMap());
-			String serviceName = getParameter("service", parameterMap);
-			if ("camel".equals(serviceName)) {
+			String serviceName = parameterMap.get("osgiService");
+			if( req.hasSubProtocol("wamp.2.json")){
+				socket = getWebSocket("org.ms123.common.wamp.WampService", parameterMap);
+			}else  if (isEmpty(serviceName) || "camel".equals(serviceName)) {
 				socket = getCamelWebSocket(parameterMap);
 			} else {
 				socket = getWebSocket(getServiceClassName(serviceName), parameterMap);
