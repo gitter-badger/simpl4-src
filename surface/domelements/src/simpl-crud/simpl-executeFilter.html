@@ -81,7 +81,7 @@
 				console.debug( "execute.params:", params );
 				console.debug( "execute.pagesize:", this.pagesize );
 				console.debug( "execute.offset:", this.offset );
-				var map = nul;
+				var map = null;
 				try {
 					map = simpl4.util.Rpc.rpcSync( "data:executeFilterByName", {
 						storeId: namespace + "_data",
