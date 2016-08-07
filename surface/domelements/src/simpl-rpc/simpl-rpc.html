@@ -35,7 +35,8 @@
 					type: String
 				},
 				params: {
-					type: Object
+					type: Object,
+					value:null
 				},
 				response: {
 					type: Object,
@@ -133,7 +134,7 @@
 				} else {
 					body.params = params || {};
 				}
-				if ( ( body.params.namespace && body.params.namespace == "default" ) || this.service == "camelRoute" ) {
+				if ( ( body.params.namespace && body.params.namespace == "default" ) || this.service == "camelRoute" || this.service.startsWith("simpl4")) {
 					body.params.namespace = simpl4.util.BaseManager.getNamespace();
 				}
 				args.body = JSON.stringify( body, null, 2 );

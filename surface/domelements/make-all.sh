@@ -23,6 +23,11 @@ if [ ! -d "bower_components" ] ; then
 		sed -i 's/console.warn.*//' bower_components/polymer/iron-flex-layout.html
 	fi 
 fi
+if [ ! -d "node_modules" ] ; then
+	 if [ -f "bin/node_modules.tgz" ] ; then
+		 tar xf bin/node_modules.tgz
+	 fi
+fi
 
 if [ -e "/usr/bin/vulcanize" ] ; then
 	/usr/bin/vulcanize  --strip-comments --inline-css --inline-scripts --inline index.html >domelements.html
