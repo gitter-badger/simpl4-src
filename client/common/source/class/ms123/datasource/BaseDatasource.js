@@ -181,7 +181,7 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 			}, {
 				name: 'h2',
 				driver: 'org.h2.Driver',
-				port: '8084',
+				port: '9092',
 				url: 'jdbc:h2:tcp://_HOST_:_PORT_/_DB_'
 			} ];
 		},

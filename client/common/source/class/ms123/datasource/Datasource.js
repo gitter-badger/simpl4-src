@@ -85,7 +85,7 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"databasename": {
 					'type': "TextField",
 					'label': this.tr( "datasource.databasename" ),
-					'exclude': 'url==null || url.length==0',
+					'exclude': 'url==null || url.length==0 || name.startsWith("h2")',
 					'validation': {
 						required: false
 					},
