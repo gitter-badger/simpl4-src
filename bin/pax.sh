@@ -106,6 +106,7 @@ vmOptions="\
  -Dsimpl4.dir=\$SIMPL4DIR \
  -Djetty.port=\$JETTY_PORT \
  -Dkaraf.startLocalConsole=true \
+ -Dh2.bindAddress=127.0.0.1 \
  -Dkaraf.systemBundlesStartLevel=0 \
  -Dkaraf.startRemoteShell=false \
  -Dfelix.cm.dir=\$SIMPL4DIR/etc/config \
