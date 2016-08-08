@@ -30,15 +30,21 @@ import javax.sql.DataSource;
 import org.osgi.service.jdbc.DataSourceFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import org.h2.tools.Server;
+import org.h2.engine.SysProperties;
+import org.h2.util.OsgiDataSourceFactory;
 import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=jdbc" })
 public class JDBCServiceImpl implements JDBCService {
 
 	private BundleContext m_bundleContext;
+	private Server h2Server;
 
 	public JDBCServiceImpl() {
+			System.setProperty("h2.bindAddress", "127.0.0.1");
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
@@ -46,7 +52,9 @@ public class JDBCServiceImpl implements JDBCService {
 			m_bundleContext = bundleContext;
 			registerAS400();
 			registerJTDS();
+			registerH2();
 			registerJNDIDataSources();
+			startH2Server();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -68,6 +76,16 @@ public class JDBCServiceImpl implements JDBCService {
 		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "jtds");
 		info(this,"jtds.register.dsf:" + dsf);
 		info(this,"jtds.register.props:" + props);
+		m_bundleContext.registerService(DataSourceFactory.class.getName(), dsf, props);
+	}
+
+	private void registerH2() throws Exception {
+		OsgiDataSourceFactory dsf = new OsgiDataSourceFactory(new org.h2.Driver());
+		Dictionary<String, String> props = new Hashtable<String, String>();
+		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS, "org.h2.Driver");
+		props.put(DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "h2");
+		info(this,"h2.register.dsf:" + dsf);
+		info(this,"h2.register.props:" + props);
 		m_bundleContext.registerService(DataSourceFactory.class.getName(), dsf, props);
 	}
 
@@ -106,10 +124,24 @@ public class JDBCServiceImpl implements JDBCService {
 			}
 		}
 	}
+	private void startH2Server(){
+		try {
+			String baseDir = System.getProperty("git.repos");
+			Server server = Server.createTcpServer( new String[] { "-tcpPort", "9092", "-tcp", "-baseDir", baseDir  }).start();
+			h2Server = server;
+			info(this, "H2 Server startet:"+server.getStatus());
+		} catch (Exception e) {
+			e.printStackTrace();
+			error(this, "Unable to start h2 server.error:%[exception]s",e);
+		}
+	}
 
 	public void update(Map<String, Object> props) {
 	}
 
 	protected void deactivate() throws Exception {
+		info(this, "H2 Server stop:"+h2Server.getStatus());
+		h2Server.stop();
+		info(this, "H2 Server stopped:"+h2Server.getStatus());
 	}
 }
