@@ -86,7 +86,9 @@ public class JDBCPersistenceManagerLoader extends AbstractPersistenceManagerLoad
 		m_props.put("datanucleus.useIsNullWhenEqualsNullParameter", "true");
 		m_props.put("datanucleus.rdbms.allowColumnReuse", "true");
 		m_props.put("datanucleus.TransactionType", "JTA");
-		m_props.put("datanucleus.identifier.case", "MixedCase");
+		if( !m_sdesc.getVendor().equals("h2")){
+			m_props.put("datanucleus.identifier.case", "MixedCase");
+		}
 		m_props.put("datanucleus.connection.resourceType", "JTA");
 		m_props.put("datanucleus.jtaLocator", m_transactionService.getJtaLocator());
 		m_props.put("datanucleus.plugin.pluginRegistryClassName", "org.ms123.common.nucleus.OsgiPluginRegistry");
