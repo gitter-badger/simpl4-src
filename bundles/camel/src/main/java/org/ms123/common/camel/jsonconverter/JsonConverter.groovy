@@ -317,7 +317,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 			def clazz = JavaCompiler.compile(namespace, bundleContext.getBundle(), getClassName(code), code);
 			return clazz.newInstance();
 		} catch (Throwable e) {
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage() as String);
 		}
 	}
 	def getEnrich() {
