@@ -474,13 +474,14 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		if( isEmpty( config.get("url") ) ){
 			return;
 		}
-		JDBCUrl jdbcUrl = JDBCUrl.parse(config.get("url"));
+		String url = config.get("url").replace("%ns", namespace);
+		JDBCUrl jdbcUrl = JDBCUrl.parse(url);
 		info(this, "createDatasource.Host:" + jdbcUrl.getHostname() + "/database:" + jdbcUrl.getDatabase());
 
 		String dataSourceName = (String) config.get("dataSourceName");
 		String dsBaseText = "osgi.jdbc.driver.name=" + config.get("osgi.jdbc.driver.name") + "\n";
 		dsBaseText += "osgi.jdbc.driver.class=" + config.get("osgi.jdbc.driver.class") + "\n";
-		dsBaseText += "url=" + config.get("url") + "\n";
+		dsBaseText += "url=" + url + "\n";
 		dsBaseText += "user=" + config.get("user") + "\n";
 		dsBaseText += "password=" + config.get("password") + "\n";
 		dsBaseText += "dataSourceName=" + config.get("dataSourceName") + "\n";
