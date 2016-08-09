@@ -323,8 +323,10 @@
 					if( _.isEmpty(node.icon)){
 						node.icon = "av:web-asset";
 					}
-					node.hash = node.hash || node.id;
-					if ( node.hash == null ) {
+					if( _.isEmpty(node.hash)){
+						node.hash = node.id;
+					}
+					if ( _.isEmpty(node.hash) ) {
 						if ( name ) {
 							var lc = name.toLowerCase();
 							var hash = base = lc.replace( /[^a-z0-9_]/g, "-" );
