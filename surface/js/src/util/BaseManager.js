@@ -55,6 +55,9 @@ clazz.construct.extend( "simpl4.util.BaseManager", {
 	getPassword: function( password ) {
 		return simpl4.util.BaseManager.password;
 	},
+	getCredentials: function() {
+		return simpl4.util.Base64.encode(simpl4.util.BaseManager.getUser()+":"+simpl4.util.BaseManager.getPassword());
+	},
 	getDateFormat: function() {
 		return simpl4.util.BaseManager.getLanguage() === 'de' ? 'DD.MM.YYYY' : 'MM/DD/YYYY';
 	}
