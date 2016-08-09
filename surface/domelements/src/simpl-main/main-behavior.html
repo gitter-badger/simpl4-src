@@ -234,12 +234,13 @@
 					for (var i = 0; i < body.childNodes.length; i++) {
 						var node = body.childNodes[i];
 						Polymer.dom( insertPoint ).appendChild( node );
+						this.$.dispatcherId.filterLocalLinks( node );
 					}
 				}else{
 					Polymer.dom( insertPoint ).appendChild( body.firstElementChild );
+					this.$.dispatcherId.filterLocalLinks( insertPoint.firstElementChild );
 				}
 			}
-			this.$.dispatcherId.filterLocalLinks( insertPoint.firstElementChild );
 			this.async( function() {
 				this.convertSheetsToStyles( insertPoint );
 				var scope = this.selectedPage.scope;
