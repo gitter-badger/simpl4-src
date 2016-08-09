@@ -146,6 +146,13 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				width: 40,
 				'value': ""
 			}, {
+				name: "id",
+				type: "TextField",
+				tooltip: this.tr( "structure.id_help" ),
+				label: this.tr( "structure.id" ),
+				width: 30,
+				'value': ""
+			}, {
 				name: "help",
 				type: "TextField",
 				label: this.tr( "structure.help" ),
