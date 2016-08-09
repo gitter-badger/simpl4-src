@@ -333,7 +333,7 @@ public class WampClientConsumer extends DefaultConsumer {
 			return;
 		}
 		super.doStart();
-		this.clientSession = endpoint.createWampClientSession("realm1");
+		this.clientSession = endpoint.createWampClientSession(org.ms123.common.wamp.WampServiceImpl.DEFAULT_REALM);
 		info(this,"======Consumer.Start:" + this.clientSession);
 		this.clientSession.statusChanged().subscribe((state) -> {
 			info(this,"Consumer.ClientSession:status changed to " + state);

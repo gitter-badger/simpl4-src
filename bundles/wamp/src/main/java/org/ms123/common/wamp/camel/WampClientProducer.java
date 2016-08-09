@@ -95,7 +95,7 @@ public class WampClientProducer extends DefaultAsyncProducer {
 	protected void doStart() throws Exception {
 		String namespace = getEndpoint().getCamelContext().getName().split("/")[0];
 		super.doStart();
-		this.clientSession = getEndpoint().createWampClientSession("realm1");
+		this.clientSession = getEndpoint().createWampClientSession(org.ms123.common.wamp.WampServiceImpl.DEFAULT_REALM);
 	}
 
 	protected void doStop() throws Exception {

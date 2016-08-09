@@ -73,7 +73,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 	private static final Logger m_logger = LoggerFactory.getLogger(WampServiceImpl.class);
 
 	private static Map<String, Realm> m_realms;
-	private static String DEFAULT_REALM = "realm1";
+	public static String DEFAULT_REALM = "default";
 
 	private List<String> m_registeredMethodList = new ArrayList();
 	private Map<Long, Procedure> m_registeredMethodMap = new HashMap();
@@ -169,7 +169,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 	@RequiresRoles("admin")
 	public void start() throws RpcException {
 /* $if version >= 1.8 $ */
-		final WampClientSession client1 = createWampClientSession("realm1");
+		final WampClientSession client1 = createWampClientSession(DEFAULT_REALM);
 		client1.statusChanged().subscribe((t1) -> {
 			System.out.println("Session1 status changed to " + t1);
 			if (t1 == WampClientSession.Status.Connected) {
