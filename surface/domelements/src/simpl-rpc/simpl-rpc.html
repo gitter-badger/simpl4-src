@@ -18,6 +18,25 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 -->
+<!--
+simple possiblity to invoke any service
+
+		<simpl-rpc method="docu.getFriends" service="simpl4" params="{}" 
+				response="{{friends}}"></simpl-rpc> 
+
+		 <table>
+				<template is="dom-repeat"  items="[[friends]]">
+					<tr>
+						<td>[[item.surname]]</td>
+						<td>[[item.firstname]]</td>
+						<td>[[item.gender]]</td>
+						<td>[[item.phone]]</td>
+					</tr>
+				</template>
+			</table>
+
+-->
+
 <dom-module id="simpl-rpc">
 	<template>
 	</template>
@@ -25,25 +44,38 @@
 		Polymer( {
 			is: 'simpl-rpc',
 			properties: {
-				allparams: {
-					computed: "collectAll(method,service,params)"
+				_allparams: {
+					computed: "_collectAll(method,service,params)"
 				},
+				/**
+				 * simpl4 is almost ok.
+				 */
 				service: {
-					type: String
+					type: String,
+					value: "simpl4",
 				},
+				/**
+				 * The methodname  defined in the service editor
+				 */
 				method: {
 					type: String
 				},
+				/**
+				 * The service parameter Object, can be expressed as JSON.
+				 */
 				params: {
 					type: Object,
 					value:null
 				},
+				/**
+				 * The response object
+				 */
 				response: {
 					type: Object,
 					notify: true
 				}
 			},
-			collectAll: function() {
+			_collectAll: function() {
 				this.async( function() {
 					this.go();
 				}, null, 30 );
@@ -52,51 +84,51 @@
 				this.request_id = 1;
 				this.xhr = document.createElement( 'simpl-xhr' );
 			},
-			receive: function( response, xhr ) {
-				if ( this.isSuccess( xhr ) ) {
-					var resp = this.evalResponse( xhr );
+			_receive: function( response, xhr ) {
+				if ( this._isSuccess( xhr ) ) {
+					var resp = this._evalResponse( xhr );
 					console.log( "rpc.receive(" + this.method + "):", resp );
 					if ( resp.error ) {
-						this.error2( resp.error, xhr );
+						this._error2( resp.error, xhr );
 					} else {
-						this.processResponse( resp.result, xhr );
+						this._processResponse( resp.result, xhr );
 					}
 				} else {
-					this.error( xhr );
+					this._error( xhr );
 				}
-				this.complete( xhr );
+				this._complete( xhr );
 			},
-			isSuccess: function( xhr ) {
+			_isSuccess: function( xhr ) {
 				var status = xhr.status || 0;
 				return !status || ( status >= 200 && status < 300 );
 			},
-			processResponse: function( result, xhr ) {
+			_processResponse: function( result, xhr ) {
 				this.response = result;
 				this.fire( 'response', {
 					response: result,
 					xhr: xhr
 				} );
 			},
-			error: function( xhr ) {
+			_error: function( xhr ) {
 				var response = xhr.status + ': ' + xhr.responseText;
 				this.fire( 'error', {
 					response: response,
 					xhr: xhr
 				} );
 			},
-			error2: function( error, xhr ) {
+			_error2: function( error, xhr ) {
 				this.fire( 'error', {
 					error: error,
 					xhr: xhr
 				} );
 			},
-			complete: function( xhr ) {
+			_complete: function( xhr ) {
 				this.fire( 'complete', {
 					response: xhr.status,
 					xhr: xhr
 				} );
 			},
-			evalResponse: function( xhr ) {
+			_evalResponse: function( xhr ) {
 				var r = xhr.responseText;
 				try {
 					var response = JSON.parse( r );
@@ -105,9 +137,12 @@
 					return r;
 				}
 			},
-			getId: function() {
+			_getId: function() {
 				return this.request_id++;
 			},
+			/**
+			 * Manual execute the rpc call. Is not really needed. The rpc is automatically executed
+			 */
 			go: function() {
 				console.log( "rpc.go:", this.method + "/", this.params );
 				var params = simpl4.util.Merge.clone( this.params );
@@ -120,14 +155,14 @@
 				var username = simpl4.util.Rpc._getUserName();
 				var password = simpl4.util.Rpc._getPassword();
 				args.headers[ 'Authorization' ] = 'Basic ' + simpl4.util.Base64.encode( username + ":" + password );
-				args.callback = this.receive.bind( this );
+				args.callback = this._receive.bind( this );
 				args.url = simpl4.util.BaseManager.getBaseUrl() + "/rpc/xyz";
 				args.method = 'POST';
 				var body = {
 					jsonrpc: '2.0',
 					method: this.method,
 					service: this.service,
-					id: this.getId()
+					id: this._getId()
 				};
 				if ( params && typeof params == "string" ) {
 					body.params = JSON5.parse( params );
