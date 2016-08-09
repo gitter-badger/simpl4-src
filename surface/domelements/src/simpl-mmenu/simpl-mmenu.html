@@ -323,6 +323,7 @@
 					if( _.isEmpty(node.icon)){
 						node.icon = "av:web-asset";
 					}
+					node.hash = node.hash || node.id;
 					if ( node.hash == null ) {
 						if ( name ) {
 							var lc = name.toLowerCase();
