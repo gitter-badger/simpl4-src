@@ -296,13 +296,21 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 		},
 		_setResult: function( value ) {
 			if ( typeof value == "string" ) {
-				value = qx.lang.Json.parse( value );
+				try {
+					value = qx.lang.Json.parse( value );
+				} catch ( e ) {}
 			}
-			jQuery( this._htmlDomElement ).JSONView( value, {
-				collapsed: false
-			} );
+			if ( typeof value != "string" ) {
+				jQuery( this._htmlDomElement ).JSONView( value, {
+					collapsed: false
+				} );
+			}
 			jQuery( this._htmlDomElement ).JSONView( 'toggle', 2 );
-			this._msgArea.setValue( JSON.stringify( value, null, 2 ) );
+			var val = value;
+			try {
+				val = JSON.stringify( value,null,2 );
+			} catch ( e ) {}
+			this._msgArea.setValue( val );
 		},
 		__createToolbar: function( el ) {
 			var toolbar = new qx.ui.toolbar.ToolBar();
