@@ -116,11 +116,15 @@ qx.Class.define("ms123.graphicaleditor.GraphicalEditor", {
 			var save = new ms123.graphicaleditor.plugins.Save(this._facade, this);
 			new ms123.graphicaleditor.plugins.Undo(this._facade);
 			new ms123.graphicaleditor.plugins.Split(this._facade);
-			new ms123.graphicaleditor.plugins.Edit(this._facade);
+			this._facade.edit = new ms123.graphicaleditor.plugins.Edit(this._facade);
 			this._facade.view = new ms123.graphicaleditor.plugins.View(this._facade);
 			new ms123.graphicaleditor.plugins.HighlightingSelectedShapes(this._facade);
 			new ms123.graphicaleditor.plugins.ShapeHighlighting(this._facade);
 			new ms123.graphicaleditor.plugins.EdgeLayouter(this._facade);
+			if( this.context.editorType == "sw.form" ){
+				new ms123.graphicaleditor.plugins.FormEntityImport(this._facade);
+			}
+
 			var propertyPanel = new qx.ui.container.Scroll();
 
 			this._facade.save=save;

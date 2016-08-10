@@ -212,11 +212,11 @@ qx.Class.define("ms123.graphicaleditor.plugins.Edit", {
 		/**
 		 * Performs the paste operation.
 		 */
-		editPaste: function () {
+		editPaste: function (shapes) {
 			// Create a new canvas with childShapes 
 			//and stencilset namespace to be JSON Import conform
 			var canvas = {
-				childShapes: this.clipboard.get(),
+				childShapes: shapes|| this.clipboard.get(),
 				stencilset: {
 					namespace: this.clipboard.getNamespace()
 				}
