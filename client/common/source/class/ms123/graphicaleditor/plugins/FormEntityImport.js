@@ -130,7 +130,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					fields.push( f );
 				}
 			}
-//			console.log( "fields:", JSON.stringify( fields, null, 2 ) );
+			console.log( "fields:", JSON.stringify( fields, null, 2 ) );
 
 			this.facade.edit.editPaste( fields );
 		},
@@ -176,7 +176,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			}
 			var edittype = col.edittype.toLowerCase();
 			if ( edittype == 'text' || edittype == 'textarea' || edittype == 'checkbox' || edittype=='select') {
-				props.xf_type = col.datatype;
+				props.xf_type = this.getType(col.datatype);
 				props.xf_id = col.id || col.name;
 				field.stencil.id = 'Input';
 				if ( edittype == 'checkbox' ) {
@@ -210,6 +210,12 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 				return field;
 			}
 			return null;
+		},
+		getType:function(dt){
+			if( dt == "string"){
+				return "text";
+			}
+			return dt;
 		},
 		__getResourceUrl: function( name ) {
 			var am = qx.util.AliasManager.getInstance();
