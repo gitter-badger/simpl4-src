@@ -625,13 +625,10 @@
 
 		<template is="dom-if" if="{{_form.xf_default_buttons}}">
 			<simpl-row>
-				<xaction-button on-tap="internalXAction" class="button button_primary" xid="{{_form.xf_id}}" xaction="execute" raised>
-					<iron-icon icon="check"></iron-icon>[[tr('form.execute')]]</xaction-button>
-				<xaction-button on-tap="internalXAction" class="button" xid="{{_form.xf_id}}" xaction="reset" raised>
-					<iron-icon icon="refresh"></iron-icon>[[tr('tasks.form.reset')]]</xaction-button>
-			</simpl-row>
-			<xaction-button on-tap="internalXAction" class="button" xid="{{_form.xf_id}}" xaction="cancel" raised>
-				<iron-icon icon="clear"></iron-icon>[[tr('tasks.form.cancel')]]</xaction-button>
+				<template is="dom-repeat" as="item" items="[[_form.xf_used_default_buttons.items]]">
+					<xaction-button on-tap="internalXAction" class="button button_primary" xid="{{_form.xf_id}}" xaction="[[item.action]]" raised="">
+					<iron-icon icon="[[item.icon]]"></iron-icon>[[_getLabel(item.label)]]</xaction-button>
+				</template>
 			</simpl-row>
 		</template>
 
@@ -724,6 +721,12 @@
 					xaction:"execute"
 				}
 				this.internalXAction(action);
+			},
+			_getLabel:function(l){
+				if(l && l.startsWith("@")){
+					return tr(l.substring(1));
+				}
+				return l;
 			},
 			internalXAction: function( e ) {
 				var target = e.target || e.srcElement;
