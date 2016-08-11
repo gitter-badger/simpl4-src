@@ -141,6 +141,9 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		case update:
 			doUpdate(exchange);
 			break;
+		case upsert:
+			doUpsert(exchange);
+			break;
 		case delete:
 			doDelete(exchange);
 			break;
@@ -231,6 +234,27 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		Map result = null;
 		try {
 			result = sc.updateObjectMap(update, entityType, objectId);
+		} catch (Exception e) {
+			ex = e;
+		}
+		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.update);
+		processAndTransferResult(result, exchange, ex);
+	}
+
+	private void doUpsert(Exchange exchange) {
+		String objectId = ExchangeUtils.getParameter(m_objectId, exchange, String.class);
+		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
+		Map data = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		info(this, "doUpsert(" + entityType+","+objectId + "):" + data);
+		SessionContext sc = getSessionContext(exchange);
+		Exception ex = null;
+		Map result = null;
+		try {
+			if( !isEmpty(objectId)){
+				result = sc.updateObjectMap(data, entityType, objectId);
+			}else{
+				result = sc.insertObjectMap(data, entityType);
+			}
 		} catch (Exception e) {
 			ex = e;
 		}
