@@ -270,8 +270,15 @@
 			if ( data.length == 0 ) {
 				return;
 			}
+			var maxKeys = [];
+			for( var i=0; i < data.length;i++){
+				var curKeys = Object.keys(data[i]);
+				if( curKeys.length > maxKeys.length){
+					maxKeys = curKeys;
+				}
+			}
 			var ret = [];
-			var keys = Object.keys( data[ 0 ] );
+			var keys = maxKeys;
 			keys.forEach( function( key ) {
 				var col = {
 					//"sClass": "dt-head-left dt-body-left",
