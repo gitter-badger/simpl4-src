@@ -65,7 +65,7 @@ simple possiblity to invoke any service
 				 */
 				params: {
 					type: Object,
-					value:null
+					value: null
 				},
 				/**
 				 * The response object
@@ -75,6 +75,17 @@ simple possiblity to invoke any service
 					notify: true
 				}
 			},
+			/**
+			 * Fired if an error occured
+			 *
+			 * @event error
+			 */
+			/**
+			 * Fired if the call complete
+			 *
+			 * @event complete
+			 */
+
 			_collectAll: function() {
 				this.async( function() {
 					this.go();
@@ -141,7 +152,7 @@ simple possiblity to invoke any service
 				return this.request_id++;
 			},
 			/**
-			 * Manual execute the rpc call. 
+			 * Manual execute the rpc call.
 			 */
 			go: function() {
 				console.log( "rpc.go:", this.method + "/", this.params );
@@ -169,7 +180,7 @@ simple possiblity to invoke any service
 				} else {
 					body.params = params || {};
 				}
-				if ( ( body.params.namespace && body.params.namespace == "default" ) || this.service == "camelRoute" || this.service.startsWith("simpl4")) {
+				if ( ( body.params.namespace && body.params.namespace == "default" ) || this.service == "camelRoute" || this.service.startsWith( "simpl4" ) ) {
 					body.params.namespace = simpl4.util.BaseManager.getNamespace();
 				}
 				args.body = JSON.stringify( body, null, 2 );
