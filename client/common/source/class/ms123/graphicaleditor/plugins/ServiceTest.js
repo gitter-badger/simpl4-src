@@ -22,6 +22,7 @@
  * @ignore(Hash)
  * @ignore(Clazz)
  * @ignore(jQuery)
+ * @ignore(JSON5.*)
  */
 
 qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
@@ -188,11 +189,18 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			var p = ss.properties;
 			var pitems = p.rpcParameter ? p.rpcParameter.items : {};
 			var formData = {};
+			var textAreas = [];
 			for ( var i = 0; i < pitems.length; i++ ) {
 				var pi = pitems[ i ];
 				var type = this._getParamType( pi.type );
+				var height = null;
+				if ( type.toLowerCase() == "textarea" ) {
+					height = 60;
+					textAreas.push( pi.name );
+				}
 				formData[ pi.name ] = {
 					type: type,
+					height: height,
 					label: pi.name + "(" + pi.type + ")",
 					validation: {
 						required: pi.optional === false
@@ -207,7 +215,24 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 					console.log( "callback:", m );
 					this.serviceTestData[ key ] = m;
 					this._saveHistory( this.serviceTestData );
-					this._callService( key, m );
+					var params = qx.lang.Object.clone( m, true );
+					for ( var j = 0; j < textAreas.length; j++ ) {
+						var ta = textAreas[ j ];
+						try {
+							params[ ta ] = JSON5.parse( params[ ta ] );
+						} catch ( e ) {
+							var alert = new ms123.form.Alert( {
+								"message": e.toString(),
+								"windowWidth": 400,
+								"windowHeight": 300,
+								"useHtml": false,
+								"inWindow": true
+							} );
+							alert.show();
+							return null;
+						}
+					}
+					this._callService( key, params );
 				} ).bind( this ),
 				'value': "execute"
 			}, {
@@ -308,7 +333,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			jQuery( this._htmlDomElement ).JSONView( 'toggle', 2 );
 			var val = value;
 			try {
-				val = JSON.stringify( value,null,2 );
+				val = JSON.stringify( value, null, 2 );
 			} catch ( e ) {}
 			this._msgArea.setValue( val );
 		},
@@ -341,11 +366,12 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 		},
 
 		_callService: function( method, params ) {
+			console.log( "params:", params );
 			var result;
 			try {
 				ms123.util.Remote.setCredentialsTmp( this._usernameTF.getValue(), this._passwordTF.getValue() );
 				var ns = ms123.StoreDesc.getCurrentNamespace();
-				result = ms123.util.Remote.rpcSync( "camelRoute:" + ns + "." + method, params );
+				result = ms123.util.Remote.rpcSync( "simpl4:" + ns + "." + method, params );
 			} catch ( e ) {
 				var msg = e + "";
 				msg = msg.replace( /Script[0-9]{1,2}/g, "" );
@@ -416,7 +442,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			} );
 			win.setLayout( new qx.ui.layout.Dock );
 			win.setWidth( 700 );
-			win.setHeight( 600 );
+			win.setHeight( 700 );
 			win.setAllowMaximize( true );
 			win.setAllowMinimize( true );
 			win.setModal( false );
