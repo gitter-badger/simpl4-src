@@ -202,9 +202,9 @@ documentation page including demos (if available).
             <template is="dom-repeat" items="[[docElements]]">
               <option value="[[item.is]]">[[item.is]]</option>
             </template>
-            <template is="dom-repeat" items="[[docBehaviors]]">
+            <!--template is="dom-repeat" items="[[docBehaviors]]">
               <option value="[[item.is]]">[[item.is]]</option>
-            </template>
+            </template-->
           </select>
         </div>
         <iron-selector attr-for-selected="view" selected="{{view}}" id="links" hidden$="[[!docDemos.length]]">
