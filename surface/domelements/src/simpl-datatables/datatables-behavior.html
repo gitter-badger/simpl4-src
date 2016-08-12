@@ -19,49 +19,92 @@
  */
 -->
 <script>
+	/** @polymerBehavior DataTablesBehavior */
 	DataTablesBehavior = {
 		properties: {
+			/**
+			 * more than one row can be selected
+			 */
 			multiSelect: {
 				type: Boolean,
 				value: false
 			},
+			/**
+			 * The selected rows
+			 */
 			selection: {
 				type: Array,
 				notify: true
 			},
+			/**
+			 * column definition, if null, the column definition is taken from the data <br/>
+				can be a also json string <br/>
+				[ {data:'firstname', title:'@translation.firstname'},  <br/>&nbsp; {data:'surname', title:'@translation.surname'} ]<br/>
+				if the first char in "title" is  "@", then title.substring(1) will be translated
+				
+			 */
 			meta: {
-				type: Object
+				type: Object,
+				value: null
 			},
+			/**
+			 * the data
+			 */
 			data: {
 				type: Object
 			},
+			/**
+				 * <b>datatables options</b><br/>
+dom<br/>
+l - length changing input control <br/>
+f - filtering input<br/>
+t - The table!<br/>
+i - Table information summary<br/>
+p - pagination control<br/>
+r - processing display element<br/>
+				 */
 			options: {
 				type: String
 			},
+			/**
+			 * the namespace
+			 */
 			namespace: {
 				value: null,
 				type: String
 			}
 		},
+		/**
+		 * fire if rows are selected
+		 *
+		 * @event rows-selected
+		 */
+		/**
+		 * fire if the datatables table is complete
+		 *
+		 * @event init-complete
+		 */
 		observers: [
-			'dataChanged(data)',
-			'metaChanged(meta)'
+			'_dataChanged(data,meta)'
 		],
-		createTable: function( dtMeta, dataSet, options ) {
-			this.whenTableReady( ( function() {
-				this._createTable( dtMeta, dataSet, options );
+		_createTable: function( dtMeta, dataSet, options ) {
+			this._whenTableReady( ( function() {
+				this.__createTable( dtMeta, dataSet, options );
 			} ).bind( this ) );
 		},
+		/**
+		 *  recalc and redraw the table
+		 */
 		recalc: function() {
 			this._api.responsive.recalc();
 			this._api.columns.adjust()
 		},
-		_createTable: function( dtMeta, dataSet, options ) {
+		__createTable: function( dtMeta, dataSet, options ) {
 			this.dataSet = dataSet;
 			if ( options ) {
-				options = this.parseOptions( options );
+				options = this._parseOptions( options );
 			} else if ( this.options ) {
-				options = this.parseOptions( this.options );
+				options = this._parseOptions( this.options );
 			} else {
 				options = {
 					dom: "t",
@@ -78,7 +121,12 @@
 				//options.dom = options.dom.replace( "f", "" );
 			}
 
-			dtMeta = simpl4.util.Merge.clone( dtMeta );
+			if ( typeof dtMeta === 'string' ) {
+				dtMeta = JSON5.parse( dtMeta );
+			} else {
+				dtMeta = simpl4.util.Merge.clone( dtMeta );
+			}
+			this._translate( dtMeta );
 			if ( dtMeta[ 0 ].class == null || dtMeta[ 0 ].class.indexOf( "control" ) == -1 ) {
 				dtMeta.splice( 0, 0, {
 					class: "control"
@@ -97,7 +145,7 @@
 						json: json
 					} );
 				},
-				language: this.getLang(),
+				language: this._getLang(),
 				paging: true,
 				pagingType: "two_button",
 				bSort: false,
@@ -114,13 +162,16 @@
 				columns: dtMeta
 			}, options ) );
 			$( this.root.querySelectorAll( "table.dataTables" ) ).attr( "id", "dataTablesId" );
-			this.createRowListener();
-			this.addDetailCopier( dtMainElem, this._api );
+			this._createRowListener();
+			this._addDetailCopier( dtMainElem, this._api );
 		},
+		/**
+		 *  get the datatables api
+		 */
 		getApi: function() {
 			return this._api;
 		},
-		addDetailCopier: function( mainElem, api ) {
+		_addDetailCopier: function( mainElem, api ) {
 			mainElem.on( 'keyup change', '.child input, .child select, .child textarea', function( e ) {
 				var srcDetailElem = $( this );
 				var rowIdx = srcDetailElem.closest( 'ul' ).data( 'dtr-index' );
@@ -135,36 +186,36 @@
 				}
 			} );
 		},
-		createRowListener: function() {
+		_createRowListener: function() {
 			var self = this;
 			var rows = this._api.rows().nodes();
 			for ( var i = 0; i < rows.length; i++ ) {
 				$( rows[ i ] ).swipe( {
 					tap: function( event, target ) {
-						self.tapAction( target, self.getIndex( target ), $( target ).closest( "tr" ), false );
+						self._tapAction( target, self._getIndex( target ), $( target ).closest( "tr" ), false );
 					},
 					doubleTap: function( event, target ) {
-						self.tapAction( target, self.getIndex( target ), $( target ).closest( "tr" ), true );
+						self._tapAction( target, self._getIndex( target ), $( target ).closest( "tr" ), true );
 					},
 					threshold: 50
 				} );
 			}
 		},
-		tapAction: function( target, index, row, doubleTap ) {
+		_tapAction: function( target, index, row, doubleTap ) {
 			this.currentRowIndex = row.index();
 			if ( this.multiSelect ) {
-				this.tapActionMulti( target, index, row, doubleTap );
+				this._tapActionMulti( target, index, row, doubleTap );
 			} else {
-				this.tapActionSingle( target, index, row, doubleTap );
+				this._tapActionSingle( target, index, row, doubleTap );
 			}
 		},
-		tapActionSingle: function( target, index, row, doubleTap ) {
+		_tapActionSingle: function( target, index, row, doubleTap ) {
 			if ( $( row ).hasClass( 'selected' ) ) {
 				//		return;
 			}
 			this.unselectAll();
 			$( row ).addClass( 'selected' );
-			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
+			var sel = this._copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
 				dt: this,
 				doubleTap: doubleTap,
@@ -174,9 +225,9 @@
 			} );
 			this.selection = sel;
 		},
-		tapActionMulti: function( target, index, row, doubleTap ) {
+		_tapActionMulti: function( target, index, row, doubleTap ) {
 			$( row ).toggleClass( 'selected' );
-			var sel = this.copySelection( this._api.rows( '.selected' ).data() );
+			var sel = this._copySelection( this._api.rows( '.selected' ).data() );
 			this.fire( "rows-selected", {
 				dt: this,
 				doubleTap: doubleTap,
@@ -186,13 +237,19 @@
 			} );
 			this.selection = sel;
 		},
-		getIndex: function( target ) {
+		_getIndex: function( target ) {
 			var closest = $( target ).closest( "td" );
 			return this._api.cell( closest ).index();
 		},
+		/**
+		 *  get the selected rows
+		 */
 		getSelection: function() {
 			return this.selection;
 		},
+		/**
+		 *  unselect all rows
+		 */
 		unselectAll: function() {
 			if ( this._api == null ) return;
 			var rows = this._api.rows().nodes();
@@ -200,50 +257,46 @@
 				$( rows ).removeClass( 'selected' );
 			}
 		},
-		copySelection: function( sel ) {
+		_copySelection: function( sel ) {
 			var raw = [];
 			for ( var i = 0; i < sel.length; i++ ) {
 				raw.push( sel[ i ] );
 			}
 			return raw;
 		},
-		metaChanged: function() {},
-		dataChanged: function() {
+		_dataChanged: function() {
 			this.async( function() {
-				this._dataChanged();
+				this.__dataChanged();
 			}, 10 );
 		},
-		_dataChanged: function() {
-			//console.log( "xxx.dataTables.dataChanged.data:", this.data );
-			//console.log( "xxx.dataTables.dataChanged.meta:", this.meta );
+		__dataChanged: function() {
 			var firsttime = this.preparedMeta == null;
-			//			console.log( "dataTables.dataChanged.firsttime:", firsttime );
 			if ( this.meta == null || this.meta.length == 0 ) {
 				if ( this.data == null || this.data.length == 0 ) {
 					return;
 				}
 				if ( this.data.length > 0 ) {
-					this.preparedMeta = this.prepareMetaFromData( this.data );
+					this.preparedMeta = this._prepareMetaFromData( this.data );
 				}
 			} else {
-				this.preparedMeta = this.prepareMeta( this.meta );
+				this.preparedMeta = this._prepareMeta( this.meta );
 			}
 
 			if ( this.preparedMeta == null ) {
 				return;
 			}
 			if ( firsttime ) {
-				this.createTable( this.preparedMeta, this.data, this.options );
+				this._createTable( this.preparedMeta, this.data, this.options );
 			} else {
 				this._api.clear();
 				this.data.forEach( ( function( row, idx ) {
 					this._api.row.add( row );
 				} ).bind( this ) );
 				this._api.draw();
-				this.createRowListener();
+				this._createRowListener();
 			}
 		},
-		prepareMeta: function( meta ) {
+		_prepareMeta: function( meta ) {
 			var fields = meta.fields;
 			if ( fields == null ) return meta;
 			var aliases = meta.aliases;
@@ -262,7 +315,7 @@
 			}, this );
 			return ret;
 		},
-		prepareMetaFromData: function( data ) {
+		_prepareMetaFromData: function( data ) {
 			if ( data == null ) return;
 			if ( !Array.isArray( data ) ) {
 				data = data.result;
@@ -271,9 +324,9 @@
 				return;
 			}
 			var maxKeys = [];
-			for( var i=0; i < data.length;i++){
-				var curKeys = Object.keys(data[i]);
-				if( curKeys.length > maxKeys.length){
+			for ( var i = 0; i < data.length; i++ ) {
+				var curKeys = Object.keys( data[ i ] );
+				if ( curKeys.length > maxKeys.length ) {
 					maxKeys = curKeys;
 				}
 			}
@@ -289,7 +342,7 @@
 			}, this );
 			return ret;
 		},
-		whenTableReady: function( done ) {
+		_whenTableReady: function( done ) {
 			var self = this;
 			var counter = 0;
 
@@ -306,14 +359,25 @@
 			}
 			waitForTable();
 		},
-		parseOptions: function( o ) {
+		_parseOptions: function( o ) {
 			if ( o == null ) return;
 			if ( typeof o == 'string' ) {
 				o = JSON5.parse( o );
 			}
 			return o;
 		},
-		getLang: function() {
+		_translate: function( meta ) {
+			var keys = Object.keys( meta );
+			for ( var i = 0; i < keys.length; i++ ) {
+				var key = keys[ i ];
+				var title = meta[ key ].title;
+				if ( title && title.match( /^[@%]/ ) ) {
+					meta[ key ].title = tr( title.substring( 1 ) );
+				}
+			}
+			return meta;
+		},
+		_getLang: function() {
 			return {
 				"sEmptyTable": tr( "datatables.sEmptyTable" ),
 				"sInfo": tr( "datatables.sInfo" ),

@@ -18,6 +18,14 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 -->
+<!--
+simple possiblity to invoke any service
+
+		 <simpl-rpc id="rpcListId" method="docu.dataaccess" params="{operation:'list'}" response="{{dataList}}"></simpl-rpc>
+     <simpl-datatables options='{paging: true,"dom":"frt",scrollY:"200px"}' 
+						on-rows-selected="tableRowSelected" data="[[dataList]]" />
+
+-->
 <link rel="import" href="import-js.html">
 <link rel="import" href="datatables-behavior.html">
 <link rel="import" type="css" href="jquery.dataTables.css">
