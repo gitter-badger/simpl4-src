@@ -199,7 +199,7 @@ documentation page including demos (if available).
         <div class="docs-header">
           <!-- TODO: Replace with paper-dropdown-menu when available -->
           <select id="active" value="[[active]]" on-change="_handleMenuItemSelected">
-            <template is="dom-repeat" items="[[docElements]]">
+            <template is="dom-repeat" items="[[_getVisableElements(docElements)]]">
               <option value="[[item.is]]">[[item.is]]</option>
             </template>
             <!--template is="dom-repeat" items="[[docBehaviors]]">
@@ -460,6 +460,18 @@ documentation page including demos (if available).
           }
         },
 
+
+				_getVisableElements:function(allElements){
+					var ret = [];
+					for( var i=0; i < allElements.length;i++){
+						var doc = allElements[i];
+console.log("is:",doc.is+" -> "+ doc.show);
+						if( doc.show){
+							ret.push( {is:doc.is} );
+						}
+					}
+					return ret;
+				},
         /**
          * Loads an array of hydrolysis element descriptors (as JSON) from the text
          * content of this element, if present.
