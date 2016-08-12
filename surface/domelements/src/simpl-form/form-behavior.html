@@ -25,11 +25,9 @@
 
 </style>
 <script>
+	/** @polymerBehavior FormBehavior */
 	FormBehavior = {
-		eventDelegates: {
-			'value-changed': 'valueChanged'
-		},
-		valueChanged: function( e ) {
+		_valueChanged: function( e ) {
 			var data = this._getData();
 			var lang = simpl4.util.BaseManager.getLanguage()
 			var env = {
@@ -37,20 +35,20 @@
 				$lang: lang
 			};
 			env = simpl4.util.Merge.merge( true, data, env );
-			this.saveDisabled = this.isSaveDisabled( env );
+			this.saveDisabled = this._isSaveDisabled( env );
 			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
 				var readonlyExpr = f.getAttribute( "readonly-expr" );
 				//console.log( "Name:" + f.name + "|enabled-expr:" + enabledExpr + "|readonlyExpr:" + readonlyExpr + "|" );
-				if ( this.isNotEmpty( readonlyExpr ) ) {
+				if ( this._isNotEmpty( readonlyExpr ) ) {
 					var e = this._maskedEval( readonlyExpr, env );
 					if ( e ) {
 						f.setAttribute( "disabled", "" );
 					} else {
 						f.removeAttribute( "disabled" );
 					}
-				} else if ( this.isNotEmpty( enabledExpr ) ) {
+				} else if ( this._isNotEmpty( enabledExpr ) ) {
 					var e = this._maskedEval( enabledExpr, env );
 					if ( e ) {
 						f.removeAttribute( "disabled" );
@@ -60,7 +58,7 @@
 				}
 				var excludeExpr = f.getAttribute( "exclude-expr" );
 				//console.log( "Name:" + f.name + "|excludeExpr:" + excludeExpr + "|" );
-				if ( this.isNotEmpty( excludeExpr ) ) {
+				if ( this._isNotEmpty( excludeExpr ) ) {
 					var e = this._maskedEval( excludeExpr, env );
 					if ( e ) {
 						f.setAttribute( "hidden", "" );
@@ -70,7 +68,7 @@
 				}
 				var invisibleExpr = f.getAttribute( "invisible-expr" );
 				//console.log( "Name:" + f.name + "|invisibleExpr:" + invisibleExpr + "|" );
-				if ( this.isNotEmpty( invisibleExpr ) ) {
+				if ( this._isNotEmpty( invisibleExpr ) ) {
 					var e = this._maskedEval( invisibleExpr, env );
 					if ( e ) {
 						f.setAttribute( "visibility", "hidden" );
@@ -80,9 +78,9 @@
 				}
 			}
 		},
-		isSaveDisabled: function( env ) {
+		_isSaveDisabled: function( env ) {
 			var script = this._form.xf_save_disabled;
-			if ( this.isEmpty( script ) ) return false;
+			if ( this._isEmpty( script ) ) return false;
 			try {
 				var res = this._maskedEval( script, env );
 				return res;
@@ -90,29 +88,24 @@
 				console.error( "_postProcessLocalForm:", e );
 			}
 		},
-		isNotEmpty: function( s ) {
+		_isNotEmpty: function( s ) {
 			if ( s == null || s.length == 0 ) {
 				return false;
 			}
 			return true;
 		},
-		submit: function( e ) {
-			var data = {};
-			this.fields.forEach( function( f ) {
-				data[ f.name ] = f.value;
-			}, this );
-			var jsonData = JSON.stringify( data, null, 2 );
-			console.log( "Values:" + jsonData );
-		},
 		created: function() {},
 		ready: function() {},
-		shapesChanged: function() {
-			console.debug( "simpl-baseform.shapesChanged" );
-			this.valueChanged();
+		_shapesChanged: function() {
+			console.debug( "simpl-baseform._shapesChanged" );
+			this._valueChanged();
 		},
-		validate: function( e ) {
+		/**
+		 * validate the form data 
+		 */
+		validate: function( ) {
 			var errorList = [];
-			var elements = this.filterToArray( this.$.formdiv.querySelectorAll( "input-field,checkbox-field,select-field" ), false );
+			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "input-field,checkbox-field,select-field" ), false );
 			Array.prototype.forEach.call( elements, function( elem ) {
 				elem.setInvalid( false );
 			} );
@@ -130,7 +123,7 @@
 					} );
 				} );
 			}
-			var elements = this.filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,select-field" ), true );
+			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,select-field" ), true );
 			for ( var i = 0; i < elements.length; i++ ) {
 				elements[ i ].checkConstraints();
 				if ( elements[ i ].isInvalid ) {
@@ -142,7 +135,7 @@
 			}
 			return errorList.length == 0;
 		},
-		filterToArray: function( nodeList, all ) {
+		_filterToArray: function( nodeList, all ) {
 			var ret = [];
 			for ( var i = 0; i < nodeList.length; i++ ) {
 				var c = nodeList[ i ].getAttribute( "data-constraints" );
@@ -164,7 +157,7 @@
 			}
 			return def;
 		},
-		whenFieldsReady: function( done ) {
+		_whenFieldsReady: function( done ) {
 			var self = this;
 
 			function waitForFields() {
@@ -177,45 +170,48 @@
 			}
 			waitForFields();
 		},
-		getField: function( path ) {
+		_getField: function( path ) {
 			var f = this.fieldsMap[ path ];
 			return f;
 		},
-		getLabel: function( path ) {
+		_getLabel: function( path ) {
 			var f = this.fieldsMap[ path ];
 			return f.label;
 		},
-		dataChanged: function() {
-			console.log( "\n-->form.dataChanged.internal:", this.internal );
+		_dataChanged: function() {
+			console.log( "\n-->form._dataChanged.internal:", this.internal );
 			if(this.internal !== true){
 				this._dataChanged();
 			}
 			this.internal=false;
 		},
 		_dataChanged: function() {
-			console.error( "\n-->form.dataChanged:", JSON.stringify(this.data,null,2) );
-			this.whenFieldsReady( ( function() {
+			console.error( "\n-->form._dataChanged:", JSON.stringify(this.data,null,2) );
+			this._whenFieldsReady( ( function() {
 				if ( this.preProcessData ) {
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
 					this.preProcessData = null;
 				} else {
-					this.doPreProcess();
+					this._doPreProcess();
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
 					this.preProcessData = null;
 				}
-				console.log( "form.dataChanged.afterPre:", JSON.stringify(this.data,null,2) );
+				console.log( "form._dataChanged.afterPre:", JSON.stringify(this.data,null,2) );
 				this._setData( this.data );
 			} ).bind( this ) );
 		},
-		setFieldData: function( data ) {
+		_setFieldData: function( data ) {
 			var keys = Object.keys( data );
 			keys.forEach( function( k ) {
-				var field = this.getField( k );
+				var field = this._getField( k );
 				if ( field == null || field.setValue == null ) return;
 				if ( field.setInvalid ) field.setInvalid( false );
 				field.setValue( data[ k ] );
 			}, this );
 		},
+		/**
+		 * set the form data 
+		 */
 		setData: function( data ) {
 			this.resetData = jQuery.extend( {}, data );;
 			if ( data == null ) return;
@@ -244,7 +240,10 @@
 				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
 		},
-		clearData: function( data ) {
+		/**
+		 * clear the form data 
+		 */
+		clearData: function() {
 			this.fields.forEach( function( field ) {
 				if ( field.setValue == null ) return;
 				field.withoutCheck = true;
@@ -252,6 +251,9 @@
 				field.setValue( null );
 			}, this );
 		},
+		/**
+		 * update the form data 
+		 */
 		updateData: function( data ) {
 			var keys = Object.keys( data );
 			keys.forEach( ( function( key ) {
@@ -272,6 +274,9 @@
 			}, this );
 			return data;
 		},
+		/**
+		 * get the form data 
+		 */
 		getData: function() {
 			var data = simpl4.util.Merge.merge( true, this.data );
 			this.fields.forEach( function( field ) {
@@ -293,8 +298,11 @@
 			}, this );
 			return data;
 		},
+		/**
+		 * not really  public , should only be used if you know what you are doing
+		 */
 		setItems: function( items ) {
-			this.whenFieldsReady( ( function() {
+			this._whenFieldsReady( ( function() {
 				this._setItems( items );
 			} ).bind( this ) );
 		},
@@ -304,12 +312,8 @@
 				field.setItems( items[ field.name ] );
 			}, this );
 		},
-		actionCallback: function() {
-			console.debug( "Data:", JSON.stringify( this._getData(), null, 2 ) );
-		},
-
 		_getSelectionLists: function( method ) {
-			if ( this.isEmpty( method ) ) return {};
+			if ( this._isEmpty( method ) ) return {};
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
@@ -339,11 +343,11 @@
 				console.error( "_getSelectionLists:", e );
 			}
 		},
-		postProcessService: function() {
+		_postProcessService: function() {
 			var method = this._form.xf_postprocess_service;
 			var mode = this._form.xf_postprocess_service_mode;
 			var ok = mode == this.mode || mode == "edit_add";
-			if ( !ok || this.isEmpty( method ) ) return null;
+			if ( !ok || this._isEmpty( method ) ) return null;
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
@@ -353,7 +357,7 @@
 				var formData = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
 					formData: data,
 					lang: lang,
-					formName: this.removeExtension( this.formName ),
+					formName: this._removeExtension( this.formName ),
 					mode: this.mode,
 					prePost: 'post',
 					uuid: window.uuid
@@ -366,9 +370,9 @@
 			}
 		},
 
-		postProcessLocal: function() {
+		_postProcessLocal: function() {
 			var script = this._form.xf_preprocess_local;
-			if ( this.isEmpty( script ) ) return null;
+			if ( this._isEmpty( script ) ) return null;
 			try {
 				var data = this._getData();
 				var lang = simpl4.util.BaseManager.getLanguage()
@@ -384,12 +388,12 @@
 			}
 		},
 
-		preProcessService: function() {
+		_preProcessService: function() {
 			var method = this._form.xf_preprocess_service;
 			var mode = this._form.xf_preprocess_service_mode;
 			var ok = mode == this.mode || mode == "edit_add";
-			if ( !ok || this.isEmpty( method ) ) return null;
-			console.log( "preProcessService:", method + "/" + ok + "/preProcessData:", this.preProcessData + "/data:", this.data );
+			if ( !ok || this._isEmpty( method ) ) return null;
+			console.log( "_preProcessService:", method + "/" + ok + "/preProcessData:", this.preProcessData + "/data:", this.data );
 			try {
 				if ( method.indexOf( "." ) == -1 ) {
 					method = this.namespace + "." + method;
@@ -400,7 +404,7 @@
 					parameter: {
 						formData: this.data,
 						lang: simpl4.util.BaseManager.getLanguage(),
-						formName: this.removeExtension( this.formName ),
+						formName: this._removeExtension( this.formName ),
 						mode: this.mode,
 						prePost: 'pre',
 						uuid: window.uuid
@@ -424,12 +428,12 @@
 				return simpl4.util.Rpc.rpcAsync( params );
 			} catch ( e ) {
 				console.error( "_postProcessServic:", e );
-				console.debug( "_postProcessService.call:camelRoute:" + method );
+				console.debug( "_postProcessService.call:method:" + method );
 			}
 		},
-		preProcessLocal: function() {
+		_preProcessLocal: function() {
 			var script = this._form.xf_preprocess_local;
-			if ( this.isEmpty( script ) ) return null;
+			if ( this._isEmpty( script ) ) return null;
 			try {
 				var data = this.data;
 				var lang = simpl4.util.BaseManager.getLanguage()
@@ -445,24 +449,24 @@
 				}
 			} catch ( e ) {
 				console.error( "_preProcessLocal:", e );
-				console.debug( "_postProcessService.script:", script );
+				console.debug( "_preProcessLocal.script:", script );
 			}
 		},
-		doPreProcess: function() {
-			this.preProcessService();
+		_doPreProcess: function() {
+			this._preProcessService();
 			var dataSer = this._preData;
-			this.preProcessLocal();
+			this._preProcessLocal();
 			var dataLoc = this._preData;
 			this.preProcessData = simpl4.util.Merge.merge( true, dataSer, dataLoc );
 			this._preData=null;
 		},
-		formNameChanged: function() {
+		_formNameChanged: function() {
 			this.async( function() {
-				this._formNameChanged();
+				this.__formNameChanged();
 			}, 10 );
 		},
-		_formNameChanged: function() {
-			//			console.log( "form.formNameChanged:", this.formName + "/" + this.namespace );
+		__formNameChanged: function() {
+			//			console.log( "form._formNameChanged:", this.formName + "/" + this.namespace );
 			this.fields = [];
 			this.fieldsMap = {};
 			this.shapes = [];
@@ -475,18 +479,18 @@
 				this.defaultButtons = form.properties.xf_default_buttons;
 				this.formVar = form.properties.xf_name;
 				this._getSelectionLists( form.properties.xf_method_fetch );
-				this.doPreProcess();
-				this.shapes = this.prepareShape( form ).childShapes;
+				this._doPreProcess();
+				this.shapes = this._prepareShape( form ).childShapes;
 				this._shapeMap = {};
 				this._buildShapeMap( this.shapes[ 0 ] );
 				this.async( function() {
-					this.fields = this.filterToArray( this.$.formdiv.querySelectorAll( "[field]" ), true );
+					this.fields = this._filterToArray( this.$.formdiv.querySelectorAll( "[field]" ), true );
 					this.fields.forEach( function( field ) {
 						field.setForm( this );
 					}, this );
-					this.fieldsMap = this.toMap( this.fields );
+					this.fieldsMap = this._toMap( this.fields );
 					this.fire("form-ready", this );
-					this.valueChanged();
+					this._valueChanged();
 					if ( this.resetData == null ) {
 						this.resetData = this._getData();
 					}
@@ -494,10 +498,9 @@
 			}, 1 );
 		},
 		/*----------------------------------*/
-		specChanged: function( e ) {
+		_specChanged: function(  ) {
 			this.fields = [];
 			this.fieldsMap = {};
-			//			console.log( "form.specChanged" );
 			this.shapes = [];
 			this._form = {};
 
@@ -506,12 +509,12 @@
 				this._shapeMap = {};
 				this._buildShapeMap( this.shapes[ 0 ] );
 				this.async( function() {
-					this.fields = this.filterToArray( this.$.formdiv.querySelectorAll( "[field]" ), true );
+					this.fields = this._filterToArray( this.$.formdiv.querySelectorAll( "[field]" ), true );
 					this.fields.forEach( function( field ) {
 						field.setForm( this );
 					}, this );
-					this.fieldsMap = this.toMap( this.fields );
-					this.valueChanged();
+					this.fieldsMap = this._toMap( this.fields );
+					this._valueChanged();
 					this.fire("form-ready", this );
 					if ( this.resetData == null ) {
 						this.resetData = this._getData();
@@ -519,7 +522,7 @@
 				}, 1 );
 			}, 1 );
 		},
-		toMap: function( arr ) {
+		_toMap: function( arr ) {
 			var map = {};
 			arr.forEach( function( elem ) {
 				map[ elem.name ] = elem;
@@ -541,11 +544,11 @@
 				this._buildShapeMap( childShapes[ i ] );
 			}
 		},
-		prepareShape: function( shape ) {
-			shape = this.cleanShape( shape );
+		_prepareShape: function( shape ) {
+			shape = this._cleanShape( shape );
 
 			if ( shape.id == 'Input' ) {
-				shape.regulaConstraints = this.constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType( shape.xf_type ) ], shape.xf_errormsg );
+				shape.regulaConstraints = this._constructRegulaConstraints( shape[ "xf_constraint_" + this._convertType( shape.xf_type ) ], shape.xf_errormsg );
 			}
 
 			shape.childShapes = _.sortBy( shape.childShapes, function( element ) {
@@ -556,21 +559,21 @@
 			var row = null;
 			for ( var i = 0; i < childShapes.length; i++ ) {
 				if ( shape.id == 'Tabview' ) {
-					shape.childShapes.push( this.prepareShape( childShapes[ i ] ) );
+					shape.childShapes.push( this._prepareShape( childShapes[ i ] ) );
 				} else {
-					if ( i == 0 || ( i > 0 && this.isLineBreak( childShapes[ i - 1 ], childShapes[ i ] ) ) ) {
+					if ( i == 0 || ( i > 0 && this._isLineBreak( childShapes[ i - 1 ], childShapes[ i ] ) ) ) {
 						row = {
 							id: 'Row',
 							childShapes: []
 						};
 						shape.childShapes.push( row );
 					}
-					row.childShapes.push( this.prepareShape( childShapes[ i ] ) );
+					row.childShapes.push( this._prepareShape( childShapes[ i ] ) );
 				}
 			}
 			return shape;
 		},
-		cleanShape: function( shape ) {
+		_cleanShape: function( shape ) {
 			if ( shape.stencil.id.toLowerCase() == "input" ||
 				shape.stencil.id.toLowerCase() == 'textarea' ||
 				shape.stencil.id.toLowerCase() == 'relatedto' ||
@@ -583,7 +586,7 @@
 				shape.stencil.id.toLowerCase() == 'custom' ||
 				shape.stencil.id.toLowerCase() == 'group'
 			) {
-				var labelChild = this.getLabelShape( shape.childShapes );
+				var labelChild = this._getLabelShape( shape.childShapes );
 				if ( labelChild != null ) {
 					shape.properties.label = labelChild.properties.xf_text;
 					if ( ( shape.properties.xf_id == null || shape.properties.xf_id == "" ) && shape.properties.label ) {
@@ -599,7 +602,7 @@
 				} else {
 					shape.properties.label = "";
 				}
-				if ( !this.isEmpty( shape.properties.xf_default ) ) {
+				if ( !this._isEmpty( shape.properties.xf_default ) ) {
 					if ( shape.stencil.id.toLowerCase() == 'input' ) {
 						if ( shape.properties.xf_type.startsWith( "date" ) ) {
 							var d = shape.properties.xf_default;
@@ -650,10 +653,10 @@
 					var parammapping = props.xf_parammapping;
 					var resultmapping = props.xf_resultmapping;
 					var varname = props.xf_varname;
-					if ( !this.isEmpty( varname ) ) {
+					if ( !this._isEmpty( varname ) ) {
 						props.items = this.variables[ varname ];
-						props.items = this.doResultMapping( props.items, resultmapping );
-					} else if ( !this.isEmpty( jsonpath ) ) {
+						props.items = this._doResultMapping( props.items, resultmapping );
+					} else if ( !this._isEmpty( jsonpath ) ) {
 						var a = JSONPath( {
 							json: this._selectionLists,
 							path: jsonpath,
@@ -664,20 +667,20 @@
 						} else {
 							props.items = a[ 0 ];
 						}
-						props.items = this.doResultMapping( props.items, resultmapping );
+						props.items = this._doResultMapping( props.items, resultmapping );
 					} else if ( !isTableSelect && enumembed && enumembed.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
 					} else if ( !isTableSelect && _enum && _enum.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
-					} else if ( !this.isEmpty( filter ) ) {
+					} else if ( !this._isEmpty( filter ) ) {
 						var filterDesc = {
 							"totalCount": 1,
 							"enumDescription": "sw.filter:" + filter,
 							items: []
 						}
-						filterDesc.params = this.doParameterMapping( parammapping );
+						filterDesc.params = this._doParameterMapping( parammapping );
 						filterDesc.checkParams = true;
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
 						var items = si.getItems();
@@ -685,17 +688,17 @@
 							console.error( "Filter:", filterDesc );
 							console.error( "Filter.misingParameters:", si.getMissingParamList() );
 						} else {
-							props.items = this.doResultMapping( items, resultmapping );
+							props.items = this._doResultMapping( items, resultmapping );
 						}
-					} else if ( !this.isEmpty( service ) ) {
+					} else if ( !this._isEmpty( service ) ) {
 						var serviceDesc = {
 							"totalCount": 1,
 							"enumDescription": "sw.service:" + service,
 							items: []
 						}
-						serviceDesc.params = this.doParameterMapping( parammapping );
+						serviceDesc.params = this._doParameterMapping( parammapping );
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( serviceDesc ) );
-						props.items = this.doResultMapping( si.getItems(), resultmapping );
+						props.items = this._doResultMapping( si.getItems(), resultmapping );
 					} else {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
@@ -725,7 +728,7 @@
 						if ( props.height < 75 ) props.height = 75;
 					}
 
-					if ( props.items.length > 0 && !this.isEmpty( shape.properties.xf_default ) && shape.properties.xf_default.startsWith( "#" ) ) {
+					if ( props.items.length > 0 && !this._isEmpty( shape.properties.xf_default ) && shape.properties.xf_default.startsWith( "#" ) ) {
 						try {
 							shape.properties.xf_default = props.items[ parseInt( shape.properties.xf_default.substring( 1 ) ) ].value;
 						} catch ( e ) {
@@ -736,11 +739,12 @@
 			} else if ( shape.stencil.id.toLowerCase() == "actionbutton" ) {
 				var icon = shape.properties.xf_iconname;
 				var action = shape.properties.xf_action;
+				var enter = shape.properties.xf_enter;
 				if ( icon == null || icon == "" ) {
 					shape.properties.xf_iconname = ( action == "execute" ) ? "check" : "clear";
 				}
-				if ( action == "execute" ) {
-					this.executeButtonExists = true;
+				if ( this._enterAction==null && enter === true ) {
+					this.renterAction = action;
 				}
 				var label = shape.properties.xf_label;
 				if ( label && label.match( /^[@%]/ ) ) {
@@ -750,9 +754,9 @@
 			} else if ( shape.stencil.id.toLowerCase() == "alert" ) {
 				var lang = simpl4.util.BaseManager.getLanguage();
 				if ( shape.properties[ "xf_message_" + lang ] ) {
-					shape.properties.xf_message = this.expandString( shape.properties[ "xf_message_" + lang ], this.variables );
+					shape.properties.xf_message = this._expandString( shape.properties[ "xf_message_" + lang ], this.variables );
 				} else {
-					shape.properties.xf_message = this.expandString( shape.properties.xf_message, this.variables );
+					shape.properties.xf_message = this._expandString( shape.properties.xf_message, this.variables );
 				}
 			} else {
 				shape.properties.label = "";
@@ -766,7 +770,7 @@
 				childShapes: shape.childShapes
 			} );
 		},
-		getLabelShape: function( childs ) {
+		_getLabelShape: function( childs ) {
 			for ( var i = 0; i < childs.length; i++ ) {
 				if ( childs[ i ].stencil.id.toLowerCase() == 'label' ) {
 					return childs[ i ];
@@ -774,7 +778,7 @@
 			}
 			return null;
 		},
-		isLineBreak: function( child, next ) {
+		_isLineBreak: function( child, next ) {
 			var UL = child.bounds.upperLeft;
 			var lineBreak = false;
 			var nextUL = next.bounds.upperLeft;
@@ -783,7 +787,7 @@
 			}
 			return lineBreak;
 		},
-		doParameterMapping: function( parammapping ) {
+		_doParameterMapping: function( parammapping ) {
 			var parameterMap = {};
 			if ( !parammapping ) return parameterMap;
 			console.log( "----paramMapping:", parammapping );
@@ -801,14 +805,14 @@
 			console.log( "====paramMap:", parameterMap );
 			return parameterMap;
 		},
-		doResultMapping: function( items, resultmapping ) {
+		_doResultMapping: function( items, resultmapping ) {
 			console.log( "----resultList:", items );
 			if ( typeof items == "string" ) {
 				console.error( "----doResultMapping.cannot handle String result:", items );
 				return [];
 			}
 			var selectionList = [];
-			if ( resultmapping == null || this.isEmpty( resultmapping.items ) ) {
+			if ( resultmapping == null || this._isEmpty( resultmapping.items ) ) {
 				return items;
 			}
 			var mapping = resultmapping.items;
@@ -825,7 +829,7 @@
 			console.log( "====selectionList:", selectionList );
 			return selectionList;
 		},
-		constructRegulaConstraints: function( constraints, msg ) {
+		_constructRegulaConstraints: function( constraints, msg ) {
 			if ( constraints == null || constraints.length == 0 ) return "";
 			constraints = JSON.parse( constraints );
 			var ret = "";
@@ -835,22 +839,22 @@
 			keys.forEach( function( key ) {
 				var values = constraints[ key ];
 				if ( values[ 0 ] === true ) {
-					ret += b + '@' + self.mapKeys( key );
-					var params = self.constraintParams[ key ];
+					ret += b + '@' + self._mapKeys( key );
+					var params = self._constraintParams[ key ];
 
 					if ( msg ) {
 						if ( msg && msg.match( /^[@%]/ ) ) {
 							msg = tr( msg.substring( 1 ) );
 						}
 					} else {
-						msg = tr( "validation." + self.mapKeys( key ) );
+						msg = tr( "validation." + self._mapKeys( key ) );
 					}
 					ret += '(message="' + msg + '"';
 					if ( params && params.length > 0 ) {
 						var pkey = params[ 0 ];
 						var val = pkey == 'format' ? '"YMD"' : values[ 1 ];
 						if ( pkey == "regex" ) {
-							val = this.correctRegex( values[ 1 ] );
+							val = this._correctRegex( values[ 1 ] );
 						}
 						ret += ',' + pkey + '=' + val;
 						if ( params.length > 1 ) {
@@ -865,17 +869,17 @@
 			}, this );
 			return ret;
 		},
-		correctRegex: function( r ) {
+		_correctRegex: function( r ) {
 			if ( r == null ) return '/.*/';
 			if ( r.indexOf( '/' ) === 0 ) return r;
 			return '/' + r + '/';
 		},
-		mapKeys: function( key ) {
+		_mapKeys: function( key ) {
 			if ( key == "NotNull" ) return "NotEmpty";
 			if ( key == "Size" ) return "Length";
 			return key;
 		},
-		constraintParams: {
+		_constraintParams: {
 			Max: [ "value" ],
 			Min: [ "value" ],
 			Range: [ "min", "max" ],
@@ -887,17 +891,17 @@
 			Future: [ "format" ],
 			Step: [ "min", "max", "value" ]
 		},
-		isEmpty: function( s ) {
+		_isEmpty: function( s ) {
 			if ( s == null || s == '' ) return true;
 			return false;
 		},
-		removeExtension: function( s ) {
+		_removeExtension: function( s ) {
 			if ( s.endsWith( ".form" ) ) {
 				return s.substring( 0, s.length - 5 );
 			}
 			return s;
 		},
-		expandString: function( str, binding ) {
+		_expandString: function( str, binding ) {
 			if ( str == null || str.length == 0 ) return "";
 			var countRepl = 0;
 			var countPlainStr = 0;

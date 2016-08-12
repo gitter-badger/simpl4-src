@@ -658,16 +658,16 @@ CRUD operations for simpl4
 				return idValue;
 			},
 			saveAction: function() {
-				var postServiceData = this.$.formid.postProcessService();
+				var postServiceData = this.$.formid._postProcessService();
 				var data = this.$.formid.getData();
 				if ( postServiceData != null ) {
-					this.$.formid.setFieldData( postServiceData );
+					this.$.formid._setFieldData( postServiceData );
 					data = simpl4.util.Merge.merge( true, data, postServiceData );
 				}
 
-				var postLocalService = this.$.formid.postProcessLocal();
+				var postLocalService = this.$.formid._postProcessLocal();
 				if ( postLocalService != null ) {
-					this.$.formid.setFieldData( postLocalService );
+					this.$.formid._setFieldData( postLocalService );
 					data = simpl4.util.Merge.merge( true, data, postLocalService );
 				}
 
@@ -690,7 +690,7 @@ CRUD operations for simpl4
 							var message = "";
 							for ( var i = 0; i < cv.length; i++ ) {
 								var c = cv[ i ];
-								message += this.$.formid.getLabel( c.path ) + " : " + c.message + "<br />";
+								message += this.$.formid._getLabel( c.path ) + " : " + c.message + "<br />";
 							}
 							this.alert( message );
 						} else {

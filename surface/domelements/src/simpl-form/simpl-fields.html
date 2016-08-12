@@ -770,7 +770,7 @@
 				this.fire( 'value-changed', this );
 			},
 			valueChanged: function( e ) {
-				var f = this.form.getField( "filename" );
+				var f = this.form._getField( "filename" );
 				if ( f != null ) {
 					f.setValue( e.detail.target.file.name );
 				}
@@ -780,7 +780,7 @@
 			setValue: function( v ) {
 				this.editValue = v;
 				this.disabled = false;
-				var f = this.form.getField( "filename" );
+				var f = this.form._getField( "filename" );
 				if ( f != null && !this.isEmpty( f.getValue() ) ) {
 					this.disabled = true;
 					this.editValue = "ignore";
@@ -1815,7 +1815,7 @@
 					var col = this.columns[ j ];
 					var name = col.colname;
 					var val = line[ name ];
-					e.getField().withoutCheck = true;
+					e.getGridField().withoutCheck = true;
 					e.setValue( val );
 				}
 			},
@@ -1851,7 +1851,7 @@
 				var line = {};
 				for ( var j = 0; j < this.columns.length; j++ ) {
 					var e = this.querySelector( "#id" + i + "_" + j );
-					var elements =e.getField();
+					var elements =e.getGridField();
 					if( !elements.getAttribute("data-constraints")) continue;
 					regula.bind( {
 						elements: [elements]
@@ -2337,7 +2337,7 @@
 					var form_fieldname = item.form_fieldname ? item.form_fieldname : item.db_fieldname;
 					//console.debug( "db-selector-field.assignValue(" + path + "):" + form_fieldname + "=" + value );
 					try {
-						var f = this.form.getField( form_fieldname );
+						var f = this.form._getField( form_fieldname );
 						if ( f == null ) {
 							console.error( "db-selector-field.assignValue:field:" + form_fieldname + " not found" );
 							continue;
