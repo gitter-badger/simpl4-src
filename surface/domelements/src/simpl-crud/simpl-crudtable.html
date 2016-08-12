@@ -289,14 +289,14 @@
 							scrollY: '300px'
 						};
 					}
-					this.createTable( this.dtMeta, this.dataSet, this.dtOptions );
+					this._createTable( this.dtMeta, this.dataSet, this.dtOptions );
 				} else {
 					this._api.clear();
 					this.dataSet.forEach( ( function( row, idx ) {
 						this._api.row.add( row );
 					} ).bind( this ) );
 					this._api.draw();
-					this.createRowListener();
+					this._createRowListener();
 				}
 			},
 			preProcessData: function( rows ) {
