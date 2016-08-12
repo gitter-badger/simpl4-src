@@ -35,26 +35,27 @@
 				return match && decodeURIComponent( match[ 1 ].replace( /\+/g, ' ' ) );
 			}
 
-			function getQueryParameter(reqKey) {
+			function getQueryParameter( reqKey ) {
 				var uri = window.location.toString();
-				var ret='';
+				var ret = '';
 				if ( uri.indexOf( "?" ) > 0 ) {
 					var query = uri.substring( uri.indexOf( "?" ) );
-					var hash  = query.substring( query.indexOf( "#" ) );
-					if( hash != -1){
+					var hash = query.substring( query.indexOf( "#" ) );
+					if ( hash != -1 ) {
 						query = uri.substring( 0, hash );
-						var params = query.split("&");
-						for (var i = 0 ; i < params.length ; i++) {
-							var pos = params[i].indexOf("=");
-							var key = params[i].substring(0, pos);
-							if (key == reqKey) {
-									ret = params[i].substring(pos + 1);
+						var params = query.split( "&" );
+						for ( var i = 0; i < params.length; i++ ) {
+							var pos = params[ i ].indexOf( "=" );
+							var key = params[ i ].substring( 0, pos );
+							if ( key == reqKey ) {
+								ret = params[ i ].substring( pos + 1 );
 							}
 						}
 					}
 				}
 				return ret;
 			}
+
 			function removeQueryParameter() {
 				var uri = window.location.toString();
 				if ( uri.indexOf( "?" ) > 0 ) {
@@ -71,19 +72,19 @@
 				}
 			}
 
-			window.queryParams = (function(a) {
-				if (a == "") return {};
+			window.queryParams = ( function( a ) {
+				if ( a == "" ) return {};
 				var b = {};
-				for (var i = 0; i < a.length; ++i) {
-					var p=a[i].split('=', 2);
-					if (p.length == 1){
-						b[p[0]] = "";
-					}else{
-						b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+				for ( var i = 0; i < a.length; ++i ) {
+					var p = a[ i ].split( '=', 2 );
+					if ( p.length == 1 ) {
+						b[ p[ 0 ] ] = "";
+					} else {
+						b[ p[ 0 ] ] = decodeURIComponent( p[ 1 ].replace( /\+/g, " " ) );
 					}
 				}
 				return b;
-			})(window.location.search.substr(1).split('&'));
+			} )( window.location.search.substr( 1 ).split( '&' ) );
 
 			var scripts = document.querySelectorAll( "head > script" );
 			for ( var i = 0; i < scripts.length; i++ ) {
@@ -92,7 +93,7 @@
 					var x = src.split( "/sw" );
 					var baseUrl = x[ 0 ];
 					//console.log( "baseUrl1:" + baseUrl );
-					simpl4.util.BaseManager.setBaseUrl( baseUrl);
+					simpl4.util.BaseManager.setBaseUrl( baseUrl );
 					break;
 				}
 			}
@@ -110,22 +111,22 @@
 				}
 			}
 
-			var pathElements = window.location.pathname.split("/");
-			var repoIndex = pathElements.indexOf("repo");
+			var pathElements = window.location.pathname.split( "/" );
+			var repoIndex = pathElements.indexOf( "repo" );
 			//var namespace = pathElements[ pathElements.length-2 ];
-			var namespace = pathElements[ repoIndex+1 ];
+			var namespace = pathElements[ repoIndex + 1 ];
 
-			if( pathElements.length > 4 ){
+			if ( pathElements.length > 4 ) {
 				//console.log("base.pathname.split:",window.location.pathname.split("/"));
 				var loc = window.location;
-				var head = document.getElementsByTagName("head")[0];
-				if( head.querySelector("base")) {
-					head.removeChild(head.querySelector("base"));
+				var head = document.getElementsByTagName( "head" )[ 0 ];
+				if ( head.querySelector( "base" ) ) {
+					head.removeChild( head.querySelector( "base" ) );
 				}
-				var base = document.createElement("base");
-				base.href = simpl4.util.BaseManager.getBaseUrl()+"/repo/"+ namespace + "/";
+				var base = document.createElement( "base" );
+				base.href = simpl4.util.BaseManager.getBaseUrl() + "/repo/" + namespace + "/";
 				//console.log("base.new.href:",base.href);
-				head.appendChild(base);
+				head.appendChild( base );
 			}
 
 			window.is_chromium = navigator.userAgent.toLowerCase().indexOf( 'chrome' ) > -1;
@@ -155,16 +156,16 @@
 			}
 			var themeImport = document.querySelectorAll( "head > [href*=\"theme.html\"]" );
 			//console.log("hrefTheme:",themeImport);
-			if( themeImport.length == 0 ){
+			if ( themeImport.length == 0 ) {
 				//console.log("themeCache:",Simpl4.Cache.getItem( "theme" ));
 				var themeName = qtheme || Simpl4.Cache.getItem( "theme" );
-				if( themeName == null ){
+				if ( themeName == null ) {
 					themeName = "indigo-red";
 				}
-				var themeLink = document.createElement("link");
+				var themeLink = document.createElement( "link" );
 				themeLink.rel = "import";
-				themeLink.href = "theme-"+themeName+".html";
-				document.getElementsByTagName("head")[0].appendChild(themeLink);
+				themeLink.href = "theme-" + themeName + ".html";
+				document.getElementsByTagName( "head" )[ 0 ].appendChild( themeLink );
 			}
 
 			simpl4.util.BaseManager.setUser( "guest" );
@@ -194,11 +195,11 @@
 
 
 			var awFont = new Font();
-			awFont.src = simpl4.util.BaseManager.getBaseUrl()+"/sw/surface/fontawesome-webfont.woff?v=4.3.0";
+			awFont.src = simpl4.util.BaseManager.getBaseUrl() + "/sw/surface/fontawesome-webfont.woff?v=4.3.0";
 			awFont.fontFamily = "FontAwesome";
 			awFont.fontWeight = "normal";
 			awFont.fontStyle = "normal";
-			awFont.onload = function () {
+			awFont.onload = function() {
 				//console.log("awfont loaded");
 			}
 
@@ -251,6 +252,7 @@
 				},
 			};
 
+			/** @polymerBehavior TranslationsBehavior */
 			TranslationsBehavior = {
 				properties: {},
 				created: function() {
@@ -262,6 +264,7 @@
 				}
 			};
 
+			/** @polymerBehavior WhitespaceBehavior */
 			WhitespaceBehavior = {
 				attached: function() {
 					$( '.grid' ).contents().filter( function() {
@@ -269,6 +272,7 @@
 					} ).remove();
 				}
 			};
+			/** @polymerBehavior ModernizrBehavior */
 			ModernizrBehavior = {
 				attached: function() {
 					var el = document.documentElement;
@@ -281,6 +285,7 @@
 					}
 				}
 			};
+			/** @polymerBehavior StyleScopeBehavior */
 			StyleScopeBehavior = {
 				setStyleScope: function( main_el ) {
 					var args = [];
