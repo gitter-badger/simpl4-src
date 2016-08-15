@@ -99,6 +99,54 @@ public class AsciidoctorX{
 		}
 	}
 
+	def rowBlock = {
+		block(name: 'ROW', contexts: [':paragraph', ':open']) { parent, reader, attributes ->
+			try{
+				def cols = 2;
+				def classes="col-xs-12 col-md-6";
+				def delim = "###";
+				def order=null;
+				def styles = [:].withDefault { "" }
+				attributes.each{ k, v ->
+					if( k == "cols"){
+						if( cols == "4"){
+							classes="col-xl-3 col-xs-12 col-md-6";
+						}
+					}
+					if( k == "delim"){
+						delim = v;
+					}
+					if( k == "order"){
+						order=v.split(' ');
+					}
+					if( k instanceof String && k.startsWith( "style")){
+						styles[getCol(k)]=v;
+					}
+				}
+				def lines = reader.readLines();
+				def adocBlock = "";
+				def htmlBlock = '<div class="grid row">';
+				def index = 0;
+				lines.each{ l ->
+					if( l == delim ){
+						def oc = order ? order[index] : "";
+						htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' ' +oc+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div>';
+						adocBlock = "";
+						index++;
+					}else{
+						adocBlock += l + "\n";
+					}
+				}
+				def oc = order ? order[index] : "";
+				htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' '+oc+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div></div>';
+				
+				createBlock(parent, 'pass', [htmlBlock], attributes, [:])
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+	}
+
 	def includeProcessor = {
 		include_processor (filter: {true}) { document, reader, target, attributes -> 
 			def namespace = attributes.get("namespace");
@@ -120,7 +168,16 @@ public class AsciidoctorX{
 		AsciidoctorExtensions.extensions(bigBlock);
 		AsciidoctorExtensions.extensions(imageZoomBlockMacro);
 		AsciidoctorExtensions.extensions(collapseItemBlock);
+		AsciidoctorExtensions.extensions(rowBlock);
 		AsciidoctorExtensions.extensions(includeProcessor);
+	}
+	private int getCol(s){
+		if( s.length() == 5) return -1;
+		try{
+			return Integer.parseInt( s.substring(5));
+		}catch(def e){
+			return -1;
+		}
 	}
 	private String adocToHtml( String adoc) throws Exception {
 		Map<String, Object> options = new HashMap();
