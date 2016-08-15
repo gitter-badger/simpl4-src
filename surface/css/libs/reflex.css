@@ -65,6 +65,169 @@
 	-webkit-order: 0;
 	order: 0;
 }
+
+@media (max-width: 640px) {
+	.order-xs-12 {
+		-webkit-order: 12;
+		order: 12;
+	}
+	.order-xs-11 {
+		-webkit-order: 11;
+		order: 11;
+	}
+	.order-xs-10 {
+		-webkit-order: 10;
+		order: 10;
+	}
+	.order-xs-9 {
+		-webkit-order: 9;
+		order: 9;
+	}
+	.order-xs-8 {
+		-webkit-order: 8;
+		order: 8;
+	}
+	.order-xs-7 {
+		-webkit-order: 7;
+		order: 7;
+	}
+	.order-xs-6 {
+		-webkit-order: 6;
+		order: 6;
+	}
+	.order-xs-5 {
+		-webkit-order: 5;
+		order: 5;
+	}
+	.order-xs-4 {
+		-webkit-order: 4;
+		order: 4;
+	}
+	.order-xs-3 {
+		-webkit-order: 3;
+		order: 3;
+	}
+	.order-xs-2 {
+		-webkit-order: 2;
+		order: 2;
+	}
+	.order-xs-1 {
+		-webkit-order: 1;
+		order: 1;
+	}
+	.order-xs-0 {
+		-webkit-order: 0;
+		order: 0;
+	}
+}
+@media (min-width: 641px) and (max-width: 1024px) {
+	.order-sm-12 {
+		-webkit-order: 12;
+		order: 12;
+	}
+	.order-sm-11 {
+		-webkit-order: 11;
+		order: 11;
+	}
+	.order-sm-10 {
+		-webkit-order: 10;
+		order: 10;
+	}
+	.order-sm-9 {
+		-webkit-order: 9;
+		order: 9;
+	}
+	.order-sm-8 {
+		-webkit-order: 8;
+		order: 8;
+	}
+	.order-sm-7 {
+		-webkit-order: 7;
+		order: 7;
+	}
+	.order-sm-6 {
+		-webkit-order: 6;
+		order: 6;
+	}
+	.order-sm-5 {
+		-webkit-order: 5;
+		order: 5;
+	}
+	.order-sm-4 {
+		-webkit-order: 4;
+		order: 4;
+	}
+	.order-sm-3 {
+		-webkit-order: 3;
+		order: 3;
+	}
+	.order-sm-2 {
+		-webkit-order: 2;
+		order: 2;
+	}
+	.order-sm-1 {
+		-webkit-order: 1;
+		order: 1;
+	}
+	.order-sm-0 {
+		-webkit-order: 0;
+		order: 0;
+	}
+}
+@media (min-width: 1025px) {
+	.order-lg-12 {
+		-webkit-order: 12;
+		order: 12;
+	}
+	.order-lg-11 {
+		-webkit-order: 11;
+		order: 11;
+	}
+	.order-lg-10 {
+		-webkit-order: 10;
+		order: 10;
+	}
+	.order-lg-9 {
+		-webkit-order: 9;
+		order: 9;
+	}
+	.order-lg-8 {
+		-webkit-order: 8;
+		order: 8;
+	}
+	.order-lg-7 {
+		-webkit-order: 7;
+		order: 7;
+	}
+	.order-lg-6 {
+		-webkit-order: 6;
+		order: 6;
+	}
+	.order-lg-5 {
+		-webkit-order: 5;
+		order: 5;
+	}
+	.order-lg-4 {
+		-webkit-order: 4;
+		order: 4;
+	}
+	.order-lg-3 {
+		-webkit-order: 3;
+		order: 3;
+	}
+	.order-lg-2 {
+		-webkit-order: 2;
+		order: 2;
+	}
+	.order-lg-1 {
+		-webkit-order: 1;
+		order: 1;
+	}
+	.order-lg-0 {
+		-webkit-order: 0;
+		order: 0;
+	}
+}
 * {
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
