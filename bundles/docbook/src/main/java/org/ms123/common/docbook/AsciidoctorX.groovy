@@ -102,12 +102,12 @@ public class AsciidoctorX{
 	def rowBlock = {
 		block(name: 'ROW', contexts: [':paragraph', ':open']) { parent, reader, attributes ->
 			try{
-				def cols = 2;
 				def classes="col-xs-12 col-md-6";
 				def delim = "###";
 				def swap = false;
 				def orders = [:]
-				def styles = [:].withDefault { "" }
+				def cells = [:].withDefault { "" }
+				def cols = [:].withDefault { "" }
 				attributes.each{ k, v ->
 					if( k == "classes"){
 						classes=complete(v,'col-');
@@ -118,11 +118,14 @@ public class AsciidoctorX{
 					if( k == "swap"){
 						swap = true;
 					}
-					if( k instanceof String && k.startsWith( "style")){
-						styles[getCol(k)]=v;
-					}
 					if( k instanceof String && k.startsWith( "order")){
-						orders[getCol(k)]=complete(v, 'order-');
+						orders[getCol(k,5)]=complete(v, 'order-');
+					}
+					if( k instanceof String && k.startsWith( "cell")){
+						cells[getCol(k,4)]=v;
+					}
+					if( k instanceof String && k.startsWith( "col")){
+						cols[getCol(k,3)]=v;
 					}
 				}
 				def lines = reader.readLines();
@@ -131,14 +134,14 @@ public class AsciidoctorX{
 				def index = 0;
 				lines.each{ l ->
 					if( l == delim ){
-						htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' ' +getOrder(orders,index,swap)+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div>';
+						htmlBlock += '<div class="'+classes+' ' +getOrder(orders,index,swap)+' ' + cols[index]+'"><div class="cell '+cells[index]+'">' + adocToHtml(adocBlock) + '</div></div>';
 						adocBlock = "";
 						index++;
 					}else{
 						adocBlock += l + "\n";
 					}
 				}
-				htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' '+getOrder(orders,index,swap)+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div></div>';
+				htmlBlock += '<div class="'+classes+' '+getOrder(orders,index,swap)+' ' + cols[index]+'"><div class="cell '+cells[index]+'">' + adocToHtml(adocBlock) + '</div></div></div>';
 				
 				createBlock(parent, 'pass', [htmlBlock], attributes, [:])
 			}catch(Exception e){
@@ -187,10 +190,10 @@ public class AsciidoctorX{
 		return nl.join(' ');
 	}
 
-	private int getCol(s){
-		if( s.length() == 5) return -1;
+	private int getCol(s,len){
+		if( s.length() == len) return -1;
 		try{
-			return Integer.parseInt( s.substring(5));
+			return Integer.parseInt( s.substring(len));
 		}catch(def e){
 			return -1;
 		}
