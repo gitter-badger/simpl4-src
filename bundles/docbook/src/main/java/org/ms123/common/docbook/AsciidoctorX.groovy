@@ -105,22 +105,24 @@ public class AsciidoctorX{
 				def cols = 2;
 				def classes="col-xs-12 col-md-6";
 				def delim = "###";
-				def order=null;
+				def swap = false;
+				def orders = [:]
 				def styles = [:].withDefault { "" }
 				attributes.each{ k, v ->
-					if( k == "cols"){
-						if( cols == "4"){
-							classes="col-xl-3 col-xs-12 col-md-6";
-						}
+					if( k == "classes"){
+						classes=complete(v,'col-');
 					}
 					if( k == "delim"){
 						delim = v;
 					}
-					if( k == "order"){
-						order=v.split(' ');
+					if( k == "swap"){
+						swap = true;
 					}
 					if( k instanceof String && k.startsWith( "style")){
 						styles[getCol(k)]=v;
+					}
+					if( k instanceof String && k.startsWith( "order")){
+						orders[getCol(k)]=complete(v, 'order-');
 					}
 				}
 				def lines = reader.readLines();
@@ -129,16 +131,14 @@ public class AsciidoctorX{
 				def index = 0;
 				lines.each{ l ->
 					if( l == delim ){
-						def oc = order ? order[index] : "";
-						htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' ' +oc+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div>';
+						htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' ' +getOrder(orders,index,swap)+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div>';
 						adocBlock = "";
 						index++;
 					}else{
 						adocBlock += l + "\n";
 					}
 				}
-				def oc = order ? order[index] : "";
-				htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' '+oc+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div></div>';
+				htmlBlock += '<div style="'+styles[index]+'" class="'+classes+' '+getOrder(orders,index,swap)+'"><div class="cell">' + adocToHtml(adocBlock) + '</div></div></div>';
 				
 				createBlock(parent, 'pass', [htmlBlock], attributes, [:])
 			}catch(Exception e){
@@ -171,6 +171,22 @@ public class AsciidoctorX{
 		AsciidoctorExtensions.extensions(rowBlock);
 		AsciidoctorExtensions.extensions(includeProcessor);
 	}
+
+	private String getOrder( orders, index, swap){
+		if( orders[index] ) return orders[index];
+		if( !swap) return "";
+		if( index == 0) return "order-xs-1 order-sm-1";
+		if( index == 1) return "order-xs-0 order-sm-0";
+		return "";
+	}
+
+	private String complete(s, prefix){
+		def l = s.split(' ');
+		def nl = [];
+		l.each{ e -> e.startsWith(prefix) ? nl.add(e) : nl.add(prefix+e) }
+		return nl.join(' ');
+	}
+
 	private int getCol(s){
 		if( s.length() == 5) return -1;
 		try{
