@@ -21,6 +21,7 @@ if [ ! -d "bower_components" ] ; then
 		sed -i 's/console.\(log\|warn\|error\).apply/Function.prototype/' bower_components/polymer/polymer-micro.html
 		sed -i 's/console.warn.*//' bower_components/polymer/iron-shadow-flex-layout.html
 		sed -i 's/console.warn.*//' bower_components/polymer/iron-flex-layout.html
+		sed -i 's!<link rel="stylesheet" href="prism.css">!!' bower_components/prism-element/prism-import.html
 	fi 
 fi
 if [ ! -d "node_modules" ] ; then
