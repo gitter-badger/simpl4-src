@@ -134,14 +134,14 @@ public class AsciidoctorX{
 				def index = 0;
 				lines.each{ l ->
 					if( l == delim ){
-						htmlBlock += '<div class="'+classes+' ' +getOrder(orders,index,swap)+' ' + cols[index]+'"><div class="cell '+cells[index]+'">' + adocToHtml(adocBlock) + '</div></div>';
+						htmlBlock += '<div class="'+classes+' ' +getOrder(orders,index,swap)+' ' + cols[index]+'"><div class="cell '+cells[index]+'">' + adocToHtml(getInit()+adocBlock) + '</div></div>';
 						adocBlock = "";
 						index++;
 					}else{
 						adocBlock += l + "\n";
 					}
 				}
-				htmlBlock += '<div class="'+classes+' '+getOrder(orders,index,swap)+' ' + cols[index]+'"><div class="cell '+cells[index]+'">' + adocToHtml(adocBlock) + '</div></div></div>';
+				htmlBlock += '<div class="'+classes+' '+getOrder(orders,index,swap)+' ' + cols[index]+'"><div class="cell '+cells[index]+'">' + adocToHtml(getInit()+adocBlock) + '</div></div></div>';
 				
 				createBlock(parent, 'pass', [htmlBlock], attributes, [:])
 			}catch(Exception e){
@@ -173,6 +173,10 @@ public class AsciidoctorX{
 		AsciidoctorExtensions.extensions(collapseItemBlock);
 		AsciidoctorExtensions.extensions(rowBlock);
 		AsciidoctorExtensions.extensions(includeProcessor);
+	}
+
+	private String getInit(){
+		return ':linkattrs:\n\n';
 	}
 
 	private String getOrder( orders, index, swap){
