@@ -82,7 +82,7 @@ A Material Design [item with header and collapsible content](https://www.google.
 					<div class="flex wordwrap">[[header]]</div>
 					<paper-icon-button class="toogle" icon="[[_toggleIcon]]"></paper-icon-button>
 				</div>
-				<iron-collapse class="content" opened="{{opened}}">
+				<iron-collapse id="contentId" class="content" opened="{{opened}}">
 					<content></content>
 				</iron-collapse>
 			</paper-item-body>
@@ -128,7 +128,12 @@ A Material Design [item with header and collapsible content](https://www.google.
 
 			// Private methods
 			_toggleOpened: function( e ) {
-				this.opened = !this.opened;
+				var cn = this.$.contentId.children;
+				if( cn && cn.length){
+					this.opened = !this.opened;
+				}else{
+					this.opened=false;
+				}
 			},
 			_computeToggleIcon: function( opened ) {
 				return opened ? 'icons:expand-less' : 'icons:expand-more';
