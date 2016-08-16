@@ -743,8 +743,8 @@
 				if ( icon == null || icon == "" ) {
 					shape.properties.xf_iconname = ( action == "execute" ) ? "check" : "clear";
 				}
-				if ( this._enterAction==null && enter === true ) {
-					this.renterAction = action;
+				if ( this.enterAction==null && enter === true ) {
+					this.enterAction = action;
 				}
 				var label = shape.properties.xf_label;
 				if ( label && label.match( /^[@%]/ ) ) {

@@ -230,10 +230,6 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			var r = id == 'Form';
 			return r;
 		},
-		isActionButtopn: function( id ) {
-			var r = id == id == 'ActionButton';
-			return r;
-		},
 		isField: function( id ) {
 			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id == 'Enumselect' || id == 'Upload' || id == 'Custom' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
 			return r;
@@ -336,7 +332,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			<input-field field class="flex" type="{{item.xf_type}}" enabled-expr$="{{item.xf_enabled}}" tabindex$="[[item.xf_tabindex]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" expression-out="[[item.xf_expression_out]]" expression-in="[[item.xf_expression_in]]" defaultvalue="{{item.xf_default}}"></input-field>
 		</template>
 		<template is="dom-if" if="{{isActionButton(item.id)}}">
-			<xaction-button on-tap="_internalXAction" class$="[[getActionButtonClasses(item.xf_action)]]" tabindex$="[[item.xf_tabindex]]" xid="{{item.xf_id}}" style$="[[getActionButtonColor(item.xf_action)]]" xaction="{{item.xf_action}}" raised>
+			<xaction-button on-tap="_internalXAction" class$="[[getActionButtonClasses(item.xf_action)]]" tabindex$="0" xid="{{item.xf_id}}" style$="[[getActionButtonColor(item.xf_action)]]" xaction="{{item.xf_action}}" raised>
 				<iron-icon icon="{{item.xf_iconname}}"></iron-icon>{{item.xf_label}}</xaction-button>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isEnumSelect(item.id)}}">
@@ -637,7 +633,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 		<template is="dom-if" if="{{_form.xf_default_buttons}}">
 			<simpl-row>
 				<template is="dom-repeat" as="item" items="[[_form.xf_used_default_buttons.items]]">
-					<xaction-button on-tap="_internalXAction" class="button button_primary" xid="{{_form.xf_id}}" xaction="[[item.action]]" raised="">
+					<xaction-button on-tap="_internalXAction" class="button button_primary" xid="{{_form.xf_id}}" xaction="[[item.action]]" tabindex$="0" raised="">
 					<iron-icon icon="[[item.icon]]"></iron-icon>[[_getButtonLabel(item.label)]]</xaction-button>
 				</template>
 			</simpl-row>
