@@ -846,7 +846,7 @@
 				}
 			},
 			observers: [
-				'//valueChanged(value)'
+				//'valueChanged(value)'
 			],
 
 			urlChanged:function(){			
@@ -1764,7 +1764,7 @@
 			},
 			columnsChanged: function() {
 				this.columns.each( ( function( c ) {
-					c.regulaConstraints = this.constructRegulaConstraints( c.constraints );
+					c.regulaConstraints = this._constructRegulaConstraints( c.constraints );
 					c.label = c.display;
 					c.id = "Input";
 					c.xf_type = c.type;
