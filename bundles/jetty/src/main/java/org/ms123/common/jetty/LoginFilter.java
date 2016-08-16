@@ -272,7 +272,8 @@ public class LoginFilter implements Filter {
 				|| pathInfo.endsWith(".pdf") 
 				|| pathInfo.endsWith(".otf") 
 				|| pathInfo.endsWith(".otf.gz") 
-				|| pathInfo.endsWith(".jpeg") || pathInfo.endsWith(".txt") || pathInfo.endsWith(".woff")
+				|| pathInfo.endsWith(".jpeg") || pathInfo.endsWith(".txt") || pathInfo.endsWith(".woff") || pathInfo.endsWith(".ttf")
+				|| pathInfo.endsWith(".ttf.gz")
 				|| pathInfo.endsWith(".woff.gz")) {
 			return true;
 		}

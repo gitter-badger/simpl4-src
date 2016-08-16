@@ -160,6 +160,7 @@ cp $FROMCLIENT/legacy/css/codemirror.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/css/font-awesome.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/css/asciidoc.css $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/css/simple-hint.css $CLIENTLECACYDIRECTORY/css
+cp $FROMCLIENT/legacy/css/*.ttf $CLIENTLECACYDIRECTORY/css
 cp $FROMCLIENT/legacy/js/ckeditor.js.gz $CLIENTLECACYDIRECTORY/js
 cp -r $FROMCLIENT/legacy/js/ckeditor $CLIENTLECACYDIRECTORY/js/
 cp $FROMCLIENT/legacy/js/codemirror.js.gz $CLIENTLECACYDIRECTORY/js
