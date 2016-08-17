@@ -40,7 +40,7 @@ and orchestrates the service engine and the Human Tasks.
 ##### Service-Engine
 
 The serviceengine executes service models, that are created in the simpl4 serviceeditor.
-In this editor you can link, in a flexible way simpl4 building blocks together.
+In this editor you can join, in a flexible way simpl4 building blocks together.
 
 ##### Cloud-ready (PaaS,SaaS)
 
