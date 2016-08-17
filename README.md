@@ -19,26 +19,28 @@ all popular devices.
 * Datamodel (comfortable editor for defining the data model)
 * Databasetables (automatically generated, derived from the data model)
 * Forms (freely defined or derived from the data model)
-* Integration rules
+* Service models
 * Business rules
 * Data queries
 * Document templates
 
 ##### BPMN 2.0 – Business Process Model and Notation
 
-ist eine grafische Spezifikationssprache.
-Sie stellt Symbole zur Verfügung, mit denen Fach- und Informatikspezialisten
-Geschäftsprozesse und Arbeitsabläufe modellieren und dokumentieren können.
+is a graphical representation for specifying business processes. 
+The objective of BPMN is to support business process management, 
+for both technical users and business users, 
+by providing a notation that is intuitive to business users, 
+yet able to represent complex process semantics.
 
 ##### Business-Process-Engine
 
-Führt die in BPMN2.0 definierten Prozessmodelle aus 
-und orchestriert die Integrationengine sowie die Humantasks
+Executes the BPMN process models
+and orchestrates the service engine and the Human Tasks.
 
-##### Rule based Integration-Engine
+##### Service-Engine
 
-The integration engine connects in a flexible manner simpl4 building blocks together.
-The integration rules are defined in an visual editor.
+The serviceengine executes service models, that are created in the simpl4 serviceeditor.
+In this editor you can link, in a flexible way simpl4 building blocks together.
 
 ##### Cloud-ready (PaaS,SaaS)
 
