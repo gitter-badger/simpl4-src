@@ -1916,7 +1916,7 @@
 			<div id="floatedLabel" hidden$="[[!label]]" class="floatedLabel">
 				<label class="label-text">{{label}}</label>
 			</div>
-			<div class="horizontal layout" style="[[getHeight(height)]">
+			<div class="vertical layout" style="[[getHeight(height)]">
 				<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTable" invalid$="[[isInvalid]]" selection="{{selection}}" multi-Select="[[multiSelect]]" selected="{{value}}" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[items]]">
 				</simpl-datatables>
 				<div class="error layout horizontal center" hidden$="[[!isInvalid]]">
@@ -2005,7 +2005,7 @@
 			heightChanged: function() {
 				this.dataTablesOptions = {
 					paging: true,
-					dom: "rtS",
+					dom: "rt",
 					scrollCollapse: false,
 					scrollY: ( this.height - 40 ) + "px"
 				};
