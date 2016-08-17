@@ -25,8 +25,10 @@ simpl4.util.BaseManager.extend( "simpl4.util.FormManager", {
 		};
 
 		try {
+			var ns= namespace || simpl4.util.BaseManager.getNamespace();
+			simpl4.util.MessageManager.installMessages( ns );
 			var ret = simpl4.util.Rpc.rpcSync( "git:searchContent", {
-				reponame: namespace || simpl4.util.BaseManager.getNamespace(),
+				reponame: ns,
 				name: name,
 				type: "sw.form"
 			} );
