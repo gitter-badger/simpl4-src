@@ -68,10 +68,7 @@ qx.Class.define("ms123.shell.views.CopyMoveBaseNode", {
 			context.title=path +" " + this.tr("shell."+this._getFunctionString()+"_to");
 			var currDir = this._getParent(path);
 
-			var destName = null;
-			if( this._getFunctionString() == "move"){
-				destName = this._getBase(path);
-			}
+			var destName = this._getBase(path);
 			context.ok_callback = (function(data){
 				var path = data.path;
 				var name = data.name;

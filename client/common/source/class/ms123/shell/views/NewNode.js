@@ -103,6 +103,7 @@ qx.Class.define("ms123.shell.views.NewNode", {
 			ms123.util.Remote.rpcAsync(params);
 		},
 		_assetExists:function(name,type){
+			return false;
 			var rpcParams = {
 				reponame:this.facade.storeDesc.getNamespace(),
 				name:name,
