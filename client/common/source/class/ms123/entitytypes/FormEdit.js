@@ -111,8 +111,8 @@ console.log("model:",model);
 			console.log("_enumCallback:" + context.form + "/" + context.key + "/" + context.action);
 			if( context.action == "setvalue"){
 				if( context.value && context.value!=""){
-					var v = qx.lang.Json.parse(context.value);
-					context.button.setLabel( v.enumDescription );
+					var v = this._getLabel( context.value );
+					context.button.setLabel( v );
 				}else{
 					context.button.setLabel( null);
 				}
@@ -167,6 +167,16 @@ console.log("model:",model);
 			cl.addListener('changeValue', (function (e) {
 				formModel.set("selectable_items", e.getData());
 			}).bind(this))
+		},
+		_getLabel:function(value){
+			if (value.match("^{")) {
+				var v = qx.lang.Json.parse(value);
+				return v.enumDescription;
+			} else if (value.match("^rpc:")) {
+				var n = value.match(/name:'(.*?)',/);
+				return n[1];
+			}
+			return value;
 		},
 		_createEditForm: function () {
 			var context = {};
