@@ -941,6 +941,7 @@
 					return;
 				}
 				this.checkConstraints();
+				this.fire( 'value-changed', this );
 			}
 		} );
 

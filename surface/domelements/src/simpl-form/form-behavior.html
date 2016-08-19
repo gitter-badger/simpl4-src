@@ -77,6 +77,17 @@
 					}
 				}
 			}
+			var abuttons = this.$.formdiv.querySelectorAll( "xaction-button" );
+			for( var i=0;i< abuttons.length;i++){
+				var ab = abuttons[i];
+				if( ab.xaction == "execute"){
+					if( this.saveDisabled){
+						ab.setAttribute( "disabled", "");
+					}else{
+						ab.removeAttribute( "disabled" );
+					}
+				}
+			}
 		},
 		_isSaveDisabled: function( env ) {
 			var script = this._form.xf_save_disabled;
