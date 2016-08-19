@@ -385,7 +385,7 @@
 		},
 
 		_postProcessLocal: function() {
-			var script = this._form.xf_preprocess_local;
+			var script = this._form.xf_postprocess_local;
 			if ( this._isEmpty( script ) ) return null;
 			try {
 				var data = this._getData();
