@@ -192,11 +192,11 @@
 		_dataChanged: function() {
 			console.log( "\n-->form._dataChanged.internal:", this.internal );
 			if(this.internal !== true){
-				this._dataChanged();
+				this.__dataChanged();
 			}
 			this.internal=false;
 		},
-		_dataChanged: function() {
+		__dataChanged: function() {
 			console.error( "\n-->form._dataChanged:", JSON.stringify(this.data,null,2) );
 			this._whenFieldsReady( ( function() {
 				if ( this.preProcessData ) {
@@ -228,7 +228,7 @@
 			if ( data == null ) return;
 			this.internal = true;
 			this.data = data;
-			this._dataChanged();
+			this.__dataChanged();
 		},
 		_setData: function( data ) {
 			this.fields.forEach( function( field ) {
@@ -266,6 +266,8 @@
 		 * update the form data 
 		 */
 		updateData: function( data ) {
+			this.internal = true;
+			this.data = this.data || {};
 			var keys = Object.keys( data );
 			keys.forEach( ( function( key ) {
 				this.data[key] = data[key];
@@ -276,6 +278,7 @@
 					field.setValue( data[ key ] );
 				}
 			} ).bind( this ) );
+			this._valueChanged();
 		},
 		_getData: function() {
 			var data = simpl4.util.Merge.merge( true, this.data );
