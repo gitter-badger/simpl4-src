@@ -186,6 +186,7 @@
 			}
 		},
 		menuItemSelected: function( e ) {
+			$("#mainContainer").scrollTop(0);
 			var page = e.detail.page;
 			if ( e.detail.isSelected && page.url ) {
 				//console.debug( "menuItemSelected:", e );
@@ -387,7 +388,7 @@
 			var lang = Simpl4.Cache.getItem( "lang" );
 			Simpl4.Cache.setItem( "lang", ( lang == "de" || lang == null ) ? "en" : "de" );
 			location.search = "";
-			history.go( 0 )
+			window.location.reload()
 		}
 	}
 
