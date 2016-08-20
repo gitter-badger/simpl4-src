@@ -28,7 +28,7 @@
 			max-height: 100%;
 			min-height: 100%;
 			height: 100%;
-			position:initial !important;
+			position: initial !important;
 		}
 		@media screen and (max-width: 767px) {
 			:host /deep/ #imageDialog {
@@ -76,7 +76,9 @@
 			dialogOpened: function() {
 				var dh = $( this.$.imageDialog ).height();
 				var ih = $( this.$.bigImage ).height();
-				$( this.$.bigImage ).panzoom({disablePan:true} );
+				$( this.$.bigImage ).panzoom( {
+					disablePan: true
+				} );
 				$( this.$.bigImage ).pep( {
 					useCSSTranslation: false,
 					velocityMultiplier: 1.0,
@@ -95,8 +97,8 @@
 				} )
 				var self = this;
 				$( this.$.bigImage ).swipe( {
-					fingers:2,  
-        	pinchThreshold:0,
+					fingers: 2,
+					pinchThreshold: 0,
 					tap: function( event, target ) {
 						return false;
 					},
@@ -109,13 +111,13 @@
 			attached: function() {
 				var self = this;
 				$( this.$.imageClosed ).swipe( {
-					fingers:2,  
-        	//pinchThreshold:0,
+					fingers: 2,
+					//pinchThreshold:0,
 					tap: function( event, target ) {
 						return false;
 					},
-					pinchIn:function(){
-						console.error("pinchIn");
+					pinchIn: function() {
+						console.error( "pinchIn" );
 						self.dialogOpen();
 					},
 					doubleTap: function( event, target ) {
@@ -124,31 +126,57 @@
 				} );
 			},
 			dialogOpen: function() {
+				try {
+					this._setParentsScrolling( true );
+				} catch ( e ) {
+					alert( e );
+				}
 				this.async( function() {
 					this.$.imageDialog.open();
-					this.showMainToolbar(false);
+					this.showMainToolbar( false );
 				}, 50 );
 			},
 			dialogClose: function() {
 				this.async( function() {
 					this.$.imageDialog.close();
-					this.showMainToolbar(true);
+					this.showMainToolbar( true );
 				}, 50 );
 			},
 			dialogClosed: function() {
-				this.showMainToolbar(true);
+				this._setParentsScrolling( false );
+				this.showMainToolbar( true );
 			},
-			showMainToolbar:function(b){
-				if(b){
+			showMainToolbar: function( b ) {
+				if ( b ) {
 					$( "#mainToolbar" ).show();
-				}else{
+				} else {
 					$( "#mainToolbar" ).hide();
 				}
 			},
 			isDrawerOpen: function() {
 				return !document.querySelector( "#drawerPanel" ).narrow;
 			},
-			detached: function() {}
+			detached: function() {},
+			_setParentsScrolling: function( opened ) {
+				// Fixes scrolling issues caused by '-webkit-overflow-scrolling' on mobile safari.
+				console.log( "_setParentsScrolling,", this.tagName );
+				if ( '-webkit-overflow-scrolling' in this.style ) {
+					var parent = Polymer.dom( this ).parentNode;
+					while ( parent ) {
+						if ( opened ) {
+							if ( parent.style ) {
+								parent._oldWebkitOverflowScrolling = parent.style[ '-webkit-overflow-scrolling' ];
+								parent.style[ '-webkit-overflow-scrolling' ] = 'auto';
+							}
+						} else if ( '_oldWebkitOverflowScrolling' in parent ) {
+							parent.style[ '-webkit-overflow-scrolling' ] = parent._oldWebkitOverflowScrolling;
+							delete parent._oldWebkitOverflowScrolling;
+						}
+						parent = parent.parentNode;
+					}
+				}
+			}
+
 		} );
 
 	</script>
