@@ -36,6 +36,7 @@
 			};
 			env = simpl4.util.Merge.merge( true, data, env );
 			this.saveDisabled = this._isSaveDisabled( env );
+			this._errorMessage=null;
 			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
@@ -144,7 +145,47 @@
 			if ( errorList && errorList.length > 0 ) {
 				console.log( "form.validate.errorList:", errorList );
 			}
+			this._validateLocal(errorList);
 			return errorList.length == 0;
+		},
+		_validateLocal: function(errorListGlobal) {
+			var validateExprs = this._form.xf_validate_local;
+			if ( this._isEmpty( validateExprs ) ) return null;
+			var data = this._getData();
+			var lang = simpl4.util.BaseManager.getLanguage()
+			var env = {
+				$mode: this.mode,
+				$lang: lang
+			};
+			env = simpl4.util.Merge.merge( true, data, env );
+			var items = validateExprs.items;
+			var errorListLocal = [];
+			for( var i=0; i< items.length;i++){
+				var item = items[i];
+				var valid = this._maskedEval( item.expr, env ) === false;
+				if( valid == false){
+					var errormsg = item.errormsg;
+					if ( errormsg && errormsg.match( /^[@%]/ ) ) {
+						errormsg = tr( errormsg.substring( 1 ) );
+					}
+					errorListGlobal.push(errormsg);
+					errorListLocal.push(errormsg);
+				}
+			}
+			var e = "";
+			var br="";
+			for( var i=0; i< errorListLocal.length;i++){
+				e += br + errorListLocal[i];	
+				br="<br/>";
+			}
+			this._setGlobalErrorMessage(e);
+		},
+		_setGlobalErrorMessage:function(msg){
+			this._errorMessage=msg;
+			this.async( function() {
+				var error = this.querySelector("#globalErrorId");
+				error.innerHTML=msg;
+			}, 10 );
 		},
 		_filterToArray: function( nodeList, all ) {
 			var ret = [];

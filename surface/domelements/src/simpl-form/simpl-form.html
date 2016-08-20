@@ -630,6 +630,10 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			<form-element-selector items="{{shapes}}" />
 		</fieldset>
 
+			<template is="dom-if" if="[[_errorMessage]]">
+				<paper-input-error id="globalErrorId" style="visibility:visible;display:block;" ></paper-input-error>
+			</template>
+
 		<template is="dom-if" if="{{_form.xf_default_buttons}}">
 			<simpl-row>
 				<template is="dom-repeat" as="item" items="[[_form.xf_used_default_buttons.items]]">
