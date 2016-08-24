@@ -193,6 +193,7 @@
 				channel.publish( "menuItem.selected",
 					e.detail
 				);
+				document.title = "simpl4-" +page.name;
 				this.selectedPage = page;
 				this.route = page.hash;
 				if ( this.pageCache[ page.url ] !== true ) {
