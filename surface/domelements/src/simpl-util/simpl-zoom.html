@@ -45,7 +45,7 @@
 		</div>
 
 		<paper-fullscreen-dialog class="flex grid row column" no-cancel-on-outside-click with-backdrop$="[[backdrop]]" on-iron-overlay-closed="dialogClosed" on-iron-overlay-opened="dialogOpened" id="imageDialog">
-			<img id="openImageId" class="flex grid row" id="bigImage" src="[[image]]">
+			<img class="flex grid row" id="bigImage" src="[[image]]">
 		</paper-fullscreen-dialog>
 
 	</template>
@@ -126,7 +126,7 @@
 				} );
 				if ( Detectizr.browser.userAgent.indexOf("edge/") >=0) {
 					this.$.closedImageId.src = this.image;
-					this.$.openImageId.src =   this.image;
+					this.$.bigImage.src =   this.image;
 				}
 			},
 			dialogOpen: function() {
