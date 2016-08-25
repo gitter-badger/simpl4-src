@@ -275,7 +275,10 @@
 			this.fields.forEach( function( field ) {
 				if ( field.setValue == null ) return;
 				field.withoutCheck = true;
-				if ( field.setInvalid ) field.setInvalid( false );
+				if ( field.setInvalid ){
+					 field.setInvalid( false );
+					 field.setErrorMessage( null );
+				}
 				var fieldData = data[ field.name ];
 				var oldValue = fieldData;
 				if ( field.expressionIn ) {
@@ -291,6 +294,7 @@
 				}
 				field.setValue( fieldData || field.defaultvalue || "" );
 			}, this );
+			this._valueChanged();
 		},
 		/**
 		 * clear the form data 
