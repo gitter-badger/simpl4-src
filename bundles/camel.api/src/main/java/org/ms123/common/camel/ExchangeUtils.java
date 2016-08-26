@@ -134,7 +134,8 @@ public class ExchangeUtils {
 		T value = null;
 		if (!isEmpty(expr)) {
 			try{
-			value = type.cast(evaluateExpr(expr, exchange, type));
+				expr = evaluate(expr,exchange);
+				value = type.cast(evaluateExpr(expr, exchange, type));
 			}catch(Throwable e){
 				info( ExchangeUtils.class, "getParameter("+expr+","+type+"):"+ e.getMessage());
 				if( type.equals( String.class )){
@@ -156,6 +157,7 @@ public class ExchangeUtils {
 			expr = "body";
 		}
 		try{
+			expr = evaluate(expr,exchange);
 			value = type.cast(evaluateExpr(expr, exchange, type));
 		}catch(Throwable e){
 			return type.cast(expr);
