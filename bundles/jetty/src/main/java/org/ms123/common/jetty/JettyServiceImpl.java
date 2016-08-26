@@ -979,7 +979,21 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				}
 			}
 		}else{
-			final Map<String, Object> rpcMap = m_rpcServlet.extractRequestMap(rpc);
+			Map<String, Object> rpcMap = null;
+			if( rpc.trim().startsWith("{")){
+				rpcMap = m_rpcServlet.extractRequestMap(rpc);
+			}else{
+				Map<String,String>params = splitQuery(request.getQueryString());
+				params.put("filename", name);
+				String method = rpc;
+				if( method.indexOf(".") < 0){
+					method = namespace + "."+ method;
+				}
+				rpcMap = new HashMap<String,Object>();
+				rpcMap.put("method", method);
+				rpcMap.put("service", "simpl4");
+				rpcMap.put("params", params);
+			}
 			rpcMap.put("_ASSET", asset);
 			String result = m_rpcServlet.handleRPC(request,rpcMap,response);
 			if (!response.isCommitted()) {
@@ -995,6 +1009,23 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				}
 			}
 		}
+	}
+	private Map<String, String> splitQuery(String query) {
+		final Map<String, String> queryPairs = new HashMap<String, String>();
+		final String[] pairs = query.split("&");
+		for (String pair : pairs) {
+			final int idx = pair.indexOf("=");
+			try{
+				final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+				final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
+				if( !"method".equals(key)){
+					queryPairs.put(key,value);
+				}
+			}catch( Exception e){
+				error("splitQuery:"+e.toString(), e );
+			}
+		}
+		return queryPairs;
 	}
 	private String getLocalHostLANAddress() {
 		try{
