@@ -158,7 +158,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 		if( format == "univocity-fixed" ){
 			univocityFixedParameterConvert( map );
 		}
-		if( map.json_library == "flexjson"){
+		if( map.library == "flexjson"){
 			def ff = new org.ms123.common.camel.components.FlexJsonDataFormat();
 			ff.setPrettyPrinting(shapeProperties.json_prettyPrint);
 			dataFormatDef = new DataFormatDefinition(ff);	
