@@ -424,18 +424,30 @@ qx.Class.define( "ms123.util.DragDropTree", {
 			}
 		},
 
-		setIndicatorHeight: function( widget, value ) {
+		setIndicatorStyle: function( color ) {
 			var domEl = this._indicator.getContentElement().getDomElement();
 			if ( domEl ) {
 				domEl.style.height = "8px";
 				domEl.style.width = "24px";
+				domEl.style.backgroundColor = color;
 			}
 		},
 		_processDragInBetween: function( dragDetails ) {
-			this.setIndicatorHeight();
-			this._indicator.setDomTop( (( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2) + ((dragDetails.rowHeight-4)/2) );
+			var dropTarget = this.getDropTarget();
+			var color="#9dcbfe";
+			var pos = -1;
+			if ( dropTarget && dropTarget.type === qx.ui.treevirtual.SimpleTreeDataModel.Type.BRANCH ) {
+				pos = parseInt(dragDetails.deltaY/(dragDetails.rowHeight/3)) -1;
+				if( pos==0){
+					color = "#ff5252";
+				}
+			}else{
+				pos = parseInt(dragDetails.deltaY/(dragDetails.rowHeight/2)) == 0 ? -1 : 1;
+			}
+			this.setIndicatorStyle(color);
+			this._indicator.setDomTop( (( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2) + dragDetails.deltaY );
 			this._showIndicator();
-			return -1;
+			return pos;
 		},
 
 		/**
@@ -646,16 +658,13 @@ qx.Class.define( "ms123.util.DragDropTree", {
 				/*
 				 * show indicator and return the relative position
 				 */
-				var dropTargetRelativePosition =
-					this._processDragInBetween( dragDetails );
+				var dropTargetRelativePosition = this._processDragInBetween( dragDetails );
 
 				/*
 				 * check if the dragged item can be dropped at the current
 				 * position and change drag cursor accordingly
 				 */
-				var valid = this._checkDroppable(
-					sourceData, dropTargetRelativePosition, dragDetails
-				);
+				var valid = this._checkDroppable( sourceData, dropTargetRelativePosition, dragDetails);
 			}
 
 			/*
@@ -771,9 +780,6 @@ qx.Class.define( "ms123.util.DragDropTree", {
 				 * move nodes
 				 */
 				var nodeArr = this.getDataModel().getData();
-				if ( dropPosition === 0 ) {
-					return;
-				}
 				for ( var i = 0, l = nodes.length; i < l; i++ ) {
 					var node = nodes[ i ];
 
@@ -790,7 +796,7 @@ qx.Class.define( "ms123.util.DragDropTree", {
 					 * drop between nodes: add as a sibling of the drop target
 					 */
 					if ( this.getAllowDropBetweenNodes() ) {
-						if ( dropTarget.type === qx.ui.treevirtual.SimpleTreeDataModel.Type.BRANCH ) {
+						if ( dropPosition == 0 && dropTarget.type === qx.ui.treevirtual.SimpleTreeDataModel.Type.BRANCH ) {
 							dropTarget.children.push( node.nodeId );
 							node.parentNodeId = dropTarget.nodeId;
 						} else {
@@ -798,8 +804,8 @@ qx.Class.define( "ms123.util.DragDropTree", {
 							if ( !targetParentNode ) this.error( "Cannot find the target node's parent node!" );
 							var tpnc = targetParentNode.children;
 							var delta = dropPosition > 0 ? 1 : 0;
-							console.log( "dropTarget:", dropTarget.label + "" );
 							var position = tpnc.indexOf( dropTarget.nodeId ) + delta;
+							console.log( "dropTarget("+dropPosition+";"+position+"):", dropTarget.label + "" );
 							tpnc.splice( position, 0, node.nodeId );
 							node.parentNodeId = targetParentNode.nodeId;
 						}
