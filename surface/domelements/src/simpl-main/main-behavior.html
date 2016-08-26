@@ -274,10 +274,17 @@
 			return url;
 		},
 		_buildUrl: function(page) {
-			if( _.isEmpty(page.appendix)){
-				return page.url;
-			}
 			var url = page.url;
+			var hasRpc = (url.indexOf("?rpc=") > 0) || (url.indexOf("&rpc=") > 0);
+			if( hasRpc ){
+					var password = simpl4.util.BaseManager.getPassword();
+					var username = simpl4.util.BaseManager.getUser();
+					var credentials = simpl4.util.Base64.encode( username + ":" + password );
+					url += "&credentials="+credentials;
+			}
+			if( _.isEmpty(page.appendix)){
+				return url;
+			}
 			var hasQuery = url.indexOf("?") >= 0;
 			var hasHash = url.indexOf("#") >= 0;
 			var appendix = (hasQuery ? "&" : "?") + this._maskedEval(page.appendix,page,"paramError=1");
