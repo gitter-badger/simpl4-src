@@ -83,7 +83,7 @@ public class ShiroExecuteJobsRunnable implements Runnable {
     try {
       while (!currentProcessorJobQueue.isEmpty()) {
 				jobId = currentProcessorJobQueue.remove(0);
-				setRetries(commandExecutor, jobId, 0);
+//				setRetries(commandExecutor, jobId, 0); @@@MS Problems with Timer cycles
         commandExecutor.execute(new ExecuteJobsCmd(jobId));
       }      
 		} catch( Exception e){
