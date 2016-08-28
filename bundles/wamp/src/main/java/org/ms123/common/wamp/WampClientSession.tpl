@@ -150,6 +150,9 @@ public class WampClientSession {
 		roles.add(WampRoles.Callee);
 		roles.add(WampRoles.Publisher);
 		roles.add(WampRoles.Subscriber);
+		subscriptionsByFlags.put(SubscriptionFlags.Exact, new HashMap<String, SubscriptionMapEntry>());
+		subscriptionsByFlags.put(SubscriptionFlags.Prefix, new HashMap<String, SubscriptionMapEntry>());
+		subscriptionsByFlags.put(SubscriptionFlags.Wildcard, new HashMap<String, SubscriptionMapEntry>());
 		RealmConfig realmConfig = new RealmConfig(roles, false);
 		this.webSocket = ws;
 		ExecutorService executor = Executors.newSingleThreadExecutor();

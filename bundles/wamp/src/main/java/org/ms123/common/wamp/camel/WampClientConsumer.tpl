@@ -36,6 +36,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.wamp.ApplicationError;
 import org.ms123.common.wamp.Request;
+import org.ms123.common.wamp.PubSubData;
 import org.ms123.common.wamp.WampClientSession;
 import rx.Subscription;
 import static org.ms123.common.wamp.camel.WampClientConstants.*;
@@ -73,42 +74,73 @@ public class WampClientConsumer extends DefaultConsumer {
 /* $if version >= 1.8 $ */
 		String namespace = endpoint.getCamelContext().getName().split("/")[0];
 		info(this,"Consumer.register:" + namespace + "." + endpoint.getProcedure());
-		Subscription addProcSubscription = this.clientSession.registerProcedure(namespace + "." + endpoint.getProcedure()).subscribe((request) -> {
+		String mode = endpoint.getMode();
+		if( "rpc".equals(mode)){
+			Subscription addProcSubscription = this.clientSession.registerProcedure(namespace + "." + endpoint.getProcedure()).subscribe((request) -> {
 
-			info(this,"Consumer.Procedure called:" + request + "/hashCode:" + this.hashCode());
-			final boolean reply = false;
-			final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
-			try {
-				prepareExchange(exchange, request);
-			} catch (Exception e) {
+				info(this,"Consumer.Procedure called:" + request + "/hashCode:" + this.hashCode());
+				final boolean reply = false;
+				final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
 				try {
-					request.replyError("X", buildErrorResponse(e));
-				} catch (Exception e2) {
-					e2.printStackTrace();
-				}
-				return;
-			}
-			try {
-				getAsyncProcessor().process(exchange, new AsyncCallback() {
-
-					@Override
-					public void done(boolean doneSync) {
-						if (exchange.getException() != null) {
-							try {
-								request.replyError("XXXX", buildErrorResponse(exchange.getException()));
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						} else {
-							request.reply(null, buildResponse(getResult(exchange)));
-						}
+					prepareExchange(exchange, request);
+				} catch (Exception e) {
+					try {
+						request.replyError("X", buildErrorResponse(e));
+					} catch (Exception e2) {
+						e2.printStackTrace();
 					}
-				});
-			} catch (Exception e) {
-				e.printStackTrace();
+					return;
+				}
+				try {
+					getAsyncProcessor().process(exchange, new AsyncCallback() {
 
-			}
-		});
+						@Override
+						public void done(boolean doneSync) {
+							if (exchange.getException() != null) {
+								try {
+									request.replyError("XXXX", buildErrorResponse(exchange.getException()));
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							} else {
+								request.reply(null, buildResponse(getResult(exchange)));
+							}
+						}
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+					error(this, "process.error:%[exception]s",e);
+				}
+			});
+		}
+		if( "subscribe".equals(mode)){
+			Subscription addSubscription = this.clientSession.makeSubscription(namespace + "." + endpoint.getTopic()).subscribe((request) -> {
+
+				info(this,"Consumer.Subscribe called:" + request + "/hashCode:" + this.hashCode());
+				final boolean reply = false;
+				final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
+				try {
+					prepareExchange(exchange, request);
+				} catch (Exception e) {
+					error(this, "prepareExchange.error:%[exception]s",e);
+					return;
+				}
+				try {
+					getAsyncProcessor().process(exchange, new AsyncCallback() {
+
+						@Override
+						public void done(boolean doneSync) {
+							if (exchange.getException() != null) {
+								error(this, "done.error:%[exception]s",exchange.getException());
+							}
+						}
+					});
+				} catch (Exception e) {
+					error(this, "process.error:%[exception]s",e);
+
+				}
+			});
+		}
 /* $endif$ */
 	}
 
@@ -178,6 +210,23 @@ public class WampClientConsumer extends DefaultConsumer {
 		}
 	}
 
+	private void prepareExchange(Exchange exchange, PubSubData data) {
+		if (this.permissionService == null) {
+			this.permissionService = getByType(exchange.getContext(), PermissionService.class);
+		}
+		List<String> permittedRoleList = this.endpoint.getPermittedRoles();
+		List<String> permittedUserList = this.endpoint.getPermittedUsers();
+		String userName = getUserName();
+		List<String> userRoleList = getUserRoles(userName);
+		debug(this,"Consumer.prepare.userName:" + userName);
+		debug(this,"Consumer.prepare.userRoleList:" + userRoleList);
+		debug(this,"Consumer.prepare.permittedRoleList:" + permittedRoleList);
+		debug(this,"Consumer.prepare.permittedUserList:" + permittedUserList);
+		if (!isPermitted(userName, userRoleList, permittedUserList, permittedRoleList)) {
+			throw new RuntimeException(PERMISSION_DENIED + ":User(" + userName + ") has no permission");
+		}
+		exchange.getIn().setBody(objectMapper.convertValue( data.keywordArguments(), Map.class));
+	}
 	private Object getResult(Exchange exchange) {
 		String returnSpec = this.endpoint.getRpcReturn();
 		List<String> returnHeaderList = this.endpoint.getReturnHeaderList();
@@ -329,7 +378,7 @@ public class WampClientConsumer extends DefaultConsumer {
 
 	protected void doStart() throws Exception {
 /* $if version >= 1.8 $
-		if( !this.endpoint.getMode().equals("rpc")){
+		if( !this.endpoint.getMode().equals("rpc") && !this.endpoint.getMode().equals("subscribe")){
 			return;
 		}
 		super.doStart();
@@ -357,7 +406,7 @@ $endif$ */
 
 	protected void doStop() throws Exception {
 		String namespace = endpoint.getCamelContext().getName().split("/")[0];
-		debug(this,"######Consumer.Stop:" + namespace + "." + endpoint.getProcedure() + "/" + this.hashCode());
+		//debug(this,"######Consumer.Stop:" + namespace + "." + endpoint.getProcedure() + "/" + this.hashCode());
 		this.clientSession.close();
 		super.doStop();
 	}
