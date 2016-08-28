@@ -52,6 +52,7 @@ import org.activiti.engine.identity.NativeUserQuery;
 import org.activiti.engine.identity.NativeGroupQuery;
 import org.activiti.engine.impl.persistence.entity.IdentityInfoEntity;
 import org.activiti.engine.impl.*;
+import static com.jcabi.log.Logger.info;
 
 
 /**
@@ -61,7 +62,7 @@ public class IdentityServiceImpl extends ServiceImpl implements IdentityService 
   
 	public IdentityServiceImpl() {
 		super();
-		System.out.println("IdentityServiceImpl.IdentityServiceImpl");
+		info(this,"IdentityServiceImpl.IdentityServiceImpl");
 	}
 
   public NativeUserQuery createNativeUserQuery(){
@@ -72,37 +73,37 @@ public class IdentityServiceImpl extends ServiceImpl implements IdentityService 
 	}
 
 	public Group newGroup(String groupId) {
-		System.out.println("IdentityServiceImpl.newGroup");
+		info(this,"IdentityServiceImpl.newGroup");
 		return commandExecutor.execute(new CreateGroupCmd(groupId));
 	}
 
 	public User newUser(String userId) {
-		System.out.println("IdentityServiceImpl.newUser");
+		info(this,"IdentityServiceImpl.newUser");
 		return commandExecutor.execute(new CreateUserCmd(userId));
 	}
 
 	public void saveGroup(Group group) {
-		System.out.println("IdentityServiceImpl.saveGroup");
+		info(this,"IdentityServiceImpl.saveGroup");
 		commandExecutor.execute(new SaveGroupCmd((GroupEntity) group));
 	}
 
 	public void saveUser(User user) {
-		System.out.println("IdentityServiceImpl.saveUser");
+		info(this,"IdentityServiceImpl.saveUser");
 		commandExecutor.execute(new SaveUserCmd(user));
 	}
   
 	public UserQuery createUserQuery() {
-		System.out.println("IdentityServiceImpl.createUserQuery");
+		info(this,"IdentityServiceImpl.createUserQuery");
 		return commandExecutor.execute(new CreateUserQueryCmd());
 	}
   
 	public GroupQuery createGroupQuery() {
-		System.out.println("IdentityServiceImpl.createGroupQuery");
+		info(this,"IdentityServiceImpl.createGroupQuery");
 		return commandExecutor.execute(new CreateGroupQueryCmd());
 	}
 
 	public void createMembership(String userId, String groupId) {
-		System.out.println("IdentityServiceImpl.createMembership");
+		info(this,"IdentityServiceImpl.createMembership");
 		commandExecutor.execute(new CreateMembershipCmd(userId, groupId));
 	}
 
@@ -115,7 +116,7 @@ public class IdentityServiceImpl extends ServiceImpl implements IdentityService 
 	}
 
 	public boolean checkPassword(String userId, String password) {
-		System.out.println("IdentityServiceImpl.checkPassword");
+		info(this,"IdentityServiceImpl.checkPassword");
 		return commandExecutor.execute(new CheckPassword(userId, password));
 	}
 
@@ -132,27 +133,27 @@ public class IdentityServiceImpl extends ServiceImpl implements IdentityService 
 	}
 
 	public void setAuthenticatedUserId(String authenticatedUserId) {
-		System.out.println("IdentityServiceImpl.setAuthenticatedUserId:"+authenticatedUserId);
+		info(this,"IdentityServiceImpl.setAuthenticatedUserId:"+authenticatedUserId);
 		Authentication.setAuthenticatedUserId(authenticatedUserId);
 	}
 
 	public String getUserInfo(String userId, String key) {
-		System.out.println("IdentityServiceImpl.getUserInfo:" + userId);
+		info(this,"IdentityServiceImpl.getUserInfo:" + userId);
 		return commandExecutor.execute(new GetUserInfoCmd(userId, key));
 	}
 
 	public List<String> getUserInfoKeys(String userId) {
-		System.out.println("IdentityServiceImpl.getUserInfoKeys:" + userId);
+		info(this,"IdentityServiceImpl.getUserInfoKeys:" + userId);
 		return commandExecutor.execute(new GetUserInfoKeysCmd(userId, IdentityInfoEntity.TYPE_USERINFO));
 	}
 
 	/*public List<String> getUserAccountNames(String userId) {
-		System.out.println("getUserAccountNames:" + userId);
+		info(this,"getUserAccountNames:" + userId);
 		return commandExecutor.execute(new GetUserInfoKeysCmd(userId, IdentityInfoEntity.TYPE_USERACCOUNT));
 	}*/
 
 	public void setUserInfo(String userId, String key, String value) {
-		System.out.println("IdentityServiceImpl.setUserInfo:" + userId);
+		info(this,"IdentityServiceImpl.setUserInfo:" + userId);
 		commandExecutor.execute(new SetUserInfoCmd(userId, key, value));
 	}
 
@@ -165,12 +166,12 @@ public class IdentityServiceImpl extends ServiceImpl implements IdentityService 
 	}
 
 /*	public Account getUserAccount(String userId, String userPassword, String accountName) {
-		System.out.println("getUserAccount:" + userId);
+		info(this,"getUserAccount:" + userId);
 		return commandExecutor.execute(new GetUserAccountCmd(userId, userPassword, accountName));
 	}
 
 	public void setUserAccount(String userId, String userPassword, String accountName, String accountUsername, String accountPassword, Map<String, String> accountDetails) {
-		System.out.println("setUserAccount:" + userId);
+		info(this,"setUserAccount:" + userId);
 		commandExecutor.execute(new SetUserInfoCmd(userId, userPassword, accountName, accountUsername, accountPassword, accountDetails));
 	}*/
 }

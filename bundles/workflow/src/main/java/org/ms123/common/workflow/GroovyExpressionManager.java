@@ -44,7 +44,6 @@ public class GroovyExpressionManager extends ExpressionManager {
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.setScriptBaseClass(org.ms123.common.workflow.api.GroovyTaskDslBase.class.getName());
 		GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), new Binding(), config);
-		System.out.println("createExpression:" + (new java.util.Date().getTime() - st));
 		return new GroovyExpression(shell, m_processEngine, expression);
 	}
 

@@ -61,7 +61,6 @@ public class Simpl4RulesTaskJsonConverter extends BaseBpmnJsonConverter {
 		Map elementMap = (Map) m_ds.deserialize(elementNode.toString());
 		Map<String, Object> propMap = (Map) elementMap.get("properties");
 		String clazz = Simpl4BpmnJsonConverter.getFullnameForTask("TaskRulesExecutor");
-		System.out.println("RulesTask.class:" + clazz);
 		task.setImplementationType(ImplementationType.IMPLEMENTATION_TYPE_CLASS);
 		task.setImplementation(clazz);
 

@@ -50,7 +50,6 @@ public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
 		}catch(Exception e){
 			throw new RuntimeException("Simpl4BpmnJsonConverter:",e);
 		}*/
-		System.out.println("Simpl4BpmnJsonConverter:"+convertersToBpmnMap);
 		Simpl4SequenceFlowJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);
 		Simpl4FilterTaskJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);
 		Simpl4CamelTaskJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);

@@ -63,7 +63,6 @@ public class Simpl4SequenceFlowJsonConverter extends SequenceFlowJsonConverter {
       flow.setTargetRef(BpmnJsonConverterUtil.getElementId(shapeMap.get(targetId)));
     }
     String conditionalFlow = getPropertyValueAsString(PROPERTY_SEQUENCEFLOW_CONDITIONALFLOW, elementNode); 
-		System.out.println("Simpl4SequenceFlowJsonConverter:"+conditionalFlow);
 		if( conditionalFlow==null || !conditionalFlow.toLowerCase().equals("none")){
     	flow.setConditionExpression(getPropertyValueAsString(PROPERTY_SEQUENCEFLOW_CONDITION, elementNode));
 		}

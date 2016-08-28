@@ -59,11 +59,8 @@ public class Simpl4StartEventJsonConverter extends StartEventJsonConverter {
 		m_js.prettyPrint(true);
 		Map elementMap = (Map) m_ds.deserialize(elementNode.toString());
 		Map<String, Object> propMap = (Map) elementMap.get("properties");
-		System.out.println("StartEvent.propMap:" + m_js.deepSerialize(propMap));
 		String formkey = getString(propMap.get(FORMKEY_PROP));
-		System.out.println("StartEvent.formkey:" + formkey);
 		event.setFormKey(formkey);
-		System.out.println("StartEvent.event:" + m_js.deepSerialize(event));
 		return event;
 	}
 

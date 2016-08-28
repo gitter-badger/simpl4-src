@@ -54,7 +54,6 @@ public class Simpl4ScriptTaskJsonConverter extends BaseBpmnJsonConverter {
 		Map elementMap = (Map) m_ds.deserialize(elementNode.toString());
 		Map<String, Object> propMap = (Map) elementMap.get("properties");
 		String clazz = Simpl4BpmnJsonConverter.getFullnameForTask("TaskScriptExecutor");
-		System.out.println("ScriptTask.class:" + clazz);
 		task.setImplementationType(ImplementationType.IMPLEMENTATION_TYPE_CLASS);
 		task.setImplementation(clazz);
 		FieldExtension field = new FieldExtension();

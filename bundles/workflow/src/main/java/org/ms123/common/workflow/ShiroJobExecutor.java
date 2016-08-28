@@ -103,7 +103,6 @@ public class ShiroJobExecutor extends DefaultJobExecutor {
 	}
 	private void log(String message) {
 		m_logger.info(message);
-		System.out.println(message);
 	}
 	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(ShiroJobExecutor.class);
 }

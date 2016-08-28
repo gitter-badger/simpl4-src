@@ -25,6 +25,6 @@ public class ProcessEndExecutionListener implements ExecutionListener {
 
 	@Override
 	public void notify(DelegateExecution execution) throws Exception {
-		System.out.println("XrocessStartExecutionListener:"+execution.getCurrentActivityName()+"/"+execution.getCurrentActivityId()+"/"+execution.getId());
+		//System.out.println("XrocessStartExecutionListener:"+execution.getCurrentActivityName()+"/"+execution.getCurrentActivityId()+"/"+execution.getId());
 	}
 }

@@ -44,7 +44,6 @@ public class ProcessDefinitionCandidateResource extends BaseResource {
 	}
 	public void execute() {
 		List<IdentityLink> links = getPE().getRepositoryService().getIdentityLinksForProcessDefinition(m_processDefinitionId);
-		System.out.println("ProcessDefinitionCandidateResource1:"+links);
 		for( IdentityLink il : links){
 			if( il.getGroupId() != null){
 				getPE().getRepositoryService().deleteCandidateStarterGroup(m_processDefinitionId, il.getGroupId());
@@ -65,7 +64,7 @@ public class ProcessDefinitionCandidateResource extends BaseResource {
 		}
 		links = getPE().getRepositoryService().getIdentityLinksForProcessDefinition(m_processDefinitionId);
 		for( IdentityLink il : links){
-			System.out.println("ProcessDefinitionCandidateResource(group:"+il.getGroupId()+"/user:"+il.getUserId()+")");
+			//System.out.println("ProcessDefinitionCandidateResource(group:"+il.getGroupId()+"/user:"+il.getUserId()+")");
 		}
 	}
 }

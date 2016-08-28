@@ -55,4 +55,5 @@ dependencies {
 		compile files("${repository}/UserAgentUtils-1.9-snapshot.bar")
 		compile files("${repository}/asciidoctorj-1.5.2.bar")
     compile files('build/classes/main')
+ 		compile files("${repository}/jcabi-1.0.jar")
 }

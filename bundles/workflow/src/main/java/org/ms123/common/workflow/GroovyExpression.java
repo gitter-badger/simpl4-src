@@ -188,7 +188,6 @@ public class GroovyExpression implements Expression {
 		return false;
 	}
 	private void debug(String message) {
-		System.out.println(message);
 		m_logger.debug(message);
 	}
 	private void log(String message) {

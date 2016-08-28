@@ -71,7 +71,6 @@ public class Simpl4UserTaskJsonConverter extends UserTaskJsonConverter {
 		m_jsPretty.prettyPrint(true);
 		Map elementMap = (Map) m_ds.deserialize(elementNode.toString());
 		Map<String, Object> propMap = (Map) elementMap.get("properties");
-		System.out.println("\n--->>> UserTask.propMap:" + m_jsPretty.deepSerialize(propMap));
 		String formkey = getString(propMap.get(FORMKEY_PROP));
 		task.setFormKey("~"+formkey);
 		String assignee = getString(propMap.get(ASSIGNEE_PROP));
@@ -87,7 +86,6 @@ public class Simpl4UserTaskJsonConverter extends UserTaskJsonConverter {
 			task.setCandidateUsers(Arrays.asList(candidateusers.split(",")));
 		}
 		String variablesmapping = getVarMapping(propMap.get(VARMAPPING_PROP));
-		System.out.println("UserTask.variablesmapping:" + variablesmapping);
 		if (variablesmapping != null) {
 			FormProperty formProperty = new FormProperty();
 			formProperty.setId(VARMAPPING);
@@ -97,7 +95,6 @@ public class Simpl4UserTaskJsonConverter extends UserTaskJsonConverter {
 			task.getFormProperties().add(formProperty);
 		}
 		String formVarname = getString(propMap.get(FORMVARNAME_PROP));
-		System.out.println("UserTask.formVarname:" + formVarname);
 		if (formVarname != null) {
 			FormProperty formProperty = new FormProperty();
 			formProperty.setId(FORMVARNAME);
@@ -106,7 +103,6 @@ public class Simpl4UserTaskJsonConverter extends UserTaskJsonConverter {
 			formProperty.setVariable("~"+formVarname);
 			task.getFormProperties().add(formProperty);
 		}
-		System.out.println("\n<<<---UserTask.task:" + m_jsPretty.deepSerialize(task));
 		return task;
 	}
 

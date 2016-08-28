@@ -50,7 +50,6 @@ public class DataSourceWrapper implements DataSource {
 		try{
 			for(Connection c : m_connList){
 				if( c.isClosed() == false ){
-					System.out.println("DataSourceWrapper.destroy:"+c+"/"+c.isClosed());
 					c.close();
 				}
 			}

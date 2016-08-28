@@ -94,7 +94,6 @@ public class Realm {
 		if (removeFromList) {
 			m_contextList.remove(sessionContext);
 		}
-		System.out.println("Realm.Contextlist:" + m_contextList);
 	}
 }
 

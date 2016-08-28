@@ -570,31 +570,29 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 
 	/* END JSON-RPC-API*/
 	private static void debug(String msg) {
-		System.out.println(msg);
 		m_logger.debug(msg);
 	}
 	private static void info(String msg) {
-		System.out.println(msg);
 		m_logger.info(msg);
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
 		this.m_gitService = gitService;
-		System.out.println("WorkflowServiceImpl.setGitService:" + gitService);
+		info("WorkflowServiceImpl.setGitService:" + gitService);
 		m_processEngineConfiguration.getBeans().put("gitService", gitService);
 	}
 
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
 	public void setDataLayer(DataLayer dataLayer) {
-		System.out.println("WorkflowServiceImpl.setDataLayer:" + dataLayer);
+		info("WorkflowServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
 		m_processEngineConfiguration.getBeans().put(DataLayer.DATA_LAYER, dataLayer);
 	}
 
 	@Reference(dynamic = true)
 	public void setEventAdmin(EventAdmin paramEventAdmin) {
-		System.out.println("WorkflowServiceImpl.setEventAdmin:" + paramEventAdmin);
+		info("WorkflowServiceImpl.setEventAdmin:" + paramEventAdmin);
 		this.m_eventAdmin = paramEventAdmin;
 		m_processEngineConfiguration.getBeans().put("eventAdmin", paramEventAdmin);
 	}
@@ -602,40 +600,40 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	@Reference
 	public void setScriptEngineService(ScriptEngineService paramService) {
 		m_scriptEngineService = paramService;
-		System.out.println("WorkflowServiceImpl.setScriptEngineService:" + paramService);
+		info("WorkflowServiceImpl.setScriptEngineService:" + paramService);
 	}
 
 	@Reference(multiple = false, dynamic = true, optional = true)
 	public void setAuthService(AuthService paramAuthService) {
 		this.m_authService = paramAuthService;
-		System.out.println("WorkflowServiceImpl.setAuthService:" + paramAuthService);
+		info("WorkflowServiceImpl.setAuthService:" + paramAuthService);
 	}
 
 	@Reference(multiple = false, dynamic = true, optional = true)
 	public void setDocbookService(DocbookService paramDocbookService) {
-		System.out.println("WorkflowServiceImpl.setDocbookService:" + paramDocbookService);
+		info("WorkflowServiceImpl.setDocbookService:" + paramDocbookService);
 		m_processEngineConfiguration.getBeans().put("docbookService", paramDocbookService);
 	}
 
 	@Reference(multiple = false, dynamic = true, optional=true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
-		System.out.println("WorkflowServiceImpl.setPermissionService:" + paramPermissionService);
+		info("WorkflowServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 	@Reference(multiple = false, dynamic = true, optional = true)
 	public void setActivitiService(ActivitiService paramActivitiService) {
 		this.m_activitiService = paramActivitiService;
-		System.out.println("WorkflowServiceImpl.setActivitiService:" + paramActivitiService);
+		info("WorkflowServiceImpl.setActivitiService:" + paramActivitiService);
 	}
 	@Reference(multiple = false, dynamic = true, optional = true)
 	public void setStencilService(StencilService paramActivitiService) {
 		this.m_stencilService = paramActivitiService;
-		System.out.println("WorkflowServiceImpl.setStencilService:" + paramActivitiService);
+		info("WorkflowServiceImpl.setStencilService:" + paramActivitiService);
 	}
 	@Reference(multiple = false, dynamic = true, optional = true)
 	public void setTransactionService(TransactionService paramActivitiService) {
 		this.m_transactionService = paramActivitiService;
-		System.out.println("WorkflowServiceImpl.setTransactionService:" + paramActivitiService);
+		info("WorkflowServiceImpl.setTransactionService:" + paramActivitiService);
 		m_processEngineConfiguration.getBeans().put("transactionService", paramActivitiService);
 	}
 }
