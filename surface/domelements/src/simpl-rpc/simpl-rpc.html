@@ -68,6 +68,13 @@ simple possiblity to invoke any service
 					value: null
 				},
 				/**
+				 * execute not automatically
+				 */
+				noauto: {
+					type: Boolean,
+					value: false
+				},
+				/**
 				 * The response object
 				 */
 				response: {
@@ -87,6 +94,7 @@ simple possiblity to invoke any service
 			 */
 
 			_collectAll: function() {
+				if( this.noauto === true ) return;
 				this.async( function() {
 					this.go();
 				}, null, 30 );
