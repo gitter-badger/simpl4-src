@@ -51,6 +51,7 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private boolean isSendMessage;
 	private String messageName;
 	private String headerFields;
+	private List<Map<String,String>> assigments;
 	private String variableNames;
 	private String businessKey;
 
@@ -140,6 +141,16 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	}
 	public String getMessageName() {
 		return this.messageName;
+	}
+
+	public void setAssignments(String a) {
+		if (a != null) {
+			this.assigments = (List)ds.deserialize(a);
+		}
+	}
+
+	public List<Map<String,String>> getAssignments() {
+		return this.assigments;
 	}
 
 	public void setHeaderFields(String t) {

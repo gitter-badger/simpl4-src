@@ -87,6 +87,7 @@ import static com.jcabi.log.Logger.error;
 public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implements ActivitiConstants {
 
 	protected JSONSerializer js = new JSONSerializer();
+	protected JSONDeserializer ds = new JSONDeserializer();
 	private RuntimeService runtimeService;
 	private HistoryService historyService;
 	private RepositoryService repositoryService;
@@ -101,6 +102,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String activityId;
 	private String namespace;
 	private String headerFields;
+	private List<Map<String,String>> assignments;
 	private String variableNames;
 	private String businessKey;
 	private String signalName;
@@ -111,6 +113,18 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private Map options;
 	private String activitiKey;
 
+	protected static final Map<String, Class> assignmentTypes = new HashMap<String, Class>() {
+		{
+			put("string", java.lang.String.class);
+			put("integer", java.lang.Integer.class);
+			put("long", java.lang.Long.class);
+			put("double", java.lang.Double.class);
+			put("date", java.util.Date.class);
+			put("boolean", java.lang.Boolean.class);
+			put("map", java.util.Map.class);
+			put("list", java.util.List.class);
+		}
+	};
 	public ActivitiProducer(ActivitiEndpoint endpoint, WorkflowService workflowService, PermissionService permissionService) {
 		super(endpoint, -1, 100);
 		this.endpoint = endpoint;
@@ -127,6 +141,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.namespace = endpoint.getNamespace();
 		this.signalName = endpoint.getSignalName();
 		this.headerFields = endpoint.getHeaderFields();
+		this.assignments = endpoint.getAssignments();
 		this.variableNames = endpoint.getVariableNames();
 		this.businessKey = endpoint.getBusinessKey();
 		this.messageName = endpoint.getMessageName();
@@ -134,6 +149,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.isSendMessage = endpoint.isSendMessage();
 		this.processCriteria = endpoint.getProcessCriteria();
 		this.options = endpoint.getOptions();
+		this.js.prettyPrint(true);
 	}
 
 	public void process(Exchange exchange) throws Exception {
@@ -300,6 +316,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private void doSendSignalToReceiveTask(Exchange exchange) {
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
+		debug(this,"doSendSignalToReceiveTask:"+processInstanceList);
 		for( ProcessInstance pi : processInstanceList){
 			signal(exchange, pi);
 		}
@@ -320,10 +337,10 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 		}else{
 			ProcessInstance pi = executeProcess(exchange);
-			info(this,"ProcessInstance:" + pi);
+			debug(this,"ProcessInstance:" + pi);
 			if (pi != null) {
 				this.activitiKey += "/" + pi.getId();
-				info(this,"m_activitiKey:" + this.activitiKey);
+				debug(this,"m_activitiKey:" + this.activitiKey);
 				exchange.getOut().setBody(pi.getId());
 			}
 		}
@@ -335,26 +352,25 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		if (execution == null) {
 			throw new RuntimeException("Couldn't find activityId " + this.activityId + " for processId " + execution.getId());
 		}
-		Map vars = execution.getProcessVariables();
-		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
-		Map props = exchange.getProperties();
-		Map headers = exchange.getIn().getHeaders();
-		this.runtimeService.setVariables(execution.getId(), getProcessVariables(exchange));
-		new SignalThread(ns, getProcessDefinition(execution), execution, exchange).start();
+		debug(this,"signal.ProcessInstance:"+ this.js.serialize(execution));
+		Map<String,Object> pv = getProcessVariables(exchange);
+		pv.putAll( getProcessAssignments(exchange) );
+		debug(this,"signal.processAssignment:"+ this.js.serialize(pv));
+		new SignalThread(ns, getProcessDefinition(execution), execution, exchange, pv).start();
 	}
 
 	private class SignalThread extends Thread {
 		Execution execution;
 		ProcessDefinition processDefinition;
 		Exchange exchange;
-		Map options;
+		Map variables;
 
 		String ns;
 
-		public SignalThread(String ns, ProcessDefinition pd, ProcessInstance exec, Exchange exchange) {
+		public SignalThread(String ns, ProcessDefinition pd, ProcessInstance exec, Exchange exchange, Map<String,Object> variables) {
 			this.execution = exec;
 			this.exchange = exchange;
-			this.options = options;
+			this.variables = variables;
 			this.ns = ns;
 			this.processDefinition = pd;
 		}
@@ -365,7 +381,11 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			while (true) {
 				try {
 					info(this,"SignalThread.sending signal to:" + execution.getId());
-					runtimeService.signal(execution.getId(), this.options);
+					if( this.variables!=null){
+						runtimeService.signal(execution.getId(), this.variables);
+					}else{
+						runtimeService.signal(execution.getId());
+					}
 				} catch (org.activiti.engine.ActivitiOptimisticLockingException e) {
 					info(this,"SignalThread:" + e);
 					try {
@@ -559,6 +579,18 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 					processVariables.put(header.getKey(), header.getValue());
 				}
 			}
+		}
+		return processVariables;
+	}
+
+	private Map<String,Object> getProcessAssignments(Exchange exchange){
+		Map<String,Object> processVariables = new HashMap();
+		for( Map<String,String>  a : this.assignments){
+			String expr = a.get("expr");
+			Class type = assignmentTypes.get( a.get("type"));
+			String variable = a.get("variable");
+			Object value = ExchangeUtils.getParameter(expr,exchange, type);
+			processVariables.put( variable, value);
 		}
 		return processVariables;
 	}
