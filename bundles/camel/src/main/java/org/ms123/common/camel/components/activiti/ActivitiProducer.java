@@ -19,12 +19,14 @@
 package org.ms123.common.camel.components.activiti;
 
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ExecutionQuery;
 import org.activiti.engine.runtime.ProcessInstanceBuilder;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.camel.Exchange;
@@ -38,6 +40,7 @@ import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.camel.trace.ExchangeFormatter;
 import org.ms123.common.camel.trace.MessageHelper;
 import org.activiti.engine.impl.bpmn.helper.ScopeUtil;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
@@ -55,6 +58,7 @@ import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.apache.commons.io.IOUtils;
 import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
 import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
 import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
@@ -79,11 +83,12 @@ import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "deprecation"})
 public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implements ActivitiConstants {
 
 	protected JSONSerializer js = new JSONSerializer();
 	private RuntimeService runtimeService;
+	private HistoryService historyService;
 	private RepositoryService repositoryService;
 	private PermissionService permissionService;
 	private WorkflowService workflowService;
@@ -112,6 +117,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.permissionService = permissionService;
 		this.workflowService = workflowService;
 		this.runtimeService = workflowService.getProcessEngine().getRuntimeService();
+		this.historyService = workflowService.getProcessEngine().getHistoryService();
 		this.repositoryService = workflowService.getProcessEngine().getRepositoryService();
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 		info(this,"ActivitiProducer.camelService:" + this.camelService);
@@ -171,6 +177,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		case getProcessVariables:
 			doGetProcessVariables(exchange);
 			break;
+		case queryProcessInstances:
+			doQueryProcessInstances(exchange);
+			break;
 		default:
 			throw new RuntimeException("ActivitiProducer.Operation not supported. Value: " + operation);
 		}
@@ -203,6 +212,26 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 			exchange.getIn().setBody(ret);
 		}
+	}
+
+	private void doQueryProcessInstances(Exchange exchange) {
+		List<HistoricProcessInstance> processInstanceList = getHistoricProcessInstances(exchange );
+
+		List<Map> ret = new ArrayList<Map>();
+		for( HistoricProcessInstance pi : processInstanceList){
+			Map piMap = new HashMap();
+			piMap.put("id", pi.getId());
+			piMap.put("businessKey", pi.getBusinessKey());
+			piMap.put("startTime",pi.getStartTime().getTime());
+			if( pi.getEndTime()!=null){
+				piMap.put("endTime", pi.getEndTime().getTime());
+			}
+			piMap.put("duration", pi.getDurationInMillis());
+			piMap.put("processDefinitionId", pi.getProcessDefinitionId());
+			piMap.put("startUserId", pi.getStartUserId());
+			ret.add(piMap);
+		}
+		exchange.getIn().setBody(ret);
 	}
 
 	private void doSendMessageEvent(Exchange exchange) {
@@ -310,7 +339,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);
 		Map props = exchange.getProperties();
 		Map headers = exchange.getIn().getHeaders();
-		this.runtimeService.setVariables(execution.getId(), getCamelVariablenMap(exchange));
+		this.runtimeService.setVariables(execution.getId(), getProcessVariables(exchange));
 		new SignalThread(ns, getProcessDefinition(execution), execution, exchange).start();
 	}
 
@@ -360,6 +389,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private ProcessInstance executeProcess(Exchange exchange) {
+		ProcessDefinition processDefinition=null;
 		Map<String, Object> vars = getProcessVariables(exchange);//getCamelVariablenMap(exchange);
 		info(this,"ExecuteProcess:criteria:" + this.processCriteria);
 		info(this,"ExecuteProcess:vars:" + vars);
@@ -371,11 +401,19 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			if (!isEmpty(processDefinitionId)) {
 				info(this,"ExecuteProcess:processDefinitionId:" + processDefinitionId);
 				pib.processDefinitionId(processDefinitionId);
+				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionId(processDefinitionId).processDefinitionTenantId(this.namespace).singleResult();
+				if (processDefinition == null) {
+					throw new RuntimeException("No process with processDefinitionId(" + processDefinitionId + ") in namespace(" + this.namespace + ")");
+				}
 			}
 			String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 			if (!isEmpty(processDefinitionKey)) {
 				info(this,"ExecuteProcess:processDefinitionKey:" + processDefinitionKey);
 				pib.processDefinitionKey(processDefinitionKey);
+				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(processDefinitionKey).processDefinitionTenantId(this.namespace).singleResult();
+				if (processDefinition == null) {
+					throw new RuntimeException("No process with processDefinitionKey(" + processDefinitionKey + ") in namespace(" + this.namespace + ")");
+				}
 			}
 			String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
 			if (!isEmpty(businessKey)) {
@@ -389,6 +427,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 			info(this,"ExecuteProcess:tenant:" + this.namespace);
 			pib.tenantId(this.namespace);
+			setInitialParameter( processDefinition, pib );
 			return pib.start();
 		} finally {
 			ThreadContext.getThreadContext().finalize(null);
@@ -396,6 +435,37 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 	}
 
+	private void setInitialParameter(ProcessDefinition processDefinition, ProcessInstanceBuilder pib){
+		String deploymentId = processDefinition.getDeploymentId();
+		RepositoryService rs = this.repositoryService;
+		try {
+			InputStream is = rs.getResourceAsStream(deploymentId, "initialParameter");
+			Map params = (Map) new JSONDeserializer().deserialize(IOUtils.toString(is));
+			if (params.get("items") != null) {
+				List<Map> items = (List) params.get("items");
+				for (Map<String, String> item : items) {
+					String name = item.get("name");
+					Object value = item.get("value");
+					if( value instanceof String ){
+						String v = ((String)value).trim();
+						if( v.length() > 1 && (v.startsWith("{") || v.startsWith("["))){
+							value = new JSONDeserializer().deserialize(v);
+						}
+					}
+					info(this,"put:" + name + "=" + value);
+					pib.addVariable(name, value);
+				}
+			}
+			//pib.addVariable("__currentUser", uid);
+			//pib.addVariable("__startingUser", uid);
+			pib.addVariable("__namespace", this.namespace);
+		} catch (Exception e) {
+			if (e instanceof NullPointerException) {
+				e.printStackTrace();
+			}
+			info(this,"getResourceAsStream:" + e);
+		}
+	}
 	private GroovyClassLoader groovyClassLoader = null;
 	private Map<String,Script> scriptCache = new HashMap();
 	private Script parse(String expr) {
@@ -573,6 +643,67 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		return null;
 	}
 
+	private List<HistoricProcessInstance> getHistoricProcessInstances(Exchange exchange) {
+		Map<String, Object> vars = getCamelVariablenMap(exchange);
+
+		info(this,"findExecution:processCriteria:" + this.processCriteria );
+		info(this,"findExecution:vars:" + vars);
+		HistoricProcessInstanceQuery hq = this.historyService.createHistoricProcessInstanceQuery();
+		String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
+		if (!isEmpty(processDefinitionId)) {
+			hq.processDefinitionId(trimToEmpty(eval(processDefinitionId, vars)));
+			info(this,"getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,vars)));
+		}
+		String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
+		if (!isEmpty(processDefinitionKey)) {
+			hq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,vars)));
+			info(this,"getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,vars)));
+		}
+		String processInstanceId = getString(exchange, PROCESS_INSTANCE_ID, this.processCriteria.get(PROCESS_INSTANCE_ID));
+		if (!isEmpty(processInstanceId)) {
+			hq.processInstanceId(trimToEmpty(eval(processInstanceId,vars)));
+			info(this,"getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
+		}
+		String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
+		if (isEmpty(businessKey)) {
+			businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
+		}
+		if (!isEmpty(businessKey)) {
+			hq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)));
+			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
+		}
+
+		String finished = getString(exchange, FINISHED, this.processCriteria.get(FINISHED));
+		if (!isEmpty(finished)) {
+			boolean isFinished = toBoolean(finished);
+			if( isFinished){
+				hq.finished();
+			}else{
+				hq.unfinished();
+			}
+		}
+
+		String processVariable = getString(exchange, PROCESSVARIABLE, this.processCriteria.get(PROCESSVARIABLE));
+		if (!isEmpty(processVariable)) {
+			processVariable = trimToEmpty(processVariable);
+			int delim = processVariable.indexOf(",");
+			if( delim == -1){
+				hq.variableValueEquals(trimToEmpty(eval(processVariable,vars)));
+			}else{
+				String p [] = processVariable.split(",");
+				hq.variableValueEquals(
+					trimToEmpty(eval(p[0],vars)),
+					trimToEmpty(eval(p[1],vars))
+				);
+			}
+		}
+
+		hq.processInstanceTenantId(trimToEmpty(this.namespace));
+		List<HistoricProcessInstance> piList = (List) hq.list();
+		info(this,"getHistoricProcessInstances:" + piList);
+		return piList;
+	}
+
 	private ProcessDefinition getProcessDefinition(ProcessInstance processInstance) {
 		info(this,"getProcessDefinition:" + processInstance.getProcessDefinitionId() + "/ns:" + this.namespace);
 
@@ -649,10 +780,13 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		camelMap.putAll(exVars);
 		return camelMap;
 	}
+	private boolean toBoolean(String val) {
+		return val.equalsIgnoreCase("true") || val.equalsIgnoreCase("t") || val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y") || val.equals("1");
+	}
 
 	private String getString(Exchange e, String key, String def) {
 		String value = ExchangeUtils.getParameter(def,e, String.class);
-		info(this,"getString("+key+","+def+"):"+value);
+		info(this,"getString("+key+","+def+"):"+value+"/"+isEmpty(value));
 		return value;
 	}
 
