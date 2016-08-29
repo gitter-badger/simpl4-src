@@ -68,6 +68,12 @@ public class BaseResource {
 	public EventAdmin getEventAdmin() {
 		return m_as.getEventAdmin();
 	}
+	protected boolean isUser( String user){
+		return getPermissionService().isUserThis(user);
+	}
+	protected boolean hasRole( String role){
+		return getPermissionService().hasUserRole(role);
+	}
 	protected void checkUser(String user){
 		if(getPermissionService().hasAdminRole()){
 			return;

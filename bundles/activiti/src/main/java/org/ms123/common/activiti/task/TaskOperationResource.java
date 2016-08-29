@@ -34,6 +34,7 @@ import org.activiti.engine.form.TaskFormData;
 import org.ms123.common.form.FormService;
 import org.activiti.engine.form.FormProperty;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.task.IdentityLink;
 import flexjson.*;
 import org.apache.commons.beanutils.*;
 import static com.jcabi.log.Logger.info;
@@ -230,7 +231,24 @@ public class TaskOperationResource extends BaseResource {
 		}else if( assignee != null){
 			checkUser( assignee );
 		}else{
-			throw new RuntimeException("TaskOperationResource.checkPermission:assignee and owner are null");
+			List<IdentityLink> linkList = getPE().getTaskService().getIdentityLinksForTask(m_taskId);
+			js.prettyPrint(true);
+			System.err.println( "linkList:"+js.serialize(linkList));
+			for( IdentityLink il: linkList){
+				String role = il.getGroupId();
+				String user = il.getUserId();
+				if( user != null){
+					if( isUser( user)){
+						return;
+					}
+				}
+				if( role != null){
+					if( hasRole( role)){
+						return;
+					}
+				}
+			}
+			throw new RuntimeException("TaskOperationResource.checkPermission:assignee and owner are null, user/role not in identylinks");
 		}
 	}
 
