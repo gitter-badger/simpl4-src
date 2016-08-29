@@ -69,12 +69,12 @@ public class Simpl4UserEntityManager extends UserEntityManager {
 
 	@Override
 	public List<User> findUserByQueryCriteria(UserQueryImpl query, Page page) {
-		System.out.println("Simpl4UserEntityManager.findUserByQueryCriteria:"+m_js.deepSerialize(query));
+		//System.out.println("Simpl4UserEntityManager.findUserByQueryCriteria:"+m_js.deepSerialize(query));
 		List<User> userList = new ArrayList<User>();
 		UserQueryImpl userQuery = (UserQueryImpl) query;
 		if (StringUtils.isNotEmpty(userQuery.getId())) {
 			userList.add(convertToUser(m_authService.getUser(userQuery.getId())));
-			System.out.println("Simpl4UserEntityManager.findUserByQueryCriteria:"+m_js.deepSerialize(userList));
+			//System.out.println("Simpl4UserEntityManager.findUserByQueryCriteria:"+m_js.deepSerialize(userList));
 			return userList;
 		} else {
 			//TODO: get all users from your identity domain and convert them to List<User>

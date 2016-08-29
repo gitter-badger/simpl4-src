@@ -89,10 +89,10 @@ public class Simpl4GroupEntityManager extends GroupEntityManager {
 
 	//@Override
 	public GroupEntity findGroupById(String activitiGroupID) {
-		System.out.println("Simpl4GroupEntityManager:findGroupById:" + activitiGroupID);
+		//System.out.println("Simpl4GroupEntityManager:findGroupById:" + activitiGroupID);
 		if (m_permissionService.hasRole(activitiGroupID)) {
 			GroupEntity g = convertToGroup(activitiGroupID);
-			System.out.println("Simpl4GroupEntityManager:findGroupById:" + m_js.deepSerialize(g));
+			//System.out.println("Simpl4GroupEntityManager:findGroupById:" + m_js.deepSerialize(g));
 			return g;
 		}
 		return null;
@@ -101,7 +101,7 @@ public class Simpl4GroupEntityManager extends GroupEntityManager {
 	@Override
 	public List<Group> findGroupsByUser(String userLogin) {
 		List<Group> roleListRet = new ArrayList();
-		System.out.println("Simpl4GroupEntityManager:findGroupsByUser:" + userLogin);
+		//System.out.println("Simpl4GroupEntityManager:findGroupsByUser:" + userLogin);
 		try{
 			List<String> roleList = m_permissionService.getUserRoles(userLogin);
 			for (String roleid : roleList) {
@@ -111,7 +111,7 @@ public class Simpl4GroupEntityManager extends GroupEntityManager {
 			e.printStackTrace();
 			throw new RuntimeException("Simpl4GroupEntityManager.findGroupsByUser:",e);
 		}
-		System.out.println("Simpl4GroupEntityManager:findGroupsByUser:" + m_js.deepSerialize(roleListRet));
+		//System.out.println("Simpl4GroupEntityManager:findGroupsByUser:" + m_js.deepSerialize(roleListRet));
 		return roleListRet;
 	}
 
