@@ -256,6 +256,10 @@ abstract class BaseCallServiceImpl {
 		return shape;
 	}
 	protected boolean isPermitted(String userName, List<String> userRoleList, List<String> permittedUserList, List<String> permittedRoleList) {
+		if(m_permissionService.hasRole(ADMINROLE)){
+			info(this,"userName(admin) is allowed");
+			return true;
+		}
 		if (permittedUserList.contains(userName)) {
 			info(this,"userName(" + userName + " is allowed:" + permittedUserList);
 			return true;
