@@ -73,7 +73,7 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 		}else if( !isEmpty(rvo)){
 			rv = getName(rvo.toString());
 		}else{
-			throw new RuntimeException(getExceptionInfo(tc)+"\nTaskCamelExecutor.routename and routevarname  is null");
+			throw new RuntimeException(getExceptionInfo(tc)+"\nTaskServiceExecutor: servicename and servicevarname  not set");
 		}
 
 		try {
@@ -85,7 +85,7 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 			if( rv != null){
 				methodname = (String)execution.getVariable(rv);
 				if( methodname == null ){
-					throw new RuntimeException(getExceptionInfo(tc)+"\nTaskCamelExecutor.routename is null");
+					throw new RuntimeException(getExceptionInfo(tc)+"\nTaskServiceExecutor: servicename not set");
 				}
 			}
 			
