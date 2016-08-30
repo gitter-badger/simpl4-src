@@ -48,6 +48,7 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_DEF
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_DEFINITION_NAME;
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_INSTANCE_ID;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate {
 
 	private Expression namespace;
@@ -55,6 +56,7 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 	private Expression routevarname;
 
 	private Expression returnvariable;
+	private Expression returnmapping;
 
 	private Expression variablesmapping;
 
@@ -107,10 +109,27 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 				ns = tc.getTenantId();
 			}
 			Object answer = getCallService().callCamel( ns+"."+methodname, fparams);
-			log("TaskCamelExecutor.answer:"+ answer);
 			if( returnvariable != null){
 				String rvar = returnvariable.getValue(execution).toString();
 				execution.setVariable(rvar, answer);
+			}
+			if( returnmapping != null && answer instanceof Map){
+				String s = returnmapping.getValue(execution).toString();
+				Object obj = m_ds.deserialize(s);
+				List<Map<String,String>> mappingList = null;
+				if( obj instanceof Map){
+					mappingList = (List)((Map)obj).get("items");
+				}else{
+					mappingList = (List)obj;
+				}
+				Map<String,Object> answerMap = (Map)answer;
+				for( Map<String,String> mapping: mappingList){
+					String pvar = mapping.get("processvar");
+					String svar = mapping.get("routevar");
+					Object value = answerMap.get(svar);
+					log("TaskCamelExecutor.returnsetting:"+pvar+" -> "+ value);
+					execution.setVariable(pvar, value);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

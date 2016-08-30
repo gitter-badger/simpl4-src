@@ -41,6 +41,9 @@ public class Simpl4CamelTaskJsonConverter extends BaseBpmnJsonConverter {
 	private final String RETURNVARIABLE_PROP = "returnvariable";
 	private final String RETURNVARIABLE = "returnvariable";
 
+	private final String RETURNMAPPING_PROP = "returnmapping";
+	private final String RETURNMAPPING = "returnmapping";
+
 	private final String NAMESPACE_PROP = "namespace";
 	private final String NAMESPACE = "namespace";
 
@@ -94,6 +97,12 @@ public class Simpl4CamelTaskJsonConverter extends BaseBpmnJsonConverter {
 		field = new FieldExtension();
 		field.setFieldName(RETURNVARIABLE);
 		field.setStringValue(checkNull(RETURNVARIABLE, propMap.get(RETURNVARIABLE_PROP)));
+		task.getFieldExtensions().add(field);
+
+		field = new FieldExtension();
+		field.setFieldName(RETURNMAPPING);
+		String returnmapping = getValue(RETURNMAPPING, propMap.get(RETURNMAPPING_PROP));
+		field.setExpression(returnmapping);
 		task.getFieldExtensions().add(field);
 		return task;
 	}
