@@ -45,7 +45,10 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import flexjson.*;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
@@ -502,55 +505,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 	}
 
-	private String eval2(String expr, Map<String,Object> vars) {
-		info(this,"--> eval_in:" + expr+",vars:"+vars);
-		Object result = expr;
-		Script script = scriptCache.get(expr);
-		if( script == null){
-			script = parse(expr);
-			scriptCache.put(expr, script);
-		}
-		script.setBinding(new Binding(vars));
-		try{
-			result = script.run();
-		}catch(Exception e){
-			String error = org.ms123.common.utils.Utils.formatGroovyException(e, expr);
-			info(this,"ActivitiProducer.eval:"+error);
-		}
-		info(this,"<-- eval_out:" + result);
-		return String.valueOf(result);
-	}
-
-	private String eval(String str, Map<String,Object> scope) {
-		int countRepl = 0;
-		int countPlainStr = 0;
-		Object replacement = null;
-		String newString = "";
-		int openBrackets = 0;
-		int first = 0;
-		for (int i = 0; i < str.length(); i++) {
-			if (i < str.length() - 2 && str.substring(i, i + 2).compareTo("${") == 0) {
-				if (openBrackets == 0) {
-					first = i + 2;
-				}
-				openBrackets++;
-			} else if (str.charAt(i) == '}' && openBrackets > 0) {
-				openBrackets -= 1;
-				if (openBrackets == 0) {
-					countRepl++;
-					replacement = eval2(str.substring(first, i), scope);
-					newString += replacement;
-				}
-			} else if (openBrackets == 0) {
-				newString += str.charAt(i);
-				countPlainStr++;
-			}
-		}
-		if (countRepl == 1 && countPlainStr == 0) {
-			return String.valueOf(replacement);
-		} else {
-			return newString;
-		}
+	private String eval(String str, Exchange exchange) {
+		return ExchangeUtils.getParameter( str, exchange, String.class );
 	}
 
 	private Map<String,Object> getProcessVariables(Exchange exchange){
@@ -610,20 +566,20 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		ExecutionQuery eq = this.runtimeService.createExecutionQuery();
 		String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
 		if (!isEmpty(processDefinitionId)) {
-			eq.processDefinitionId(trimToEmpty(eval(processDefinitionId, vars)));
-			info(this,"getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,vars)));
+			eq.processDefinitionId(trimToEmpty(eval(processDefinitionId, exchange)));
+			info(this,"getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,exchange)));
 			hasCriteria=true;
 		}
 		String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 		if (!isEmpty(processDefinitionKey)) {
-			eq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,vars)));
-			info(this,"getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,vars)));
+			eq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,exchange)));
+			info(this,"getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,exchange)));
 			hasCriteria=true;
 		}
 		String processInstanceId = getString(exchange, PROCESS_INSTANCE_ID, this.processCriteria.get(PROCESS_INSTANCE_ID));
 		if (!isEmpty(processInstanceId)) {
-			eq.processInstanceId(trimToEmpty(eval(processInstanceId,vars)));
-			info(this,"getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
+			eq.processInstanceId(trimToEmpty(eval(processInstanceId,exchange)));
+			info(this,"getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,exchange)));
 			hasCriteria=true;
 		}
 		String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
@@ -631,32 +587,32 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
 		}
 		if (!isEmpty(businessKey)) {
-			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)),childProcesses);
-			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
+			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,exchange)),childProcesses);
+			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,exchange)));
 			hasCriteria=true;
 		}
 
 		String activityId = getString(exchange, ACTIVITY_ID, this.processCriteria.get(ACTIVITY_ID));
 		if (!isEmpty(activityId)) {
-			eq.activityId(trimToEmpty(eval(activityId,vars)));
+			eq.activityId(trimToEmpty(eval(activityId,exchange)));
 			hasCriteria=true;
 		}
 		String executionId = getString(exchange, EXECUTION_ID, this.processCriteria.get(EXECUTION_ID));
 		if (!isEmpty(executionId)) {
-			eq.executionId(trimToEmpty(eval(executionId,vars)));
+			eq.executionId(trimToEmpty(eval(executionId,exchange)));
 			hasCriteria=true;
 		}
-		String processVariable = getString(exchange, PROCESSVARIABLE, this.processCriteria.get(PROCESSVARIABLE));
+		String processVariable = this.processCriteria.get(PROCESSVARIABLE);
 		if (!isEmpty(processVariable)) {
 			processVariable = trimToEmpty(processVariable);
-			int delim = processVariable.indexOf(",");
-			if( delim == -1){
-				eq.processVariableValueEquals(trimToEmpty(eval(processVariable,vars)));
+			List<String> tokens = splitByCommasNotInQuotes( processVariable);
+			if( tokens.size() == 1){
+				eq.processVariableValueEquals(trimToEmpty(eval(tokens.get(0),exchange)));
 			}else{
-				String p [] = processVariable.split(",");
+				debug(this,"p1eval:"+eval(tokens.get(1),exchange));
 				eq.processVariableValueEquals(
-					trimToEmpty(eval(p[0],vars)),
-					trimToEmpty(eval(p[1],vars))
+					trimToEmpty(tokens.get(0)),
+					trimToEmpty(eval(tokens.get(1),exchange))
 				);
 			}
 			hasCriteria=true;
@@ -683,26 +639,26 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		HistoricProcessInstanceQuery hq = this.historyService.createHistoricProcessInstanceQuery();
 		String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
 		if (!isEmpty(processDefinitionId)) {
-			hq.processDefinitionId(trimToEmpty(eval(processDefinitionId, vars)));
-			info(this,"getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,vars)));
+			hq.processDefinitionId(trimToEmpty(eval(processDefinitionId, exchange)));
+			info(this,"getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,exchange)));
 		}
 		String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 		if (!isEmpty(processDefinitionKey)) {
-			hq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,vars)));
-			info(this,"getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,vars)));
+			hq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,exchange)));
+			info(this,"getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,exchange)));
 		}
 		String processInstanceId = getString(exchange, PROCESS_INSTANCE_ID, this.processCriteria.get(PROCESS_INSTANCE_ID));
 		if (!isEmpty(processInstanceId)) {
-			hq.processInstanceId(trimToEmpty(eval(processInstanceId,vars)));
-			info(this,"getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,vars)));
+			hq.processInstanceId(trimToEmpty(eval(processInstanceId,exchange)));
+			info(this,"getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,exchange)));
 		}
 		String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
 		if (isEmpty(businessKey)) {
 			businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
 		}
 		if (!isEmpty(businessKey)) {
-			hq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,vars)));
-			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,vars)));
+			hq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,exchange)));
+			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,exchange)));
 		}
 
 		String finished = getString(exchange, FINISHED, this.processCriteria.get(FINISHED));
@@ -715,17 +671,16 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 		}
 
-		String processVariable = getString(exchange, PROCESSVARIABLE, this.processCriteria.get(PROCESSVARIABLE));
+		String processVariable = this.processCriteria.get(PROCESSVARIABLE);
 		if (!isEmpty(processVariable)) {
 			processVariable = trimToEmpty(processVariable);
-			int delim = processVariable.indexOf(",");
-			if( delim == -1){
-				hq.variableValueEquals(trimToEmpty(eval(processVariable,vars)));
+			List<String> tokens = splitByCommasNotInQuotes( processVariable);
+			if( tokens.size() == 1){
+				hq.variableValueEquals(trimToEmpty(eval(tokens.get(0),exchange)));
 			}else{
-				String p [] = processVariable.split(",");
 				hq.variableValueEquals(
-					trimToEmpty(eval(p[0],vars)),
-					trimToEmpty(eval(p[1],vars))
+					trimToEmpty(tokens.get(9)),
+					trimToEmpty(eval(tokens.get(1),exchange))
 				);
 			}
 		}
@@ -830,6 +785,32 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 		debug(this,"getBoolean2:" + key + "=" + value + "/def:" + def);
 		return value != null ? value : def;
+	}
+
+	private Pattern _splitSearchPattern = Pattern.compile("[\",]"); 
+	private List<String> splitByCommasNotInQuotes(String s) {
+		if (s == null){
+			return Collections.emptyList();
+		}
+
+		List<String> list = new ArrayList<String>();
+		Matcher m = _splitSearchPattern.matcher(s);
+		int pos = 0;
+		boolean quoteMode = false;
+		while (m.find()) {
+			String sep = m.group();
+			if ("\"".equals(sep)) {
+				quoteMode = !quoteMode;
+			} else if (!quoteMode && ",".equals(sep)) {
+				int toPos = m.start(); 
+				list.add(s.substring(pos, toPos));
+				pos = m.end();
+			}
+		}
+		if (pos < s.length()){
+			list.add(s.substring(pos));
+		}
+		return list;
 	}
 
 	protected ActivitiEndpoint getActivitiEndpoint() {
