@@ -28,6 +28,16 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.FormService;
+import org.activiti.engine.task.TaskQuery;
+import org.activiti.engine.task.Task;
+
+
+import org.activiti.engine.form.TaskFormData;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.impl.RepositoryServiceImpl;
+
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.camel.Exchange;
 import org.apache.camel.MessageHistory;
@@ -42,6 +52,7 @@ import org.ms123.common.camel.trace.MessageHelper;
 import org.activiti.engine.impl.bpmn.helper.ScopeUtil;
 import java.io.InputStream;
 import java.util.Map;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -94,6 +105,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	protected JSONDeserializer ds = new JSONDeserializer();
 	private RuntimeService runtimeService;
 	private HistoryService historyService;
+	private TaskService taskService;
+	private FormService formService;
 	private RepositoryService repositoryService;
 	private PermissionService permissionService;
 	private WorkflowService workflowService;
@@ -103,6 +116,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private ActivitiEndpoint endpoint;
 
 	private Map<String, String> processCriteria;
+	private Map<String, String> taskCriteria;
 	private String activityId;
 	private String namespace;
 	private String headerFields;
@@ -137,6 +151,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.runtimeService = workflowService.getProcessEngine().getRuntimeService();
 		this.historyService = workflowService.getProcessEngine().getHistoryService();
 		this.repositoryService = workflowService.getProcessEngine().getRepositoryService();
+		this.taskService = workflowService.getProcessEngine().getTaskService();
+		this.formService = workflowService.getProcessEngine().getFormService();
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 		info(this,"ActivitiProducer.camelService:" + this.camelService);
 		setRuntimeService(this.runtimeService);
@@ -152,6 +168,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.isSendSignal = endpoint.isSendSignal();
 		this.isSendMessage = endpoint.isSendMessage();
 		this.processCriteria = endpoint.getProcessCriteria();
+		this.taskCriteria = endpoint.getTaskCriteria();
 		this.options = endpoint.getOptions();
 		this.js.prettyPrint(true);
 	}
@@ -199,6 +216,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			break;
 		case queryProcessInstances:
 			doQueryProcessInstances(exchange);
+			break;
+		case queryTasks:
+			doQueryTasks(exchange);
 			break;
 		default:
 			throw new RuntimeException("ActivitiProducer.Operation not supported. Value: " + operation);
@@ -254,6 +274,91 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		exchange.getIn().setBody(ret);
 	}
 
+	private void doQueryTasks(Exchange exchange) {
+		TaskQuery taskQuery = this.taskService.createTaskQuery();
+		Class taskQueryClass = taskQuery.getClass();
+		Method methods[] = taskQueryClass.getMethods();
+		for (Map.Entry<String, String> entry : this.taskCriteria.entrySet()) {
+			String  key = entry.getKey();
+			String  val = entry.getValue();
+			info(this,"doQueryTasks("+key+"):"+val);
+
+			List<String> tokens = splitByCommasNotInQuotes( val);
+			if( tokens.size() == 1){
+  			Method m = getMethod(methods,key,1);
+				if( m != null){
+					Object v = eval( trimToEmpty(val), exchange, m.getParameterTypes()[0] );
+					setQueryValue( taskQuery, m, v);	
+				}
+			}else{
+  			Method m = getMethod(methods,key,2);
+				if( m != null){
+					setQueryValue(taskQuery, m, trimToEmpty(tokens.get(0)), eval(tokens.get(1),exchange,m.getParameterTypes()[1]));
+				}
+			}
+		}
+		taskQuery.taskTenantId(trimToEmpty(this.namespace));
+		List<Task> taskList = taskQuery.list();
+		info(this,"taskList:");
+		List<Map> ret = new ArrayList<Map>();
+		for( Task task : taskList){
+			info(this,"\t"+task.getName()+"/"+task.getId()+"/"+task.getTaskDefinitionKey());
+			Map<String, Object> taskMap = new HashMap();
+			taskMap.put("assignee", task.getAssignee());
+			taskMap.put("createTime", task.getCreateTime());
+			taskMap.put("delegationState", task.getDelegationState());
+			taskMap.put("description", task.getDescription());
+			taskMap.put("dueDate", task.getDueDate());
+			taskMap.put("executionId", task.getExecutionId());
+			taskMap.put("id", task.getId());
+			taskMap.put("name", task.getName());
+			taskMap.put("owner", task.getOwner());
+			taskMap.put("parentTaskId", task.getParentTaskId());
+			taskMap.put("priority", task.getPriority());
+			taskMap.put("processDefinitionId", task.getProcessDefinitionId());
+			taskMap.put("processInstanceId", task.getProcessInstanceId());
+			taskMap.put("taskDefinitionId", task.getTaskDefinitionKey());
+			TaskFormData taskFormData = this.formService.getTaskFormData(task.getId());
+			if (taskFormData != null) {
+				taskMap.put("formResourceKey", taskFormData.getFormKey());
+			}
+			ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl) this.repositoryService).getDeployedProcessDefinition(task.getProcessDefinitionId());
+			taskMap.put("processName", pde.getName());
+			ret.add(taskMap);
+		}
+		exchange.getIn().setBody(ret);
+	}
+
+	private Method getMethod( Method[] methods, String name, int pc){
+		for( Method m : methods){
+			if( m.getName().equals(name) && m.getParameterCount() == pc){
+				info(this,"getMethod:"+m.getName());
+				return m;
+			}
+		}
+		return null;
+	}
+	private void setQueryValue( Object o, Method m, Object val ){
+		try {
+			info(this,"setQueryValue("+m.getName()+"):"+val);
+			Object[] args = new Object[1];
+			args[0] = val;
+			m.invoke(o, args);
+		} catch (Exception e) {
+			error(this, "setQueryValue("+m.getName()+","+val+").error:%[exception]s",e);
+		}
+	}
+	private void setQueryValue( Object o, Method m, String val1, Object val2 ){
+		try {
+			info(this,"setQueryValue("+m.getName()+"):"+val1+","+val2);
+			Object[] args = new Object[2];
+			args[0] = val1;
+			args[1] = val2;
+			m.invoke(o, args);
+		} catch (Exception e) {
+			error(this, "setQueryValue("+m.getName()+","+val1+","+val2+").error:%[exception]s",e);
+		}
+	}
 	private void doSendMessageEvent(Exchange exchange) {
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
 		doSendMessageEvent(exchange, processInstanceList);
@@ -510,6 +615,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 	}
 
+	private Object eval(String str, Exchange exchange, Class clazz) {
+		return ExchangeUtils.getParameter( str, exchange, clazz );
+	}
 	private String eval(String str, Exchange exchange) {
 		return ExchangeUtils.getParameter( str, exchange, String.class );
 	}
@@ -684,7 +792,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 				hq.variableValueEquals(trimToEmpty(eval(tokens.get(0),exchange)));
 			}else{
 				hq.variableValueEquals(
-					trimToEmpty(tokens.get(9)),
+					trimToEmpty(tokens.get(0)),
 					trimToEmpty(eval(tokens.get(1),exchange))
 				);
 			}

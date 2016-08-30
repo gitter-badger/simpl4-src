@@ -20,6 +20,6 @@ package org.ms123.common.camel.components.activiti;
 
 public enum ActivitiOperation {
 
-	sendMessageEvent, sendSignalEvent, sendSignalToReceiveTask, startProcess, getProcessVariables, queryProcessInstances
+	sendMessageEvent, sendSignalEvent, sendSignalToReceiveTask, startProcess, getProcessVariables, queryProcessInstances, queryTasks
 }
 

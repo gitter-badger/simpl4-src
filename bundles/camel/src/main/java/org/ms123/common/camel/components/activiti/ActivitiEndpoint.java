@@ -44,6 +44,7 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private HistoryService m_historyService;
 	private Map m_options;
 	private Map<String, String> processCriteria = new HashMap<String, String>();
+	private Map<String, String> taskCriteria = new HashMap<String, String>();
 	private String namespace;
 	private String events;
 	private String signalName;
@@ -175,6 +176,22 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	public String getBusinessKey() {
 		return businessKey;
+	}
+	public void setTaskCriteria(String data) {
+		Map<String, String> ret = new HashMap<String, String>();
+		if (data != null) {
+			List<Map<String, String>> l = (List) ds.deserialize(data);
+			for (Map<String, String> m : l) {
+				String name = m.get("name");
+				String value = m.get("value");
+				ret.put(name, value);
+			}
+		}
+		this.taskCriteria = ret;
+	}
+
+	public Map<String, String> getTaskCriteria() {
+		return this.taskCriteria;
 	}
 
 	public void setProcessCriteria(String data) {
