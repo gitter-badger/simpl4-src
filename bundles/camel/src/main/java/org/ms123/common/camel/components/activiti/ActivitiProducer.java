@@ -62,6 +62,7 @@ import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.beanutils.ConvertUtils;
 import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
 import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
 import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
@@ -464,18 +465,22 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		try {
 			InputStream is = rs.getResourceAsStream(deploymentId, "initialParameter");
 			Map params = (Map) new JSONDeserializer().deserialize(IOUtils.toString(is));
+			info(this,"setInitialParameter:"+params);
 			if (params.get("items") != null) {
 				List<Map> items = (List) params.get("items");
 				for (Map<String, String> item : items) {
 					String name = item.get("name");
+					Class type = assignmentTypes.get( item.get("type") );
 					Object value = item.get("value");
 					if( value instanceof String ){
 						String v = ((String)value).trim();
 						if( v.length() > 1 && (v.startsWith("{") || v.startsWith("["))){
 							value = new JSONDeserializer().deserialize(v);
+						}else{
+							value = convertTo( value, type );
 						}
 					}
-					info(this,"put:" + name + "=" + value);
+					info(this,"ExecuteProcess.initialVar:" + name + "=" + value);
 					pib.addVariable(name, value);
 				}
 			}
@@ -785,6 +790,18 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 		debug(this,"getBoolean2:" + key + "=" + value + "/def:" + def);
 		return value != null ? value : def;
+	}
+
+	public Object convertTo(Object sourceObject, Class<?> targetClass) {
+		if( targetClass==null){
+			return sourceObject;
+		}
+		try {
+			return ConvertUtils.convert(sourceObject, targetClass);
+		} catch (Exception e) {
+			error(this, "ConvertUtils.error:%[exception]s",e);
+		}
+		return sourceObject;
 	}
 
 	private Pattern _splitSearchPattern = Pattern.compile("[\",]"); 
