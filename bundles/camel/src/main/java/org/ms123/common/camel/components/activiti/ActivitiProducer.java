@@ -376,7 +376,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		String taskOperation = getString(exchange, "taskOperation", this.taskOperation);
 		String taskId = getString(exchange, "taskId", this.taskId);
 		Map<String,Object> pv = getProcessVariables(exchange);
-		pv.putAll( getProcessAssignments(exchange) );
+//		pv.putAll( getProcessAssignments(exchange) );
 		info(this,"doExecuteTaskOperation("+taskOperation+","+taskId+".variables:"+pv);
 		this.activitiService.executeTaskOperation( taskId, taskOperation, pv, this.isCheckAssignments );
 	}
@@ -485,7 +485,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		}
 		debug(this,"signal.ProcessInstance:"+ this.js.serialize(execution));
 		Map<String,Object> pv = getProcessVariables(exchange);
-		pv.putAll( getProcessAssignments(exchange) );
+		//pv.putAll( getProcessAssignments(exchange) );
 		debug(this,"signal.processAssignment:"+ this.js.serialize(pv));
 		new SignalThread(ns, getProcessDefinition(execution), execution, exchange, pv).start();
 	}
@@ -671,6 +671,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 				}
 			}
 		}
+		processVariables.putAll( getProcessAssignments(exchange) );
 		return processVariables;
 	}
 
@@ -683,7 +684,12 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			String expr = a.get("expr");
 			Class type = assignmentTypes.get( a.get("type"));
 			String variable = a.get("variable");
+			if( isEmpty(variable)){
+				variable = makeVariableName( expr);
+			}
+
 			Object value = ExchangeUtils.getParameter(expr,exchange, type);
+			info(this,"put("+variable+"):"+value);
 			processVariables.put( variable, value);
 		}
 		return processVariables;
@@ -935,6 +941,15 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			error(this, "ConvertUtils.error:%[exception]s",e);
 		}
 		return sourceObject;
+	}
+
+	private String makeVariableName( String expr ){
+		if( expr.indexOf( ".") == -1){
+			return expr;
+		}
+		int dot = expr.lastIndexOf(".");
+		String n = expr.substring(dot+1);
+		return n.replaceAll("[^\\p{IsAlphabetic}^\\p{IsDigit}]", "");
 	}
 
 	private Pattern _splitSearchPattern = Pattern.compile("[\",]"); 
