@@ -375,9 +375,9 @@ class BaseDocbookServiceImpl {
 		return m_asciidoctor;
 	}
 
-	public String  loadContent(String namespace, String target){ //@@@MS Hack for AsciidoctorX, Exception can't be caught?!?
+	public String  loadContent(String namespace, String target, String type){ //@@@MS Hack for AsciidoctorX, Exception can't be caught?!?
 		try{
-			return m_gitService.searchContent(namespace, target,"text/x-asciidoc");
+			return m_gitService.searchContent(namespace, target, type);
 		}catch( Throwable e){
 			e.printStackTrace();
 			return null;

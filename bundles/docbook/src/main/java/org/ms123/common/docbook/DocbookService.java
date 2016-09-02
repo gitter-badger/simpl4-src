@@ -45,5 +45,5 @@ public interface DocbookService {
 	public String adocToDocbook( String adoc ) throws Exception;
 	public void saveStructure( String ns, String path, String data ) throws Exception;
 
-	public String  loadContent(String namespace, String target);
+	public String  loadContent(String namespace, String target, String type);
 }

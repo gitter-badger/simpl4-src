@@ -153,11 +153,12 @@ public class AsciidoctorX{
 	def includeProcessor = {
 		include_processor (filter: {true}) { document, reader, target, attributes -> 
 			def namespace = attributes.get("namespace");
+			def type = attributes.get("type");
 			System.err.println("include_processor:"+target+"/"+attributes+"/"+namespace);
 			if( namespace == null){
 				reader.push_include("IncludeProcessor: namespace is null:target:"+target, target, target, 1, attributes);
 			}else{
-				def content = docbookService.loadContent( namespace, target);
+				def content = docbookService.loadContent( namespace, target, type);
 				if( content != null && content.length() > 0){
 					reader.push_include(content, target, target, 1, attributes);
 				}else{
