@@ -44,6 +44,7 @@ import org.apache.camel.MessageHistory;
 import org.apache.camel.impl.DefaultProducer;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.camel.api.CamelService;
+import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.camel.api.ExchangeUtils;
@@ -111,12 +112,15 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private PermissionService permissionService;
 	private WorkflowService workflowService;
 	private CamelService camelService;
+	private ActivitiService activitiService;
 
 	private ActivitiOperation operation;
 	private ActivitiEndpoint endpoint;
 
 	private Map<String, String> processCriteria;
 	private Map<String, String> taskCriteria;
+	private String taskOperation;
+	private String taskId;
 	private String activityId;
 	private String namespace;
 	private String headerFields;
@@ -127,6 +131,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String messageName;
 	private boolean isSendSignal;
 	private boolean isSendMessage;
+	private boolean isCheckAssignments;
 
 	private Map options;
 	private String activitiKey;
@@ -154,6 +159,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.taskService = workflowService.getProcessEngine().getTaskService();
 		this.formService = workflowService.getProcessEngine().getFormService();
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
+		this.activitiService = (ActivitiService) endpoint.getCamelContext().getRegistry().lookupByName(ActivitiService.class.getName());
 		info(this,"ActivitiProducer.camelService:" + this.camelService);
 		setRuntimeService(this.runtimeService);
 		String[] path = endpoint.getEndpointKey().split(":");
@@ -167,8 +173,11 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.messageName = endpoint.getMessageName();
 		this.isSendSignal = endpoint.isSendSignal();
 		this.isSendMessage = endpoint.isSendMessage();
+		this.isCheckAssignments = endpoint.isCheckAssignments();
 		this.processCriteria = endpoint.getProcessCriteria();
 		this.taskCriteria = endpoint.getTaskCriteria();
+		this.taskOperation = endpoint.getTaskOperation();
+		this.taskId = endpoint.getTaskId();
 		this.options = endpoint.getOptions();
 		this.js.prettyPrint(true);
 	}
@@ -219,6 +228,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			break;
 		case queryTasks:
 			doQueryTasks(exchange);
+			break;
+		case executeTaskOperation:
+			doExecuteTaskOperation(exchange);
 			break;
 		default:
 			throw new RuntimeException("ActivitiProducer.Operation not supported. Value: " + operation);
@@ -359,6 +371,16 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			error(this, "setQueryValue("+m.getName()+","+val1+","+val2+").error:%[exception]s",e);
 		}
 	}
+
+	private void doExecuteTaskOperation(Exchange exchange) {
+		String taskOperation = getString(exchange, "taskOperation", this.taskOperation);
+		String taskId = getString(exchange, "taskId", this.taskId);
+		Map<String,Object> pv = getProcessVariables(exchange);
+		pv.putAll( getProcessAssignments(exchange) );
+		info(this,"doExecuteTaskOperation("+taskOperation+","+taskId+".variables:"+pv);
+		this.activitiService.executeTaskOperation( taskId, taskOperation, pv, this.isCheckAssignments );
+	}
+
 	private void doSendMessageEvent(Exchange exchange) {
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
 		doSendMessageEvent(exchange, processInstanceList);
@@ -654,6 +676,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private Map<String,Object> getProcessAssignments(Exchange exchange){
 		Map<String,Object> processVariables = new HashMap();
+		if( this.assignments == null){
+			return processVariables;
+		}
 		for( Map<String,String>  a : this.assignments){
 			String expr = a.get("expr");
 			Class type = assignmentTypes.get( a.get("type"));

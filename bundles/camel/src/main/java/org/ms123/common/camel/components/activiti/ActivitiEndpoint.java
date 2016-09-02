@@ -50,10 +50,13 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private String signalName;
 	private boolean isSendSignal;
 	private boolean isSendMessage;
+	private boolean isCheckAssignments;
 	private String messageName;
 	private String headerFields;
 	private List<Map<String,String>> assigments;
 	private String variableNames;
+	private String taskOperation;
+	private String taskId;
 	private String businessKey;
 
 	private PermissionService m_permissionService;
@@ -115,6 +118,12 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	public String getEvents() {
 		return this.events;
 	}
+	public void setCheckAssignments(boolean data) {
+		this.isCheckAssignments = data;
+	}
+	public boolean isCheckAssignments() {
+		return this.isCheckAssignments;
+	}
 
 	public void setSendSignal(Boolean data) {
 		this.isSendSignal = data;
@@ -168,6 +177,22 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	public String getVariableNames() {
 		return variableNames;
+	}
+
+	public void setTaskOperation(String t) {
+		this.taskOperation = t;
+	}
+
+	public String getTaskOperation() {
+		return this.taskOperation;
+	}
+
+	public void setTaskId(String t) {
+		this.taskId = t;
+	}
+
+	public String getTaskId() {
+		return this.taskId;
 	}
 
 	public void setBusinessKey(String t) {
