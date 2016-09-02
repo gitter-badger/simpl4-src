@@ -396,10 +396,23 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 			this._tableInstance = table;
 			var tcm = table.getTableColumnModel();
 
+			var selModel = table.getSelectionModel();
 			table.addListener("cellTap", function (e) {
 				var colnum = table.getFocusedColumn();
 				var rownum = table.getFocusedRow();
-				if( colnum != 2 ) return;
+				if( colnum != 2 ){
+					var index = selModel.getLeadSelectionIndex();
+					if( index<0) return;
+					var map = tableModel.getRowDataAsMap(index);
+					var count = selModel.getSelectedCount();
+					if (count == 0) {
+						return;
+					}
+					var id = map.id;
+					this._getProcessDetails(id);
+					this._getDiagram(id);
+					 return;
+				}
 				var map = tableModel.getRowDataAsMap(rownum);
 				if( !(map.status == "error" || map.status=="notstartet")) return;
 				var msg = map.logEntry.msg;
@@ -419,9 +432,9 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 
 			}).bind(this));
 			table.setStatusBarVisible(false);
-			var selModel = table.getSelectionModel();
 			selModel.setSelectionMode(qx.ui.table.selection.Model.SINGLE_SELECTION);
 			selModel.addListener("changeSelection", function (e) {
+				return;
 				var index = selModel.getLeadSelectionIndex();
 				if( index<0) return;
 				var map = tableModel.getRowDataAsMap(index);

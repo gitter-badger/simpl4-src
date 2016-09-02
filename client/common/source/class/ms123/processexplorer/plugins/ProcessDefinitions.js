@@ -185,14 +185,15 @@ qx.Class.define( "ms123.processexplorer.plugins.ProcessDefinitions", {
 			table.setStatusBarVisible( false );
 			var selModel = table.getSelectionModel();
 			selModel.setSelectionMode( qx.ui.table.selection.Model.NO_SELECTION );
-			selModel.addListener( "changeSelection", function( e ) {
+			//selModel.addListener( "changeSelection", function( e ) {
+			table.addListener("cellTap", function (e) {
 				var index = selModel.getLeadSelectionIndex();
 				var count = selModel.getSelectedCount();
 				if ( count == 0 ) {
-					this._buttonRemove.setEnabled( false );
+//					this._buttonRemove.setEnabled( false );
 					return;
 				}
-				this._buttonRemove.setEnabled( true );
+//				this._buttonRemove.setEnabled( true );
 				var map = this._tableModel.getRowDataAsMap( index );
 				this.facade.raiseEvent( {
 					type: ms123.processexplorer.Config.EVENT_PROCESSDEFINITION_CHANGED,
@@ -277,6 +278,7 @@ qx.Class.define( "ms123.processexplorer.plugins.ProcessDefinitions", {
 			}
 			this._clearTable();
 			this._tableModel.addRowsAsMapArray( rows, null, true, true );
+			this._buttonRemove.setEnabled( false );
 		},
 		_booleanCellRendererFactoryFunc: function( cellInfo ) {
 			return new qx.ui.table.cellrenderer.Boolean;
