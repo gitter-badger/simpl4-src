@@ -47,6 +47,7 @@ import static com.jcabi.log.Logger.error;
 public class TaskOperationResource extends BaseResource {
 
 	private String m_taskId;
+	private boolean m_check=true;
 	JSONDeserializer ds = new JSONDeserializer();
 	JSONSerializer js = new JSONSerializer();
 
@@ -55,10 +56,15 @@ public class TaskOperationResource extends BaseResource {
 	private Map<String, Object> m_startParams;
 
 	public TaskOperationResource(ActivitiService as, String taskId, String operation, Map<String, Object> startParams) {
+		this(as, taskId, operation, startParams, true);
+	}
+
+	public TaskOperationResource(ActivitiService as, String taskId, String operation, Map<String, Object> startParams, boolean check) {
 		super(as, null);
 		m_taskId = taskId;
 		m_operation = operation;
 		m_startParams = startParams;
+		m_check = check;
 	}
 
 	public Map executeTaskOperation() {
@@ -111,10 +117,13 @@ public class TaskOperationResource extends BaseResource {
 				}
 				info(this,"formKey:"+formKey+"/formVar:" + formVar +"/"+data+"/"+taskName);
 				if( data != null){
-					List<String> assetList = getGitService().assetList(namespace,formKey, "sw.form", true);
+					List<String> assetList = null;
 					List<Map> errors=null;
 					Map ret = null;
-					if( assetList.size() > 0){
+					if( m_check ){
+						assetList = getGitService().assetList(namespace,formKey, "sw.form", true);
+					}
+					if( assetList != null && assetList.size() > 0){
 						ret  = getFormService().validateForm(namespace,formKey,data,true);				
 						errors = (List)ret.get("errors");
 					}else{

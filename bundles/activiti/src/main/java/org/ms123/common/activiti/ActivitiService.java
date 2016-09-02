@@ -62,4 +62,14 @@ public interface ActivitiService {
 			String processDefinitionId, 
 			List<String> userList, 
 			List<String> groupList) throws RpcException;
+
+	public Map executeTaskOperation(
+			String taskId, 
+			String operation, 
+			Map<String, Object> startParams) throws RpcException;
+
+	public Map executeTaskOperation(
+			String taskId, 
+			String operation, 
+			Map<String, Object> startParams, boolean check) throws RpcException;
 }

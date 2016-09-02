@@ -112,6 +112,14 @@ public class ActivitiServiceImpl extends BaseActivitiServiceImpl implements Acti
 	public EventAdmin getEventAdmin(){
 		return m_eventAdmin;
 	}
+	public Map executeTaskOperation( String taskId, String operation, Map<String, Object> startParams, boolean check) {
+		try {
+			TaskOperationResource tr = new TaskOperationResource(this, taskId, operation, startParams, check);
+			return tr.executeTaskOperation();
+		} catch (Exception e) {
+			throw new RuntimeException( "ActivitiService.executeTaskOperation:", e);
+		}
+	}
 	/* BEGIN JSON-RPC-API*/
 	public Map getProcessDefinitions(
 			@PName("namespace")  @POptional String namespace, 
