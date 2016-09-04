@@ -94,6 +94,9 @@ qx.Class.define("ms123.form.SelectBox", {
 			lc.setDelegate(delegate);
 		},
 		_correctOptions: function (options) {
+			if( options == null){
+				return null;
+			}
 			for (var i = 0; i < options.length; i++) {
 				var o = options[i];
 				if (!o.value === undefined) {
