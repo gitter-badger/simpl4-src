@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +82,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	protected PermissionService permissionService;
 	protected Inflector m_inflector = Inflector.getInstance();
 	protected JSONSerializer js = new JSONSerializer();
+	protected JSONDeserializer jds = new JSONDeserializer();
 	protected static String gitRepos = System.getProperty("git.repos");
 	protected static String workspace = System.getProperty("workspace");
 
@@ -470,7 +473,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		deleteQuietly(new File(gitRepos, ".bundles/org.ops4j.datasource-" + dataSourceName + "-cp.cfg"));
 	}
 
-	protected void createDatasource(String namespace, Map<String, String> config) throws Exception {
+	public void createDatasource(String namespace, Map<String, String> config) throws Exception {
 		if( isEmpty( config.get("url") ) ){
 			return;
 		}
@@ -640,6 +643,63 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			count--;
 		}
 		return ds;
+	}
+	protected final Map<String, String> dsDriverClass = Collections.unmodifiableMap(new HashMap<String, String>() {{
+		put("oracle", "oracle.jdbc.OracleDriver");
+		put("as400", "com.ibm.as400.access.AS400JDBCDriver");
+		put("jtds", "net.sourceforge.jtds.jdbc.Driver");
+		put("mariadb", "org.mariadb.jdbc.Driver");
+		put("mysql", "com.mysql.jdbc.Driver");
+		put("postgresql", "org.postgresql.Driver");
+		put("h2", "org.h2.Driver");
+	}});
+
+	protected final Map<String, String> dsMapping = Collections.unmodifiableMap(new HashMap<String, String>() {{
+		put("osgi.jdbc.driver.name", "name");
+		put("url", "url");
+		put("user", "username");
+		put("password", "password");
+		put("dataSourceName", "datasourcename");
+		put("databaseName", "databasename");
+		put("packageName", "packagename");
+	}});
+	protected Map<String,String> dsNameMapping(Map<String,String> in){
+		Iterator entries = dsMapping.entrySet().iterator();
+		Map<String,String> out = new HashMap<String,String>();
+		while (entries.hasNext()) {
+			Map.Entry<String,String> entry = (Map.Entry) entries.next();
+			String key = entry.getKey();
+			String value = entry.getValue();
+			out.put(key, in.get(value));
+		}
+		out.put("osgi.jdbc.driver.class", dsDriverClass.get(in.get("name")));
+		return out;
+	}
+
+	protected void compileMetadata(Boolean toWorkspace, String namespace) throws Exception {
+		List<File> classPath = new ArrayList<File>();
+		File basedir = null;
+		if (toWorkspace) {
+			classPath.add(new File(workspace, "jooq/build"));
+			basedir = new File(workspace, "jooq");
+		} else {
+			classPath.add(new File(gitRepos, namespace + "/.etc/jooq/build"));
+			basedir = new File(gitRepos, namespace + "/.etc/jooq");
+		}
+
+		File destinationDirectory = new File(basedir, "build");
+		File sourceDirectory = new File(basedir, "gen");
+		this.compileService.compileJava(this.bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
+	}
+	protected void toFlatList(Map<String,Object> fileMap,List<String> types,List<Map> result){
+		String type = (String)fileMap.get("type");
+		if( types.indexOf(type) != -1){
+			result.add(fileMap);
+		}
+		List<Map> childList = (List)fileMap.get("children");
+		for( Map child : childList){
+			toFlatList(child,types,result);
+		}
 	}
 }
 

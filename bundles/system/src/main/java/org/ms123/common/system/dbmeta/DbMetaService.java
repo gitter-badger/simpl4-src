@@ -22,5 +22,10 @@ import java.util.Map;
 import java.util.List;
 
 public interface DbMetaService {
+	public static final String DATASOURCE_TYPE = "sw.datasource";
+	public static final String DIRECTORY_TYPE = "sw.directory";
+	public void createDatasource(String namespace, Map<String, String> config) throws Exception;
+	public void deployAll();
+	public void deployNamespace(String namespace);
 
 }

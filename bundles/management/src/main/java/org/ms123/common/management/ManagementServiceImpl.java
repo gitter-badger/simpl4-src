@@ -49,6 +49,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.domainobjects.api.DomainObjectsService;
 import org.ms123.common.system.compile.CompileService;
+import org.ms123.common.system.dbmeta.DbMetaService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
@@ -125,6 +126,11 @@ public class ManagementServiceImpl extends BaseManagementServiceImpl implements 
 	public void setCompileService(CompileService paramService) {
 		this.m_compileService = paramService;
 		info(this,"ManagementServiceImpl.setCompileService:" + paramService);
+	}
+	@Reference(dynamic = true, optional=true)
+	public void setDbMetaService(DbMetaService paramService) {
+		this.m_dbmetaService = paramService;
+		info(this,"ManagementServiceImpl.setDbMetaService:" + paramService);
 	}
 	@Reference(dynamic = true, optional=true)
 	public void setWorkflowService(WorkflowService paramService) {

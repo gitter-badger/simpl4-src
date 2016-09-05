@@ -32,6 +32,7 @@ import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.domainobjects.api.DomainObjectsService;
 import org.ms123.common.system.compile.CompileService;
+import org.ms123.common.system.dbmeta.DbMetaService;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.camel.api.CamelService;
@@ -63,6 +64,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	protected BundleContext m_bundleContext;
 	protected DomainObjectsService m_domainobjectsService;
 	protected CompileService m_compileService;
+	protected DbMetaService m_dbmetaService;
 	protected WorkflowService m_workflowService;
 	protected CamelService m_camelService;
 	protected GitService m_gitService;
@@ -145,6 +147,7 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 		installBundles(ns);
 		compileGroovy(ns);
 		compileJava(ns);
+		createDatasources(ns);
 		createClasses(ns);
 		createRoutesFromJson(ns);
 		deployWorkflows(ns);
@@ -203,6 +206,15 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			m_camelService.createRoutesFromJson(ns);
 		}catch(Exception e){
 			error(this, "createRoutesFromJson.error:%[exception]s",e);
+			e.printStackTrace();
+		}
+	}
+	private void createDatasources(String ns){
+		try{
+			info(this, "createDatasources:"+ns);
+			m_dbmetaService.deployNamespace(ns);
+		}catch(Exception e){
+			error(this, "deployDatasources.error:%[exception]s",e);
 			e.printStackTrace();
 		}
 	}

@@ -86,20 +86,38 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 		System.out.println("DbMetaServiceImpl.deactivate");
 	}
 
-	private void compileMetadata(Boolean toWorkspace, String namespace) throws Exception {
-		List<File> classPath = new ArrayList<File>();
-		File basedir = null;
-		if (toWorkspace) {
-			classPath.add(new File(workspace, "jooq/build"));
-			basedir = new File(workspace, "jooq");
-		} else {
-			classPath.add(new File(gitRepos, namespace + "/.etc/jooq/build"));
-			basedir = new File(gitRepos, namespace + "/.etc/jooq");
-		}
 
-		File destinationDirectory = new File(basedir, "build");
-		File sourceDirectory = new File(basedir, "gen");
-		this.compileService.compileJava(this.bc.getBundle(), destinationDirectory, sourceDirectory, classPath);
+	public synchronized void deployAll(){
+		List<Map> repos = gitService.getRepositories(new ArrayList(),false);
+		for(Map<String,String> repo : repos){
+			String namespace = repo.get("name");
+			deployNamespace(namespace);
+		}
+	}
+	private final String PATH = "path";
+	public synchronized void deployNamespace(String namespace){
+		List<String> types = new ArrayList();
+		types.add(DATASOURCE_TYPE);
+		types.add(DIRECTORY_TYPE);
+		List<String> typesDatasource = new ArrayList();
+		typesDatasource.add(DATASOURCE_TYPE);
+
+		Map map= gitService.getWorkingTree(namespace, null, 100, types, null, null,null);
+		List<Map> pathList = new ArrayList();
+		toFlatList(map,typesDatasource,pathList);
+
+		List<Map> resultList = new ArrayList();
+		for (Map pathMap : pathList) {
+			String path = (String) pathMap.get(PATH);
+			String s = gitService.getContent(namespace, path);
+			Map<String,String> config = (Map<String,String>)jds.deserialize( s );
+			try {
+				Map<String,String>dsConfig = dsNameMapping(config);
+				createDatasource(namespace,dsConfig);
+			} catch (Throwable e) {
+				throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DbMetaServiceImpl.createDatasource:", e);
+			}
+		}
 	}
 
 	/*BEGIN JSON-RPC-API*/
