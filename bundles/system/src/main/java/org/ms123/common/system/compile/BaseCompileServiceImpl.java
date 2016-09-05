@@ -121,29 +121,34 @@ abstract class BaseCompileServiceImpl {
 
 	private String _compileGroovy(String namespace, String path, String code) {
 		info(this, "_compileGroovy:" + namespace + ":" + path);
-		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+		ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+		try{
+			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-		List<String> classpath = new ArrayList<String>();
-		classpath.add(System.getProperty("workspace") + "/" + "jooq/build");
-		classpath.add(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
-		classpath.add(System.getProperty("workspace") + "/groovy/" + namespace);
-		classpath.add(System.getProperty("workspace") + "/java/" + namespace);
-		String destDir = System.getProperty("workspace") + "/" + "groovy" + "/" + namespace;
-		String srcDir = System.getProperty("git.repos") + "/" + namespace;
-		CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", false);
-		CompilerConfiguration config = new CompilerConfiguration();
-		config.getOptimizationOptions().put("indy", false);
-		config.setClasspathList(classpath);
-		config.setTargetDirectory(destDir);
-		FileSystemCompiler fsc = new FileSystemCompiler(config);
+			List<String> classpath = new ArrayList<String>();
+			classpath.add(System.getProperty("workspace") + "/" + "jooq/build");
+			classpath.add(System.getProperty("git.repos") + "/" + namespace + "/.etc/jooq/build");
+			classpath.add(System.getProperty("workspace") + "/groovy/" + namespace);
+			classpath.add(System.getProperty("workspace") + "/java/" + namespace);
+			String destDir = System.getProperty("workspace") + "/" + "groovy" + "/" + namespace;
+			String srcDir = System.getProperty("git.repos") + "/" + namespace;
+			CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", false);
+			CompilerConfiguration config = new CompilerConfiguration();
+			config.getOptimizationOptions().put("indy", false);
+			config.setClasspathList(classpath);
+			config.setTargetDirectory(destDir);
+			FileSystemCompiler fsc = new FileSystemCompiler(config);
 
-		File[] files = new File[1];
-		files[0] = new File(srcDir, path);
-		try {
-			fsc.compile(files);
-		} catch (Throwable e) {
-			error(this, "_compileGroovy.error:%[exception]s", e);
-			return Utils.formatGroovyException(e, code);
+			File[] files = new File[1];
+			files[0] = new File(srcDir, path);
+			try {
+				fsc.compile(files);
+			} catch (Throwable e) {
+				error(this, "_compileGroovy.error:%[exception]s", e);
+				return Utils.formatGroovyException(e, code);
+			}
+		}finally{
+			Thread.currentThread().setContextClassLoader(ccl);
 		}
 		return null;
 	}

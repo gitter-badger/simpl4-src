@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
+import org.ms123.common.libhelper.BundleDelegatingClassLoader;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.domainobjects.api.DomainObjectsService;
@@ -70,7 +71,6 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected JSONSerializer m_js = new JSONSerializer();
 	private Bundle m_camelBundle=null;
-
 	final static String[] topics = ["namespace/installed", "namespace/postUpdate", "namespace/deleted"];
 
 	protected void registerEventHandler() {
@@ -110,29 +110,35 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 				break;
 			}
 		}
-		info(this, "BaseManagementServiceImpl.camelBundle:"+m_camelBundle);
-		List<String> createdNamespaces = new ArrayList<String>();
-		info(this, "BaseManagementServiceImpl.createdNamespaces:"+createdNamespaces);
-		boolean firstRun = isFirstRun();
-		Setup.doSetup(createdNamespaces,firstRun);
-		if( firstRun){
-			createdNamespaces = getAllNamespaces();
-			for( String ns : createdNamespaces){
-				doAllInNamespace(ns);
-			}
-		}else{
-			for( String ns : createdNamespaces){
-				doAllInNamespace(ns);
-			}
-			List<String> allNamespaces = getAllNamespaces();
-			for( String ns : allNamespaces){
-				if( createdNamespaces.indexOf(ns) < 0){
-					createRoutesFromJson(ns);
-					installBundles(ns);
+		ClassLoader cclSave = Thread.currentThread().getContextClassLoader();
+		BundleDelegatingClassLoader ccl = new BundleDelegatingClassLoader(m_camelBundle, cclSave);
+		Thread.currentThread().setContextClassLoader(ccl);
+		try{
+			List<String> createdNamespaces = new ArrayList<String>();
+			info(this, "BaseManagementServiceImpl.createdNamespaces:"+createdNamespaces);
+			boolean firstRun = isFirstRun();
+			Setup.doSetup(createdNamespaces,firstRun);
+			if( firstRun){
+				createdNamespaces = getAllNamespaces();
+				for( String ns : createdNamespaces){
+					doAllInNamespace(ns);
+				}
+			}else{
+				for( String ns : createdNamespaces){
+					doAllInNamespace(ns);
+				}
+				List<String> allNamespaces = getAllNamespaces();
+				for( String ns : allNamespaces){
+					if( createdNamespaces.indexOf(ns) < 0){
+						createRoutesFromJson(ns);
+						installBundles(ns);
+					}
 				}
 			}
+		}finally{
+			Thread.currentThread().setContextClassLoader(cclSave);
+			ThreadContext.getThreadContext().finalize(null);
 		}
-		ThreadContext.getThreadContext().finalize(null);
 	}
 
 	private void doAllInNamespace(String ns){

@@ -136,6 +136,9 @@ public class BundleDelegatingClassLoader extends ClassLoader {
 		}
 		return clazz;
 	}
+	public String toString() {
+		return "BundleDelegatingClassLoader("+bundle+","+classLoader+")";
+	}
 
 	public Bundle getBundle() {
 		return bundle;
