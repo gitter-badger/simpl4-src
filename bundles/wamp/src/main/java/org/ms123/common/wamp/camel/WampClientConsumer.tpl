@@ -114,7 +114,7 @@ public class WampClientConsumer extends DefaultConsumer {
 			});
 		}
 		if( "subscribe".equals(mode)){
-			Subscription addSubscription = this.clientSession.makeSubscription(namespace + "." + endpoint.getTopic()).subscribe((request) -> {
+			Subscription addSubscription = this.clientSession.makeSubscription(namespace + "." + endpoint.getTopic2()).subscribe((request) -> {
 
 				info(this,"Consumer.Subscribe called:" + request + "/hashCode:" + this.hashCode());
 				final boolean reply = false;

@@ -60,6 +60,7 @@ public class WampClientEndpoint extends DefaultEndpoint {
 	@UriParam
 	private String procedure;
 	private String topic;
+	private String topic2;
 	private String match;
 	private String startableGroups;
 	private String startableUsers;
@@ -110,6 +111,13 @@ public class WampClientEndpoint extends DefaultEndpoint {
 
 	public void setProcedure(String procedure) {
 		this.procedure = procedure;
+	}
+	public String getTopic2() {
+		return this.topic2;
+	}
+
+	public void setTopic2(String topic) {
+		this.topic2 = topic;
 	}
 
 	public String getTopic() {
