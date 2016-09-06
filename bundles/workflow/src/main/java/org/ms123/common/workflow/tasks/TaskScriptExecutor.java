@@ -136,9 +136,16 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 			tc.getExecution().setVariablesLocal(lvars);
 			log(tc, "TaskScriptExecutor.existingVars:" + existingVars);
 			for( String varName : scriptVars.get("unbound")){
-				if( !"gvars".equals(varName) && !"lvars".equals(varName) && dsl.hasVariable(varName) && !existingVars.contains(varName)){
-					log("\t###settingProcessVariable:"+varName+" -> " + dsl.getVariable(varName));
-					tc.getExecution().setVariable(varName, dsl.getVariable(varName));
+				if( !"gvars".equals(varName) && !"lvars".equals(varName) && dsl.hasVariable(varName) /*&& !existingVars.contains(varName)*/){
+					Object eValue = tc.getExecution().getVariable(varName);
+					Object dValue = dsl.getVariable(varName);
+					if( dValue != null && !dValue.equals(eValue)){
+						log("\t###settingProcessVariable1:"+varName+" -> " + dsl.getVariable(varName));
+						tc.getExecution().setVariable(varName, dValue);
+					}else if( dValue == null && eValue != null){
+						log("\t###settingProcessVariable2:"+varName+" -> " + dsl.getVariable(varName));
+						tc.getExecution().setVariable(varName, dValue);
+					}
 				}
 			}
 			for (Object o : dsl.getCreatedObjects()) {
