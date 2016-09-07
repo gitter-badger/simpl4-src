@@ -46,6 +46,7 @@ qx.Class.define("ms123.settings.Config", {
 			if( entity.indexOf(ms123.settings.Config.PACK_DELIM) >=0){
 				return entity;	
 			}
+			if( sdesc == null) return entity;
 			var pack = sdesc.getPack ? sdesc.getPack() : sdesc;
 			if( pack == null){
 				return entity;
