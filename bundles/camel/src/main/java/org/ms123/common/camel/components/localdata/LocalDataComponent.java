@@ -34,8 +34,6 @@ public class LocalDataComponent extends DefaultComponent {
 
 	private DataLayer m_dataLayer;
 
-	public static final Set<LocalDataOperation> WRITE_OPERATIONS = new HashSet<LocalDataOperation>(Arrays.asList(LocalDataOperation.insert, LocalDataOperation.update, LocalDataOperation.delete));
-
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
 		Endpoint endpoint = new LocalDataEndpoint(uri, this);
 		setProperties(endpoint, parameters);

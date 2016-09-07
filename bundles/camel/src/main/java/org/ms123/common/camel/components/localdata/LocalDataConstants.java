@@ -25,6 +25,7 @@ public interface LocalDataConstants {
 	public static final String PARAM_HEADERS = "paramHeaders";
 
 	public static final String OBJECT_ID = "objectId";
+	public static final String WHERE = "where";
 	public static final String SOURCE = "source";
 
 	public static final String ENTITY_TYPE = "entityType";

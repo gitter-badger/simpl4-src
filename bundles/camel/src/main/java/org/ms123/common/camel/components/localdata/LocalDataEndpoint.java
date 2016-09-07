@@ -19,12 +19,15 @@
 package org.ms123.common.camel.components.localdata;
 
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.ms123.common.data.api.DataLayer;
+import flexjson.*;
 
 /**
  * Represents a LocalData endpoint.
@@ -32,6 +35,8 @@ import org.ms123.common.data.api.DataLayer;
 @SuppressWarnings({"unchecked","deprecation"})
 public class LocalDataEndpoint extends DefaultEndpoint {
 
+	protected JSONSerializer js = new JSONSerializer();
+	protected JSONDeserializer ds = new JSONDeserializer();
 	private LocalDataComponent m_component = null;
 
 	private LocalDataConsumer m_localDataConsumer;
@@ -43,7 +48,9 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	private String m_paramHeaders;
 
 	private String m_objectId;
+	private String m_where;
 	private String m_source;
+	private int m_max=100;
 
 	private String m_entityType;
 
@@ -52,6 +59,8 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	private Boolean m_disableStateSelect=false;
 	private String m_lookupRelationObjectExpr;
 	private String m_lookupUpdateObjectExpr;
+	private List<Map<String, String>> objectCriteria = new ArrayList<Map<String, String>>();
+	private List<Map<String, String>> filterParameter = new ArrayList<Map<String, String>>();
 
 	private Map m_options;
 
@@ -156,12 +165,48 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 		return m_objectId;
 	}
 
+	public void setWhere(String data) {
+		this.m_where = data;
+	}
+
+	public String getWhere() {
+		return m_where;
+	}
+
+	public void setObjectCriteria(String data) {
+		if (data != null) {
+			this.objectCriteria = (List) ds.deserialize(data);
+		}
+	}
+
+	public List<Map<String, String>> getObjectCriteria() {
+		return this.objectCriteria;
+	}
+
+	public void setFilterParameter(String data) {
+		if (data != null) {
+			this.filterParameter = (List) ds.deserialize(data);
+		}
+	}
+
+	public List<Map<String, String>> getFilterParameter() {
+		return this.filterParameter;
+	}
+
 	public void setSource(String data) {
 		this.m_source = data;
 	}
 
 	public String getSource() {
 		return m_source;
+	}
+
+	public void setMax(String data) {
+		this.m_max = Integer.parseInt( data);
+	}
+
+	public int getMax() {
+		return m_max;
 	}
 
 	public void setNamespace(String namespace) {

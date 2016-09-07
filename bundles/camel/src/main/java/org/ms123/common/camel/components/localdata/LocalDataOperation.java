@@ -20,10 +20,33 @@ package org.ms123.common.camel.components.localdata;
 
 public enum LocalDataOperation {
 
-	findById, findOneByFilter, findByFilter, 
-	insert, update, upsert,
-	delete, 
-	multiInsertUpdate, 
-	aggregate, 
-	count
+	insert,
+
+	update,
+	updateById,
+	updateByFilter,
+	updateByWhere,
+	updateByCriteria,
+
+	upsert,
+	upsertById,
+	upsertByFilter,
+	upsertByWhere,
+	upsertByCriteria,
+
+	deleteById,
+	deleteByFilter,
+	deleteByWhere,
+	deleteByCriteria,
+
+	findById,
+	findByFilter,
+	findByWhere,
+	findByCriteria,
+
+	findOneById, 
+	findOneByFilter, 
+	findOneByWhere, 
+	findOneByCriteria, 
+	multiInsertUpdate 
 }
