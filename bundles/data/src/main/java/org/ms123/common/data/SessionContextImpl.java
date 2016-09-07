@@ -367,6 +367,20 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 			}
 		}
 	}
+	public Object getObjectIdByNamedFilter(String name, Map<String, Object> fparams) {
+		Map options = new HashMap();
+		options.put(GET_ID, true);
+		Map<String,List> m = executeNamedFilter(name,fparams,options);
+		List l = m.get("rows");
+		if( l.size() != 1) new RuntimeException("getObjectByNamedFilter: "+(l.size()<1 ? "less" : "more")+" as one objects found:");
+		return l.get(0);
+	}
+	public List<Object> getObjectIdsByNamedFilter(String name, Map<String, Object> fparams) {
+		Map options = new HashMap();
+		options.put(GET_ID, true);
+		Map<String,List> m = executeNamedFilter(name,fparams,options);
+		return m.get("rows");
+	}
 
 	public Object getObjectByNamedFilter(String name, Map<String, Object> fparams) {
 		Map options = new HashMap();
@@ -453,10 +467,17 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		Map<String, Object> ret = m_dataLayer.query(this, params, m_sdesc, entityName);
 		List<Map> rows = (List) ret.get("rows");
 		List<Object> retList = new ArrayList();
-		if( getBoolean(options, GET_OBJECT, false) == false ){
+		if( getBoolean(options, GET_OBJECT, false) == false && getBoolean(options, GET_ID, false) == false ){
 			for (Map row : rows) {
 				Object obj = row.get(StoreDesc.getSimpleEntityName(clazzName));
 				retList.add(SojoFilterInterceptor.filterFields(obj, this, fieldList, aliasList, StoreDesc.getPackName(entityName,m_sdesc.getPack())));
+			}
+		}else if( getBoolean(options, GET_ID, false) ){
+			PersistenceManager pm = getPM();
+			for (Map row : rows) {
+				Object obj = row.get(StoreDesc.getSimpleEntityName(clazzName));
+				Object id = pm.getObjectId( obj);
+				retList.add(id);
 			}
 		}else if( getBoolean(options, GET_OBJECT, false) ){
 			for (Map row : rows) {

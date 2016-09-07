@@ -41,6 +41,7 @@ import org.ms123.common.team.api.TeamService;
 public interface SessionContext {
 
 	public static String GET_OBJECT = "getObject";
+	public static String GET_ID = "getID";
 	public static String CHECK_PARAMS = "checkParams";
 	public void setUserProperties(Map data);
 
@@ -133,8 +134,12 @@ public interface SessionContext {
 
 	public Map getNamedFilter(String name);
 
+	public Object getObjectIdByNamedFilter(String name, Map<String, Object> fparams);
+	public List<Object> getObjectIdsByNamedFilter(String name, Map<String, Object> fparams);
+
 	public Object getObjectByNamedFilter(String name, Map<String, Object> fparams);
 	public List<Object> getObjectsByNamedFilter(String name, Map<String, Object> fparams);
+
 	public Map executeNamedFilter(String name, Map<String, Object> fparams);
 	public Map executeNamedFilter(String name, Map<String, Object> fparams,Map<String, Object> options);
 
