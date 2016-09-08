@@ -195,16 +195,16 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			break;
 
 		case findOneById:
-			doFind(exchange, operation, true);
+			doFind(exchange, LocalDataOperation.findById, true);
 			break;
 		case findOneByFilter:
-			doFind(exchange, operation, true);
+			doFind(exchange, LocalDataOperation.findByFilter, true);
 			break;
 		case findOneByWhere:
-			doFind(exchange, operation, true);
+			doFind(exchange, LocalDataOperation.findByWhere, true);
 			break;
 		case findOneByCriteria:
-			doFind(exchange, operation, true);
+			doFind(exchange, LocalDataOperation.findByCriteria, true);
 			break;
 
 		case multiInsertUpdate:
