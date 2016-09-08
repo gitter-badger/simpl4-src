@@ -39,12 +39,15 @@ import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.thread.ThreadContext;
 import static com.jcabi.log.Logger.info;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import flexjson.*;
 
 /**
  * The LocalData producer.
  */
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class LocalDataProducer extends DefaultProducer implements LocalDataConstants {
+	protected JSONSerializer js = new JSONSerializer();
+	protected JSONDeserializer ds = new JSONDeserializer();
 
 	private String m_filterName = null;
 	private String m_destination = null;
@@ -133,39 +136,36 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 	 */
 	protected void invokeOperation(LocalDataOperation operation, Exchange exchange) throws Exception {
 		switch (operation) {
-		case findOneByFilter:
-		//	doFindOneByFilter(exchange);
-			break;
 		case insert:
 			doInsert(exchange);
 			break;
 
 		case update:
 		case updateById:
-			doUpdateById(exchange,false);
+			doUpdateById(exchange, false);
 			break;
 		case updateByFilter:
-			doUpdateByFilter(exchange,false);
+			doUpdateByFilter(exchange, false);
 			break;
 		case updateByWhere:
-			doUpdateByWhere(exchange,false);
+			doUpdateByWhere(exchange, false);
 			break;
 		case updateByCriteria:
-			doUpdateByCriteria(exchange,false);
+			doUpdateByCriteria(exchange, false);
 			break;
 
 		case upsert:
 		case upsertById:
-			doUpdateById(exchange,true);
+			doUpdateById(exchange, true);
 			break;
 		case upsertByFilter:
-			doUpdateByFilter(exchange,true);
+			doUpdateByFilter(exchange, true);
 			break;
 		case upsertByWhere:
-			doUpdateByWhere(exchange,true);
+			doUpdateByWhere(exchange, true);
 			break;
 		case upsertByCriteria:
-			doUpdateByCriteria(exchange,true);
+			doUpdateByCriteria(exchange, true);
 			break;
 
 		case deleteById:
@@ -182,16 +182,29 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			break;
 
 		case findById:
-			doFind(exchange, operation);
+			doFind(exchange, operation, false);
 			break;
 		case findByFilter:
-			doFind(exchange, operation);
+			doFind(exchange, operation, false);
 			break;
 		case findByWhere:
-			doFind(exchange, operation);
+			doFind(exchange, operation, false);
 			break;
 		case findByCriteria:
-			doFind(exchange, operation);
+			doFind(exchange, operation, false);
+			break;
+
+		case findOneById:
+			doFind(exchange, operation, true);
+			break;
+		case findOneByFilter:
+			doFind(exchange, operation, true);
+			break;
+		case findOneByWhere:
+			doFind(exchange, operation, true);
+			break;
+		case findOneByCriteria:
+			doFind(exchange, operation, true);
 			break;
 
 		case multiInsertUpdate:
@@ -212,7 +225,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 
 	private void doMultiInsertUpdate(Exchange exchange) {
 		String relation = m_relation;
-		if ("-".equals(relation)){
+		if ("-".equals(relation)) {
 			relation = null;
 		}
 		Map<String, Object> persistenceSpecification = new HashMap();
@@ -241,7 +254,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		Exception ex = null;
 		Map result = null;
 		try {
-			if( operation == LocalDataOperation.deleteById ){
+			if (operation == LocalDataOperation.deleteById) {
 				String objectId = ExchangeUtils.getParameter(m_objectId, exchange, String.class);
 				info(this, "doDeleteById(" + entityType + "):" + objectId);
 				if (isEmpty(objectId)) {
@@ -249,45 +262,48 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 				}
 				result = sc.deleteObjectById(entityType, objectId);
 			}
-			if( operation == LocalDataOperation.deleteByFilter ){
+			if (operation == LocalDataOperation.deleteByFilter) {
 				String filterName = m_filterName;
 				if (isEmpty(filterName)) {
 					throw new RuntimeException("LocalDataProducer.doDeleteById:no filtername given");
 				}
 				Map filterParameter = buildFilterParameter(exchange);
 				List<Object> idList = sc.getObjectIdsByNamedFilter(filterName, filterParameter);
-				info(this, "doDeleteByFilter(" + filterName+","+filterParameter + "):"+idList);
-				int i=0;
-				for( Object id : idList){
-					if( i++ >= m_max) break;
+				info(this, "doDeleteByFilter(" + filterName + "," + filterParameter + "):" + idList);
+				int i = 0;
+				for (Object id : idList) {
+					if (i++ >= m_max)
+						break;
 					result = sc.deleteObjectById(entityType, String.valueOf(id));
 				}
 			}
-			if( operation == LocalDataOperation.deleteByWhere ){
+			if (operation == LocalDataOperation.deleteByWhere) {
 				if (isEmpty(m_where)) {
 					throw new RuntimeException("LocalDataProducer.doDeleteByWhere:no whereclause  given");
 				}
 				String where = ExchangeUtils.getParameter(m_where, exchange, String.class);
-				info(this, "doDeleteByWhere(" + entityType+","+where + ")");
-				List<Object> rmObjList = getObjectsByWhere( exchange, sc, entityType, where);
-				int i=0;
-				for( Object rmObj : rmObjList){
-					if( i++ >= m_max) break;
-					Object id = sc.getPM().getObjectId( rmObj);
+				info(this, "doDeleteByWhere(" + entityType + "," + where + ")");
+				List<Object> rmObjList = getObjectsByWhere(exchange, sc, entityType, where);
+				int i = 0;
+				for (Object rmObj : rmObjList) {
+					if (i++ >= m_max)
+						break;
+					Object id = sc.getPM().getObjectId(rmObj);
 					result = sc.deleteObjectById(entityType, String.valueOf(id));
 				}
 			}
-			if( operation == LocalDataOperation.deleteByCriteria ){
-				String where = buildWhere( exchange, sc, entityType );
-				if( m_objectCriteria == null || isEmpty(where)){
+			if (operation == LocalDataOperation.deleteByCriteria) {
+				String where = buildWhere(exchange, sc, entityType);
+				if (m_objectCriteria == null || isEmpty(where)) {
 					throw new RuntimeException("LocalDataProducer.doDeleteByCriteria:no criteria  given");
 				}
-				info(this, "doDeleteByCriteria(" + entityType+","+where + ")");
-				List<Object> rmObjList = getObjectsByWhere( exchange, sc, entityType, where);
-				int i =0;
-				for( Object rmObj : rmObjList){
-					if( i++ >= m_max) break;
-					Object id = sc.getPM().getObjectId( rmObj);
+				info(this, "doDeleteByCriteria(" + entityType + "," + where + ")");
+				List<Object> rmObjList = getObjectsByWhere(exchange, sc, entityType, where);
+				int i = 0;
+				for (Object rmObj : rmObjList) {
+					if (i++ >= m_max)
+						break;
+					Object id = sc.getPM().getObjectId(rmObj);
 					result = sc.deleteObjectById(entityType, String.valueOf(id));
 				}
 			}
@@ -298,64 +314,69 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		processAndTransferResult(result, exchange, ex);
 	}
 
-	private void doFind(Exchange exchange, LocalDataOperation operation) {
+	private void doFind(Exchange exchange, LocalDataOperation operation, boolean isOne) {
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		try {
-			if( operation == LocalDataOperation.findById ){
+			if (operation == LocalDataOperation.findById) {
 				String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
 				String objectId = ExchangeUtils.getParameter(m_objectId, exchange, String.class);
 				info(this, "doFindById(" + entityType + "):" + objectId);
 				if (isEmpty(objectId)) {
 					throw new RuntimeException("LocalDataProducer.doFindById:no \"objectId\" given");
 				}
-				info(this, "doFindById(" + objectId +")");
-				Object res  = sc.getObjectMapById(entityType, objectId);
+				info(this, "doFindById(" + objectId + ")");
+				Object res = sc.getObjectMapById(entityType, objectId);
 				Message resultMessage = prepareResponseMessage(exchange, operation);
 				ExchangeUtils.setDestination(m_destination, res, exchange);
+				return;
 			}
-			if( operation == LocalDataOperation.findByFilter ){
+			List<Object> result = null;
+			if (operation == LocalDataOperation.findByFilter) {
 				String filterName = m_filterName;
 				if (isEmpty(filterName)) {
 					throw new RuntimeException("LocalDataProducer.doFindById:no filtername given");
 				}
 				Map filterParameter = buildFilterParameter(exchange);
-				info(this, "doFindByFilter(" + filterName + "," + filterParameter+")");
+				info(this, "doFindByFilter(" + filterName + "," + filterParameter + ")");
 				Map retMap = sc.executeNamedFilter(filterName, filterParameter);
-				List result=null;
 				if (retMap == null) {
 					result = new ArrayList();
 				} else {
 					result = (List) retMap.get("rows");
 				}
-				Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findByFilter);
-				resultMessage.setHeader(LocalDataConstants.ROW_COUNT, result.size());
-				ExchangeUtils.setDestination(m_destination, result, exchange);
-
 			}
-			if( operation == LocalDataOperation.findByWhere ){
+			if (operation == LocalDataOperation.findByWhere) {
 				String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
 				if (isEmpty(m_where)) {
 					throw new RuntimeException("LocalDataProducer.doFindByWhere:no whereclause  given");
 				}
 				String where = ExchangeUtils.getParameter(m_where, exchange, String.class);
-				info(this, "doFindByWhere(" + entityType+","+where + ")");
-				List<Object> result = getObjectsByWhere( exchange, sc, entityType, where);
-				Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findByFilter);
-				resultMessage.setHeader(LocalDataConstants.ROW_COUNT, result.size());
-				ExchangeUtils.setDestination(m_destination, result, exchange);
+				info(this, "doFindByWhere(" + entityType + "," + where + ")");
+				result = getObjectsByWhere(exchange, sc, entityType, where);
 			}
-			if( operation == LocalDataOperation.findByCriteria ){
+			if (operation == LocalDataOperation.findByCriteria) {
 				String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
-				String where = buildWhere( exchange, sc, entityType );
-				if( m_objectCriteria == null || isEmpty(where)){
+				String where = buildWhere(exchange, sc, entityType);
+				if (m_objectCriteria == null || isEmpty(where)) {
 					throw new RuntimeException("LocalDataProducer.doFindByCriteria:no criteria  given");
 				}
-				info(this, "doFindByCriteria(" + entityType+","+where + ")");
-				List<Object> result = getObjectsByWhere( exchange, sc, entityType, where);
-				Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findByFilter);
+				info(this, "doFindByCriteria(" + entityType + "," + where + ")");
+				result = getObjectsByWhere(exchange, sc, entityType, where);
+			}
+			Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findByFilter);
+			if( !isOne ){
 				resultMessage.setHeader(LocalDataConstants.ROW_COUNT, result.size());
 				ExchangeUtils.setDestination(m_destination, result, exchange);
+			}else{
+				Object res=null;
+				int size = 0;
+				if( result.size() > 0 ){
+					res = result.get(0);
+					size = 1;
+				}
+				resultMessage.setHeader(LocalDataConstants.ROW_COUNT, size);
+				ExchangeUtils.setDestination(m_destination, res, exchange);
 			}
 		} catch (Exception e) {
 			ex = e;
@@ -374,9 +395,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		} catch (Exception e) {
 			ex = e;
 		}
-		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.insert);
 		processAndTransferResult(result, exchange, ex);
-		resultMessage.setBody(result);
 	}
 
 	private void doUpdateById(Exchange exchange, boolean isUpsert) {
@@ -385,7 +404,10 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			throw new RuntimeException("LocalDataProducer.doUpdateById:no \"objectId\" given");
 		}
 		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
-		Map update = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		Map updateData = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		if (updateData == null) {
+			throw new RuntimeException("LocalDataProducer.doUpdateById:no \"updateData\" given");
+		}
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		Map result = null;
@@ -393,15 +415,18 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		int i = 0;
 		try {
 			if (isEmpty(objectId) && isUpsert) {
-				result = sc.insertObjectMap(update, entityType);
-			}else{
-				info(this, "doUpdateById(" + entityType+","+objectId + "):" + update);
-				result = sc.updateObjectMap(update, entityType, objectId);
+				result = sc.insertObjectMap(updateData, entityType);
+			} else {
+				info(this, "doUpdateById(" + entityType + "," + objectId + "):" + updateData);
+				result = sc.updateObjectMap(updateData, entityType, objectId);
+				if (isUpsert && result.get("notFound") != null) {
+					result = sc.insertObjectMap(updateData, entityType);
+				}
 			}
+			info(this, "doUpdateById.result(" + entityType + "," + objectId + "):" + result);
 		} catch (Exception e) {
 			ex = e;
 		}
-		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.updateById);
 		processAndTransferResult(result, exchange, ex);
 	}
 
@@ -411,215 +436,220 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			throw new RuntimeException("LocalDataProducer.doUpdateByFilter:no filtername given");
 		}
 		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
-		Map update = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		Map updateData = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		if (updateData == null) {
+			throw new RuntimeException("LocalDataProducer.doUpdateByFilter:no \"updateData\" given");
+		}
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
-		Map result = null;
-		int max = m_max;
+		Map<String, Object> result = new HashMap<String, Object>();
 		int i = 0;
 		try {
-			info(this, "doUpdateByFilter(" + filterName+ "):" + update);
+			info(this, "doUpdateByFilter(" + filterName + "):" + updateData);
 			Map filterParameter = buildFilterParameter(exchange);
 			List<Object> toObjList = sc.getObjectsByNamedFilter(filterName, filterParameter);
-			for( Object toObj : toObjList){
-				if( i++ >= max) break;
-				sc.populate( update, toObj);
+			for (Object toObj : toObjList) {
+				if (i++ >= m_max)
+					break;
+				Object id = getId(sc.getPM().getObjectId(toObj));
+				info(this, "doUpdateByFilter(" + filterName + "," + i + "):" + id);
+				sc.populate(updateData, toObj);
+				result.put("id" + (i > 1 ? i + "" : ""), id);
 			}
-			if ( i==0  && isUpsert) {
-				result = sc.insertObjectMap(update, entityType);
+			if (i == 0 && isUpsert) {
+				result = sc.insertObjectMap(updateData, entityType);
 			}
 		} catch (Exception e) {
 			ex = e;
 		}
-		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.updateByFilter);
 		processAndTransferResult(result, exchange, ex);
 	}
+
 	private void doUpdateByWhere(Exchange exchange, boolean isUpsert) {
 		if (isEmpty(m_where) && !isUpsert) {
 			throw new RuntimeException("LocalDataProducer.doUpdateByWhere:\"where clause\" not given");
 		}
 		String where = ExchangeUtils.getParameter(m_where, exchange, String.class);
 		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
-		Map update = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		Map updateData = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		if (updateData == null) {
+			throw new RuntimeException("LocalDataProducer.doUpdateByWhere:no \"updateData\" given");
+		}
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
-		Map result = null;
-		int max = m_max;
+		Map<String, Object> result = new HashMap<String, Object>();
 		int i = 0;
 		try {
-			info(this, "doUpdateByWhere(" + entityType+","+where + "):" + update);
-			List<Object> toObjList = getObjectsByWhere( exchange, sc, entityType, where);
-			for( Object toObj : toObjList){
-				if( i++ >= max) break;
-				sc.populate( update, toObj);
+			info(this, "doUpdateByWhere(" + entityType + "," + where + "):" + updateData);
+			List<Object> toObjList = getObjectsByWhere(exchange, sc, entityType, where);
+			for (Object toObj : toObjList) {
+				if (i++ >= m_max)
+					break;
+				Object id = getId(sc.getPM().getObjectId(toObj));
+				sc.populate(updateData, toObj);
+				result.put("id" + (i > 1 ? i + "" : ""), id);
 			}
-			if ( i==0  && isUpsert) {
-				result = sc.insertObjectMap(update, entityType);
+			if (i == 0 && isUpsert) {
+				result = sc.insertObjectMap(updateData, entityType);
 			}
 		} catch (Exception e) {
 			ex = e;
 		}
-		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.updateByWhere);
 		processAndTransferResult(result, exchange, ex);
 	}
+
 	private void doUpdateByCriteria(Exchange exchange, boolean isUpsert) {
 		if (m_objectCriteria == null && !isUpsert) {
 			throw new RuntimeException("LocalDataProducer.doUpdate:\"objectCriteria\" not given");
 		}
 		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
-		Map update = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		Map updateData = ExchangeUtils.getSource(m_source, exchange, Map.class);
+		if (updateData == null) {
+			throw new RuntimeException("LocalDataProducer.doUpdateByCriteria:no \"updateData\" given");
+		}
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
-		Map result = null;
+		Map<String, Object> result = new HashMap<String, Object>();
 		int max = m_max;
 		int i = 0;
 		try {
-			String where = buildWhere( exchange, sc, entityType );
-			info(this, "doUpdateByCriteria(" + entityType+","+where + "):" + update);
-			List<Object> toObjList = getObjectsByWhere( exchange, sc, entityType, where);
-			for( Object toObj : toObjList){
-				if( i++ >= max) break;
-				sc.populate( update, toObj);
+			String where = buildWhere(exchange, sc, entityType);
+			info(this, "doUpdateByCriteria(" + entityType + "," + where + "):" + updateData);
+			List<Object> toObjList = getObjectsByWhere(exchange, sc, entityType, where);
+			for (Object toObj : toObjList) {
+				if (i++ >= max)
+					break;
+				Object id = getId(sc.getPM().getObjectId(toObj));
+				sc.populate(updateData, toObj);
+				result.put("id" + (i > 1 ? i + "" : ""), id);
 			}
-			if ( i==0  && isUpsert) {
-				result = sc.insertObjectMap(update, entityType);
-			}
-		} catch (Exception e) {
-			ex = e;
-		}
-		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.updateByCriteria);
-		processAndTransferResult(result, exchange, ex);
-	}
-
-
-	private void doUpsert(Exchange exchange) {
-		String objectId = ExchangeUtils.getParameter(m_objectId, exchange, String.class);
-		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
-		Map data = ExchangeUtils.getSource(m_source, exchange, Map.class);
-		info(this, "doUpsert(" + entityType+","+objectId + "):" + data);
-		SessionContext sc = getSessionContext(exchange);
-		Exception ex = null;
-		Map result = null;
-		try {
-			if( !isEmpty(objectId)){
-				result = sc.updateObjectMap(data, entityType, objectId);
-			}else{
-				result = sc.insertObjectMap(data, entityType);
+			if (i == 0 && isUpsert) {
+				result = sc.insertObjectMap(updateData, entityType);
 			}
 		} catch (Exception e) {
 			ex = e;
 		}
-		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.upsertById);
 		processAndTransferResult(result, exchange, ex);
 	}
 
-
-/*	private void doFindOneByFilter(Exchange exchange) {
-		String filterName = getStringCheck(LocalDataConstants.FILTER_NAME, m_filterName);
-		SessionContext sc = getSessionContext(exchange);
-		Map result = null;
-		Map exVars = ExchangeUtils.getVariablesFromHeaderFields(exchange, m_paramHeaders);
-		Map retMap = sc.executeNamedFilter(filterName, exVars, m_options);
-		if (retMap == null) {
-		} else {
-			List rows = (List) retMap.get("rows");
-			if (rows.size() > 0) {
-				result = (Map) rows.get(0);
-			}
-		}
-		Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findOneByFilter);
-		resultMessage.setHeader(LocalDataConstants.ROW_COUNT, 1);
-		ExchangeUtils.setDestination(m_destination, result, exchange);
-	}*/
+	/*	private void doFindOneByFilter(Exchange exchange) {
+	 String filterName = getStringCheck(LocalDataConstants.FILTER_NAME, m_filterName);
+	 SessionContext sc = getSessionContext(exchange);
+	 Map result = null;
+	 Map exVars = ExchangeUtils.getVariablesFromHeaderFields(exchange, m_paramHeaders);
+	 Map retMap = sc.executeNamedFilter(filterName, exVars, m_options);
+	 if (retMap == null) {
+	 } else {
+	 List rows = (List) retMap.get("rows");
+	 if (rows.size() > 0) {
+	 result = (Map) rows.get(0);
+	 }
+	 }
+	 Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findOneByFilter);
+	 resultMessage.setHeader(LocalDataConstants.ROW_COUNT, 1);
+	 ExchangeUtils.setDestination(m_destination, result, exchange);
+	 }*/
 	private String getNamespace(Exchange exchange) {
 		String namespace = m_namespace;
-		if (namespace == null || "".equals(namespace) || "-".equals(namespace) ) {
-			namespace = exchange.getProperty("_namespace",String.class);
-		}else{
+		if (namespace == null || "".equals(namespace) || "-".equals(namespace)) {
+			namespace = exchange.getProperty("_namespace", String.class);
+		} else {
 			namespace = ExchangeUtils.getParameter(m_namespace, exchange, String.class, NAMESPACE);
 		}
 		return namespace;
 	}
-	private Map<String,String> buildFilterParameter( Exchange exchange ){
-		Map<String,String> ret = new HashMap<String,String>();
-		if( m_filterParameter == null) return ret;
-		for( Map<String,String> param : m_filterParameter){
-			info(this,"param:"+param);
+
+	private Map<String, String> buildFilterParameter(Exchange exchange) {
+		Map<String, String> ret = new HashMap<String, String>();
+		if (m_filterParameter == null)
+			return ret;
+		for (Map<String, String> param : m_filterParameter) {
+			info(this, "param:" + param);
 			String name = param.get("name");
 			String value = param.get("value");
 			String val = ExchangeUtils.getParameter(value, exchange, String.class);
-			ret.put( name, val );
+			ret.put(name, val);
 		}
-		info(this,"filterParameter:"+ret);
+		info(this, "filterParameter:" + ret);
 		return ret;
 	}
 
-	private String buildWhere( Exchange exchange, SessionContext sc, String entityType ){
-		Map<String,Map> fields = sc.getPermittedFields(entityType);
+	private String buildWhere(Exchange exchange, SessionContext sc, String entityType) {
+		Map<String, Map> fields = sc.getPermittedFields(entityType);
 		StringBuilder b = new StringBuilder();
 		String and = "";
-		if( m_objectCriteria == null) return b.toString();
-		for( Map<String,String> criteria : m_objectCriteria){
+		if (m_objectCriteria == null)
+			return b.toString();
+		for (Map<String, String> criteria : m_objectCriteria) {
 			String op = criteria.get("op");
 			String name = criteria.get("name");
 			String value = criteria.get("value");
-			Map<String,String> field = fields.get(name);
-			String  dt = field.get("datatype");
+			Map<String, String> field = fields.get(name);
+			String dt = field.get("datatype");
 			Class clazz = getType(dt);
 			Object val = ExchangeUtils.getParameter(value, exchange, clazz);
 			boolean isAlpha = Character.isJavaLetter(op.charAt(0));
-			Boolean isString = "string".equals( dt);
-			b.append( and );
-			b.append( "(" );
-			b.append( name );
-			b.append( isAlpha ? "." : " " );
+			Boolean isString = "string".equals(dt);
+			b.append(and);
+			b.append("(");
+			b.append(name);
+			b.append(isAlpha ? "." : " ");
 
 			b.append(op);
-			b.append( isAlpha ? "( " : " " );
+			b.append(isAlpha ? "( " : " ");
 
-			b.append( isString ? "\"" : "");
-			b.append( val);
-			b.append( isString ? "\"" : "");
-			b.append( isAlpha ? " ))" : " )" );
+			b.append(isString ? "\"" : "");
+			b.append(val);
+			b.append(isString ? "\"" : "");
+			b.append(isAlpha ? " ))" : " )");
 			and = " && ";
 		}
 		return b.toString();
 	}
 
-	private List<Object> getObjectsByWhere( Exchange exchange, SessionContext sc, String entityType, String where){
-		String pack = StoreDesc.getPackName( entityType );
-		String namespace = getNamespace( exchange);
+	private List<Object> getObjectsByWhere(Exchange exchange, SessionContext sc, String entityType, String where) {
+		String pack = StoreDesc.getPackName(entityType);
+		String namespace = getNamespace(exchange);
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace, pack);
 		Class clazz = sc.getClass(sdesc, entityType);
-		List<Object> toObjList = sc.getObjectsByFilter( clazz, where );
-		if( toObjList == null || toObjList.size()==0){
-			throw new RuntimeException("LocalDataProducer.doUpdate:object not found:where:"+where);
+		List<Object> toObjList = sc.getObjectsByFilter(clazz, where);
+		if (toObjList == null || toObjList.size() == 0) {
+			throw new RuntimeException("LocalDataProducer.doUpdate:object not found:where:" + where);
 		}
 		info(this, "getObjectsByWhere.toObj:" + toObjList);
 		return toObjList;
 	}
 
-	private Class  getType(String dt) {
+	private String getId(Object obj) {
+		if (obj != null && obj instanceof javax.jdo.identity.StringIdentity) {
+			javax.jdo.identity.StringIdentity si = (javax.jdo.identity.StringIdentity) obj;
+			return si.getKey();
+		}
+		return String.valueOf(obj);
+	}
+
+	private Class getType(String dt) {
 		Class ret = String.class;
-		if (  "long".equals(dt)) {
+		if ("long".equals(dt)) {
 			ret = Long.class;
-		}else if (  "number".equals(dt)) {
+		} else if ("number".equals(dt)) {
 			ret = Integer.class;
-		}else if (  "decimal".equals(dt)) {
+		} else if ("decimal".equals(dt)) {
 			ret = Double.class;
-		}else if (  "double".equals(dt)) {
+		} else if ("double".equals(dt)) {
 			ret = Double.class;
-		}else if (  "date".equals(dt)) {
+		} else if ("date".equals(dt)) {
 			ret = java.util.Date.class;
 		}
-		info(this,"getType.ret:"+ret);
+		info(this, "getType.ret:" + ret);
 		return ret;
 	}
+
 	private SessionContext getSessionContext(Exchange exchange) {
 		String namespace = m_namespace;
-		if (namespace == null || "".equals(namespace) || "-".equals(namespace) ) {
-			namespace = exchange.getProperty("_namespace",String.class);
-		}else{
+		if (namespace == null || "".equals(namespace) || "-".equals(namespace)) {
+			namespace = exchange.getProperty("_namespace", String.class);
+		} else {
 			namespace = ExchangeUtils.getParameter(m_namespace, exchange, String.class, NAMESPACE);
 		}
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
