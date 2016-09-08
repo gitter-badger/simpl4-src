@@ -118,9 +118,12 @@ public class Transformer implements Constants{
 			}else if(((Map)config.input).format == FORMAT_XML){
 				source = new StringSource(content as String);
 				setPath((Map)config.input,"");
-			}else if(((Map)config.input).format == FORMAT_MAP){
+			}else if(((Map)config.input).format == FORMAT_MAP || ((Map)config.input).format == FORMAT_POJO){
 				if( content instanceof String ){
 					content = m_ds.deserialize(content as String);
+				}
+				if( ((Map)config.input).format == FORMAT_POJO ){
+					content = m_ds.deserialize(m_js.serialize(content));
 				}
 				source = new JavaSource(content);
 				configureMAP(config,smooks);

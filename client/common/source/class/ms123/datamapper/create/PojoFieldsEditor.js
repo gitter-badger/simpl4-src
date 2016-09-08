@@ -50,32 +50,45 @@ qx.Class.define("ms123.datamapper.create.PojoFieldsEditor", {
 						'editable':false
 					},
 					'value': ""
+				},
+				"type": {
+					'type': "SelectBox",
+					'label': this.tr("datamapper.type"),
+					'value': ms123.datamapper.Config.NODETYPE_ELEMENT,
+					'options': [{
+						value: ms123.datamapper.Config.NODETYPE_ELEMENT,
+						label: "Element"
+					},{
+						value: ms123.datamapper.Config.NODETYPE_COLLECTION,
+						label: "List<Element>"
+					}]
 				}
 			};
 			return this.__createForm(formData, "single");
 		},
 		getValue: function () {
 			var data = qx.lang.Json.parse(qx.util.Serializer.toJson(this._form.getData()));
-			var model = this.createModel(data.entity);	
+			var model = this.createModel(data.entity,data.type);	
 			return model;
 		},
 		setValue: function (value) {
 			if( value != null && value.entity){
-				this._form.setData({entity:value.entity});
+				this._form.setData({entity:value.entity,type:value.type});
 			}
 		},
-		createModel:function(entity){
+		createModel:function(entity,type){
 			var cm = new ms123.config.ConfigManager();
 			var entityTree = cm.getEntityTree(this._facade.storeDesc,entity,4,false);
-			var newTree = this._traverse( entityTree,{} );
+			var newTree = this._traverse( entityTree,{}, type );
 			newTree.entity = entity;
 			return newTree;
 		},
-		_traverse: function (model,visited) {
+		_traverse: function (model,visited,type) {
 			var newModel = {};
 			newModel.name = model.name;
 			var entity = model.name;
-			newModel.type = ms123.datamapper.Config.NODETYPE_ELEMENT;
+			
+			newModel.type = type;
 			if(model.datatype == "list" || model.datatype == "map" ){
 				entity = model.entity;
 				newModel.type = ms123.datamapper.Config.NODETYPE_COLLECTION;
@@ -87,7 +100,7 @@ qx.Class.define("ms123.datamapper.create.PojoFieldsEditor", {
 				var c = model.children[i];
 				if( visited[c.name] !== true && visited[c.entity] !== true){
 					visited[c.name] = true;
-					var m = this._traverse(c,visited);
+					var m = this._traverse(c,visited,ms123.datamapper.Config.NODETYPE_ELEMENT);
 					newModel.children.push(m);
 				}
 			}
