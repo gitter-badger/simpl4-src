@@ -310,6 +310,10 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		} catch (Exception e) {
 			ex = e;
 		}
+		if (result == null) {
+			result = new HashMap<String, Object>();
+			result.put("notFound", true);
+		}
 		Message resultMessage = prepareResponseMessage(exchange, operation);
 		processAndTransferResult(result, exchange, ex);
 	}
@@ -365,13 +369,13 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 				result = getObjectsByWhere(exchange, sc, entityType, where);
 			}
 			Message resultMessage = prepareResponseMessage(exchange, LocalDataOperation.findByFilter);
-			if( !isOne ){
+			if (!isOne) {
 				resultMessage.setHeader(LocalDataConstants.ROW_COUNT, result.size());
 				ExchangeUtils.setDestination(m_destination, result, exchange);
-			}else{
-				Object res=null;
+			} else {
+				Object res = null;
 				int size = 0;
-				if( result.size() > 0 ){
+				if (result.size() > 0) {
 					res = result.get(0);
 					size = 1;
 				}
@@ -411,8 +415,6 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		SessionContext sc = getSessionContext(exchange);
 		Exception ex = null;
 		Map result = null;
-		int max = m_max;
-		int i = 0;
 		try {
 			if (isEmpty(objectId) && isUpsert) {
 				result = sc.insertObjectMap(updateData, entityType);
@@ -585,23 +587,31 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			String name = criteria.get("name");
 			String value = criteria.get("value");
 			Map<String, String> field = fields.get(name);
-			String dt = field.get("datatype");
+			String dt = field != null ? field.get("datatype") : "string";
 			Class clazz = getType(dt);
 			Object val = ExchangeUtils.getParameter(value, exchange, clazz);
 			boolean isAlpha = Character.isJavaLetter(op.charAt(0));
 			Boolean isString = "string".equals(dt);
 			b.append(and);
-			b.append("(");
-			b.append(name);
-			b.append(isAlpha ? "." : " ");
+			if ("string".equals(op)) {
+				b.append("(");
+				b.append(val);
+				b.append(")");
+			} else {
+				b.append("(");
+				b.append(name);
+				b.append(isAlpha ? "." : " ");
 
-			b.append(op);
-			b.append(isAlpha ? "( " : " ");
+				b.append(op);
+				b.append(isAlpha ? "( " : " ");
 
-			b.append(isString ? "\"" : "");
-			b.append(val);
-			b.append(isString ? "\"" : "");
-			b.append(isAlpha ? " ))" : " )");
+				b.append(isString ? "\"" : "");
+				if (val != null) {
+					b.append(val);
+				}
+				b.append(isString ? "\"" : "");
+				b.append(isAlpha ? " ))" : " )");
+			}
 			and = " && ";
 		}
 		return b.toString();
@@ -612,12 +622,12 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		String namespace = getNamespace(exchange);
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace, pack);
 		Class clazz = sc.getClass(sdesc, entityType);
-		List<Object> toObjList = sc.getObjectsByFilter(clazz, where);
-		if (toObjList == null || toObjList.size() == 0) {
-			throw new RuntimeException("LocalDataProducer.doUpdate:object not found:where:" + where);
+		List<Object> objList = sc.getObjectsByFilter(clazz, where);
+		if (objList == null) {
+			objList = new ArrayList<Object>();
 		}
-		info(this, "getObjectsByWhere.toObj:" + toObjList);
-		return toObjList;
+		info(this, "getObjectsByWhere.toObj:" + objList);
+		return objList;
 	}
 
 	private String getId(Object obj) {
