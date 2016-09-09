@@ -123,7 +123,7 @@ public class Transformer implements Constants{
 					content = m_ds.deserialize(content as String);
 				}
 				if( ((Map)config.input).format == FORMAT_POJO ){
-					content = m_ds.deserialize(m_js.serialize(content));
+					content = m_ds.deserialize(m_js.deepSerialize(content));
 				}
 				source = new JavaSource(content);
 				configureMAP(config,smooks);
