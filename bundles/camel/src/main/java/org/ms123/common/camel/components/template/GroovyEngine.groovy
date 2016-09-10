@@ -30,6 +30,7 @@ import org.apache.camel.Message;
 import groovy.text.StreamingTemplateEngine;
 import groovy.text.Template;
 import groovy.text.TemplateEngine;
+import static org.apache.commons.lang3.reflect.FieldUtils.readField;
 
 @SuppressWarnings("unchecked")
 @groovy.transform.CompileStatic
@@ -48,11 +49,12 @@ public class GroovyEngine extends Engine{
 		Template template = m_templateCache.get(key);
 		if (template == null) {
 			template = m_engine.createTemplate(text);
+			info("Template.scriptSource:" + readField(template, "scriptSource", true));
 			m_templateCache.put(key, template);
 		}
 		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
 		binding.putAll( variableMap);
-		info("Template is writing using attributes:" + binding);
+		info("Template.binding :" + binding);
 		String answer = template.make(binding).toString();
 		return answer;
 	}
