@@ -33,16 +33,19 @@ import org.apache.camel.component.ResourceEndpoint;
 import org.apache.camel.util.ExchangeHelper;
 import java.security.MessageDigest;
 import org.ms123.common.camel.api.ExchangeUtils;
+import flexjson.*;
 
 @SuppressWarnings("unchecked")
 @groovy.transform.CompileStatic
 public class TemplateEndpoint extends ResourceEndpoint {
 
+	private JSONDeserializer ds = new JSONDeserializer();
 	private Map<String, Engine> m_engineCache = new LinkedHashMap();
 	private Engine m_engine;
 
 	private String m_engineType = "groovy";
 	private String headerFields;
+	private List<Map<String,String>> assignments;
 	private String source = null ;
 	private String destination = null ;
 
@@ -95,6 +98,16 @@ public class TemplateEndpoint extends ResourceEndpoint {
 		return this.headerFields;
 	}
 
+	public void setAssignments(String a) {
+		if (a != null) {
+			this.assignments = (List)ds.deserialize(a);
+		}
+	}
+
+	public List<Map<String,String>> getAssignments() {
+		return this.assignments;
+	}
+
 	public void setDestination(String o){
 		 this.destination = o;
 	}
@@ -129,7 +142,10 @@ public class TemplateEndpoint extends ResourceEndpoint {
 			headerList.add(key);
 			modMap.put(key,mod);
 		}
-		Map<String, Object> variableMap = exchange.getIn().getHeader(TemplateConstants.TEMPLATE_DATA, Map.class);
+		Map<String, Object> variableMap = null;//exchange.getIn().getHeader(TemplateConstants.TEMPLATE_DATA, Map.class);
+		if (variableMap == null) {
+			variableMap = ExchangeUtils.getAssignments(exchange, this.getAssignments());
+		}
 		if (variableMap == null) {
 			//variableMap = ExchangeHelper.createVariableMap(exchange);
 			variableMap = new HashMap();

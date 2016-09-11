@@ -32,10 +32,24 @@ import static com.jcabi.log.Logger.info;
 /**
  * 
  */
+@SuppressWarnings({"unchecked"})
 public class ExchangeUtils {
 	public static final String CAMELBODY = "camelBody";
 	private static JSONSerializer m_js = new JSONSerializer();
 	protected static final String IGNORE_MESSAGE_PROPERTY = "CamelMessageHistory";
+
+	public static final Map<String, Class> assignmentTypes = new HashMap<String, Class>() {
+		{
+			put("string", java.lang.String.class);
+			put("integer", java.lang.Integer.class);
+			put("long", java.lang.Long.class);
+			put("double", java.lang.Double.class);
+			put("date", java.util.Date.class);
+			put("boolean", java.lang.Boolean.class);
+			put("map", java.util.Map.class);
+			put("list", java.util.List.class);
+		}
+	};
 
 	/**
 	 */
@@ -215,6 +229,35 @@ public class ExchangeUtils {
 					variables.put(header.getKey(), header.getValue());
 				}
 			}
+		}
+		return variables;
+	}
+
+	private static String makeVariableName( String expr ){
+		if( expr.indexOf( ".") == -1){
+			return expr;
+		}
+		int dot = expr.lastIndexOf(".");
+		String n = expr.substring(dot+1);
+		return n.replaceAll("[^\\p{IsAlphabetic}^\\p{IsDigit}]", "");
+	}
+	public static Map<String,Object> getAssignments(Exchange exchange, List<Map<String,String>> assignments){
+		Map<String,Object> variables = new HashMap();
+			info(ExchangeUtils.class,"getAssignments:"+assignments);
+		if( assignments == null){
+			return variables;
+		}
+		for( Map<String,String>  a : assignments){
+			String expr = a.get("expr");
+			Class type = assignmentTypes.get( a.get("type"));
+			String variable = a.get("variable");
+			if( isEmpty(variable)){
+				variable = makeVariableName( expr);
+			}
+
+			Object value = ExchangeUtils.getParameter(expr,exchange, type);
+			info(ExchangeUtils.class,"put("+variable+"):"+value);
+			variables.put( variable, value);
 		}
 		return variables;
 	}

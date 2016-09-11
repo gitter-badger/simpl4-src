@@ -46,13 +46,16 @@ import fr.opensagres.xdocreport.template.TemplateEngineKind;
 import fr.opensagres.xdocreport.template.formatter.FieldsMetadata;
 import java.security.MessageDigest;
 import static com.jcabi.log.Logger.info;
+import flexjson.*;
 
 @SuppressWarnings("unchecked")
 public class XDocReportEndpoint extends ResourceEndpoint {
 
 
+	private JSONDeserializer ds = new JSONDeserializer();
 	private TemplateEngineKind templateEngineKind = TemplateEngineKind.Freemarker;
 	private String headerFields;
+	private List<Map<String,String>> assignments;
 	private String outputformat;
 	private String source = null ;
 	private String destination = null ;
@@ -88,6 +91,15 @@ public class XDocReportEndpoint extends ResourceEndpoint {
 
 	public String getHeaderfields() {
 		return this.headerFields;
+	}
+	public void setAssignments(String a) {
+		if (a != null) {
+			this.assignments = (List)ds.deserialize(a);
+		}
+	}
+
+	public List<Map<String,String>> getAssignments() {
+		return this.assignments;
 	}
 
 	public void setOutputformat(String t) {
@@ -131,7 +143,10 @@ public class XDocReportEndpoint extends ResourceEndpoint {
 			headerList.add(key);
 			modMap.put(key,mod);
 		}
-		Map<String, Object> variableMap = exchange.getIn().getHeader(XDocReportConstants.XDOCREPORT_DATA, Map.class);
+		Map<String, Object> variableMap = null;//exchange.getIn().getHeader(XDocReportConstants.XDOCREPORT_DATA, Map.class);
+		if (variableMap == null) {
+			variableMap = ExchangeUtils.getAssignments(exchange, this.getAssignments());
+		}
 		if (variableMap == null) {
 			//variableMap = ExchangeHelper.createVariableMap(exchange);
 			variableMap = new HashMap();

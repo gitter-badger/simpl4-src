@@ -136,18 +136,6 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private Map options;
 	private String activitiKey;
 
-	protected static final Map<String, Class> assignmentTypes = new HashMap<String, Class>() {
-		{
-			put("string", java.lang.String.class);
-			put("integer", java.lang.Integer.class);
-			put("long", java.lang.Long.class);
-			put("double", java.lang.Double.class);
-			put("date", java.util.Date.class);
-			put("boolean", java.lang.Boolean.class);
-			put("map", java.util.Map.class);
-			put("list", java.util.List.class);
-		}
-	};
 	public ActivitiProducer(ActivitiEndpoint endpoint, WorkflowService workflowService, PermissionService permissionService) {
 		super(endpoint, -1, 100);
 		this.endpoint = endpoint;
@@ -597,7 +585,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 				List<Map> items = (List) params.get("items");
 				for (Map<String, String> item : items) {
 					String name = item.get("name");
-					Class type = assignmentTypes.get( item.get("type") );
+					Class type = ExchangeUtils.assignmentTypes.get( item.get("type") );
 					Object value = item.get("value");
 					if( value instanceof String ){
 						String v = ((String)value).trim();
@@ -676,23 +664,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private Map<String,Object> getProcessAssignments(Exchange exchange){
-		Map<String,Object> processVariables = new HashMap();
-		if( this.assignments == null){
-			return processVariables;
-		}
-		for( Map<String,String>  a : this.assignments){
-			String expr = a.get("expr");
-			Class type = assignmentTypes.get( a.get("type"));
-			String variable = a.get("variable");
-			if( isEmpty(variable)){
-				variable = makeVariableName( expr);
-			}
-
-			Object value = ExchangeUtils.getParameter(expr,exchange, type);
-			info(this,"put("+variable+"):"+value);
-			processVariables.put( variable, value);
-		}
-		return processVariables;
+		return ExchangeUtils.getAssignments( exchange, this.assignments);
 	}
 
 	private List<ProcessInstance> getProcessInstances(Exchange exchange) {
@@ -918,6 +890,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String getString(Exchange e, String key, String def) {
 		String value = ExchangeUtils.getParameter(def,e, String.class);
 		info(this,"getString("+key+","+def+"):"+value+"/"+isEmpty(value));
+		if( isEmpty(value)){
+			value = e.getIn().getHeader(key, String.class);
+		}
 		return value;
 	}
 

@@ -40,10 +40,12 @@ import org.ms123.common.camel.api.ExchangeUtils;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import flexjson.*;
 
 @SuppressWarnings("unchecked")
 public class DocbookEndpoint extends ResourceEndpoint {
 
+	private JSONDeserializer ds = new JSONDeserializer();
 	private String namespace = null ;
 	private String output = null ;
 	private String source = null ;
@@ -51,6 +53,7 @@ public class DocbookEndpoint extends ResourceEndpoint {
 	private String input = "docbook" ;
 	private Map<String,String> parameters;
 	private String headerFields;
+	private List<Map<String,String>> assignments;
 
 	public DocbookEndpoint() {
 	}
@@ -107,6 +110,16 @@ public class DocbookEndpoint extends ResourceEndpoint {
 	public String getHeaderfields() {
 		return this.headerFields;
 	}
+	public void setAssignments(String a) {
+		if (a != null) {
+			this.assignments = (List)ds.deserialize(a);
+		}
+	}
+
+	public List<Map<String,String>> getAssignments() {
+		return this.assignments;
+	}
+
 
 	@Override
 	public boolean isSingleton() {
@@ -155,36 +168,39 @@ public class DocbookEndpoint extends ResourceEndpoint {
 		ExchangeUtils.setDestination(this.destination,bos.toByteArray() , exchange);
 	}
 	private Map<String,Object> getVariablenMap(Exchange exchange){
-		List<String> _headerList=null;
-		if( this.headerFields!=null){
-			_headerList = Arrays.asList(this.headerFields.split(","));
-		}else{
-			_headerList = new ArrayList();
-		}
-		Map<String,String> modMap = new HashMap<String,String>();
-		List<String> headerList = new ArrayList<String>();
-		for( String h : _headerList){
-			String[]  _tmp = h.split(":");
-			String key = _tmp[0];
-			String mod = _tmp.length>1 ? _tmp[1] : "";
-			headerList.add(key);
-			modMap.put(key,mod);
-		}
-	
-		Map<String, Object> variableMap = exchange.getIn().getHeader(DocbookConstants.DOCBOOK_DATA, Map.class);
-		if (variableMap == null) {
-			variableMap = new HashMap();
-			for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
-				if( headerList.size()==0 || headerList.contains( header.getKey())){
-					if( header.getValue() instanceof Map && !"asMap".equals(modMap.get(header.getKey()) )){
-						variableMap.putAll((Map)header.getValue());
-					}else{
-						variableMap.put(header.getKey(), header.getValue());
+		Map<String, Object> variableMap = ExchangeUtils.getAssignments(exchange, this.getAssignments());
+		if( variableMap == null || variableMap.size() == 0){
+			List<String> _headerList=null;
+			if( this.headerFields!=null){
+				_headerList = Arrays.asList(this.headerFields.split(","));
+			}else{
+				_headerList = new ArrayList();
+			}
+			Map<String,String> modMap = new HashMap<String,String>();
+			List<String> headerList = new ArrayList<String>();
+			for( String h : _headerList){
+				String[]  _tmp = h.split(":");
+				String key = _tmp[0];
+				String mod = _tmp.length>1 ? _tmp[1] : "";
+				headerList.add(key);
+				modMap.put(key,mod);
+			}
+		
+			variableMap = exchange.getIn().getHeader(DocbookConstants.DOCBOOK_DATA, Map.class);
+			if (variableMap == null) {
+				variableMap = new HashMap();
+				for (Map.Entry<String, Object> header : exchange.getIn().getHeaders().entrySet()) {
+					if( headerList.size()==0 || headerList.contains( header.getKey())){
+						if( header.getValue() instanceof Map && !"asMap".equals(modMap.get(header.getKey()) )){
+							variableMap.putAll((Map)header.getValue());
+						}else{
+							variableMap.put(header.getKey(), header.getValue());
+						}
 					}
 				}
 			}
 		}
-		debug(this,"variableMap:"+variableMap);
+		info(this,"variableMap:"+variableMap);
 		return variableMap;
 	}
 
