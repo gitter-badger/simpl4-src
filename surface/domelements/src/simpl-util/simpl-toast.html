@@ -387,6 +387,10 @@ Property   | Value           | Description
 						this.style.right = ( grill.clientWidth + 24 ) + 'px';
 					}
 				},
+				close: function() {
+					var toast = this.$.toast;
+					toast.hide();
+				},
 
 				/**
 				 * Disables toaster bottom color and blinking.

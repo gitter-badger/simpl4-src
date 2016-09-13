@@ -115,7 +115,7 @@ is selected. This way, no video will play when the dialog is closed.
 					@apply(--layout-fullblock);
 				}
 			}
-			iron-image{
+			iron-image {
 				position: absolute;
 			}
 			.control {
@@ -184,6 +184,7 @@ is selected. This way, no video will play when the dialog is closed.
 				<content select="aside[after]"></content>
 			</div>
 		</div>
+		<simpl-toast id="toastId"></simpl-toast>
 	</template>
 	<script>
 		Polymer( {
@@ -298,6 +299,7 @@ is selected. This way, no video will play when the dialog is closed.
 
 			_strategies: {
 				'pdf': '_displayPdf',
+				'pdfRPC': '_displayPdfRPC',
 				'image': '_displayImage',
 				'html': '_displayHtml',
 				'video': '_displayVideo'
@@ -311,6 +313,43 @@ is selected. This way, no video will play when the dialog is closed.
 				this.$.viewer.innerHTML = '';
 				Polymer.dom( this.$.viewer ).appendChild( el );
 				this._currentMediaElement = el;
+			},
+			_displayPdfRPC: function( it ) {
+				var self = this;
+				var url = simpl4.util.BaseManager.getBaseUrl() + "/rpc/xyz";
+				var xhr = new XMLHttpRequest();
+				xhr.open( 'POST', url, true );
+				xhr.responseType = 'blob';
+				var username = simpl4.util.Rpc._getUserName();
+				var password = simpl4.util.Rpc._getPassword();
+				xhr.setRequestHeader( "Authorization", "Basic " + simpl4.util.Base64.encode( username + ":" + password ) );
+				xhr.setRequestHeader( 'Content-type', 'application/json; charset=utf-8' );
+				if ( it.wait ) {
+					this.$.toastId.show( it.wait, "success", "100000" );
+				}
+				xhr.onload = function( e ) {
+					if ( this.status == 200 ) {
+						var blob = new Blob( [ this.response ], {
+							type: 'application/pdf'
+						} );
+						var downloadUrl = URL.createObjectURL( blob );
+						var pdf = document.createElement( 'simpl-pdfviewer' );
+						pdf.file = downloadUrl;
+						pdf.height = "100%";
+						pdf.style = "position:absolute;";
+						self._replaceMedia( pdf );
+						self.$.toastId.close();
+					} else {
+						console.error( "Error download:", this.status );
+						this.$.toastId.show( "Error download:" + this.status, "error", "100000" );
+					}
+					xhr.onerror = function( e ) {
+						console.log( "Failed:", e );
+						this.$.toastId.show( "Failed:" + e, "error", "100000" );
+					};
+				};
+				console.log( "send:", it.rpc );
+				xhr.send( JSON.stringify( it.rpc ) );
 			},
 
 			_displayPdf: function( it ) {
@@ -373,7 +412,7 @@ is selected. This way, no video will play when the dialog is closed.
 				}
 				var strategy = this._strategies[ it.type ];
 				if ( !strategy ) {
-//					console.warn( "[simpl-lightbox] Cannot display media of type", it.type );
+					//					console.warn( "[simpl-lightbox] Cannot display media of type", it.type );
 					return;
 				}
 				if ( typeof strategy === 'function' ) {
