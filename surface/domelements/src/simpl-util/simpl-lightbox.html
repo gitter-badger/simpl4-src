@@ -315,6 +315,7 @@ is selected. This way, no video will play when the dialog is closed.
 				this._currentMediaElement = el;
 			},
 			_displayPdfRPC: function( it ) {
+				this.$.viewer.innerHTML = '';
 				var self = this;
 				var url = simpl4.util.BaseManager.getBaseUrl() + "/rpc/xyz";
 				var xhr = new XMLHttpRequest();
