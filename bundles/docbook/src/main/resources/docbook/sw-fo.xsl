@@ -161,6 +161,14 @@
   </fo:block>
 </xsl:template>
 
+<xsl:template match="d:para[@role = 'big4bold']">
+  <fo:block font-size="200%" font-weight="bold" xsl:use-attribute-sets="normal.para.spacing">
+    <xsl:call-template name="anchor"/>
+    <xsl:apply-templates/>
+  </fo:block>
+</xsl:template>
+
+
 <xsl:template match="d:para[@role = 'italic']">
   <fo:block font-style="italic" xsl:use-attribute-sets="normal.para.spacing">
     <xsl:call-template name="anchor"/>
@@ -302,6 +310,12 @@
 <xsl:attribute-set name="table.properties">
   <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
 </xsl:attribute-set>
+
+
+<xsl:template match="d:pagebreak">
+  <fo:block xmlns:fo="http://www.w3.org/1999/XSL/Format" break-before='page' />
+ </xsl:template>
+
 
 <xsl:template match="processing-instruction('hard-pagebreak')">
    <fo:block break-before='page'/>
