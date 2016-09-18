@@ -125,7 +125,55 @@
 
 			//console.log( "location:" + window.location );
 			//console.log( "init.route:" + this.route );
+
+
+			console.log( "Detectizr:" + JSON.stringify( Detectizr, null, 2 ) );
+			console.log( "Window:", window );
+
+			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
+			console.log( "isTouch:" + isTouch );
+
+			if ( Detectizr.browser.name != "xafari" ) {
+				var mc = this.querySelector( "#mainContainer" );
+				Polymer.dom( mc ).setAttribute( "scrollbar", "" );
+				var hc = this.querySelector( "#headerContainer" );
+				hc.style.zIndex = 1;
+				this._scrollbar = window.Scrollbar.init( mc, {
+					speed: 2.0,
+					damping: 0.1,
+					paddingTop: 64,
+					renderByPixels: true,
+					alwaysShowTracks: true,
+					overscrollEffect: false,
+					overscrollDamping: 0.1,
+					thumbMinSize: 10
+				} );
+				var shp = this.$.scrollHeaderPanelId;
+				this._scrollbar.addListener( function( e ) {
+					shp._updateScrollState( e.offset.y );
+				} );
+			}
+			this.observeOverlayBackdrop();
 		},
+
+
+		observeOverlayBackdrop: function() {
+			var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+			var obs = new MutationObserver( function( mutations, observer ) {
+				var o = document.querySelectorAll( "iron-overlay-backdrop" );
+				var scrollContainer = document.querySelector( "#mainContainer article.scroll-content" );
+				if ( o.length > 0 ) {
+					scrollContainer.style.display = "initial";
+				} else {
+					scrollContainer.style.display = "block";
+				}
+			} );
+
+			obs.observe( $( "body" ).get( 0 ), {
+				childList: true
+			} );
+		},
+
 		getGlobals: function() {
 			if ( this.globals == null ) {
 				this.globals = simpl4Globals.getAll();
@@ -186,18 +234,22 @@
 			}
 		},
 		menuItemSelected: function( e ) {
-			$("#mainContainer").scrollTop(0);
+			if ( this._scrollbar ) {
+				this._scrollbar.scrollTo( 0, 0, 0 );
+			} else {
+				$( "#mainContainer" ).scrollTop( 0 );
+			}
 			var page = e.detail.page;
 			if ( e.detail.isSelected && page.url ) {
 				//console.debug( "menuItemSelected:", e );
 				channel.publish( "menuItem.selected",
 					e.detail
 				);
-				document.title = "simpl4-" +page.name;
+				document.title = "simpl4-" + page.name;
 				this.selectedPage = page;
 				this.route = page.hash;
 				if ( this.pageCache[ page.url ] !== true ) {
-					this.importHref( this._buildUrl(page), this.onResponse.bind( this ) );
+					this.importHref( this._buildUrl( page ), this.onResponse.bind( this ) );
 				} else {
 					var toolbarBottom = this.querySelector( ".toolbar.bottom" );
 					var tb = this.toolbarBottomCache[ page.url ];
@@ -232,13 +284,13 @@
 				Polymer.dom( insertPoint ).appendChild( head.firstElementChild );
 			}
 			if ( body.firstElementChild ) {
-				if( body.childNodes.length>1){
-					for (var i = 0; i < body.childNodes.length; i++) {
-						var node = body.childNodes[i];
+				if ( body.childNodes.length > 1 ) {
+					for ( var i = 0; i < body.childNodes.length; i++ ) {
+						var node = body.childNodes[ i ];
 						Polymer.dom( insertPoint ).appendChild( node );
 						this.$.dispatcherId.filterLocalLinks( node );
 					}
-				}else{
+				} else {
 					Polymer.dom( insertPoint ).appendChild( body.firstElementChild );
 					this.$.dispatcherId.filterLocalLinks( insertPoint.firstElementChild );
 				}
@@ -273,22 +325,22 @@
 			}
 			return url;
 		},
-		_buildUrl: function(page) {
+		_buildUrl: function( page ) {
 			var url = page.url;
-			var hasRpc = (url.indexOf("?rpc=") > 0) || (url.indexOf("&rpc=") > 0);
-			if( hasRpc ){
-					var password = simpl4.util.BaseManager.getPassword();
-					var username = simpl4.util.BaseManager.getUser();
-					var credentials = simpl4.util.Base64.encode( username + ":" + password );
-					url += "&credentials="+credentials;
+			var hasRpc = ( url.indexOf( "?rpc=" ) > 0 ) || ( url.indexOf( "&rpc=" ) > 0 );
+			if ( hasRpc ) {
+				var password = simpl4.util.BaseManager.getPassword();
+				var username = simpl4.util.BaseManager.getUser();
+				var credentials = simpl4.util.Base64.encode( username + ":" + password );
+				url += "&credentials=" + credentials;
 			}
-			if( _.isEmpty(page.appendix)){
+			if ( _.isEmpty( page.appendix ) ) {
 				return url;
 			}
-			var hasQuery = url.indexOf("?") >= 0;
-			var hasHash = url.indexOf("#") >= 0;
-			var appendix = (hasQuery ? "&" : "?") + this._maskedEval(page.appendix,page,"paramError=1");
-			return hasHash ? url.replace("#", appendix + "#") : url + appendix;
+			var hasQuery = url.indexOf( "?" ) >= 0;
+			var hasHash = url.indexOf( "#" ) >= 0;
+			var appendix = ( hasQuery ? "&" : "?" ) + this._maskedEval( page.appendix, page, "paramError=1" );
+			return hasHash ? url.replace( "#", appendix + "#" ) : url + appendix;
 		},
 		_maskedEval: function( scr, env, def ) {
 			try {
@@ -319,7 +371,7 @@
 				key1: "value1"
 			} );
 		},
-		_toolbarStuff:function(body){
+		_toolbarStuff: function( body ) {
 			var newToolbarBottom = body.querySelector( ".toolbar.bottom" );
 			this.setToolbarClass( newToolbarBottom );
 			this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;

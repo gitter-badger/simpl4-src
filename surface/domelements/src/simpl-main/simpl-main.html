@@ -20,6 +20,7 @@
 -->
 <link rel="import" href="css-import-behavior.html">
 <link rel="import" href="main-behavior.html">
+<link rel="import" type="css" href="scrollbar.css">
 	<style>
 body,
     html {
@@ -173,7 +174,7 @@ body,
 					</div>
 				</div>
 
-				<paper-scroll-header-panel header-height="64" main>
+				<paper-scroll-header-panel id="scrollHeaderPanelId" header-height="64" main>
 					<template is="dom-if" if="[[!toolbarProvided]]">
 						<paper-toolbar class="main__toolbar" id="mainToolbar">
 							<paper-icon-button id="menuButton" icon="menu" paper-multidrawer-toggle-left on-tap="togglePanel"></paper-icon-button>
