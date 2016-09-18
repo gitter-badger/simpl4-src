@@ -44,7 +44,7 @@
 			<img id="closedImageId" src="[[image]]" style$="[[styleClosed]]">
 		</div>
 
-		<paper-fullscreen-dialog class="flex grid row column" no-cancel-on-outside-click with-backdrop$="[[backdrop]]" on-iron-overlay-closed="dialogClosed" on-iron-overlay-opened="dialogOpened" id="imageDialog">
+		<paper-fullscreen-dialog class="flex grid row column" no-cancel-on-outside-click with-backdrop$="[[backdrop]]" on-iron-overlay-closed="dialogClosed" on-iron-overlay-opened="_dialogOpened" id="imageDialog">
 			<img class="flex grid row" id="bigImage" src="[[image]]">
 		</paper-fullscreen-dialog>
 
@@ -73,9 +73,14 @@
 				var ret = "width:" + this.maxWidthClosed;
 				return ret;
 			},
+			_dialogOpened: function() {
+				this.async( function() {
+					this.dialogOpened();
+				}, 50 );
+			},
 			dialogOpened: function() {
 				this.dh = $( this.$.imageDialog ).height();
-				if( this.ih == null){
+				if ( this.ih == null ) {
 					this.ih = $( this.$.bigImage ).height();
 				}
 				$( this.$.bigImage ).panzoom( {
@@ -98,37 +103,43 @@
 					left: this.isDrawerOpen() ? 230 : 0
 				} )
 				var self = this;
-				$( this.$.bigImage ).swipe( {
-					fingers: 2,
-					pinchThreshold: 0,
-					tap: function( event, target ) {
-						return false;
-					},
-					doubleTap: function( event, target ) {
-						self.dialogClose();
-					},
-					doubleTapThreshold: 200
+
+				var mc = new Hammer.Manager( this.$.bigImage, {} );
+				mc.add( new Hammer.Tap( {
+					event: 'doubletap',
+					taps: 2,
+					threshold: 50,
+					interval: 400,
+					time: 250
+				} ) );
+
+				mc.on( "doubletap", function( event ) {
+					console.log( 'about to close' );
+					self.dialogClose();
 				} );
 			},
 			attached: function() {
 				var self = this;
-				$( this.$.imageClosed ).swipe( {
-					fingers: 2,
-					//pinchThreshold:0,
-					tap: function( event, target ) {
-						return false;
-					},
-					pinchIn: function() {
-						console.error( "pinchIn" );
-						self.dialogOpen();
-					},
-					doubleTap: function( event, target ) {
-						self.dialogOpen();
-					}
+
+				var mc = new Hammer.Manager( this.$.imageClosed, {} );
+				mc.add( new Hammer.Tap( {
+					event: 'doubletap',
+					taps: 2,
+					threshold: 10,
+					interval: 250,
+					time: 250
+				} ) );
+				//				mc.add( new Hammer.Pinch({ event: 'pinch', pointers: 2, threshold:0 }) );
+
+				mc.on( "doubletap pinch", function( event ) {
+					console.log( 'about to open' );
+					self.dialogOpen();
 				} );
-				if ( Detectizr.browser.userAgent.indexOf("edge/") >=0) {
+
+
+				if ( Detectizr.browser.userAgent.indexOf( "edge/" ) >= 0 ) {
 					this.$.closedImageId.src = this.image;
-					this.$.bigImage.src =   this.image;
+					this.$.bigImage.src = this.image;
 				}
 			},
 			dialogOpen: function() {
