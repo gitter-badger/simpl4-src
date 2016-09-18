@@ -109,42 +109,26 @@
 			this.helpMessage = tr( "button.help" );
 			this.drawerPanel = this.$.drawerPanel;
 			this.neonPages = this.$.pages;
-			//				this.signInOutIcon="system-update-alt";
-			this.keys = this.$.keys;
-			// Allow selecting pages by num keypad. 
-			/*var pages = simpl4PageRegistry.getPages();
-			if( pages==null || pages.length==0) return;	
-			var keysToAdd = Array.apply( null, pages ).map( function( x, i ) {
-				return i + 1;
-			} ).reduce( function( x, y ) {
-				return x + ' ' + y;
-			} );
-			if ( this.keys ) {
-				this.keys += ' ' + keysToAdd;
-			}*/
-
-			//console.log( "location:" + window.location );
-			//console.log( "init.route:" + this.route );
-
 
 			console.log( "Detectizr:" + JSON.stringify( Detectizr, null, 2 ) );
-			console.log( "Window:", window );
 
 			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
 			console.log( "isTouch:" + isTouch );
+			var isSafari = Detectizr.browser.name == "safari";
+			console.log( "isSafari:" + isSafari );
 
-			if ( Detectizr.browser.name != "xafari" ) {
+			if ( true/*Detectizr.browser.name != "xafari"*/ ) {
 				var mc = this.querySelector( "#mainContainer" );
 				Polymer.dom( mc ).setAttribute( "scrollbar", "" );
 				var hc = this.querySelector( "#headerContainer" );
 				hc.style.zIndex = 1;
 				this._scrollbar = window.Scrollbar.init( mc, {
-					speed: 2.0,
-					damping: 0.1,
+					speed: isSafari ? 1 : 4,
+					damping: isSafari ? 0.1 : 0.05,
 					paddingTop: 64,
 					renderByPixels: true,
 					alwaysShowTracks: true,
-					overscrollEffect: false,
+					overscrollEffect: "bounce",
 					overscrollDamping: 0.1,
 					thumbMinSize: 10
 				} );
@@ -152,6 +136,9 @@
 				this._scrollbar.addListener( function( e ) {
 					shp._updateScrollState( e.offset.y );
 				} );
+				this.async( function() {
+					this._scrollbar.update( );
+				}, 1000 );
 			}
 			this.observeOverlayBackdrop();
 		},
@@ -181,7 +168,14 @@
 			return this.globals;
 		},
 		routeChanged: function() {
-			//console.log( "routeChanged:" + this.route );
+			if ( this._scrollbar ) {
+				this.async( function() {
+					this._scrollbar.scrollTo( 0, 0 );
+					this._scrollbar.update( );
+				}, 1000 );
+			} else {
+				$( "#mainContainer" ).scrollTop( 0 );
+			}
 
 			this.route = this.route.toString();
 			var route = this.route;
@@ -191,7 +185,6 @@
 			if ( this.route != route ) {
 				this.route = route;
 			}
-			//console.log( "routeChanged2:" + this.route );
 
 			channel.publish( "route.changed", {
 				route: this.route
@@ -234,11 +227,7 @@
 			}
 		},
 		menuItemSelected: function( e ) {
-			if ( this._scrollbar ) {
-				this._scrollbar.scrollTo( 0, 0, 0 );
-			} else {
-				$( "#mainContainer" ).scrollTop( 0 );
-			}
+			console.log( "menuItemSelected:"  );
 			var page = e.detail.page;
 			if ( e.detail.isSelected && page.url ) {
 				//console.debug( "menuItemSelected:", e );
