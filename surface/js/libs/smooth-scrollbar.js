@@ -6208,6 +6208,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var y = _getDelta.y;
 
 
+	        if (options.wheelActionOk) {
+	            if (!options.wheelActionOk(evt)) {
+	                return;
+	            }
+	        }
 	        x *= options.speed;
 	        y *= options.speed;
 
@@ -6640,6 +6645,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        overscrollEffect: false, // overscroll effect, false | 'bounce' | 'glow'
 	        overscrollEffectColor: '#87ceeb', // android overscroll effect color
 	        paddingTop: 0,
+	        wheelActionOk: null,
 	        overscrollDamping: 0.2 };
 
 	    var limit = {
@@ -6695,6 +6701,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        set paddingTop(v) {
 	            options.paddingTop = v;
+	        },
+
+	        get wheelActionOk() {
+	            return options.wheelActionOk;
+	        },
+	        set wheelActionOk(v) {
+	            options.wheelActionOk = v;
 	        },
 
 	        get alwaysShowTracks() {

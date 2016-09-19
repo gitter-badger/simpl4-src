@@ -117,29 +117,40 @@
 			var isSafari = Detectizr.browser.name == "safari";
 			console.log( "isSafari:" + isSafari );
 
-			if ( true/*Detectizr.browser.name != "xafari"*/ ) {
-				var mc = this.querySelector( "#mainContainer" );
-				Polymer.dom( mc ).setAttribute( "scrollbar", "" );
-				var hc = this.querySelector( "#headerContainer" );
-				hc.style.zIndex = 1;
-				this._scrollbar = window.Scrollbar.init( mc, {
-					speed: isSafari ? 1 : 4,
-					damping: isSafari ? 0.1 : 0.05,
-					paddingTop: 64,
-					renderByPixels: true,
-					alwaysShowTracks: true,
-					overscrollEffect: "bounce",
-					overscrollDamping: 0.1,
-					thumbMinSize: 10
-				} );
-				var shp = this.$.scrollHeaderPanelId;
-				this._scrollbar.addListener( function( e ) {
-					shp._updateScrollState( e.offset.y );
-				} );
-				this.async( function() {
-					this._scrollbar.update( );
-				}, 1000 );
+			var mc = this.querySelector( "#mainContainer" );
+			Polymer.dom( mc ).setAttribute( "scrollbar", "" );
+			var hc = this.querySelector( "#headerContainer" );
+			hc.style.zIndex = 1;
+
+			var wheelActionOk = function( evt ) {
+				console.log( "wheelActionOk:", evt );
+				for ( var i = 0; i < evt.path.length; i++ ) {
+					var p = evt.path[ i ];
+					if ( p.id == null ) continue;
+					var isDatatables = p.id.toLowerCase().indexOf( "datatables" ) >= 0;
+					if ( isDatatables ) return false;
+				}
+				return true;
 			}
+
+			this._scrollbar = window.Scrollbar.init( mc, {
+				speed: isTouch ? 1 : 4,
+				damping: isTouch ? 0.1 : 0.05,
+				paddingTop: 64,
+				renderByPixels: true,
+				alwaysShowTracks: true,
+				overscrollEffect: "bounce",
+				overscrollDamping: 0.1,
+				wheelActionOk: wheelActionOk,
+				thumbMinSize: 10
+			} );
+			var shp = this.$.scrollHeaderPanelId;
+			this._scrollbar.addListener( function( e ) {
+				shp._updateScrollState( e.offset.y );
+			} );
+			this.async( function() {
+				this._scrollbar.update();
+			}, 1000 );
 			this.observeOverlayBackdrop();
 		},
 
@@ -169,9 +180,9 @@
 		},
 		routeChanged: function() {
 			if ( this._scrollbar ) {
-					this._scrollbar.scrollTo( 0, 0 );
+				this._scrollbar.scrollTo( 0, 0 );
 				this.async( function() {
-					this._scrollbar.update( );
+					this._scrollbar.update();
 				}, 1000 );
 			} else {
 				$( "#mainContainer" ).scrollTop( 0 );
@@ -227,7 +238,7 @@
 			}
 		},
 		menuItemSelected: function( e ) {
-			console.log( "menuItemSelected:"  );
+			console.log( "menuItemSelected:" );
 			var page = e.detail.page;
 			if ( e.detail.isSelected && page.url ) {
 				//console.debug( "menuItemSelected:", e );
