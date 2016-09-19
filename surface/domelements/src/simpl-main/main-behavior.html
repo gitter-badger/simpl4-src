@@ -169,8 +169,8 @@
 		},
 		routeChanged: function() {
 			if ( this._scrollbar ) {
-				this.async( function() {
 					this._scrollbar.scrollTo( 0, 0 );
+				this.async( function() {
 					this._scrollbar.update( );
 				}, 1000 );
 			} else {
