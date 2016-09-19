@@ -122,13 +122,13 @@
 			var hc = this.querySelector( "#headerContainer" );
 			hc.style.zIndex = 1;
 
-			var wheelActionOk = function( evt ) {
-				console.log( "wheelActionOk:", evt );
-				for ( var i = 0; i < evt.path.length; i++ ) {
-					var p = evt.path[ i ];
-					if ( p.id == null ) continue;
-					var isDatatables = p.id.toLowerCase().indexOf( "datatables" ) >= 0;
+			var shouldHandleEvent = function( evt ) {
+				console.log( "shouldHandleEvent:", evt );
+				var node = evt.target;
+				while ( node != document.body ) {
+					var isDatatables = node.id && node.id.toLowerCase().indexOf( "datatables" ) >= 0;
 					if ( isDatatables ) return false;
+					node = node.parentNode;
 				}
 				return true;
 			}
@@ -141,7 +141,7 @@
 				alwaysShowTracks: true,
 				overscrollEffect: "bounce",
 				overscrollDamping: 0.1,
-				wheelActionOk: wheelActionOk,
+				shouldHandleEvent: shouldHandleEvent,
 				thumbMinSize: 10
 			} );
 			var shp = this.$.scrollHeaderPanelId;
