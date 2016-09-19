@@ -10,7 +10,7 @@
   	height: 100%;
   }
   [scrollbar].sticky .scrollbar-track {
-  	background: rgb(207, 216, 220);
+  	background: #F0F3F4;
   }
   [scrollbar] .scrollbar-track {
   	position: absolute;
@@ -36,14 +36,14 @@
   [scrollbar] .scrollbar-track-y {
   	top: 0;
   	right: 0;
-  	width: 4px;
+  	width: 2px;
   	height: 100%;
   }
   [scrollbar] .scrollbar-thumb {
   	position: absolute;
   	top: 0;
   	left: 0;
-  	width: 4px;
+  	width: 2px;
   	height: 8px;
   	background: #607d8b;
   	border-radius: 2px;
