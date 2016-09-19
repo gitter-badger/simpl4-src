@@ -6069,6 +6069,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.__addEvent(container, 'touchstart', function (evt) {
 	        if (_this.__isDrag) return;
+	        if (_this.options.shouldHandleEvent) {
+	            if (!_this.options.shouldHandleEvent(evt)) {
+	                return;
+	            }
+	        }
 
 	        var __timerID = _this.__timerID;
 	        var movement = _this.movement;
@@ -6086,6 +6091,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.__addEvent(container, 'touchmove', function (evt) {
 	        if (_this.__isDrag) return;
+	        if (_this.options.shouldHandleEvent) {
+	            if (!_this.options.shouldHandleEvent(evt)) {
+	                return;
+	            }
+	        }
 	        if (activeScrollbar && activeScrollbar !== _this) return;
 
 	        __touchRecord.update(evt);
@@ -6208,8 +6218,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var y = _getDelta.y;
 
 
-	        if (options.wheelActionOk) {
-	            if (!options.wheelActionOk(evt)) {
+	        if (options.shouldHandleEvent) {
+	            if (!options.shouldHandleEvent(evt)) {
 	                return;
 	            }
 	        }
@@ -6645,7 +6655,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        overscrollEffect: false, // overscroll effect, false | 'bounce' | 'glow'
 	        overscrollEffectColor: '#87ceeb', // android overscroll effect color
 	        paddingTop: 0,
-	        wheelActionOk: null,
+	        shouldHandleEvent: null,
 	        overscrollDamping: 0.2 };
 
 	    var limit = {
@@ -6703,11 +6713,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            options.paddingTop = v;
 	        },
 
-	        get wheelActionOk() {
-	            return options.wheelActionOk;
+	        get shouldHandleEvent() {
+	            return options.shouldHandleEvent;
 	        },
-	        set wheelActionOk(v) {
-	            options.wheelActionOk = v;
+	        set shouldHandleEvent(v) {
+	            options.shouldHandleEvent = v;
 	        },
 
 	        get alwaysShowTracks() {
