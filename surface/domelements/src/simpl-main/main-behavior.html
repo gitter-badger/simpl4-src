@@ -123,7 +123,6 @@
 			hc.style.zIndex = 1;
 
 			var shouldHandleEvent = function( evt ) {
-				console.log( "shouldHandleEvent:", evt );
 				var node = evt.target;
 				while ( node != document.body ) {
 					var isDatatables = node.id && node.id.toLowerCase().indexOf( "datatables" ) >= 0;
