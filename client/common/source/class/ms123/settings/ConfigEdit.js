@@ -68,15 +68,16 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 					settingsid: this._facade.settingsid,
 					resourceid: this._resourceid
 				} );
-				console.log( "data:", data );
 				if ( data ) {
+					this._schemaname = data[ms123.settings.Config.SETTINGS_SCHEMANAME];
 					var schema = ms123.util.Remote.rpcSync( "git:searchContent", {
 						reponame: this._facade.storeDesc.getNamespace(),
-						name: data.schema,
+						name: this._schemaname,
 						type: "sw.schema"
 					} );
+					console.log( "Data:", data[ms123.settings.Config.SETTINGS_DATA] );
 					console.log( "Schema:", schema );
-					this._createJsonEditor( JSON5.parse(schema) );
+					this._createJsonEditor( JSON5.parse(schema), data[ms123.settings.Config.SETTINGS_DATA] );
 				}else{
 					ms123.form.Dialog.alert( "settings.ConfigEdit._load:no schema found"  );
 				}
@@ -85,13 +86,23 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 			}
 		},
 		_save: function() {
-			var data = this.getData();
+			var errors = this._editor.validate();
+			if( errors.length){
+				console.log("errors:",errors);
+				ms123.form.Dialog.alert( this.tr( "settings.not_valid" ) );
+				return;
+			}
+			var data = this._editor.getValue();
+			console.log("Data:",data);
 			try {
+				var settings={};
+				settings[ms123.settings.Config.SETTINGS_DATA] = data;
+				settings[ms123.settings.Config.SETTINGS_SCHEMANAME] = this._schemaname;
 				ms123.util.Remote.rpcSync( "setting:setResourceSetting", {
 					namespace: this._facade.storeDesc.getNamespace(),
 					settingsid: this._facade.settingsid,
 					resourceid: this._resourceid,
-					settings: data
+					settings: settings
 				} );
 				ms123.form.Dialog.alert( this.tr( "settings.properties_saved" ) );
 				ms123.config.ConfigManager.clearCache();
@@ -99,7 +110,7 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 				ms123.form.Dialog.alert( "settings.views.PropertyEdit._save:" + e );
 			}
 		},
-		_createJsonEditor: function( schema ) {
+		_createJsonEditor: function( schema, config ) {
 			var widget = new qx.ui.embed.Html( "<div></div>" ).set({
 				overflowY: "auto",
 				overflowX: "auto"
@@ -109,12 +120,13 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 			} );
 			widget.addListenerOnce( "appear", function() {
 				var c = widget.getContentElement().getDomElement();
-				var editor = new JSONEditor( c, {
-					theme : "foundation5",
-					iconlib : "fontawesom4",
+				JSONEditor.plugins.selectize.enable = true;
+				this._editor = new JSONEditor( c, {
+					theme : "html",
+					iconlib : "fontawesome4",
 					schema: schema
 				} );
-
+				this._editor.setValue( config);
 			}, this );
 		},
 		_createToolbar: function() {

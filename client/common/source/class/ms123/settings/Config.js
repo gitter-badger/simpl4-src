@@ -27,6 +27,8 @@ qx.Class.define("ms123.settings.Config", {
 	 STATICS
 	 ******************************************************************************/
 	statics: {
+		SETTINGS_DATA: "data",
+		SETTINGS_SCHEMANAME: "schema",
 		PACK_DELIM: ":",
 		DEFAULT_PACK: "data",
 		AID_PACK: "aid",
