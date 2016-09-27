@@ -110,7 +110,17 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 		try {
 			return m_gitMetaData.getResourceSetting(namespace, settingsid, resourceid);
 		} catch (Throwable e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "SettingServiceImpl.getSetting:", e);
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "SettingServiceImpl.getResourceSetting:", e);
+		}
+	}
+	public List<String> getResourceSettingNames(
+			@PName(StoreDesc.NAMESPACE) String namespace, 
+			@PName(SETTINGS_ID)        String settingsid,
+			@PName(RESOURCE_PREFIX)        String resourcePrefix) throws RpcException {
+		try {
+			return m_gitMetaData.getResourceSettingNames(namespace, settingsid, resourcePrefix);
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "SettingServiceImpl.getResourceSettings:", e);
 		}
 	}
 

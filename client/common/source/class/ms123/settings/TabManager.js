@@ -65,6 +65,7 @@ qx.Class.define("ms123.settings.TabManager", {
 			var model = event.model;
 			console.log("Event:"+ model.getId());
 			console.log("modeltype:"+model.getType());
+			console.log("modelaction:"+model.getActionClass());
 			var icon = event.icon;
 			this._createTab(model,facade,icon);
 		},

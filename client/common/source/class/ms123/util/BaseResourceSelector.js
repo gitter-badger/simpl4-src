@@ -71,6 +71,8 @@ qx.Class.define("ms123.util.BaseResourceSelector", {
 		FIELDSETS_TYPE: "fieldsets_type",
 		ENTITY_TYPE: "entity_type",
 		ENTITIES_TYPE: "entities_type",
+		CONFIGS_TYPE: "configs_type",
+		CONFIG_TYPE: "config_type",
 		VIEW_TYPE: "view_type",
 		VIEW_PROPERTY_TYPE: "view_property_type",
 		PROPERTY_TYPE: "property_type",
@@ -113,6 +115,8 @@ qx.Class.define("ms123.util.BaseResourceSelector", {
 			var FIELDSETS_ICON = "resource/ms123/folder_link.png";
 			var ENTITY_ICON = "resource/ms123/table.png";
 			var ENTITIES_ICON = "resource/ms123/folder_table.png";
+			var CONFIGS_ICON = "resource/ms123/settings_icon.png";
+			var CONFIG_ICON = "resource/ms123/sequence.png";
 			var VIEW_ICON = "resource/ms123/view.png";
 			var VIEW_PROPERTY_ICON = "resource/ms123/settings-16x16.png";
 			var PROPERTY_ICON = "resource/ms123/settings-16x16.png";
@@ -148,6 +152,12 @@ qx.Class.define("ms123.util.BaseResourceSelector", {
 			};
 			this._iconMapping[ms123.util.BaseResourceSelector.ENTITIES_TYPE] = {
 				icon: ENTITIES_ICON
+			};
+			this._iconMapping[ms123.util.BaseResourceSelector.CONFIGS_TYPE] = {
+				icon: CONFIGS_ICON
+			};
+			this._iconMapping[ms123.util.BaseResourceSelector.CONFIG_TYPE] = {
+				icon: CONFIG_ICON
 			};
 			this._iconMapping[ms123.util.BaseResourceSelector.PROPERTY_TYPE] = {
 				icon: PROPERTY_ICON

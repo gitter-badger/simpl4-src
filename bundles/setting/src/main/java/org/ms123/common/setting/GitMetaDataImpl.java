@@ -81,6 +81,18 @@ class GitMetaDataImpl implements MetaData, Constants {
 		}
 	}
 
+	public List<String> getResourceSettingNames(String namespace, String settingsid, String resourcePrefix) throws Exception {
+		List<String> assets = m_gitService.assetList(getRepo(namespace), null, SETTING_TYPE,false);
+		List<String> retList = new ArrayList<String>();
+		for( String asset : assets){
+			int startPoint = asset.lastIndexOf("/");
+			if( asset.substring(startPoint+1).startsWith(resourcePrefix)){
+				retList.add( asset);
+			}
+		}
+		return retList;
+	}
+
 	public void setResourceSetting(String namespace, String settingsid, String resourceid, Map settings, boolean overwrite) throws Exception {
 		if (!overwrite && m_gitService.exists(getRepo(namespace), format(SETTING_PATH, resourceid))) {
 			debug("setResourceSetting:" + format(SETTING_PATH, resourceid) + "exists");

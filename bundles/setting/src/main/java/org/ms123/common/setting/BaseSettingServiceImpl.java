@@ -100,6 +100,9 @@ public class BaseSettingServiceImpl implements Constants {
 	public Map getResourceSetting(String namespace, String settingsid, String resourceid) throws Exception {
 		return m_gitMetaData.getResourceSetting(namespace,settingsid,resourceid);
 	}
+	public List<String> getResourceSettingNames(String namespace, String settingsid, String resourcePrefix) throws Exception{
+		return m_gitMetaData.getResourceSettingNames(namespace,settingsid,resourcePrefix);
+	}
 
 	public void deleteResourceSetting(String namespace, String settingsid, String resourceid) throws Exception {
 		m_gitMetaData.deleteResourceSetting(namespace,settingsid,resourceid);

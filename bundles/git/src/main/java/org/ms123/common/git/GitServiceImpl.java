@@ -120,6 +120,8 @@ public class GitServiceImpl implements GitService {
 			add("sw.entitytype");
 			add("sw.relations");
 			add("sw.enum");
+			add("sw.setting");
+			add("sw.schema");
 			add("sw.messageslang");
 			add("sw.datasource");
 			add("sw.structure");

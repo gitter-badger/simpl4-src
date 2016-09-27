@@ -26,6 +26,7 @@ public interface Constants {
 	public static final String SETTINGS_ID = "settingsid";
 
 	public static final String RESOURCE_ID = "resourceid";
+	public static final String RESOURCE_PREFIX = "resourcePrefix";
 
 	public static final String GLOBAL_SETTINGS = "global";
 

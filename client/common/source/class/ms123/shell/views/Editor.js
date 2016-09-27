@@ -53,6 +53,8 @@ qx.Class.define("ms123.shell.views.Editor", {
 			widget = this._handleDatasource(model);
 		}else if( model.getType() == ms123.shell.Config.STRUCTURE_FT ){
 			widget = this._handleStructure(model);
+		}else if( model.getType() == ms123.shell.Config.SCHEMA_FT ){
+			widget = this._handleSchema(model);
 		}else if( model.getType() == ms123.shell.Config.GROOVY_FT ){
 			widget = this._handleGroovy(model);
 		}else if( model.getType() == ms123.shell.Config.NJS_FT ){
@@ -230,6 +232,20 @@ qx.Class.define("ms123.shell.views.Editor", {
 			}, this);
 			var content = this._getContent(model.getPath());
 			re.init(content);
+			return re;
+		},
+		_handleSchema:function(model){
+			var context = {};
+			context.storeDesc = this.facade.storeDesc;
+			context.name = model.getValue();
+			context.model = model;
+			var content = this._getContent(model.getPath());
+			var re = new ms123.shell.views.JsonEditor2(context,content);
+			this._realEditor = re;
+			re.addListener("save", function(e){
+				var data = e.getData();
+				this._saveContent( model, "schema", data);
+			}, this);
 			return re;
 		},
 		_handleStencil:function(model){

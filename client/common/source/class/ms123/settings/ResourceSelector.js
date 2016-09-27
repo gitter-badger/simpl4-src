@@ -46,6 +46,7 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 		ms123.settings.views.ReportPropertyEdit;
 		ms123.settings.views.ExportPropertyEdit;
 		ms123.settings.views.DupCheckPropertyEdit;
+		this._menuCache={};
 	},
 
 	/**
@@ -75,6 +76,16 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 
 
 	members: {
+		__createConfigsNode: function (id, childs) {
+			var entitiesNode = {
+				id: id,
+				title: this.tr("settings.configs"),
+				type: ms123.util.BaseResourceSelector.CONFIGS_TYPE,
+				//actionClass: "ms123.settings.views.EntitiesEdit",
+				children: childs
+			};
+			return entitiesNode;
+		},
 		__createEntitiesNode: function (id, childs) {
 			var entitiesNode = {
 				id: id,
@@ -214,12 +225,14 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 
 
 			var packarray = [];
+			var configarray = [];
 			var entitiesNode = this.__createEntitiesNode("entities", packarray);
+			var configsNode = this.__createConfigsNode("configs", configarray);
 
 			var root = {}
 			root.id = "ROOT";
 			root.title = "ROOT";
-			root.children = [entitiesNode];
+			root.children = [entitiesNode,configsNode];
 
 
 			var packs = ms123.StoreDesc.getNamespacePacks();
@@ -261,6 +274,21 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 					entityarray.push(m);
 				}
 			}
+			var names = this._getResourceSettingNames();
+			if( names == null) return root;
+			for( var n=0; n < names.length; n++){
+				var fname = names[n].split("/")[1];
+				var name = fname.substring(8);
+				var m = {}
+				m.id = "configs." + name;
+				m.title = name;
+				m.actionClass= ms123.settings.ConfigEdit;
+				m.type = ms123.util.BaseResourceSelector.CONFIG_TYPE;
+				m.namespace = namespace;
+				m.children = [];
+				configarray.push(m);
+			}
+
 			return root;
 		},
 		_onOpenNode: function (e) {
@@ -296,20 +324,109 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 				this.setParentModel(item);
 			}
 		},
-		_createContextMenu: function (item, model, id) {
-/*			var menu = new qx.ui.menu.Menu;
-			
-			var type = model.getType();
-			var name = model.getTitle();
+		_getConfigName: function (model) {
+			var formData = {
+				"configname": {
+					'type': "TextField",
+					'label': this.tr("settings.configname"),
+					'validation': {
+						required: true,
+						filter:/[A-Za-z0-9_-]/,
+						validator: "/^[A-Za-z]([0-9A-Za-z_-]){1,48}$/"
+					},
+					'value': ""
+				},
+				"schema": {
+					'type': "ResourceSelector",
+					'label': this.tr("settings.schema"),
+					'validation': {
+						required: true
+					},
+					'config': {
+						'type': 'sw.schema',
+						'showTextField':false,
+						'editable':false
+					},
+					'value': ""
+				}
+			};
 
-			menu.add(new qx.ui.menu.Separator());
-			var button = new qx.ui.menu.Button(cme.title, cme.icon);
+			var self = this;
+			var form = new ms123.form.Form({
+				"formData": formData,
+				"allowCancel": true,
+				"inWindow": true,
+				"callback": function (m) {
+					if (m !== undefined) {
+						var val = m.get("configname");
+						var schema = m.get("schema");
+						self._createConfig(val,schema,model);
+					}
+				},
+				"context": self
+			});
+			form.show();
+		},
+		_getResourceSettingNames: function () {
+			try {
+				var names = ms123.util.Remote.rpcSync("setting:getResourceSettingNames", {
+					namespace: this.facade.storeDesc.getNamespace(),
+					settingsid: "global",
+					resourcePrefix: "configs."
+				});
+				return names;
+			} catch (e) {
+				ms123.form.Dialog.alert("settings.ResourceSelector._getResourceSettingNames:" + e);
+			}
+		},
+		_addConfigToTree:function(name,model){
+			var e = {}
+			e.id = name;
+			e.value = name;
+			e.title = name;
+			e.type = "sw.setting";
+			e.children = [];
+			e.actionClass= ms123.settings.ConfigEdit;
+			var fmodel = qx.data.marshal.Json.createModel(e, true);
+console.log("FModel:",fmodel);
+			var children = model.getChildren();
+			fmodel.parent = model;
+			children.insertAt(0,fmodel);
+		},
+		_createConfig: function (name,schema,model) {
+			try {
+				ms123.util.Remote.rpcSync("setting:setResourceSetting", {
+					namespace: this.facade.storeDesc.getNamespace(),
+					settingsid: "global",
+					resourceid: "configs."+name,
+					settings: {schema:schema}
+				});
+				ms123.form.Dialog.alert(this.tr("settings.config_created"));
+				this._addConfigToTree(name,model);
+				ms123.config.ConfigManager.clearCache();
+			} catch (e) {
+				ms123.form.Dialog.alert("settings.ResourceSelector._createConfig:" + e);
+			}
+		},
+		_createContextMenu: function (item,model,id) {
+			var menu = new qx.ui.menu.Menu;
+			if( id !== "configs"){
+				return null;
+			}
+			if( this._menuCache[id]!=null){
+				return null;
+			}
+			this._menuCache[id]=true;
+			
+			var button = new qx.ui.menu.Button(this.tr("settings.config_new"), "icon/16/actions/list-add.png");
 			button.setUserData("id", id);
 			button.addListener("execute", function (e) {
+				if( e.getTarget().getUserData("id") == "configs"){
+					this._getConfigName(model);
+				}
 			}, this);
 			menu.add(button);
-			return menu;*/
-			return null;
+			return menu;
 		}
 	}
 });

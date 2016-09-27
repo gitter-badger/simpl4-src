@@ -18,94 +18,81 @@
  */
 /*
 */
-
 /**
-	* @ignore(Hash)
-*/
-qx.Class.define("ms123.shell.Config", {
+ * @ignore(JSON5.*)
+ */
 
+qx.Class.define("ms123.shell.views.JsonEditor2", {
+	extend: qx.ui.container.Composite,
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
+	construct: function (config,value) {
+		this.base(arguments);
+		this.config = config||{};
+		var layout = new qx.ui.layout.Dock();
+		this.setLayout(layout);
+		this.add(this._createEditor(config,value),{edge:"center"});
+		this.add(this._createToolbar(),{edge:"south"});
+
+		//var value = JSON.parse(value);
+	},
+
 	/******************************************************************************
-	 STATICS
+	 EVENTS
 	 ******************************************************************************/
-	statics: {
+	events: {
+		"save": "qx.event.type.Data"
+	},
 
-		/* Event types */
-		EVENT_MOUSEDOWN: "mousedown",
-		EVENT_MOUSEUP: "mouseup",
-		EVENT_MOUSEOVER: "mouseover",
-		EVENT_MOUSEOUT: "mouseout",
-		EVENT_MOUSEMOVE: "mousemove",
-		EVENT_DBLCLICK: "dblclick",
-		EVENT_KEYDOWN: "keydown",
-		EVENT_KEYUP: "keyup",
-
-		EVENT_EXECUTE_COMMANDS: "executeCommands",
-		EVENT_ITEM_SELECTED: "itemSelected",
-
-		/* Copy & Paste */
-		EDIT_OFFSET_PASTE: 10,
-
-		/* Key-Codes */
-		KEY_CODE_X: 88,
-		KEY_CODE_C: 67,
-		KEY_CODE_V: 86,
-		KEY_CODE_DELETE: 46,
-		KEY_CODE_META: 224,
-		KEY_CODE_BACKSPACE: 8,
-		KEY_CODE_LEFT: 37,
-		KEY_CODE_RIGHT: 39,
-		KEY_CODE_UP: 38,
-		KEY_CODE_DOWN: 40,
-
-		KEY_Code_enter: 12,
-		KEY_Code_left: 37,
-		KEY_Code_right: 39,
-		KEY_Code_top: 38,
-		KEY_Code_bottom: 40,
-
-		/* Supported Meta Keys */
-		META_KEY_META_CTRL: "metactrl",
-		META_KEY_ALT: "alt",
-		META_KEY_SHIFT: "shift",
-
-		/* Key Actions */
-		KEY_ACTION_DOWN: "down",
-		KEY_ACTION_UP: "up",
-
-		PROJECT_FT: "sw.project",
-		DIRECTORY_FT: "sw.directory",
-		PROCESS_FT: "sw.process",
-		RULE_FT: "sw.rule",
-		ENUM_FT: "sw.enum",
-		ENTITYTYPE_FT: "sw.entitytype",
-		FORM_FT: "sw.form",
-		FILTER_FT: "sw.filter",
-		FILE_FT: "sw.file",
-		CAMEL_FT: "sw.camel",
-		STENCIL_FT: "sw.stencil",
-		GROOVY_FT: "sw.groovy",
-		JAVA_FT: "sw.java",
-		NJS_FT: "sw.njs",
-		DATAMAPPER_FT: "sw.datamapper",
-		DATASOURCE_FT: "sw.datasource",
-		STRUCTURE_FT: "sw.structure",
-		SCHEMA_FT: "sw.schema",
-		DOCUMENT_FT: "sw.document"
-
-	}
 
 	/******************************************************************************
 	 PROPERTIES
 	 ******************************************************************************/
+	properties: {},
 
+	/******************************************************************************
+	 STATICS
+	 ******************************************************************************/
+	statics: {},
 	/******************************************************************************
 	 MEMBERS
 	 ******************************************************************************/
+	members: {
+		_createEditor:function(config, value){
+			console.log("Value:"+value);
+			this.msgArea = new ms123.codemirror.CodeMirror(config);
+			this.msgArea.set({
+				height: null,
+				width: null
+			});
+			value = JSON5.parse(value);
+			this.msgArea.setValue(value);
+			return this.msgArea;
+		},
+
+		_createToolbar: function (model) {
+			var toolbar = new qx.ui.toolbar.ToolBar();
+			toolbar.setSpacing(5);
+			var buttonSave = new qx.ui.toolbar.Button(this.tr("shell.save"), "icon/22/actions/dialog-ok.png");
+			buttonSave.addListener("execute", function () {
+				var value =  this.msgArea.getValue();
+				try{
+				value = JSON5.parse(value);
+				}catch(e){
+					ms123.form.Dialog.alert("Error:"+e);
+					return;
+				}
+				this.fireDataEvent("save", JSON.stringify(value,null,2));
+			}, this);
+			toolbar.addSpacer();
+			toolbar._add(buttonSave)
+			return toolbar;
+		}
+	},
 	/******************************************************************************
 	 DESTRUCTOR
 	 ******************************************************************************/
+	destruct: function () {}
 
 });
