@@ -201,6 +201,9 @@
 					if ( this.collapsed === true ) {
 						this.$.panelContent.style.display = "none";
 						this.style.height = "30px";
+						this.fire( "close-action", {
+							data: this.data
+						} );
 					} else {
 						if ( this.height && this.height != 30) {
 							this.style.height = parseInt( this.height, 10 ) + "px";

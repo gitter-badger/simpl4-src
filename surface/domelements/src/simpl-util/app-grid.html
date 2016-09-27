@@ -102,7 +102,7 @@
 			}
 
 		</style>
-		<div id="grid" class="grid"></div>
+	<div id="grid" class="grid"></div>
 	</template>
 	<script>
 		;
@@ -161,6 +161,30 @@
 						return this.parentNode.host;
 					}
 					return this.parentNode;
+				},
+				addItems:function( newValue ){
+					gridEl = Polymer.dom( this.$.grid );
+
+					for ( k = 0; k < newValue.length; k++ ) {
+						var itemEl = document.createElement( 'div' );
+						itemEl.classList.add( 'item-container' );
+						itemEl.style.width = this.itemWidth + 'px';
+						itemEl.style.height = this.itemHeight + 'px';
+						itemEl.style.margin = 0;
+						itemEl.style.opacity = 0;
+						gridEl.appendChild( itemEl );
+
+						userEl = this.stamp( null );
+						userEl.item = newValue[ k ];
+						itemEl.appendChild( userEl.root );
+					}
+					this._layout();
+				},
+				removeAllItems:function(){
+					var gridEl = Polymer.dom( this.$.grid );
+					while ( gridEl.firstChild ) {
+						gridEl.removeChild( gridEl.firstChild );
+					}
 				},
 
 				_itemsChanged: function( newValue, oldValue ) {
