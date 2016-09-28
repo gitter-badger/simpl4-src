@@ -126,7 +126,7 @@ qx.Class.define("ms123.Application", {
 				tabView.setSelection([page]);
 
 
-				var bg = theme=="simpl4" ? "#93B0BE" : null;
+				var bg = theme=="simpl4" ? "#7F97A2" : null;
 				var desktop = new ms123.desktop.Desktop(nsList[i], new qx.ui.window.Manager(),bg);
 
 				var topPanel = new ms123.desktop.Panel();

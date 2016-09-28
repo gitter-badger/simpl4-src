@@ -158,9 +158,9 @@
 [data-schemaid] button, html input[type="button"], input[type="reset"], input[type="submit"]{
     -webkit-appearance: button;
     cursor: pointer;
-    background: #607d8b;
+    background: white;
     border: 1px solid #607d8b;
-    color: white;
+    color: #435761;
     border-radius: 3px;
 }
 
@@ -180,8 +180,21 @@
     color: #555;
 }
 
+[data-schemaid] table thead, table tfoot {
+    background: #DFE5E7 !important;
+    border-color: #DFE5E7 !important;
+}
+
+[data-schemaid] table tr.even, table tr.alt, table tr:nth-of-type(even) {
+    background: white !important; 
+}
+
+[data-schemaid] table{
+    border-color: #DFE5E7 !important;
+}
+
 [data-schemaid] table.visTooltip th, td {
-    border: 1px solid #93b0be;
+    border: 1px solid #DFE5E7;
 }
 
 [data-schemaid] .selectize-input {
@@ -190,6 +203,14 @@
     padding: 2px 2px !important;
 }
 
+[data-schemaid] button, html input[type="button"], input[type="reset"], input[type="submit"] {
+    padding: 4px !important;
+}
+
+[data-schemaid] .selectize-dropdown .active {
+  background-color: #607d8b !important;
+  color: white !important;
+}
 	</style>
 	<script>
 		if ( typeof console === "undefined" ) {
