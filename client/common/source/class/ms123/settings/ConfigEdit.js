@@ -89,7 +89,12 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 			var errors = this._editor.validate();
 			if( errors.length){
 				console.log("errors:",errors);
-				ms123.form.Dialog.alert( this.tr( "settings.not_valid" ) );
+				var txt = "";
+				for( var i=0; i< errors.length;i++){
+					var e = errors[i];
+					txt+=e.path + ":" + e.message+"<br/>";
+				}
+				ms123.form.Dialog.alert( this.tr( "settings.not_valid" ) + "<br/>" + txt );
 				return;
 			}
 			var data = this._editor.getValue();
