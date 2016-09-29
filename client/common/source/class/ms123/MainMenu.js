@@ -253,6 +253,7 @@ if( _module == null) console.trace();
 			this._createProjectShellButton(extraButtons, this._me["camel"], globalMetaStoreDesc, ["camel"], "Camel", true);
 			this._createProjectShellButton(extraButtons, this._me["form"], globalMetaStoreDesc, ["forms"], "Forms", true);
 			this._createExtraButton(extraButtons, this._me["pe"],  globalMetaStoreDesc);
+			this._createExtraButton(extraButtons, this._me["setting"],  globalMetaStoreDesc);
 			return extraButtons;
 		},
 
@@ -414,6 +415,7 @@ console.log("modules:",modules);
 					menu.add(extraButtons[this._me["camel"].name]);
 					menu.add(extraButtons[this._me["form"].name]);
 					menu.add(extraButtons[this._me["pe"].name]);
+					menu.add(extraButtons[this._me["setting"].name]);
 				}
 				menu.addSeparator();
 			}
