@@ -240,6 +240,11 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 				var pack = packs[p];
 				var entityarray = [];
 				var m = {}
+
+				var packStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
+				if( packStoreDesc == null){
+					continue;
+				}
 				m.id = "entities." + pack;
 				m.title = pack;
 				m.type = ms123.util.BaseResourceSelector.PACK_TYPE;
@@ -247,7 +252,6 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 				m.children = entityarray;
 				packarray.push(m);
 
-				var packStoreDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 				var cm = new ms123.config.ConfigManager();
 				var entities = cm.getEntities(packStoreDesc);
 
@@ -355,6 +359,7 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 			var form = new ms123.form.Form({
 				"formData": formData,
 				"allowCancel": true,
+				"storeDesc":this.facade.storeDesc,
 				"inWindow": true,
 				"callback": function (m) {
 					if (m !== undefined) {
