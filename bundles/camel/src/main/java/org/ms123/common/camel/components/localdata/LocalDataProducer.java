@@ -114,7 +114,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		if (m_namespace == null) {
 			m_namespace = (String) CamelContextHelper.mandatoryLookup(camelContext, "namespace");
 		}
-		m_permissionService = CamelContextHelper.mandatoryLookup(camelContext, PermissionService.class.getName(), PermissionService.class);
+		m_permissionService = CamelContextHelper.mandatoryLookup(camelContext, PermissionService.PERMISSION_SERVICE, PermissionService.class);
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 		m_max = endpoint.getMax();
 	}

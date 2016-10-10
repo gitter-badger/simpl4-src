@@ -15,7 +15,7 @@ dependencies {
   compile files("${repository}/biz.aQute.bnd.jar")
 	compile files("${repository}/btm-3.0.0-SNAPSHOT.jar")
 	compile files("${repository}/camel/camel-core-2.18.0.jar")
-	compile files("${repository}/cassandra/cassandra-driver-core-2.1.6.jar")
+	compile files("${repository}/cassandra/cassandra-driver-core-3.1.1.jar")
 	compile files("${repository}/cassandra/casser-core-1.2.0.bar")
   compile files("${repository}/commons/commons-beanutils-1.9.2.jar")
  	compile files("${repository}/commons/commons-io-2.5.jar")

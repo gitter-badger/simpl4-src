@@ -226,7 +226,7 @@ $SRCTOPDIR/bin/pax-run.sh \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.prefs-1.0.4.jar \
 	scan-bundle:file:$REPOSITORY/derby-10.5.3.0_1.jar \
 	scan-bundle:file:$REPOSITORY/groovy-all-2.4.4-indy.jar \
-	scan-bundle:file:$REPOSITORY/mail-1.4.7.bar \
+	scan-bundle:file:$REPOSITORY/mail-1.5.0-b01.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.bundlerepository-1.6.4.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.eventadmin-1.2.2.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.http.bridge-2.0.4.jar \
@@ -395,7 +395,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/xpp3-1.1.4c.bar \
 	scan-bundle:file:$REPOSITORY/jettison-1.3.5.jar \
 	scan-bundle:file:$REPOSITORY/opencsv-2.3.bar \
-	scan-bundle:file:$REPOSITORY/gson-2.3.1.jar \
+	scan-bundle:file:$REPOSITORY/gson-2.7.jar \
 	scan-bundle:file:$REPOSITORY/xmlbeans-2.6ms.bar \
 	scan-bundle:file:$REPOSITORY/httpclient-osgi-4.3.1.jar \
 	scan-bundle:file:$REPOSITORY/httpcore-osgi-4.3.jar \
@@ -404,7 +404,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/org.everit.osgi.bundles.javax.sql-4.1.0.jar \
 	scan-bundle:file:$REPOSITORY/quartz-2.2.1.jar  \
 	scan-bundle:file:$REPOSITORY/jcommander-1.35.jar \
-	scan-bundle:file:$REPOSITORY/rxjava-1.0.9.jar \
+	scan-bundle:file:$REPOSITORY/rxjava-1.2.1.jar \
 	scan-bundle:file:$REPOSITORY/snakeyaml-1.13.bar \
 	scan-bundle:file:$REPOSITORY/asciidoctorj-1.5.2.bar \
 	scan-bundle:file:$REPOSITORY/schemacrawler-14.07.05.jar \
