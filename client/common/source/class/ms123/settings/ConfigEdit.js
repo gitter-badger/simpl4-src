@@ -89,8 +89,14 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 			try {
 				var schema = JSON5.parse( schemaString );
 				this._schema = schema;
-				var init = schema[ "init" ];
-				var form = this._translate( schema[ "form" ] );
+				var form = null;
+				var init = null;
+				if( schema.type ){
+					form = schema;
+				}else{
+					form = this._translate( schema[ "form" ] );
+					init = schema[ "init" ];
+				}
 				if ( init && init.method ) {
 					init.parameter = init.parameter || {};
 					init.parameter.form = form;
@@ -123,7 +129,14 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 		_saveForm: function( formData ) {
 			try {
 				var schema = this._schema;
-				var save = schema[ "save" ];
+				var form = null;
+				var save = null;
+				if( schema.type ){
+					form = schema;
+				}else{
+					form = this._translate( schema[ "form" ] );
+					save = schema[ "save" ];
+				}
 				if ( save ) {
 					save.parameter = save.parameter || {};
 					save.parameter.formData = formData;
@@ -144,7 +157,7 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 					}
 					return ms123.util.Remote.rpcAsync( params );
 				} else {
-					this._setResourceSetting( data );
+					this._setResourceSetting( formData );
 				}
 			} catch ( e ) {
 				console.error( "settings.ConfigEdit._saveForm2:", e );

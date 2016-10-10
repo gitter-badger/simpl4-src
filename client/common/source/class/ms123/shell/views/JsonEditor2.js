@@ -66,7 +66,6 @@ qx.Class.define("ms123.shell.views.JsonEditor2", {
 				height: null,
 				width: null
 			});
-			value = JSON5.parse(value);
 			this.msgArea.setValue(value);
 			return this.msgArea;
 		},

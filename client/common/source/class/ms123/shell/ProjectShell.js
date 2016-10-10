@@ -55,6 +55,9 @@ qx.Class.define('ms123.shell.ProjectShell', {
 			}
 			if( includePluginList.indexOf("camel")!=-1){
 				plugins.push ( new ms123.shell.InternalPlugin(this._facade));
+				if( context.storeDesc.getNamespace() == "global"){
+					this._facade.includePathList.push("jsonschema");
+				}
 				this._facade.includePathList.push("camel");
 			}
 			if( includePluginList.indexOf("forms")!=-1){
