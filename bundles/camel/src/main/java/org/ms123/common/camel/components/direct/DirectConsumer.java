@@ -66,6 +66,10 @@ public class DirectConsumer extends DefaultConsumer implements ShutdownAware, Su
 		doStart();
 	}
 
+	@Override
+	public void prepareShutdown(boolean b,boolean b1){
+	}
+
 	public boolean deferShutdown(ShutdownRunningTask shutdownRunningTask) {
 		// deny stopping on shutdown as we want direct consumers to run in case some other queues
 		// depend on this consumer to run, so it can complete its exchanges

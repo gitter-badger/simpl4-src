@@ -32,7 +32,6 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.ToDefinition;
 import org.apache.camel.model.OptionalIdentifiedDefinition;
-import org.apache.camel.view.NodeData;
 import static org.apache.camel.util.ObjectHelper.isEmpty;
 import static org.apache.camel.util.StringHelper.xmlEncode;
 import org.slf4j.Logger;
