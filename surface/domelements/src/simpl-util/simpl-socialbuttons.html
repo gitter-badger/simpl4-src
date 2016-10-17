@@ -1,0 +1,69 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<link rel="import" type="css" href="socialbuttons.css" />
+<dom-module id="simpl-socialbuttons">
+	<style>
+	</style>
+
+	<template>
+		<div id="socialbuttons"> </div>
+	</template>
+
+	<script>
+		( function() {
+			Polymer( {
+				is: "simpl-socialbuttons",
+				properties: {
+					data: {
+						observer: 'dataChanged',
+						value: null,
+						type: String
+					},
+					text: {
+						value: null,
+						type: String
+					},
+					url: {
+						value: null,
+						type: String
+					}
+				},
+				attached: function() {
+					console.log( "attached:", this.data );
+				},
+				dataChanged: function() {
+					this.async( function() {
+						var a = this.data.split(",");
+						console.log( "dataChanged:", this.data );
+						console.log( "url:", this.url );
+						$( "#socialbuttons" ).jsSocials( {
+							url:this.url,
+							text:this.text,
+							shares: a
+						} );
+					}, 100 );
+				}
+			} );
+		} )();
+
+	</script>
+
+</dom-module>
