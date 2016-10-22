@@ -146,6 +146,7 @@ cp -r $SRCTOPDIR/etc/images $ETCDIRECTORY/
 cp    $SRCTOPDIR/etc/run.bat.tpl $SERVERDIRECTORY/
 cp    $SRCTOPDIR/etc/README-deployed.md $DESTDIRECTORY/README.md
 cp    $SRCTOPDIR/etc/warbuild.xml $DESTDIRECTORY/build.xml
+cp    $SRCTOPDIR/etc/orientdb-server-config.xml $ETCDIRECTORY/
 #cp -r $SRCTOPDIR/etc/openfire $ETCDIRECTORY/
 
 

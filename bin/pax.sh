@@ -126,6 +126,7 @@ vmOptions="\
  -Dwebconsole.jmx.password=admin \
  -Dwebconsole.jms.user=admin \
  -Dwebconsole.jms.password=admin \
+ -DORIENTDB_ROOT_PASSWORD=admin \
  -Dactivemq.data=\$SIMPL4DIR/etc/activemq/data \
  -Dkaraf.shell.init.script=\$SIMPL4DIR/etc/shell.init.script \
 "
@@ -416,6 +417,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/jcabi-1.0.jar \
 	scan-bundle:file:$REPOSITORY/dom4j-1.6.1.bar \
 	scan-bundle:file:$REPOSITORY/hazelcast-3.6.3.jar \
+	scan-bundle:file:$REPOSITORY/OrientDBService-1.0.0.jar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \
 	--workingDirectory=${SERVERDIR} \

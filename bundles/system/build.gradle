@@ -38,5 +38,6 @@ dependencies {
   compile files("${repository}/xbean/xbean-naming-3.18.jar")
   compile files("${repository}/schemacrawler-14.07.05.jar")
 	compile files("${repository}/hazelcast-3.6.3.jar")
+	compile files("${repository}/OrientDBService-1.0.0.jar")
 	compile files("${repository}/h2-1.4.187.jar")
 }
