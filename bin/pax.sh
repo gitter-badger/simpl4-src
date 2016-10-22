@@ -126,7 +126,7 @@ vmOptions="\
  -Dwebconsole.jmx.password=admin \
  -Dwebconsole.jms.user=admin \
  -Dwebconsole.jms.password=admin \
- -DORIENTDB_ROOT_PASSWORD=admin \
+ -DORIENTDB_ROOT_PASSWORD=simpl4 \
  -Dactivemq.data=\$SIMPL4DIR/etc/activemq/data \
  -Dkaraf.shell.init.script=\$SIMPL4DIR/etc/shell.init.script \
 "
