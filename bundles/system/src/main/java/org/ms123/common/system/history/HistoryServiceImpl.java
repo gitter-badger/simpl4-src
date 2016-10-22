@@ -194,7 +194,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	}
 	@Reference(dynamic = true, optional = true)
 	public void setOrientDBService(OrientDBService orientdbService) {
-		System.out.println("HistoryServiceImpl.setOrientDBService:" + orientdbService);
+		info("HistoryServiceImpl.setOrientDBService:" + orientdbService);
 		this.historyAccess = new org.ms123.common.system.history.orientdb.OrientDBAccessImpl(orientdbService);
 	}
 }

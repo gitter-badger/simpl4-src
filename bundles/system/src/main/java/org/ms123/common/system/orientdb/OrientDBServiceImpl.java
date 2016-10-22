@@ -43,7 +43,6 @@ import java.util.Map;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -52,31 +51,34 @@ import static com.jcabi.log.Logger.error;
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=orientdb" })
-public class OrientDBServiceImpl  implements OrientDBService {
-	private Map<String,OrientGraphFactory> factoryMap = new HashMap<String,OrientGraphFactory>();
+public class OrientDBServiceImpl implements OrientDBService {
+	private Map<String, OrientGraphFactory> factoryMap = new HashMap<String, OrientGraphFactory>();
 	private OServer server;
 	private OServerAdmin serverAdmin;
-	private String passwd="ms123";
+	private String passwd = "simpl4";
 
 	private BundleContext bundleContext;
 
-
 	public OrientDBServiceImpl() {
+		String pw = System.getProperty("ORIENTDB_ROOT_PASSWORD");
+		if (pw != null) {
+			passwd = pw;
+		}
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		this.bundleContext=bundleContext;
+		this.bundleContext = bundleContext;
 		try {
 			info(this, "OrientDbService starting");
 			server = OServerMain.create();
 			File f = new File("../etc/orientdb-server-config.xml");
-			info(this, "OrientDbService startup("+server+"):"+f);
+			info(this, "OrientDbService startup(" + server + "):" + f);
 			server.startup(f);
 			server.activate();
 
 			info(this, "OrientDBService started");
 			serverAdmin = new OServerAdmin("remote:127.0.0.1").connect("root", passwd);
-			info(this, "OrientDBService.serverAdmin:"+serverAdmin);
+			info(this, "OrientDBService.serverAdmin:" + serverAdmin);
 		} catch (Exception e) {
 			e.printStackTrace();
 			error(this, "OrientDBServiceImpl.activate.error:%[exception]s", e);
@@ -84,54 +86,53 @@ public class OrientDBServiceImpl  implements OrientDBService {
 	}
 
 	public void update(Map<String, Object> props) {
-		info(this,"OrientDBServiceImpl.updated:" + props);
+		info(this, "OrientDBServiceImpl.updated:" + props);
 	}
 
 	protected void deactivate() throws Exception {
-		info(this,"OrientDBServiceImpl.deactivate");
+		info(this, "OrientDBServiceImpl.deactivate");
 		server.shutdown();
 	}
 
-	public synchronized OrientGraphFactory getFactory( String name ){
-		OrientGraphFactory f = factoryMap.get( name );
-		if( f == null ){
-			if( !dbExists( name )){
-				dbCreate( name );
+	public synchronized OrientGraphFactory getFactory(String name) {
+		OrientGraphFactory f = factoryMap.get(name);
+		if (f == null) {
+			if (!dbExists(name)) {
+				dbCreate(name);
 			}
-			f = new OrientGraphFactory("remote:127.0.0.1/"+name, "root", passwd, true);
-			factoryMap.put( name, f );
+			f = new OrientGraphFactory("remote:127.0.0.1/" + name, "root", passwd, true);
+			factoryMap.put(name, f);
 		}
 		return f;
 	}
 
-	public List<Map<String,Object>> executeQuery(OrientGraph graph, String sql){
+	public List<Map<String, Object>> executeQuery(OrientGraph graph, String sql, Object... args) {
 		OCommandRequest query = new OSQLSynchQuery(sql);
-		OCommandRequest cmd = graph.command( query);
-		Iterable<Element> ret = cmd.execute();
-		List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
-		for( Element elem : ret ){
-			Map<String,Object> map = new HashMap<String,Object>();
+		Iterable<Element> ret = graph.command(query).execute(args);
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+		for (Element elem : ret) {
+			Map<String, Object> map = new HashMap<String, Object>();
 			list.add(map);
-			for( String prop : elem.getPropertyKeys()){
-				map.put( prop, elem.getProperty(prop));
+			for (String prop : elem.getPropertyKeys()) {
+				map.put(prop, elem.getProperty(prop));
 			}
 		}
 		return list;
 	}
 
-	private void dbCreate( String name){
-		try{
+	private void dbCreate(String name) {
+		try {
 			serverAdmin.createDatabase(name, "graph", "plocal");
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			error(this, "OrientDBServiceImpl.dbCreate.error:%[exception]s", e);
 		}
 	}
 
-	private boolean dbExists( String name){
-		try{
+	private boolean dbExists(String name) {
+		try {
 			return serverAdmin.existsDatabase(name, "plocal");
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			error(this, "OrientDBServiceImpl.dbExists.error:%[exception]s", e);
 			return false;

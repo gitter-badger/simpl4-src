@@ -18,12 +18,12 @@
  */
 package org.ms123.common.system.history.orientdb;
 
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.orientechnologies.orient.core.command.OCommandRequest;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.tinkerpop.blueprints.Element;
-import org.ms123.common.system.orientdb.OrientDBService;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.Vertex;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,23 +36,28 @@ import java.util.Map;
 import java.util.Set;
 import org.ms123.common.system.history.HistoryAccess;
 import org.ms123.common.system.history.HistoryService;
+import org.ms123.common.system.orientdb.OrientDBService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.tinkerpop.blueprints.Vertex;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 
 /**
  *
  */
 @SuppressWarnings("unchecked")
-public class OrientDBAccessImpl implements HistoryAccess,HistoryService {
+public class OrientDBAccessImpl implements HistoryAccess, HistoryService {
 	protected OrientDBService m_orientdbService;
 	protected OrientGraph orientGraph;
 
-	public OrientDBAccessImpl(OrientDBService cs){
+	public OrientDBAccessImpl(OrientDBService cs) {
 		m_orientdbService = cs;
 	}
-	public void close(){
+
+	public void close() {
 	}
+
 	public void upsertHistory(String key, Date time, String type, String hint, String msg) {
 		initHistory();
 		String key1 = null;
@@ -88,7 +93,6 @@ public class OrientDBAccessImpl implements HistoryAccess,HistoryService {
 		orientGraph.commit();
 	}
 
-
 	public List<Map> getHistory(String key, String type, Long startTime, Long endTime) throws Exception {
 		final List<Map> retList = new ArrayList();
 		initHistory();
@@ -98,16 +102,16 @@ public class OrientDBAccessImpl implements HistoryAccess,HistoryService {
 		if (endTime == null) {
 			endTime = new Date().getTime() + 1000000;
 		}
-		Map<String,String> doubleMap = new HashMap<String,String>();
+		info("getHistory(" + (new Date(startTime)) + "," + (new Date(endTime)) + ":routeId:" + key + "  " + type);
+		Map<String, String> doubleMap = new HashMap<String, String>();
 		if (type != null && HISTORY_CAMEL_TRACE.equals(type) && key.indexOf("|") < 0) {
-			OCommandRequest query = new OSQLSynchQuery("select routeId,instanceId,time from HistoryRoute where route=? and time > ? and time <? orderBy time");
-			OCommandRequest cmd = orientGraph.command( query);
-			Iterable<Element> result = cmd.execute(key, new Date(startTime), new Date(endTime));
-			for( Element elem : result ){
-				Map<String,Object> map = new HashMap<String,Object>();
+			OCommandRequest query = new OSQLSynchQuery("select routeId,instanceId,time from HistoryRoute where routeId=? and time > ? and time <? order by time");
+			Iterable<Element> result = orientGraph.command(query).execute(key, new Date(startTime), new Date(endTime));
+			for (Element elem : result) {
+				Map<String, Object> map = new HashMap<String, Object>();
 				String _key = elem.getProperty("routeId") + "|" + elem.getProperty("instanceId");
-				if(doubleMap.get(_key) == null){
-					doubleMap.put(_key,"");
+				if (doubleMap.get(_key) == null) {
+					doubleMap.put(_key, "");
 					List<Map> lm = _getOneEntry(_key, type);
 					retList.addAll(lm);
 				}
@@ -121,10 +125,10 @@ public class OrientDBAccessImpl implements HistoryAccess,HistoryService {
 	private List<Map> _getOneEntry(String key, String type) {
 		List<Map> retList = new ArrayList();
 
-		OCommandRequest query = new OSQLSynchQuery("select key,time,type,hint,msg from History where key=? and type > ? orderBy time");
-		OCommandRequest cmd = orientGraph.command( query);
-		Iterable<Element> result = cmd.execute(key,type);
-		for( Element elem : result ){
+		info("getHistoryOne:" + key + "  " + type);
+		OCommandRequest query = new OSQLSynchQuery("select key,time,type,hint,msg from History where key=? and type=? order by time");
+		Iterable<Element> result = orientGraph.command(query).execute(key, type);
+		for (Element elem : result) {
 			Map m = new HashMap();
 			m.put(HISTORY_KEY, elem.getProperty("key"));
 			m.put(HISTORY_TIME, elem.getProperty("time"));
@@ -139,15 +143,14 @@ public class OrientDBAccessImpl implements HistoryAccess,HistoryService {
 	public Set<String> getActivitiCamelCorrelation(String activitiId) throws Exception {
 		Set<String> ret = new LinkedHashSet<String>();
 
-		try{
+		try {
 			OCommandRequest query = new OSQLSynchQuery("select routeInstanceId from ActivityCamel  where activitiId=?");
-			OCommandRequest cmd = orientGraph.command( query);
-			Iterable<Element> result = cmd.execute(activitiId);
-			for( Element elem : result ){
-				ret.add( elem.getProperty("routeInstanceId"));
+			Iterable<Element> result = orientGraph.command(query).execute(activitiId);
+			for (Element elem : result) {
+				ret.add(elem.getProperty("routeInstanceId"));
 			}
-		}catch(Exception e){
-			info("getActivitiCamelCorrelation:"+ e.getMessage());
+		} catch (Exception e) {
+			info("getActivitiCamelCorrelation:" + e.getMessage());
 			return null;
 		}
 		return ret;
@@ -166,7 +169,6 @@ public class OrientDBAccessImpl implements HistoryAccess,HistoryService {
 			e.printStackTrace();
 		}
 	}
-
 
 	protected static void info(String msg) {
 		System.err.println(msg);
