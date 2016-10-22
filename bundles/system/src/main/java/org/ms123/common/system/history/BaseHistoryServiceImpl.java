@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("unchecked")
 abstract class BaseHistoryServiceImpl implements HistoryService {
 	protected CassandraService m_cassandraService;
-	protected CassandraAccess cassandraAccess;
+	protected HistoryAccess historyAccess;
 
 	private static String STARTTIME = "startTime";
 	private static String ENDTIME = "endTime";
@@ -46,7 +46,7 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 
 	protected List<Map> _getRouteInstances(String contextKey, String routeId, java.lang.Long _startTime, java.lang.Long endTime) throws Exception {
 		List<Map> retList = new ArrayList();
-		List<Map> historyEntries = this.cassandraAccess.getHistory(contextKey + "/" + routeId, HISTORY_CAMEL_TRACE, _startTime, endTime);
+		List<Map> historyEntries = this.historyAccess.getHistory(contextKey + "/" + routeId, HISTORY_CAMEL_TRACE, _startTime, endTime);
 		String currentKey = null;
 		Date startTime = null;
 		Date prevTime = null;
@@ -74,7 +74,7 @@ abstract class BaseHistoryServiceImpl implements HistoryService {
 	}
 
 	protected List<Map> _getRouteInstance(String contextKey, String routeId, String exchangeId) throws Exception {
-		List<Map> historyEntries = this.cassandraAccess.getHistory(contextKey + "/" + routeId + "|" + exchangeId, HISTORY_CAMEL_TRACE, null, null);
+		List<Map> historyEntries = this.historyAccess.getHistory(contextKey + "/" + routeId + "|" + exchangeId, HISTORY_CAMEL_TRACE, null, null);
 		return historyEntries;
 	}
 

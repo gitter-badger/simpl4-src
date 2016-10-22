@@ -38,14 +38,14 @@ import static com.noorq.casser.core.Query.eq;
 import static com.noorq.casser.core.Query.asc;
 import static com.noorq.casser.core.Query.lt;
 import static com.noorq.casser.core.Query.gt;
-import org.ms123.common.system.history.CassandraAccess;
+import org.ms123.common.system.history.HistoryAccess;
 import org.ms123.common.system.history.HistoryService;
 
 /**
  *
  */
 @SuppressWarnings("unchecked")
-public class CassandraAccessImpl implements CassandraAccess,HistoryService {
+public class CassandraAccessImpl implements HistoryAccess,HistoryService {
 	protected CassandraService m_cassandraService;
 	private CasserSession m_session;
 	protected History history;

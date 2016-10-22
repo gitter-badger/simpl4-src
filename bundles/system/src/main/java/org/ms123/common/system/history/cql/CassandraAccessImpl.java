@@ -33,7 +33,7 @@ import org.ms123.common.cassandra.CassandraService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
-import org.ms123.common.system.history.CassandraAccess;
+import org.ms123.common.system.history.HistoryAccess;
 import org.ms123.common.system.history.HistoryService;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
@@ -59,7 +59,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
  *
  */
 @SuppressWarnings("unchecked")
-public class CassandraAccessImpl implements CassandraAccess,HistoryService {
+public class CassandraAccessImpl implements HistoryAccess,HistoryService {
 	protected CassandraService m_cassandraService;
 	protected Session m_session;
 	private PreparedStatement insertHistory;

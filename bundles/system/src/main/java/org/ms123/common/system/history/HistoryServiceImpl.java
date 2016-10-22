@@ -81,7 +81,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	protected void deactivate() throws Exception {
 		info("HistoryServiceImpl.deactivate");
 		m_serviceRegistration.unregister();
-		cassandraAccess.close();
+		historyAccess.close();
 	}
 
 	public void handleEvent(Event event) {
@@ -91,17 +91,17 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 			if( ACTIVITI_CAMEL_CORRELATION_TYPE.equals(type)){
 				String activitiId = (String) event.getProperty(ACC_ACTIVITI_ID);
 				String routeInstanceId = (String) event.getProperty(ACC_ROUTE_INSTANCE_ID);
-				this.cassandraAccess.upsertAcc(activitiId, routeInstanceId);
+				this.historyAccess.upsertAcc(activitiId, routeInstanceId);
 			}else{
 				String key = (String) event.getProperty(HISTORY_KEY);
 				Date time = new Date();
 				String hint = (String) event.getProperty(HISTORY_HINT);
 				String msg = (String) event.getProperty(HISTORY_MSG);
-				debug("handleEvent:"+this.cassandraAccess);
-				if( this.cassandraAccess == null){
-					throw new RuntimeException("HistoryServiceImpl.handleEvent:cassandraAccess is null");
+				debug("handleEvent:"+this.historyAccess);
+				if( this.historyAccess == null){
+					throw new RuntimeException("HistoryServiceImpl.handleEvent:historyAccess is null");
 				}
-				this.cassandraAccess.upsertHistory(key, time, type, hint, msg);
+				this.historyAccess.upsertHistory(key, time, type, hint, msg);
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -118,7 +118,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 		try {
 			Map<String, List<Map>> retMap = new HashMap();
 			for (String key : keyList) {
-				List<Map> logs = this.cassandraAccess.getHistory(key, type, null, null);
+				List<Map> logs = this.historyAccess.getHistory(key, type, null, null);
 				if (logs.size() > 0) {
 					retMap.put(key, logs);
 				}
@@ -136,7 +136,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 			@PName("startTime") @POptional Long startTime, 
 			@PName("endTime") @POptional Long endTime) throws RpcException {
 		try {
-			return this.cassandraAccess.getHistory(key, type, startTime, endTime);
+			return this.historyAccess.getHistory(key, type, startTime, endTime);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "LogServiceImpl.getHistory:", e);
 		}
@@ -175,7 +175,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 		try {
 			Map<String,List<Map>> ret = new LinkedHashMap<String,List<Map>>();
 			debug("getRouteInstance.activitiId:"+activitiId);
-			Set<String> routeDefIds = this.cassandraAccess.getActivitiCamelCorrelation(activitiId);
+			Set<String> routeDefIds = this.historyAccess.getActivitiCamelCorrelation(activitiId);
 			debug("getRouteInstance.routeDefIds:"+routeDefIds);
 			if( routeDefIds.size() == 0) return null;
 			for( String routeDefId : routeDefIds){	
@@ -195,8 +195,8 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	public void setCassandraService(CassandraService cassandraService) {
 		System.out.println("HistoryServiceImpl.setCassandraService:" + cassandraService);
 		this.m_cassandraService = cassandraService;
-		this.cassandraAccess = new org.ms123.common.system.history.cql.CassandraAccessImpl(cassandraService);
-		debug("HistoryServiceImpl.setCassandraService.cassandraAccess:"+this.cassandraAccess);
+		this.historyAccess = new org.ms123.common.system.history.cql.CassandraAccessImpl(cassandraService);
+		debug("HistoryServiceImpl.setCassandraService.historyAccess:"+this.historyAccess);
 	}
 }
 

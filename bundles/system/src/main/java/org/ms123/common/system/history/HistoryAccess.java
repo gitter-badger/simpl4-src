@@ -29,7 +29,7 @@ import java.util.Date;
  *
  */
 @SuppressWarnings("unchecked")
-public interface CassandraAccess {
+public interface HistoryAccess {
 	public final String GLOBAL_KEYSPACE = "global";
 	public final String STARTTIME = "startTime";
 	public final String ENDTIME = "endTime";
