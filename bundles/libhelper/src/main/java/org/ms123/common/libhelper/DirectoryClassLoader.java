@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import static com.jcabi.log.Logger.error;
-import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 
 public class DirectoryClassLoader extends ClassLoader {
@@ -66,7 +66,7 @@ public class DirectoryClassLoader extends ClassLoader {
 				initJarFile(is);
 			}
 
-			info(this, "DirectoryClassLoader was initalized."+resourceStore );
+			debug(this, "DirectoryClassLoader was initalized."+resourceStore );
 		}catch(Exception e){
 			error(this,"init:%[exception]s", e);
 			e.printStackTrace();
@@ -86,7 +86,7 @@ public class DirectoryClassLoader extends ClassLoader {
 
 	@Override
 	public InputStream getResourceAsStream(String name) {
-		info(this, "DirectoryClassLoader.getResourceAsStream:'"+ name);
+		debug(this, "DirectoryClassLoader.getResourceAsStream:'"+ name);
 		if (resourceStore.get(name) == null){
 			return super.getResourceAsStream(name);
 		}
@@ -96,7 +96,7 @@ public class DirectoryClassLoader extends ClassLoader {
 
 	@Override
 	protected Class<? extends Object> findClass(String name) throws ClassNotFoundException {
-		info(this, "DirectoryClassLoader.findClass:"+ name);
+		debug(this, "DirectoryClassLoader.findClass:"+ name);
 
 		String resourceName = name.replace('.', '/') + ".class";
 
