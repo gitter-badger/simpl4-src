@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Date;
 import java.util.Dictionary;
-import org.ms123.common.cassandra.CassandraService;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
@@ -42,6 +41,7 @@ import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.osgi.framework.ServiceRegistration;
+import org.ms123.common.system.orientdb.OrientDBService;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
@@ -56,6 +56,7 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 	private EventAdmin m_eventAdmin;
 	private BundleContext m_bundleContext;
 	private  ServiceRegistration m_serviceRegistration;
+	
 	private static final String[] topics = new String[] { HISTORY_TOPIC };
 
 
@@ -192,11 +193,9 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 		}
 	}
 	@Reference(dynamic = true, optional = true)
-	public void setCassandraService(CassandraService cassandraService) {
-		System.out.println("HistoryServiceImpl.setCassandraService:" + cassandraService);
-		this.m_cassandraService = cassandraService;
-		this.historyAccess = new org.ms123.common.system.history.cql.CassandraAccessImpl(cassandraService);
-		debug("HistoryServiceImpl.setCassandraService.historyAccess:"+this.historyAccess);
+	public void setOrientDBService(OrientDBService orientdbService) {
+		System.out.println("HistoryServiceImpl.setOrientDBService:" + orientdbService);
+		this.historyAccess = new org.ms123.common.system.history.orientdb.OrientDBAccessImpl(orientdbService);
 	}
 }
 

@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Collections;
-import org.ms123.common.cassandra.CassandraService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,6 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unchecked")
 abstract class BaseHistoryServiceImpl implements HistoryService {
-	protected CassandraService m_cassandraService;
 	protected HistoryAccess historyAccess;
 
 	private static String STARTTIME = "startTime";

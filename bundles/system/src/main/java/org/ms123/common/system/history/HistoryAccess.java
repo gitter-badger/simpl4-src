@@ -31,6 +31,7 @@ import java.util.Date;
 @SuppressWarnings("unchecked")
 public interface HistoryAccess {
 	public final String GLOBAL_KEYSPACE = "global";
+	public final String HISTORY_DATABASE = "history";
 	public final String STARTTIME = "startTime";
 	public final String ENDTIME = "endTime";
 	public final String STATUS = "status";
