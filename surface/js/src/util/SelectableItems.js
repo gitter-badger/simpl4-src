@@ -240,6 +240,11 @@ clazz.construct.extend( "simpl4.util.SelectableItems", {
 				}
 				var p = params ? params : defParams;
 				itemsRet = simpl4.util.Rpc.rpcSync( "camelRoute:" + ns + "." + name, p );
+				if( itemsRet.length==null){
+					var l = [];
+					l.push( itemsRet);
+					itemsRet = l;
+				}
 			}
 			if ( type == "sw.filter" ) {
 				console.log( "varMap:", this._varMap );
