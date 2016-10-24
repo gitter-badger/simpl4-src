@@ -228,29 +228,38 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private void doGetProcessVariables(Exchange exchange) {
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange, false );
 		if( processInstanceList.size() > 1 ){
-			throw new RuntimeException("ActivitiProducer.doGetProcessVariables.more as one process queried: " + processInstanceList);
+			//throw new RuntimeException("ActivitiProducer.doGetProcessVariables.more as one process queried: " + processInstanceList);
 		}
 
-		ProcessInstance pi = processInstanceList.get(0);	
-		info(this,"doGetProcessVariables.processInstance1:" + pi);
-		pi = 	runtimeService.createProcessInstanceQuery().includeProcessVariables().processInstanceId( pi.getId()).singleResult();
-		info(this,"doGetProcessVariables.processInstance2:" + pi);
-		info(this,"doGetProcessVariables.variables:" + pi.getProcessVariables());
-		String variableNames = getString(exchange, "variableNames", this.variableNames);
-		if( isEmpty(variableNames)){
-			exchange.getIn().setBody(pi.getProcessVariables());
-		}else{
-			List<String> nameList = Arrays.asList(variableNames.split(","));
-			info(this,"doGetProcessVariables:nameList:" + nameList);
-			Map<String,Object> vars = pi.getProcessVariables();
-			Map<String,Object> ret = new HashMap();
-			for (Map.Entry<String, Object> entry : vars.entrySet()) {
-				if( nameList.indexOf( entry.getKey()) > -1){
-					info(this,"doGetProcessVariables:var:" + entry.getKey()+"="+entry.getValue());
-					ret.put( entry.getKey(), entry.getValue());
+		List<Map<String,Object>> retList = new ArrayList<Map<String,Object>>();
+		for( ProcessInstance pi : processInstanceList){
+			info(this,"doGetProcessVariables.processInstance1:" + pi);
+			pi = 	runtimeService.createProcessInstanceQuery().includeProcessVariables().processInstanceId( pi.getId()).singleResult();
+			info(this,"doGetProcessVariables.processInstance2:" + pi);
+			info(this,"doGetProcessVariables.variables:" + pi.getProcessVariables());
+			String variableNames = getString(exchange, "variableNames", this.variableNames);
+			if( isEmpty(variableNames)){
+				//			exchange.getIn().setBody(pi.getProcessVariables());
+				retList.add( pi.getProcessVariables());
+			}else{
+				List<String> nameList = Arrays.asList(variableNames.split(","));
+				info(this,"doGetProcessVariables:nameList:" + nameList);
+				Map<String,Object> vars = pi.getProcessVariables();
+				Map<String,Object> ret = new HashMap();
+				for (Map.Entry<String, Object> entry : vars.entrySet()) {
+					if( nameList.indexOf( entry.getKey()) > -1){
+						info(this,"doGetProcessVariables:var:" + entry.getKey()+"="+entry.getValue());
+						ret.put( entry.getKey(), entry.getValue());
+					}
 				}
+				//			exchange.getIn().setBody(ret);
+				retList.add( ret);
 			}
-			exchange.getIn().setBody(ret);
+		}
+		if( retList.size() == 1){
+			exchange.getIn().setBody(retList.get(0));
+		}else{
+			exchange.getIn().setBody(retList);
 		}
 	}
 
@@ -674,11 +683,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		return getProcessInstances(exchange, childProcesses, true );
 	}
 	private List<ProcessInstance> getProcessInstances(Exchange exchange, boolean childProcesses, boolean exception) {
-		Map<String, Object> vars = getCamelVariablenMap(exchange);
-
 		boolean hasCriteria = false;
 		info(this,"findExecution:processCriteria:" + this.processCriteria + "/activityId:" + this.activityId);
-		info(this,"findExecution:vars:" + vars);
 		ExecutionQuery eq = this.runtimeService.createExecutionQuery();
 		String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
 		if (!isEmpty(processDefinitionId)) {
