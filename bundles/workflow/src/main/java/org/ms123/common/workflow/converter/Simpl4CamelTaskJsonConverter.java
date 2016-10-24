@@ -35,7 +35,8 @@ import flexjson.*;
 @SuppressWarnings("unchecked")
 public class Simpl4CamelTaskJsonConverter extends BaseBpmnJsonConverter {
 
-	protected JSONDeserializer m_ds = new JSONDeserializer();
+	protected JSONDeserializer ds = new JSONDeserializer();
+	protected JSONSerializer js = new JSONSerializer();
 
 
 	private final String RETURNVARIABLE_PROP = "returnvariable";
@@ -66,7 +67,7 @@ public class Simpl4CamelTaskJsonConverter extends BaseBpmnJsonConverter {
 
 	protected FlowElement convertJsonToElement(JsonNode elementNode, JsonNode modelNode, Map<String, JsonNode> shapeMap) {
 		ServiceTask task = new ServiceTask();
-		Map elementMap = (Map) m_ds.deserialize(elementNode.toString());
+		Map elementMap = (Map) ds.deserialize(elementNode.toString());
 		Map<String, Object> propMap = (Map) elementMap.get("properties");
 
 		String clazz = Simpl4BpmnJsonConverter.getFullnameForTask("TaskCamelExecutor");
@@ -75,7 +76,7 @@ public class Simpl4CamelTaskJsonConverter extends BaseBpmnJsonConverter {
 
 		FieldExtension field = new FieldExtension();
 		field.setFieldName(VARMAPPING);
-		String variablesmapping = getValue(VARMAPPING, propMap.get(VARMAPPING_PROP));
+		String variablesmapping = getValue(VARMAPPING, js.deepSerialize(propMap.get(VARMAPPING_PROP)));
 		field.setExpression(variablesmapping);
 		task.getFieldExtensions().add(field);
 
@@ -101,7 +102,7 @@ public class Simpl4CamelTaskJsonConverter extends BaseBpmnJsonConverter {
 
 		field = new FieldExtension();
 		field.setFieldName(RETURNMAPPING);
-		String returnmapping = getValue(RETURNMAPPING, propMap.get(RETURNMAPPING_PROP));
+		String returnmapping = getValue(RETURNMAPPING, js.deepSerialize(propMap.get(RETURNMAPPING_PROP)));
 		field.setExpression(returnmapping);
 		task.getFieldExtensions().add(field);
 		return task;
