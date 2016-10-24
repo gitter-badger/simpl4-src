@@ -21,15 +21,32 @@ package org.ms123.common.workflow.tasks;
 import java.util.*;
 import java.io.File;
 import javax.transaction.UserTransaction;
+
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.delegate.VariableScope;
 import org.activiti.engine.delegate.JavaDelegate;
+import org.activiti.engine.delegate.VariableScope;
+import org.activiti.engine.FormService;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricProcessInstanceQuery;
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.el.Expression;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.scripting.ScriptingEngines;
 import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.runtime.Execution;
+import org.activiti.engine.runtime.ExecutionQuery;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.runtime.ProcessInstanceBuilder;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+
+
 import org.apache.commons.beanutils.*;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.workflow.api.WorkflowService;
@@ -41,18 +58,19 @@ import org.ms123.common.git.GitService;
 import org.ms123.common.system.tm.TransactionService;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.ProcessEngine;
 import org.ms123.common.store.StoreDesc;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import flexjson.*;
+import java.util.Collections;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import groovy.lang.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
-public abstract class TaskBaseExecutor {
+public abstract class TaskBaseExecutor implements Constants{
 	private static final Logger m_logger = LoggerFactory.getLogger(TaskBaseExecutor.class);
 
 	protected JSONDeserializer m_ds = new JSONDeserializer();
@@ -281,8 +299,131 @@ public abstract class TaskBaseExecutor {
 			tc.setProcessDefinitionKey(processDefinition.getKey());
 			tc.setProcessDefinitionName(processDefinition.getName());
 			tc.setTenantId(processDefinition.getTenantId());
+			tc.setPE(pe);
 		}
 	}
+
+	private static class ScriptContext{
+		public GroovyShell shell = new GroovyShell();;
+		public Map<String,Script> scripCache=new HashMap();	
+	}
+	private static ScriptContext scriptContext = new ScriptContext();
+	protected static String eval(String expr, TaskContext tc) {
+		Map<String, Object> vars = tc.getExecution().getVariables();
+		try {
+			Script script = scriptContext.scripCache.get(expr);
+			if( script == null){
+				script = scriptContext.shell.parse(expr);
+				scriptContext.scripCache.put(expr,script);
+			}
+			Binding binding = new Binding(vars);
+			script.setBinding(binding);
+			return String.valueOf(script.run());
+		} catch (Throwable e) {
+			return expr;
+		}
+	}
+	private boolean isEmpty(String s) {
+		return (s == null || "".equals(s.trim()));
+	}
+
+	private String getString(TaskContext tc, String key, String expr){
+		return expr;
+	}
+	private Pattern _splitSearchPattern = Pattern.compile("[\",]"); 
+	private List<String> splitByCommasNotInQuotes(String s) {
+		if (s == null){
+			return Collections.emptyList();
+		}
+
+		List<String> list = new ArrayList<String>();
+		Matcher m = _splitSearchPattern.matcher(s);
+		int pos = 0;
+		boolean quoteMode = false;
+		while (m.find()) {
+			String sep = m.group();
+			if ("\"".equals(sep)) {
+				quoteMode = !quoteMode;
+			} else if (!quoteMode && ",".equals(sep)) {
+				int toPos = m.start(); 
+				list.add(s.substring(pos, toPos));
+				pos = m.end();
+			}
+		}
+		if (pos < s.length()){
+			list.add(s.substring(pos));
+		}
+		return list;
+	}
+
+	protected List<ProcessInstance> getProcessInstances(TaskContext tc, Map<String, String> processCriteria, boolean exception) {
+		boolean hasCriteria = false;
+		log("findExecution:processCriteria:" + processCriteria);
+		ExecutionQuery eq = tc.getPE().getRuntimeService().createExecutionQuery();
+		String processDefinitionId = getString(tc, PROCESS_DEFINITION_ID, processCriteria.get(PROCESS_DEFINITION_ID));
+		if (!isEmpty(processDefinitionId)) {
+			eq.processDefinitionId(trimToEmpty(eval(processDefinitionId, tc)));
+			log("getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,tc)));
+			hasCriteria=true;
+		}
+		String processDefinitionKey = getString(tc, PROCESS_DEFINITION_KEY, processCriteria.get(PROCESS_DEFINITION_KEY));
+		if (!isEmpty(processDefinitionKey)) {
+			eq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,tc)));
+			log("getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,tc)));
+			hasCriteria=true;
+		}
+		String processInstanceId = getString(tc, PROCESS_INSTANCE_ID, processCriteria.get(PROCESS_INSTANCE_ID));
+		if (!isEmpty(processInstanceId)) {
+			eq.processInstanceId(trimToEmpty(eval(processInstanceId,tc)));
+			log("getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,tc)));
+			hasCriteria=true;
+		}
+		String businessKey = getString(tc, BUSINESS_KEY, processCriteria.get(BUSINESS_KEY));
+		if (!isEmpty(businessKey)) {
+			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,tc)),false);
+			log("getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,tc)));
+			hasCriteria=true;
+		}
+
+		String activityId = getString(tc, ACTIVITY_ID, processCriteria.get(ACTIVITY_ID));
+		if (!isEmpty(activityId)) {
+			eq.activityId(trimToEmpty(eval(activityId,tc)));
+			hasCriteria=true;
+		}
+		String executionId = getString(tc, EXECUTION_ID, processCriteria.get(EXECUTION_ID));
+		if (!isEmpty(executionId)) {
+			eq.executionId(trimToEmpty(eval(executionId,tc)));
+			hasCriteria=true;
+		}
+		String processVariable = processCriteria.get(PROCESSVARIABLE);
+		if (!isEmpty(processVariable)) {
+			processVariable = trimToEmpty(processVariable);
+			List<String> tokens = splitByCommasNotInQuotes( processVariable);
+			if( tokens.size() == 1){
+				eq.processVariableValueEquals(trimToEmpty(eval(tokens.get(0),tc)));
+			}else{
+				log("p1eval:"+eval(tokens.get(1),tc));
+				eq.processVariableValueEquals(
+					trimToEmpty(tokens.get(0)),
+					trimToEmpty(eval(tokens.get(1),tc))
+				);
+			}
+			hasCriteria=true;
+		}
+
+		if( hasCriteria ){
+			log("getProcessInstances.namespace:"+tc.getTenantId());
+			eq.executionTenantId(trimToEmpty(tc.getTenantId()));
+			List<ProcessInstance> executionList = (List) eq.list();
+			log("getProcessInstances:" + executionList);
+			if (exception && (executionList == null || executionList.size() == 0)) {
+				throw new RuntimeException("TaskBaseExecutor.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
+			}
+			return executionList;
+		}
+		return null;
+	}
+
 
 	protected  class TaskContext {
 		protected VariableScope m_execution;
@@ -291,6 +432,7 @@ public abstract class TaskBaseExecutor {
 		protected String m_processDefinitionName;
 		protected String m_hint;
 		protected String m_pid;
+		protected ProcessEngine m_pe;
 		protected String m_script;
 
 		public TaskContext(){
@@ -302,6 +444,12 @@ public abstract class TaskBaseExecutor {
 		}
 		public void setExecution(VariableScope vs) {
 			m_execution = vs;
+		}
+		public void setPE(ProcessEngine  pe) {
+			m_pe = pe;
+		}
+		public ProcessEngine getPE() {
+			return m_pe;
 		}
 
 		public void setScript(String s) {
