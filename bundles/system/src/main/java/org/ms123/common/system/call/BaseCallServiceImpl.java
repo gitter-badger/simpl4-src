@@ -27,6 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import org.ms123.common.libhelper.Inflector;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.ExchangePattern;
@@ -44,6 +48,7 @@ import org.ms123.common.store.StoreDesc;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.rpc.JsonRpcServlet;
 import org.ms123.common.camel.api.CamelService;
+import org.joda.time.DateTime;
 import static org.ms123.common.camel.api.CamelService.CAMEL_TYPE;
 import static org.ms123.common.camel.api.CamelService.PROPERTIES;
 import static org.ms123.common.camel.api.CamelService.OVERRIDEID;
@@ -285,7 +290,17 @@ abstract class BaseCallServiceImpl {
 			return null;
 		}
 		if (!type.isAssignableFrom(value.getClass())) {
-			throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method("+methodName+"):" + name + ") wrong type:" + value.getClass() + " needed:" + type);
+			if( value instanceof String && type.isAssignableFrom(java.util.Date.class )){
+				info(this,"isostringToDate(" + value);
+				Date v  = toDate((String)value);
+				if( v != null){
+					value = v;
+					info(this,"newValue:" + value );
+				}
+			}
+			if( value == null){
+				throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method("+methodName+"):" + name + ") wrong type:" + value.getClass() + " needed:" + type);
+			}
 		}
 		return value;
 	}
@@ -355,6 +370,16 @@ abstract class BaseCallServiceImpl {
 
 	protected String getUserName() {
 		return getThreadContext().getUserName();
+	}
+
+	private Date toDate(final String iso8601string) {
+		try {
+			DateTime t = DateTime.parse(iso8601string);
+			return t.toDate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }
