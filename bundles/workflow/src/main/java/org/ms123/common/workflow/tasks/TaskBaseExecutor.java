@@ -50,6 +50,7 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import org.apache.commons.beanutils.*;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.workflow.api.WorkflowService;
+import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.workflow.GroovyTaskDsl;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.docbook.DocbookService;
@@ -77,6 +78,7 @@ public abstract class TaskBaseExecutor implements Constants{
 	protected JSONSerializer m_js = new JSONSerializer();
 	protected DataLayer m_dataLayer;
 	protected WorkflowService m_workflowService;
+	protected PermissionService  m_permissionService;
 	protected BundleContext m_bundleContext;
 	protected CallService m_callService;
 
@@ -150,6 +152,15 @@ public abstract class TaskBaseExecutor implements Constants{
 		} else {
 			Map beans = Context.getProcessEngineConfiguration().getBeans();
 			return (WorkflowService) beans.get(WorkflowService.WORKFLOW_SERVICE);
+		}
+	}
+	protected PermissionService getPermissionService() {
+		SessionContext sc = null;
+		if (m_permissionService != null) {
+			return m_permissionService;
+		} else {
+			Map beans = Context.getProcessEngineConfiguration().getBeans();
+			return (PermissionService) beans.get(PermissionService.PERMISSION_SERVICE);
 		}
 	}
 
@@ -300,6 +311,7 @@ public abstract class TaskBaseExecutor implements Constants{
 			tc.setProcessDefinitionName(processDefinition.getName());
 			tc.setTenantId(processDefinition.getTenantId());
 			tc.setPE(pe);
+			tc.setPermissionService(getPermissionService());
 		}
 	}
 
@@ -432,6 +444,7 @@ public abstract class TaskBaseExecutor implements Constants{
 		protected String m_processDefinitionName;
 		protected String m_hint;
 		protected String m_pid;
+		protected PermissionService m_ps;
 		protected ProcessEngine m_pe;
 		protected String m_script;
 
@@ -450,6 +463,12 @@ public abstract class TaskBaseExecutor implements Constants{
 		}
 		public ProcessEngine getPE() {
 			return m_pe;
+		}
+		public void setPermissionService(PermissionService  ps) {
+			m_ps = ps;
+		}
+		public PermissionService getPermissionService() {
+			return m_ps;
 		}
 
 		public void setScript(String s) {

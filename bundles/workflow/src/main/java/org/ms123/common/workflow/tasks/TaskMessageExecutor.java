@@ -25,6 +25,9 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.RepositoryService;
+import org.ms123.common.system.thread.ThreadContext;
 import flexjson.*;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
@@ -33,6 +36,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 	protected JSONDeserializer ds = new JSONDeserializer();
 	private Expression processcriteria;
 	private Expression messagename;
+	private Expression target;
 	private Expression variablesmapping;
 
 	@Override
@@ -58,12 +62,22 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 				processCriteria.put(name, value);
 			}
 
-			String messageName = messagename.getValue(execution).toString();
+			//String targetStr = target.getValue(execution).toString();
 			log("TaskMessageExecutor(variables):" + variables);
+			//log("TaskMessageExecutor(target):" + targetStr);
 			log("TaskMessageExecutor(processcriteria):" + processCriteria);
-			log("TaskMessageExecutor(messageName):" + messageName);
 			List<ProcessInstance> pl = getProcessInstances(tc, processCriteria, true);
-			doSendMessageEvent(tc, pl, variables, messageName);
+			String messageName=null;
+			if( !isEmpty(messagename)){
+				messageName = messagename.getValue(execution).toString();
+			}
+			log("TaskMessageExecutor(messageName):" + messageName);
+			if( isEmpty(messageName) ){
+			//if( "signalToReceiceTask".equals(targetStr)){
+				doSendSignal(tc, pl, variables);
+			}else{
+				doSendMessageEvent(tc, pl, variables, messageName);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -94,6 +108,74 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		}
 	}
 
+	private void doSendSignal(TaskContext tc, List<ProcessInstance> processInstanceList, Map<String, Object> variables) {
+		for( ProcessInstance pi : processInstanceList){
+			signal(tc, pi, variables);
+		}
+	}
+
+	private void signal(TaskContext tc, ProcessInstance execution, Map<String, Object> variables) {
+		String ns = tc.getTenantId();
+		Map<String,Object> pv = variables;
+		new SignalThread(tc, ns, getProcessDefinition(tc, execution), execution, pv).start();
+	}
+
+	private class SignalThread extends Thread {
+		Execution execution;
+		TaskContext tc;
+		ProcessDefinition processDefinition;
+		Map variables;
+
+		String ns;
+
+		public SignalThread(TaskContext tc, String ns, ProcessDefinition pd, ProcessInstance exec, Map<String,Object> variables) {
+			this.execution = exec;
+			this.variables = variables;
+			this.ns = ns;
+			this.tc = tc;
+			this.processDefinition = pd;
+		}
+
+		public void run() {
+			ThreadContext.loadThreadContext(ns, "admin");
+			tc.getPermissionService().loginInternal(ns);
+			RuntimeService runtimeService = tc.getPE().getRuntimeService();
+			while (true) {
+				try {
+					log("SignalThread.sending signal to:" + execution.getId());
+					if( this.variables!=null){
+						runtimeService.signal(execution.getId(), this.variables);
+					}else{
+						runtimeService.signal(execution.getId());
+					}
+				} catch (org.activiti.engine.ActivitiOptimisticLockingException e) {
+					log("SignalThread:" + e);
+					try {
+						Thread.sleep(100L);
+					} catch (Exception x) {
+					}
+					continue;
+				} catch (Exception e) {
+					if (e instanceof RuntimeException) {
+						throw (RuntimeException) e;
+					} else {
+						throw new RuntimeException(e);
+					}
+				} finally {
+					ThreadContext.getThreadContext().finalize(null);
+				}
+				break;
+			}
+		}
+	}
+	private ProcessDefinition getProcessDefinition(TaskContext tc, ProcessInstance processInstance) {
+		ProcessDefinition processDefinition = tc.getPE().getRepositoryService().createProcessDefinitionQuery().processDefinitionId(processInstance.getProcessDefinitionId()).singleResult();
+		if (processDefinition == null) {
+			throw new RuntimeException("TaskMessageExecutor:getProcessDefinition:processDefinition not found:" + processInstance);
+		}
+		log("getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
+		return processDefinition;
+	}
 	private boolean isEmpty(Object s) {
 		if (s == null || "".equals(((String) s).trim())) {
 			return true;
