@@ -36,7 +36,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 	protected JSONDeserializer ds = new JSONDeserializer();
 	private Expression processcriteria;
 	private Expression messagename;
-	private Expression target;
+	private Expression signalname;
 	private Expression variablesmapping;
 
 	@Override
@@ -62,21 +62,25 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 				processCriteria.put(name, value);
 			}
 
-			//String targetStr = target.getValue(execution).toString();
 			log("TaskMessageExecutor(variables):" + variables);
-			//log("TaskMessageExecutor(target):" + targetStr);
 			log("TaskMessageExecutor(processcriteria):" + processCriteria);
-			List<ProcessInstance> pl = getProcessInstances(tc, processCriteria, true);
+			List<ProcessInstance> pl = getProcessInstances(tc, processCriteria, false);
+			log("TaskMessageExecutor.processInstanceList:" + pl);
 			String messageName=null;
-			if( !isEmpty(messagename)){
+			if( messagename != null){
 				messageName = messagename.getValue(execution).toString();
 			}
-			log("TaskMessageExecutor(messageName):" + messageName);
-			if( isEmpty(messageName) ){
-			//if( "signalToReceiceTask".equals(targetStr)){
-				doSendSignal(tc, pl, variables);
-			}else{
+			String signalName=null;
+			if( signalname != null){
+				signalName = signalname.getValue(execution).toString();
+			}
+			log("TaskMessageExecutor(signalName):" + signalName);
+			if( !isEmpty(messageName) ){
 				doSendMessageEvent(tc, pl, variables, messageName);
+			}else if( !isEmpty(signalName) ){
+				doSendSignalEvent(tc, pl, variables, signalName);
+			}else{
+				doSendSignal(tc, pl, variables);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -85,14 +89,13 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 	}
 
 	private void doSendMessageEvent(TaskContext tc, List<ProcessInstance> processInstanceList, Map<String, Object> variables, String messageName) {
-		log("processInstanceList:" + processInstanceList);
 		log("messageName:" + messageName);
 		RuntimeService runtimeService = tc.getPE().getRuntimeService();
 		if (processInstanceList != null) {
 			for (ProcessInstance pi : processInstanceList) {
 				log("PI:" + pi.getId());
 				Execution execution = runtimeService.createExecutionQuery().executionId(pi.getId()).messageEventSubscriptionName(messageName).singleResult();
-				log("\tExecution:" + execution);
+				log("\tExecution:("+pi.getId()+")" + execution);
 				if (execution != null) {
 					log("doSendMessageEvent:" + messageName + "/" + execution.getId());
 					if (variables == null) {
@@ -102,15 +105,44 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 					}
 				} else {
 					log("doSendMessageEvent.message(" + messageName + ") not found in process:" + pi.getId());
-					List<Execution> execs = runtimeService.createExecutionQuery().messageEventSubscriptionName(messageName).list();
 				}
 			}
 		}
 	}
 
+	private void doSendSignalEvent(TaskContext tc,List<ProcessInstance> processInstanceList, Map<String, Object> variables, String signalName) {
+		RuntimeService runtimeService = tc.getPE().getRuntimeService();
+		if( processInstanceList == null){
+			log("doSendSignalEvent:"+signalName);
+			if( variables == null){
+				runtimeService.signalEventReceived( signalName);
+			}else{
+				runtimeService.signalEventReceived( signalName, variables);
+			}
+		}else{
+			for( ProcessInstance pi : processInstanceList){
+				Execution execution = runtimeService.createExecutionQuery() .executionId(pi.getId()).signalEventSubscriptionName(signalName).singleResult(); 
+				log("\tExecution("+pi.getId()+"):"+execution);
+				if( execution != null){
+					log("doSendSignalEvent:"+signalName+"/"+execution.getId());
+					if( variables == null){
+						runtimeService.signalEventReceived( signalName, execution.getId());
+					}else{
+						runtimeService.signalEventReceived( signalName, execution.getId(), variables);
+					}
+				}else{
+					log("doSendSignalEvent.signal("+signalName+") not found in process:"+pi.getId());
+				}
+			}
+		}
+	}
 	private void doSendSignal(TaskContext tc, List<ProcessInstance> processInstanceList, Map<String, Object> variables) {
 		for( ProcessInstance pi : processInstanceList){
-			signal(tc, pi, variables);
+			if( pi.getParentId() != null){
+				signal(tc, pi, variables);
+			}else{
+				log("doSendSignal.processInstance:don't send signal to -> eid:" + pi.getId() + ",pid:"+pi.getProcessInstanceId());
+			}
 		}
 	}
 
@@ -142,7 +174,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 			RuntimeService runtimeService = tc.getPE().getRuntimeService();
 			while (true) {
 				try {
-					log("SignalThread.sending signal to:" + execution.getId());
+					log("SignalThread.sending signal to -> eid:" + execution.getId() + ",pid:"+execution.getProcessInstanceId()+",parentId:"+execution.getParentId());
 					if( this.variables!=null){
 						runtimeService.signal(execution.getId(), this.variables);
 					}else{
@@ -156,11 +188,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 					}
 					continue;
 				} catch (Exception e) {
-					if (e instanceof RuntimeException) {
-						throw (RuntimeException) e;
-					} else {
-						throw new RuntimeException(e);
-					}
+					error( this.tc, "SignalThread(eid:" + execution.getId() + ",pid:"+execution.getProcessInstanceId()+",parentId:"+execution.getParentId()+"):",e);
 				} finally {
 					ThreadContext.getThreadContext().finalize(null);
 				}

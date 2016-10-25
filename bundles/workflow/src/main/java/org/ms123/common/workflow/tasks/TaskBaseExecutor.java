@@ -541,11 +541,17 @@ public abstract class TaskBaseExecutor implements Constants{
 		m_logger.debug(message);
 		System.err.println(message);
 	}
+	protected void error(TaskContext tc, String message, Exception e) {
+		message = getlogMessage(tc, message);
+		m_logger.error(message, e);
+		System.err.println(message);
+		e.printStackTrace();
+	}
 	protected String getlogMessage(TaskContext tc, String message) {
 		VariableScope execution = tc.getExecution();
 		if ((execution instanceof DelegateExecution)) {
 			DelegateExecution d = (DelegateExecution) execution;
-			message = "(" + d.getProcessInstanceId() + "," + hashCode() + "):" + message;
+			message = "(pid:" + d.getProcessInstanceId() + ",eid:" + d.getId() + ",parentId:"+ d.getParentId()+"):" + message;
 		}
 		return message;
 	}

@@ -236,6 +236,9 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			info(this,"doGetProcessVariables.processInstance1:" + pi);
 			pi = 	runtimeService.createProcessInstanceQuery().includeProcessVariables().processInstanceId( pi.getId()).singleResult();
 			info(this,"doGetProcessVariables.processInstance2:" + pi);
+			if( pi == null){
+				continue;
+			}
 			info(this,"doGetProcessVariables.variables:" + pi.getProcessVariables());
 			String variableNames = getString(exchange, "variableNames", this.variableNames);
 			if( isEmpty(variableNames)){
@@ -523,11 +526,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 					continue;
 				} catch (Exception e) {
 					createLogEntry(exchange, this.processDefinition, e);
-					if (e instanceof RuntimeException) {
-						throw (RuntimeException) e;
-					} else {
-						throw new RuntimeException(e);
-					}
+					error(this, "SignalThread::%[exception]s", e);
 				} finally {
 					ThreadContext.getThreadContext().finalize(null);
 				}

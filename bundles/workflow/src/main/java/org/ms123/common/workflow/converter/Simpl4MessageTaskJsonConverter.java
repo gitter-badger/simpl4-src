@@ -45,6 +45,9 @@ public class Simpl4MessageTaskJsonConverter extends BaseBpmnJsonConverter {
 	private final String MESSAGENAME_PROP = "messagename";
 	private final String MESSAGENAME = "messagename";
 
+	private final String SIGNALNAME_PROP = "signalname";
+	private final String SIGNALNAME = "signalname";
+
 	private final String VARMAPPING_PROP = "variablesmapping";
 	private final String VARMAPPING = "variablesmapping";
 
@@ -79,6 +82,11 @@ public class Simpl4MessageTaskJsonConverter extends BaseBpmnJsonConverter {
 		field = new FieldExtension();
 		field.setFieldName(MESSAGENAME);
 		field.setStringValue(getValue(MESSAGENAME, propMap.get(MESSAGENAME_PROP)));
+		task.getFieldExtensions().add(field);
+
+		field = new FieldExtension();
+		field.setFieldName(SIGNALNAME);
+		field.setStringValue(getValue(SIGNALNAME, propMap.get(SIGNALNAME_PROP)));
 		task.getFieldExtensions().add(field);
 
 		return task;
