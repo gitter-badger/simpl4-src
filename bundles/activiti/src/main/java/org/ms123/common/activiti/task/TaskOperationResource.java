@@ -115,6 +115,9 @@ public class TaskOperationResource extends BaseResource {
 				if( data == null){
 					data = (Map)variables.get(formVar);
 				}
+				if( data == null){  //From ActivitProducer
+					data = variables;
+				}
 				info(this,"formKey:"+formKey+"/formVar:" + formVar +"/"+data+"/"+taskName);
 				if( data != null){
 					List<String> assetList = null;
@@ -183,6 +186,9 @@ public class TaskOperationResource extends BaseResource {
 		return successNode;
 	}
 	private void setMapping(Map<String,Object> newVariables, Map formData, String variablesMapping, String executionId){
+		info(this,"setMapping.newVariables:"+newVariables);
+		info(this,"setMapping.formData:"+formData);
+		info(this,"setMapping.variablesMapping:"+variablesMapping);
 		if( executionId == null || variablesMapping==null) return;
 		Map v = (Map) ds.deserialize(variablesMapping);
 		List<Map> items = (List) v.get("items");
