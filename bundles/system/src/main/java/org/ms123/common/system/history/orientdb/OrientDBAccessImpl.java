@@ -58,39 +58,47 @@ public class OrientDBAccessImpl implements HistoryAccess, HistoryService {
 	public void close() {
 	}
 
-	public void upsertHistory(String key, Date time, String type, String hint, String msg) {
+	public synchronized  void upsertHistory(String key, Date time, String type, String hint, String msg) {
 		initHistory();
-		String key1 = null;
-		String key2 = null;
-		if (type != null && HISTORY_CAMEL_TRACE.equals(type)) {
-			int pipe = key.lastIndexOf("|");
-			if (pipe > 0) {
-				key1 = key.substring(0, pipe);
-				key2 = key.substring(pipe + 1);
+		try{
+			String key1 = null;
+			String key2 = null;
+			if (type != null && HISTORY_CAMEL_TRACE.equals(type)) {
+				int pipe = key.lastIndexOf("|");
+				if (pipe > 0) {
+					key1 = key.substring(0, pipe);
+					key2 = key.substring(pipe + 1);
+				}
 			}
-		}
-		Vertex v = orientGraph.addVertex("class:History");
-		v.setProperty("key", key);
-		v.setProperty("time", time);
-		v.setProperty("type", type);
-		v.setProperty("hint", hint);
-		v.setProperty("msg", msg);
-		if (key1 != null) {
-			v = orientGraph.addVertex("class:HistoryRoute");
-			v.setProperty("routeId", key1);
-			v.setProperty("instanceId", key2);
+			Vertex v = orientGraph.addVertex("class:History");
+			v.setProperty("key", key);
 			v.setProperty("time", time);
+			v.setProperty("type", type);
+			v.setProperty("hint", hint);
+			v.setProperty("msg", msg);
+			if (key1 != null) {
+				v = orientGraph.addVertex("class:HistoryRoute");
+				v.setProperty("routeId", key1);
+				v.setProperty("instanceId", key2);
+				v.setProperty("time", time);
+			}
+			orientGraph.commit();
+		}catch( Exception e){
+			orientGraph.rollback();
 		}
-		orientGraph.commit();
 	}
 
-	public void upsertAcc(String activitiId, String routeInstanceId) {
+	public synchronized void upsertAcc(String activitiId, String routeInstanceId) {
 		initHistory();
-		Vertex v = orientGraph.addVertex("class:ActivityCamel");
-		v.setProperty("activitiId", activitiId);
-		v.setProperty("time", new Date());
-		v.setProperty("routeInstanceId", routeInstanceId);
-		orientGraph.commit();
+		try{
+			Vertex v = orientGraph.addVertex("class:ActivityCamel");
+			v.setProperty("activitiId", activitiId);
+			v.setProperty("time", new Date());
+			v.setProperty("routeInstanceId", routeInstanceId);
+			orientGraph.commit();
+		}catch( Exception e){
+			orientGraph.rollback();
+		}
 	}
 
 	public List<Map> getHistory(String key, String type, Long startTime, Long endTime) throws Exception {
