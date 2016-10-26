@@ -103,6 +103,8 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 			activitiProperties.put(WORKFLOW_PROCESS_DEFINITION_NAME, tc.getProcessDefinitionName());
 			activitiProperties.put(WORKFLOW_PROCESS_INSTANCE_ID, execution.getProcessInstanceId());
 			fparams.put(ACTIVITI_CAMEL_PROPERTIES, activitiProperties);
+			log("TaskCamelExecutor("+methodname+"):"+fparams);
+
 
 			String ns = namespace.getValue(execution).toString();
 			if( "-".equals(ns)){
