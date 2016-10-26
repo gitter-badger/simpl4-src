@@ -140,15 +140,16 @@ public class GroovyExpression implements Expression {
 		if (str.startsWith("~")) {
 			return str.substring(1);
 		}
+		str=str.trim();
+		if (str.startsWith("#")) {
+			return eval(str.substring(1), scope);
+		}
 		int countRepl = 0;
 		int countPlainStr = 0;
 		Object replacement = null;
 		String newString = "";
 		int openBrackets = 0;
 		int first = 0;
-		/*		if( str.indexOf("${") == -1){
-		 return eval(str, binding,scope);
-		 }*/
 		for (int i = 0; i < str.length(); i++) {
 			if (i < str.length() - 2 && str.substring(i, i + 2).compareTo("${") == 0) {
 				if (openBrackets == 0) {
