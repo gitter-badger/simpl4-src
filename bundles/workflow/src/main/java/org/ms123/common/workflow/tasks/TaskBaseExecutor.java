@@ -46,6 +46,10 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
 
 import org.apache.commons.beanutils.*;
 import org.ms123.common.data.api.DataLayer;
@@ -71,14 +75,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
-public abstract class TaskBaseExecutor implements Constants{
+public abstract class TaskBaseExecutor implements Constants {
 	private static final Logger m_logger = LoggerFactory.getLogger(TaskBaseExecutor.class);
 
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected JSONSerializer m_js = new JSONSerializer();
 	protected DataLayer m_dataLayer;
 	protected WorkflowService m_workflowService;
-	protected PermissionService  m_permissionService;
+	protected PermissionService m_permissionService;
 	protected BundleContext m_bundleContext;
 	protected CallService m_callService;
 
@@ -104,11 +108,12 @@ public abstract class TaskBaseExecutor implements Constants{
 		debug(tc, getInfo(tc));
 	}
 
-	protected String getExceptionInfo(TaskContext tc){
-		String		hint = "\n-----------------------------\n"+getInfo(tc)+"\n";
+	protected String getExceptionInfo(TaskContext tc) {
+		String hint = "\n-----------------------------\n" + getInfo(tc) + "\n";
 		hint += "------------------------------\n";
 		return hint;
 	}
+
 	protected String getInfo(TaskContext tc) {
 		VariableScope execution = tc.getExecution();
 		if (!(execution instanceof DelegateExecution)) {
@@ -137,9 +142,9 @@ public abstract class TaskBaseExecutor implements Constants{
 		} else {
 			Map beans = Context.getProcessEngineConfiguration().getBeans();
 			DataLayer dataLayer = (DataLayer) beans.get(DataLayer.DATA_LAYER);
-			log(tc, "Category:"+tc.getTenantId());
+			log(tc, "Category:" + tc.getTenantId());
 			StoreDesc sdesc = StoreDesc.getNamespaceData(tc.getTenantId());
-			log(tc, "Sdesc:"+sdesc);
+			log(tc, "Sdesc:" + sdesc);
 			sc = dataLayer.getSessionContext(sdesc);
 		}
 		return sc;
@@ -154,6 +159,7 @@ public abstract class TaskBaseExecutor implements Constants{
 			return (WorkflowService) beans.get(WorkflowService.WORKFLOW_SERVICE);
 		}
 	}
+
 	protected PermissionService getPermissionService() {
 		SessionContext sc = null;
 		if (m_permissionService != null) {
@@ -164,10 +170,9 @@ public abstract class TaskBaseExecutor implements Constants{
 		}
 	}
 
-	protected Object getValue(DelegateExecution execution, String processvar)  {
-		try{
+	protected Object getValue(DelegateExecution execution, String processvar) {
+		try {
 			if (processvar.indexOf(".") == -1) {
-				//log("\tProcessvar.getValue:" + processvar + " = " + execution.getVariable(processvar));
 				return execution.getVariable(processvar);
 			}
 			String[] parts = processvar.split("\\.");
@@ -176,11 +181,10 @@ public abstract class TaskBaseExecutor implements Constants{
 				String part = parts[i];
 				o = PropertyUtils.getProperty(o, part);
 			}
-			//log("\tProcessvar.getValue:" + processvar + " = " + o);
 			return o;
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("TaskBaseExecutor:Processvariable \"" + processvar +"\" not found");
+			throw new RuntimeException("TaskBaseExecutor:Processvariable \"" + processvar + "\" not found");
 		}
 	}
 
@@ -207,38 +211,38 @@ public abstract class TaskBaseExecutor implements Constants{
 	}
 
 	protected TransactionService getTransactionService() {
-		if( m_workflowService != null){
-			TransactionService ts = (TransactionService)m_workflowService.lookupServiceByName("org.ms123.common.system.TransactionService");
+		if (m_workflowService != null) {
+			TransactionService ts = (TransactionService) m_workflowService.lookupServiceByName("org.ms123.common.system.TransactionService");
 			return ts;
-		}else{
+		} else {
 			Map beans = Context.getProcessEngineConfiguration().getBeans();
 			TransactionService ts = (TransactionService) beans.get("transactionService");
 			return ts;
 		}
 	}
 
-	protected CallService getCallService(){
-		if( m_callService != null ) return m_callService;
-		if( m_bundleContext == null){
+	protected CallService getCallService() {
+		if (m_callService != null)
+			return m_callService;
+		if (m_bundleContext == null) {
 			Map beans = Context.getProcessEngineConfiguration().getBeans();
 			m_bundleContext = (BundleContext) beans.get("bundleContext");
 		}
-		log("TaskBaseExecutor.m_bundleContext:"+m_bundleContext);
-	  ServiceReference ref = m_bundleContext.getServiceReference(CallService.class.getName());	
-		if( ref != null){
+		log("TaskBaseExecutor.m_bundleContext:" + m_bundleContext);
+		ServiceReference ref = m_bundleContext.getServiceReference(CallService.class.getName());
+		if (ref != null) {
 			m_callService = (CallService) m_bundleContext.getService(ref);
 		}
-		log("TaskBaseExecutor.m_callService:"+m_callService);
+		log("TaskBaseExecutor.m_callService:" + m_callService);
 		return m_callService;
 	}
+
 	protected void setValue(DelegateExecution execution, String processvar, Object value) throws Exception {
 		if (processvar.indexOf(".") == -1) {
-			//log("\tProcessvar.setValue:" + processvar + " = " + value);
 			execution.setVariable(processvar, value);
 		}
 		String[] parts = processvar.split("\\.");
 		Object o = execution.getVariable(parts[0]);
-		//log("\tProcessvar.setValue1:" + processvar + "(" + o + "/" + parts[0] + "/" + value);
 		if (o == null) {
 			o = new HashMap();
 			execution.setVariable(parts[0], o);
@@ -253,7 +257,6 @@ public abstract class TaskBaseExecutor implements Constants{
 				}
 				o = o1;
 			} else {
-				//log("\tProcessvar.setValue2:" + processvar + "(" + o + "/" + part + "/" + value);
 				PropertyUtils.setProperty(o, part, value);
 			}
 		}
@@ -274,13 +277,21 @@ public abstract class TaskBaseExecutor implements Constants{
 		if (_execution instanceof DelegateExecution) {
 			DelegateExecution execution = (DelegateExecution) _execution;
 			String processDefinitionId = ((ExecutionEntity) execution).getProcessDefinitionId();
-			dsl = new GroovyTaskDsl(sc, getEventAdmin(execution), ws, tc.getTenantId(), tc.getProcessDefinitionKey(),
-					execution.getProcessInstanceId(), getInfo(tc), vars);
+			dsl = new GroovyTaskDsl(sc, getEventAdmin(execution), ws, tc.getTenantId(), tc.getProcessDefinitionKey(), execution.getProcessInstanceId(), getInfo(tc), vars);
 		} else {
-			dsl = new GroovyTaskDsl(sc, null, ws, tc.getTenantId(), tc.getProcessDefinitionKey(), tc.getPid(),
-					tc.getHint(), vars);
+			dsl = new GroovyTaskDsl(sc, null, ws, tc.getTenantId(), tc.getProcessDefinitionKey(), tc.getPid(), tc.getHint(), vars);
 		}
 		return dsl;
+	}
+
+	private Object getValue(String processvar, Map<String, Object> vars) {
+		try {
+			Object val = eval(processvar, vars);
+			log("getValue(" + processvar + "):" + val + "\tvars:" + vars);
+			return val;
+		} catch (Throwable t) {
+			throw new RuntimeException("TaskBaseExecutor:Processvariable \"" + processvar + "\" not found", t);
+		}
 	}
 
 	protected Map<String, Object> getParams(DelegateExecution execution, Expression variablesmapping, String taskVarName) throws Exception {
@@ -288,18 +299,21 @@ public abstract class TaskBaseExecutor implements Constants{
 			return new HashMap();
 		}
 		String vm = variablesmapping.getValue(execution).toString();
-		if( vm.trim().length() == 0) return new HashMap();
+		if (vm.trim().length() == 0)
+			return new HashMap();
 		Map map = (Map) m_ds.deserialize(vm);
 		List<Map> varmap = (List<Map>) map.get("items");
 		Map<String, Object> values = new HashMap();
+		Map<String, Object> vars = execution.getVariables();
 		for (Map<String, String> m : varmap) {
 			String processvar = m.get("processvar");
-			Object o = getValue(execution, processvar);
+			Object o = getValue(processvar, vars);
 			String pvar = m.get(taskVarName);
 			values.put(pvar, o);
 		}
 		return values;
 	}
+
 	protected void setProcessDefinition(TaskContext tc, VariableScope execution) {
 		if (execution instanceof DelegateExecution) {
 			Map beans = Context.getProcessEngineConfiguration().getBeans();
@@ -315,36 +329,44 @@ public abstract class TaskBaseExecutor implements Constants{
 		}
 	}
 
-	private static class ScriptContext{
+	private static class ScriptContext {
 		public GroovyShell shell = new GroovyShell();;
-		public Map<String,Script> scripCache=new HashMap();	
+		public Map<String, Script> scripCache = new HashMap();
 	}
+
 	private static ScriptContext scriptContext = new ScriptContext();
-	protected static String eval(String expr, TaskContext tc) {
-		Map<String, Object> vars = tc.getExecution().getVariables();
+
+	protected static String evalstr(String expr, Map<String, Object> vars) {
 		try {
-			Script script = scriptContext.scripCache.get(expr);
-			if( script == null){
-				script = scriptContext.shell.parse(expr);
-				scriptContext.scripCache.put(expr,script);
-			}
-			Binding binding = new Binding(vars);
-			script.setBinding(binding);
-			return String.valueOf(script.run());
+			return String.valueOf(eval(expr, vars));
 		} catch (Throwable e) {
 			return expr;
 		}
 	}
+
+	protected static Object eval(String expr, Map<String, Object> vars) {
+		Script script = scriptContext.scripCache.get(expr);
+		if (script == null) {
+			script = scriptContext.shell.parse(expr);
+			scriptContext.scripCache.put(expr, script);
+		}
+		Binding binding = new Binding(vars);
+		script.setBinding(binding);
+		return script.run();
+	}
+
 	private boolean isEmpty(String s) {
 		return (s == null || "".equals(s.trim()));
 	}
 
-	private String getString(TaskContext tc, String key, String expr){
+	private String getString(TaskContext tc, String key, String expr) {
 		return expr;
 	}
-	private Pattern _splitSearchPattern = Pattern.compile("[\",]"); 
+
+	private Pattern _splitSearchPattern = Pattern.compile("[\",]");
+
 	private List<String> splitByCommasNotInQuotes(String s) {
-		if (s == null){
+		if (s == null) {
 			return Collections.emptyList();
 		}
 
@@ -357,12 +379,12 @@ public abstract class TaskBaseExecutor implements Constants{
 			if ("\"".equals(sep)) {
 				quoteMode = !quoteMode;
 			} else if (!quoteMode && ",".equals(sep)) {
-				int toPos = m.start(); 
+				int toPos = m.start();
 				list.add(s.substring(pos, toPos));
 				pos = m.end();
 			}
 		}
-		if (pos < s.length()){
+		if (pos < s.length()) {
 			list.add(s.substring(pos));
 		}
 		return list;
@@ -370,61 +392,63 @@ public abstract class TaskBaseExecutor implements Constants{
 
 	protected List<ProcessInstance> getProcessInstances(TaskContext tc, Map<String, String> processCriteria, boolean exception) {
 		boolean hasCriteria = false;
+		Map<String, Object> vars = tc.getExecution().getVariables();
 		log("findExecution:processCriteria:" + processCriteria);
 		ExecutionQuery eq = tc.getPE().getRuntimeService().createExecutionQuery();
 		String processDefinitionId = getString(tc, PROCESS_DEFINITION_ID, processCriteria.get(PROCESS_DEFINITION_ID));
 		if (!isEmpty(processDefinitionId)) {
-			eq.processDefinitionId(trimToEmpty(eval(processDefinitionId, tc)));
-			log("getProcessInstances.processDefinitionId:"+trimToEmpty(eval(processDefinitionId,tc)));
-			hasCriteria=true;
+			String val = trimToEmpty(evalstr(processDefinitionId, vars));
+			eq.processDefinitionId(val);
+			log("getProcessInstances.processDefinitionId:" + val);
+			hasCriteria = true;
 		}
 		String processDefinitionKey = getString(tc, PROCESS_DEFINITION_KEY, processCriteria.get(PROCESS_DEFINITION_KEY));
 		if (!isEmpty(processDefinitionKey)) {
-			eq.processDefinitionKey(trimToEmpty(eval(processDefinitionKey,tc)));
-			log("getProcessInstances.processDefinitionKey:"+trimToEmpty(eval(processDefinitionKey,tc)));
-			hasCriteria=true;
+			String key = trimToEmpty(evalstr(processDefinitionKey, vars));
+			eq.processDefinitionKey(key);
+			log("getProcessInstances.processDefinitionKey:" + key);
+			hasCriteria = true;
 		}
 		String processInstanceId = getString(tc, PROCESS_INSTANCE_ID, processCriteria.get(PROCESS_INSTANCE_ID));
 		if (!isEmpty(processInstanceId)) {
-			eq.processInstanceId(trimToEmpty(eval(processInstanceId,tc)));
-			log("getProcessInstances.processInstanceId:"+trimToEmpty(eval(processInstanceId,tc)));
-			hasCriteria=true;
+			String pid = trimToEmpty(evalstr(processInstanceId, vars));
+			eq.processInstanceId(trimToEmpty(pid));
+			log("getProcessInstances.processInstanceId:" + pid);
+			hasCriteria = true;
 		}
 		String businessKey = getString(tc, BUSINESS_KEY, processCriteria.get(BUSINESS_KEY));
 		if (!isEmpty(businessKey)) {
-			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,tc)),false);
-			log("getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,tc)));
-			hasCriteria=true;
+			String bkey = trimToEmpty(evalstr(businessKey, vars));
+			eq.processInstanceBusinessKey(bkey, false);
+			log("getProcessInstances.businessKey:" + bkey);
+			hasCriteria = true;
 		}
 
 		String activityId = getString(tc, ACTIVITY_ID, processCriteria.get(ACTIVITY_ID));
 		if (!isEmpty(activityId)) {
-			eq.activityId(trimToEmpty(eval(activityId,tc)));
-			hasCriteria=true;
+			eq.activityId(trimToEmpty(evalstr(activityId, vars)));
+			hasCriteria = true;
 		}
 		String executionId = getString(tc, EXECUTION_ID, processCriteria.get(EXECUTION_ID));
 		if (!isEmpty(executionId)) {
-			eq.executionId(trimToEmpty(eval(executionId,tc)));
-			hasCriteria=true;
+			eq.executionId(trimToEmpty(evalstr(executionId, vars)));
+			hasCriteria = true;
 		}
 		String processVariable = processCriteria.get(PROCESSVARIABLE);
 		if (!isEmpty(processVariable)) {
 			processVariable = trimToEmpty(processVariable);
-			List<String> tokens = splitByCommasNotInQuotes( processVariable);
-			if( tokens.size() == 1){
-				eq.processVariableValueEquals(trimToEmpty(eval(tokens.get(0),tc)));
-			}else{
-				log("p1eval:"+eval(tokens.get(1),tc));
-				eq.processVariableValueEquals(
-					trimToEmpty(tokens.get(0)),
-					trimToEmpty(eval(tokens.get(1),tc))
-				);
+			List<String> tokens = splitByCommasNotInQuotes(processVariable);
+			if (tokens.size() == 1) {
+				eq.processVariableValueEquals(trimToEmpty(evalstr(tokens.get(0), vars)));
+			} else {
+				log("p1eval:" + evalstr(tokens.get(1), vars));
+				eq.processVariableValueEquals(trimToEmpty(tokens.get(0)), trimToEmpty(evalstr(tokens.get(1), vars)));
 			}
-			hasCriteria=true;
+			hasCriteria = true;
 		}
 
-		if( hasCriteria ){
-			log("getProcessInstances.namespace:"+tc.getTenantId());
+		if (hasCriteria) {
+			log("getProcessInstances.namespace:" + tc.getTenantId());
 			eq.executionTenantId(trimToEmpty(tc.getTenantId()));
 			List<ProcessInstance> executionList = (List) eq.list();
 			log("getProcessInstances:" + executionList);
@@ -436,8 +460,7 @@ public abstract class TaskBaseExecutor implements Constants{
 		return null;
 	}
 
-
-	protected  class TaskContext {
+	protected class TaskContext {
 		protected VariableScope m_execution;
 		protected String m_tenantId;
 		protected String m_processDefinitionKey;
@@ -448,25 +471,30 @@ public abstract class TaskBaseExecutor implements Constants{
 		protected ProcessEngine m_pe;
 		protected String m_script;
 
-		public TaskContext(){
+		public TaskContext() {
 		}
 
-		public TaskContext(DelegateExecution execution){
+		public TaskContext(DelegateExecution execution) {
 			m_execution = execution;
-			setProcessDefinition( this, execution);
+			setProcessDefinition(this, execution);
 		}
+
 		public void setExecution(VariableScope vs) {
 			m_execution = vs;
 		}
-		public void setPE(ProcessEngine  pe) {
+
+		public void setPE(ProcessEngine pe) {
 			m_pe = pe;
 		}
+
 		public ProcessEngine getPE() {
 			return m_pe;
 		}
-		public void setPermissionService(PermissionService  ps) {
+
+		public void setPermissionService(PermissionService ps) {
 			m_ps = ps;
 		}
+
 		public PermissionService getPermissionService() {
 			return m_ps;
 		}
@@ -514,6 +542,7 @@ public abstract class TaskBaseExecutor implements Constants{
 		public String getProcessDefinitionKey() {
 			return m_processDefinitionKey;
 		}
+
 		public String getProcessDefinitionName() {
 			return m_processDefinitionName;
 		}
@@ -522,10 +551,30 @@ public abstract class TaskBaseExecutor implements Constants{
 			return m_tenantId;
 		}
 	}
+
+	protected BigInteger checksum(Object obj) {
+		try {
+			if (obj == null) {
+				return BigInteger.ZERO;
+			}
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(bos);
+			oos.writeObject(obj);
+			oos.close();
+			MessageDigest m = MessageDigest.getInstance("SHA1");
+			m.update(bos.toByteArray());
+			return new BigInteger(1, m.digest());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return BigInteger.ZERO;
+	}
+
 	protected void log(String message) {
 		m_logger.info(message);
 		System.err.println(message);
 	}
+
 	protected void debug(String message) {
 		m_logger.debug(message);
 		System.err.println(message);
@@ -536,22 +585,25 @@ public abstract class TaskBaseExecutor implements Constants{
 		m_logger.info(message);
 		System.err.println(message);
 	}
+
 	protected void debug(TaskContext tc, String message) {
 		message = getlogMessage(tc, message);
 		m_logger.debug(message);
 		System.err.println(message);
 	}
+
 	protected void error(TaskContext tc, String message, Exception e) {
 		message = getlogMessage(tc, message);
 		m_logger.error(message, e);
 		System.err.println(message);
 		e.printStackTrace();
 	}
+
 	protected String getlogMessage(TaskContext tc, String message) {
 		VariableScope execution = tc.getExecution();
 		if ((execution instanceof DelegateExecution)) {
 			DelegateExecution d = (DelegateExecution) execution;
-			message = "(pid:" + d.getProcessInstanceId() + ",eid:" + d.getId() + ",parentId:"+ d.getParentId()+"):" + message;
+			message = "(pid:" + d.getProcessInstanceId() + ",eid:" + d.getId() + ",parentId:" + d.getParentId() + "):" + message;
 		}
 		return message;
 	}
