@@ -20,6 +20,7 @@ package org.ms123.common.workflow.tasks;
 
 import flexjson.*;
 import java.util.*;
+import java.math.BigInteger;
 import javax.transaction.UserTransaction;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
@@ -57,26 +58,25 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 	@Override
 	public void execute(DelegateExecution execution) {
 		final TaskContext tc = new TaskContext(execution);
-		if (script == null){
+		if (script == null) {
 			return;
 		}
 		tc.setScript(script.getValue(execution).toString());
 
-		if( m_ownTransaction ){
+		if (m_ownTransaction) {
 			TransactionTemplate tt = getTransactionService().getTransactionTemplate(true);
 			tt.execute(new TransactionCallback<Object>() {
 				public Object doInTransaction(TransactionStatus paramTransactionStatus) {
-					_execute(tc,null);
+					_execute(tc, null);
 					return null;
-			  }
+				}
 			});
-		}else{
+		} else {
 			_execute(tc, null);
 		}
 	}
 
-	public void execute(String namespace, String processDefinitionKey, String pid, String script, final Map addVars,
-			VariableScope variableScope, String hint, DataLayer dataLayer, WorkflowService ws) {
+	public void execute(String namespace, String processDefinitionKey, String pid, String script, final Map addVars, VariableScope variableScope, String hint, DataLayer dataLayer, WorkflowService ws) {
 		if (script == null) {
 			return;
 		}
@@ -90,32 +90,37 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 		m_dataLayer = dataLayer;
 		m_workflowService = ws;
 
-		if( m_ownTransaction ){
+		if (m_ownTransaction) {
 			TransactionTemplate tt = getTransactionService().getTransactionTemplate(true);
 			tt.execute(new TransactionCallback<Object>() {
 				public Object doInTransaction(TransactionStatus paramTransactionStatus) {
-					_execute(tc,addVars);
+					_execute(tc, addVars);
 					return null;
-			  }
+				}
 			});
-		}else{
+		} else {
 			_execute(tc, addVars);
 		}
 	}
 
 	private void _execute(TaskContext tc, Map addVars) {
 		m_js.prettyPrint(true);
-		debug(tc, "TaskScriptExecutor._execute:" + tc.getScript());
+		debug("TaskScriptExecutor._execute:" + tc.getScript());
 		printInfo(tc);
-		Map<String,Set<String>> scriptVars = GroovyVariablesVisitor.getVariables(tc.getScript());
+		Map<String, Set<String>> scriptVars = GroovyVariablesVisitor.getVariables(tc.getScript());
 
-		debug(tc, "Bound variables:"+scriptVars.get("bound"));
-		debug(tc, "UnBound variables:"+scriptVars.get("unbound"));
+		debug("Bound variables:" + scriptVars.get("bound"));
+		debug("UnBound variables:" + scriptVars.get("unbound"));
+		Set<String> unboundVars = scriptVars.get("unbound");
+		Map<String, BigInteger> unboundChecksums = new HashMap<String, BigInteger>();
+		for (String var : unboundVars) {
+			Object val = tc.getExecution().getVariable(var);
+			unboundChecksums.put(var, checksum(val));
+		}
 
 		showVariablenNames(tc);
 		SessionContext sc = getSessionContext(tc);
 		Map<String, Object> vars = new HashMap(tc.getExecution().getVariables());
-		Set<String> existingVars = (Set)new HashSet(vars.keySet()).clone();
 		if (addVars != null) {
 			vars.putAll(addVars);
 		}
@@ -128,23 +133,20 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 		UserTransaction tx = sc.getUserTransaction();
 		Object ret = null;
 		try {
-			log(tc, "transaction.status:" + tx.getStatus() + "/" + org.ms123.common.system.thread.ThreadContext.getThreadContext());
+			debug("transaction.status:" + tx.getStatus() + "/" + org.ms123.common.system.thread.ThreadContext.getThreadContext());
 			ret = dsl.eval(tc.getScript());
-			log(tc, "TaskScriptExecutor.gvars:" + gvars);
-			log(tc, "TaskScriptExecutor.bindingVariables:" + dsl.getVariables());
+			debug("TaskScriptExecutor.gvars:" + gvars);
+			debug("TaskScriptExecutor.bindingVariables:" + dsl.getVariables());
 			tc.getExecution().setVariables(gvars);
 			tc.getExecution().setVariablesLocal(lvars);
-			log(tc, "TaskScriptExecutor.existingVars:" + existingVars);
-			for( String varName : scriptVars.get("unbound")){
-				if( !"gvars".equals(varName) && !"lvars".equals(varName) && dsl.hasVariable(varName) /*&& !existingVars.contains(varName)*/){
-					Object eValue = tc.getExecution().getVariable(varName);
-					Object dValue = dsl.getVariable(varName);
-					if( dValue != null && !dValue.equals(eValue)){
-						log("\t###settingProcessVariable1:"+varName+" -> " + dsl.getVariable(varName));
-						tc.getExecution().setVariable(varName, dValue);
-					}else if( dValue == null && eValue != null){
-						log("\t###settingProcessVariable2:"+varName+" -> " + dsl.getVariable(varName));
-						tc.getExecution().setVariable(varName, dValue);
+			for (String varName : scriptVars.get("unbound")) {
+				if (!"gvars".equals(varName) && !"lvars".equals(varName) && dsl.hasVariable(varName)) {
+					Object value = dsl.getVariable(varName);
+					BigInteger dValueChecksum = checksum(value);
+					log("\tVAR(" + varName + "):" + value + " -> " + dValueChecksum + " , " + unboundChecksums.get(varName));
+					if (!dValueChecksum.equals(unboundChecksums.get(varName))) {
+						log("\t\tsettingProcessVariable:" + varName + " -> " + value);
+						tc.getExecution().setVariable(varName, value);
 					}
 				}
 			}
