@@ -78,7 +78,7 @@
 					}
 				}
 			}
-			var abuttons = this.$.formdiv.querySelectorAll( "xaction-button" );
+			var abuttons = this.$.formdiv.parentNode.querySelectorAll( "xaction-button" );
 			for( var i=0;i< abuttons.length;i++){
 				var ab = abuttons[i];
 				if( ab.xaction == "execute"){
@@ -201,6 +201,7 @@
 			try {
 				env._ = _;
 				env.moment = moment;
+				env.fields = this.fieldsMap;
 				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
 				console.error( "\t" + e );
