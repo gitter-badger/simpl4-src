@@ -130,7 +130,7 @@
 				errorList = regula.validate( {
 					elements: elements
 				} );
-				if( b !== true){
+				if( dontInvalidate !== true){
 					errorList.forEach( function( err ) {
 						err.failingElements.forEach( function( elem ) {
 							elem.setInvalid( true );
@@ -141,9 +141,13 @@
 			}
 			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,select-field" ), true );
 			for ( var i = 0; i < elements.length; i++ ) {
+				var saveInvalid = elements[ i ].isInvalid;
 				elements[ i ].checkConstraints();
 				if ( elements[ i ].isInvalid ) {
 					errorList.push( "Error" );
+				}
+				if( dontInvalidate === true){
+					elements[i].setInvalid(saveInvalid);
 				}
 			}
 			if ( errorList && errorList.length > 0 ) {
