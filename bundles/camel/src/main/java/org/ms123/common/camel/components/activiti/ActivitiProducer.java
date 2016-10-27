@@ -129,6 +129,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String businessKey;
 	private String signalName;
 	private String messageName;
+	private boolean withMetadata;
 	private boolean isSendSignal;
 	private boolean isSendMessage;
 	private boolean isCheckAssignments;
@@ -160,6 +161,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.businessKey = endpoint.getBusinessKey();
 		this.messageName = endpoint.getMessageName();
 		this.isSendSignal = endpoint.isSendSignal();
+		this.withMetadata = endpoint.withMetadata();
 		this.isSendMessage = endpoint.isSendMessage();
 		this.isCheckAssignments = endpoint.isCheckAssignments();
 		this.processCriteria = endpoint.getProcessCriteria();
@@ -227,9 +229,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 
 	private void doGetProcessVariables(Exchange exchange) {
 		List<ProcessInstance> processInstanceList = getProcessInstances(exchange, false );
-		if( processInstanceList.size() > 1 ){
-			//throw new RuntimeException("ActivitiProducer.doGetProcessVariables.more as one process queried: " + processInstanceList);
-		}
+		boolean withMetadata = getBoolean(exchange, "metadata", this.withMetadata);
 
 		List<Map<String,Object>> retList = new ArrayList<Map<String,Object>>();
 		for( ProcessInstance pi : processInstanceList){
@@ -242,8 +242,14 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			info(this,"doGetProcessVariables.variables:" + pi.getProcessVariables());
 			String variableNames = getString(exchange, "variableNames", this.variableNames);
 			if( isEmpty(variableNames)){
-				//			exchange.getIn().setBody(pi.getProcessVariables());
-				retList.add( pi.getProcessVariables());
+				Map<String,Object> m = new HashMap<String,Object>();
+				m.putAll( pi.getProcessVariables() );
+				if( withMetadata){
+					m.put("_processInstanceId", pi.getProcessInstanceId());
+					m.put("_processDefinitionId", pi.getProcessDefinitionId());
+					m.put("_businessKey", pi.getBusinessKey());
+				}
+				retList.add( m );
 			}else{
 				List<String> nameList = Arrays.asList(variableNames.split(","));
 				info(this,"doGetProcessVariables:nameList:" + nameList);
@@ -255,15 +261,15 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 						ret.put( entry.getKey(), entry.getValue());
 					}
 				}
-				//			exchange.getIn().setBody(ret);
+				if( withMetadata){
+					ret.put("_processInstanceId", pi.getProcessInstanceId());
+					ret.put("_processDefinitionId", pi.getProcessDefinitionId());
+					ret.put("_businessKey", pi.getBusinessKey());
+				}
 				retList.add( ret);
 			}
 		}
-		if( retList.size() == 1){
-			exchange.getIn().setBody(retList.get(0));
-		}else{
-			exchange.getIn().setBody(retList);
-		}
+		exchange.getIn().setBody(retList);
 	}
 
 	private void doQueryProcessInstances(Exchange exchange) {

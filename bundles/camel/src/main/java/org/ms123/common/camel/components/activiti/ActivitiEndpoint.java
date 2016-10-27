@@ -48,6 +48,7 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private String namespace;
 	private String events;
 	private String signalName;
+	private boolean withMetadata;
 	private boolean isSendSignal;
 	private boolean isSendMessage;
 	private boolean isCheckAssignments;
@@ -123,6 +124,13 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	}
 	public boolean isCheckAssignments() {
 		return this.isCheckAssignments;
+	}
+
+	public void setMetadata(Boolean data) {
+		this.withMetadata = data;
+	}
+	public Boolean withMetadata() {
+		return this.withMetadata;
 	}
 
 	public void setSendSignal(Boolean data) {
