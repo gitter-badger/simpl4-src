@@ -1299,6 +1299,9 @@
 				'compactChanged(compact)',
 				'jsonItemsChanged(jsonItems)'
 			],
+			ready: function() {
+				this.isInvalid = false;
+			},
 			compactChanged: function( ) {
 				if( this.compact === false) return;
 				this.async( function() {
