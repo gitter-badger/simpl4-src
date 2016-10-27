@@ -916,7 +916,7 @@ console.log("_getFilterForKey:",key);
 				}
 			}
 			if( validator=="isId()"){
-				return value.match("^[A-Za-z]([0-9A-Za-z_]){0,48}$");
+				return value.match("^[A-Za-z_]([0-9A-Za-z_]){0,48}$");
 			}
 			return value.match(validator);
 		},
