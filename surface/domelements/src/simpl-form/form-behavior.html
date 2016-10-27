@@ -114,8 +114,10 @@
 		},
 		/**
 		 * validate the form data 
+     *
+		 * @param {Boolean} dontInvalidate   don't invalidate the fields
 		 */
-		validate: function( ) {
+		validate: function( dontInvalidate ) {
 			var errorList = [];
 			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "input-field,checkbox-field,select-field" ), false );
 			Array.prototype.forEach.call( elements, function( elem ) {
@@ -128,12 +130,14 @@
 				errorList = regula.validate( {
 					elements: elements
 				} );
-				errorList.forEach( function( err ) {
-					err.failingElements.forEach( function( elem ) {
-						elem.setInvalid( true );
-						elem.setErrorMessage( err.message );
+				if( b !== true){
+					errorList.forEach( function( err ) {
+						err.failingElements.forEach( function( elem ) {
+							elem.setInvalid( true );
+							elem.setErrorMessage( err.message );
+						} );
 					} );
-				} );
+				}
 			}
 			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,select-field" ), true );
 			for ( var i = 0; i < elements.length; i++ ) {
@@ -201,7 +205,7 @@
 			try {
 				env._ = _;
 				env.moment = moment;
-				env.fields = this.fieldsMap;
+				env.form = this;
 				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
 				console.error( "\t" + e );
