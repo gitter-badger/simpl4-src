@@ -212,6 +212,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 			this.shapeSelection.shapes.each((function (shape) {
 				this._oldValues[key][shape.getId()] = shape.properties[key];
 			}).bind(this));
+console.log("beforeEdit("+key+"):",this._oldValues);
 		},
 
 
@@ -222,6 +223,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 			var key = formElement.getUserData("key");
 			var selectedElements = this.shapeSelection.shapes;
 			var oldValues = this._oldValues[key];
+console.log("afterEdit("+key+"):",this._oldValues);
 			var oldValuesClone = ms123.util.Clone.clone(oldValues);
 			var newValue = formElement.getValue();
 			if( selectedElements.length==1){
@@ -536,6 +538,20 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 							if (isFormDiagramId) formElement.setEnabled(false);
 							if (isTargetNamespace) formElement.setEnabled(false);
 							break;
+						case ms123.oryx.Config.TYPE_STRING_PLUS:
+							formElement = new ms123.graphicaleditor.plugins.propertyedit.StringPlusField(config, pair.title(), key, this.facade);
+							formElement.setRequired(!pair.optional());
+							formElement.setMaxLength(pair.length());
+							formElement.setLiveUpdate(false);
+							var filter = pair.filter() || this._getFilterForValidator(pair.validator()) || this._getFilterForKey(key);
+							if( filter ){
+								formElement.setFilter(new RegExp(filter));
+							}
+							formElement.addListener('changeValue', (function (e) {
+								this.editDirectly(key, e.getData());
+								this.afterEdit(e);
+							}).bind(this))
+							break;
 						case ms123.oryx.Config.TYPE_INTEGER:
 							var formElement = new ms123.graphicaleditor.plugins.propertyedit.NumberField();
 							formElement.setWidth(50);
@@ -679,7 +695,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 						formElement.setUserData("key", key);
 						if (attribute !== undefined) formElement.setValue(attribute);
 
-						formElement.addListener('focusin', this.beforeEdit, this);
+						formElement.addListener('focusin', this.beforeEdit.bind(this), this);
 						if (!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.ComplexListField) && 
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.ConstraintsField) && 
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.EnumField) && 
@@ -688,6 +704,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.ModuleSelectorField) && 
 								!(formElement instanceof ms123.form.ResourceSelectorField) && 
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.FieldSelectorField) && 
+								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.StringPlusField) && 
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.TextAreaField) && 
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.HtmlAreaField) && 
 								!(formElement instanceof qx.ui.form.CheckBox) && 

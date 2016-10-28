@@ -113,6 +113,7 @@ qx.Class.define("ms123.oryx.Config", {
 		TYPE_RESOURCE_SELECTOR: "resourceselector",
 		TYPE_MULTISELECT: "multiselect",
 		TYPE_FIELD_SELECTOR: "fieldselector",
+		TYPE_STRING_PLUS: "stringplus",
 
 
 		/* Vertical line distance of multiline labels */
