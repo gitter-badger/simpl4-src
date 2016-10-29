@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.VariableScope;
 import org.activiti.engine.delegate.DelegateExecution;
@@ -40,6 +41,7 @@ import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.impl.el.Expression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import flexjson.*;
 
 /**
  * 
@@ -48,6 +50,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"unchecked","deprecation"})
 public class GroovyExpression implements Expression {
 	private static final Logger m_logger = LoggerFactory.getLogger(GroovyExpression.class);
+	protected JSONDeserializer ds = new JSONDeserializer();
 	protected String m_expressionText;
 	protected GroovyShell m_shell;
 	protected ProcessEngine m_processEngine;
@@ -121,6 +124,20 @@ public class GroovyExpression implements Expression {
 		}
 	}
 
+	private boolean maybeJSON( String string ) {
+		return string.startsWith( "{" ) && string.endsWith( "}" );
+	}
+	private Object getJSON(String str){
+		try{
+			return ds.deserialize(str);
+		}catch(Exception e){
+			error("GroovyExpression.getJSON",e);
+			return str;
+		}
+	}
+
+	
+
 	private Object getService(String clazzName) {
 		debug("getService:" + clazzName);
 		Map beans = Context.getProcessEngineConfiguration().getBeans();
@@ -143,6 +160,12 @@ public class GroovyExpression implements Expression {
 		str=str.trim();
 		if (str.startsWith("#")) {
 			return eval(str.substring(1), scope);
+		}
+		if( maybeJSON( str ) ){
+			Object obj = getJSON( str );
+			if( obj instanceof Map){
+				return ExpressionCamelExecutor.execute( (Map)obj, scope);
+			}
 		}
 		int countRepl = 0;
 		int countPlainStr = 0;
@@ -193,6 +216,9 @@ public class GroovyExpression implements Expression {
 	}
 	private void log(String message) {
 		m_logger.info(message);
+	}
+	private void error(String message, Throwable t) {
+		m_logger.error(message,t);
 	}
 }
 
