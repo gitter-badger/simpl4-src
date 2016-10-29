@@ -510,8 +510,8 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			console.log( "colnum:" + colnum + "/" + rownum + "/" + this.recordType[ colnum ].type );
 			if ( this.recordType[ colnum ].type != ms123.oryx.Config.TYPE_BOOLEAN ) {
 				this.table.startEditing();
-				var value = this.tableModel.getValue( 0, rownum );
-				this._helperTree.selectNode( value );
+				//var value = this.tableModel.getValue( 0, rownum );
+				//this._helperTree.selectNode( value );
 				return;
 			}
 			if ( this.tableModel.getValue( colnum, rownum ) === true ) {
