@@ -212,7 +212,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 			this.shapeSelection.shapes.each((function (shape) {
 				this._oldValues[key][shape.getId()] = shape.properties[key];
 			}).bind(this));
-console.log("beforeEdit("+key+"):",this._oldValues);
 		},
 
 
@@ -223,7 +222,6 @@ console.log("beforeEdit("+key+"):",this._oldValues);
 			var key = formElement.getUserData("key");
 			var selectedElements = this.shapeSelection.shapes;
 			var oldValues = this._oldValues[key];
-console.log("afterEdit("+key+"):",this._oldValues);
 			var oldValuesClone = ms123.util.Clone.clone(oldValues);
 			var newValue = formElement.getValue();
 			if( selectedElements.length==1){
@@ -695,7 +693,7 @@ console.log("afterEdit("+key+"):",this._oldValues);
 						formElement.setUserData("key", key);
 						if (attribute !== undefined) formElement.setValue(attribute);
 
-						formElement.addListener('focusin', this.beforeEdit.bind(this), this);
+						formElement.addListener('focusin', this.beforeEdit, this);
 						if (!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.ComplexListField) && 
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.ConstraintsField) && 
 								!(formElement instanceof ms123.graphicaleditor.plugins.propertyedit.EnumField) && 
