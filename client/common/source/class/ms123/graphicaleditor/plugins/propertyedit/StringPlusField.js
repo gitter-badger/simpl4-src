@@ -17,7 +17,6 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 /** 
- * @ignore(Clazz.extend)
  */
 
 qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
@@ -71,9 +70,6 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 		},
 		getUserData: function( key ) {
 			return this.textField.getUserData( key );
-		},
-		addListener: function( ev, handler ) {
-			this.textField.addListener( ev, handler );
 		},
 		setLiveUpdate: function( flag ) {
 			this.textField.setLiveUpdate( flag );
