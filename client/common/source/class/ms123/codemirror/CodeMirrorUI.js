@@ -98,7 +98,7 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 				if( this._vimMode ){
 					button.setIcon("resource/ms123/vim.png");
 				}else{
-					button.setIcon("icon/16/apps/utilities-text-editor.png");
+					button.setIcon("resource/ms123/edit2.png");
 				}
 			}
 			if( action == 'foldAll'){
@@ -168,7 +168,7 @@ qx.Class.define("ms123.codemirror.CodeMirrorUI", {
 				if( this._vimMode ){
 					this._editorModeButton.setIcon("resource/ms123/vim.png");
 				}else{
-					this._editorModeButton.setIcon("icon/16/apps/utilities-text-editor.png");
+					this._editorModeButton.setIcon("resource/ms123/edit2.png");
 				}
 		},
 		reindent: function () {

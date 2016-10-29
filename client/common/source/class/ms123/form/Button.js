@@ -116,7 +116,7 @@ console.log("beforeEdit:"+Object.toJSON(context.data));
 				this._add(control);
 				break;
 			case "select":
-				var control = new qx.ui.form.Button(null, "icon/16/apps/utilities-text-editor.png").set({
+				var control = new qx.ui.form.Button(null, "resource/ms123/edit2.png").set({
 					padding: 0,
 					margin: 0,
 					maxHeight: 30

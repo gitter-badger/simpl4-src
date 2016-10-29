@@ -141,7 +141,7 @@ qx.Class.define("ms123.form.RelatedTo", {
 				this._add(control);
 				break;
 			case "select":
-				var control = new qx.ui.form.Button(null, "icon/16/apps/utilities-text-editor.png").set({
+				var control = new qx.ui.form.Button(null, "resource/ms123/edit2.png").set({
 					padding: 0,
 					margin: 0,
 					maxHeight: 22
@@ -152,7 +152,7 @@ qx.Class.define("ms123.form.RelatedTo", {
 				this._add(control);
 				break;
 			case "clear":
-				var control = new qx.ui.form.Button(null, "icon/16/actions/edit-clear.png").set({
+				var control = new qx.ui.form.Button(null, "resource/ms123/clear.png").set({
 					padding: 0,
 					margin: 0,
 					maxHeight: 22

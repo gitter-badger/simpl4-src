@@ -70,7 +70,7 @@ qx.Class.define("ms123.settings.BaseTableEdit", {
 			},
 			{
 				'label': "",
-				'icon': "icon/16/apps/utilities-text-editor.png",
+				'icon': "resource/ms123/edit2.png",
 				'callback': function (m) {
 					_this._mode = "edit";
 					var map = _this._table.getCurrentRecord();

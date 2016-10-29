@@ -214,7 +214,7 @@ qx.Class.define("ms123.usertasks.DublettenCheckForm", {
 				'value': "copy"
 			}, {
 				'label': "",
-				'icon': "icon/16/apps/utilities-text-editor.png",
+				'icon': "resource/ms123/edit2.png",
         'tooltip': this.tr("tasks.usertasks.dublettencheck.edit_dublette"),
 				'callback': function (m) {
 					var map = _this.dupTable.getCurrentRecord();

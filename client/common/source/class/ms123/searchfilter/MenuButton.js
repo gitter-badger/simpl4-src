@@ -85,7 +85,7 @@ qx.Class.define("ms123.searchfilter.MenuButton", {
 			this.changeButton = new qx.ui.menu.Button(this.tr("filter.text.change_to_compound"), "icon/16/actions/insert-link.png");
 			this.insertParentButton = new qx.ui.menu.Button(this.tr("filter.text.insert_parent"), "icon/16/actions/edit-undo.png");
 			this.delButton = new qx.ui.menu.Button(this.tr("filter.text.del_condition"), "icon/16/actions/edit-cut.png");
-			this.changeLabelButton = new qx.ui.menu.Button(this.tr("filter.text.change_label"), "icon/16/apps/utilities-text-editor.png");
+			this.changeLabelButton = new qx.ui.menu.Button(this.tr("filter.text.change_label"), "resource/ms123/edit2.png");
 
 
 

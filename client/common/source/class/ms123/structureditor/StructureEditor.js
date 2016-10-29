@@ -432,7 +432,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			this._buttonAdd.setEnabled( true );
 			toolbar._add( this._buttonAdd );
 
-			this._buttonEdit = new qx.ui.toolbar.Button( "", "icon/16/apps/utilities-text-editor.png" );
+			this._buttonEdit = new qx.ui.toolbar.Button( "", "resource/ms123/edit2.png" );
 			this._buttonEdit.setToolTipText( this.tr( "button.edit" ) );
 			this._buttonEdit.addListener( "execute", function( e ) {
 				this._table.stopEditing();

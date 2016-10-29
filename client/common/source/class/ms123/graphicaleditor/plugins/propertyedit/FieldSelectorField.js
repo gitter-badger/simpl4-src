@@ -100,7 +100,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.FieldSelectorField",
 				control = this.createActionButton();
 				break;
 			case "clear":
-				var control = new qx.ui.form.Button(null, "icon/16/actions/edit-clear.png").set({
+				var control = new qx.ui.form.Button(null, "resource/ms123/clear.png").set({
 					padding: 0,
 					margin: 0
 				});
@@ -113,7 +113,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.FieldSelectorField",
 			return control;
 		},
 		createActionButton: function () {
-			var control = new qx.ui.form.Button(null, "icon/16/apps/utilities-text-editor.png").set({
+			var control = new qx.ui.form.Button(null, "resource/ms123/edit2.png").set({
 				padding: 0,
 				margin: 0,
 				maxHeight: 30
@@ -350,7 +350,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.FieldSelector", {
     },
 		_createToolbar: function () {
 			var toolbar = new qx.ui.toolbar.ToolBar();
-			this._buttonEdit = new qx.ui.toolbar.Button("", "icon/16/apps/utilities-text-editor.png");
+			this._buttonEdit = new qx.ui.toolbar.Button("", "resource/ms123/edit2.png");
 			this._buttonEdit.addListener("execute", function (e) {
 				this._table.stopEditing();
 

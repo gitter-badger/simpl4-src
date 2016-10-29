@@ -226,7 +226,7 @@ qx.Class.define("ms123.util.BaseFieldSelector", {
 		},
 		_createToolbar: function () {
 			var toolbar = new qx.ui.toolbar.ToolBar();
-			this._buttonEdit = new qx.ui.toolbar.Button("", "icon/16/apps/utilities-text-editor.png");
+			this._buttonEdit = new qx.ui.toolbar.Button("", "resource/ms123/edit2.png");
 			this._buttonEdit.addListener("execute", function (e) {
 				this._table.stopEditing();
 

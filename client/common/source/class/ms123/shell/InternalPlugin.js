@@ -92,7 +92,7 @@ qx.Class.define('ms123.shell.InternalPlugin', {
 	/*		{
 				nodetypes: ms123.shell.FileType.getAllEditables(),
 				clazz: ms123.shell.views.Editor,
-				menuicon: "icon/16/apps/utilities-text-editor.png",
+				menuicon: "resource/ms123/edit2.png",
 				title: this.tr("shell.editor"),
 				defaultEntry:true,
 				kind: "tab"
@@ -100,14 +100,14 @@ qx.Class.define('ms123.shell.InternalPlugin', {
 			{
 				nodetypes: ms123.shell.FileType.getAllJsonEditables(),
 				clazz: ms123.shell.views.JsonEditor,
-				menuicon: "icon/16/apps/utilities-text-editor.png",
+				menuicon: "resource/ms123/edit2.png",
 				title: this.tr("shell.jsoneditor"),
 				kind: "tab"
 			},
 			{
 				nodetypes: ms123.shell.FileType.getAllTextEditables(),
 				clazz: ms123.shell.views.SimpleTextEditor,
-				menuicon: "icon/16/apps/utilities-text-editor.png",
+				menuicon: "resource/ms123/edit2.png",
 				title: this.tr("shell.texteditor"),
 				tabtitle: "%n",
 				kind: "tab"
@@ -115,7 +115,7 @@ qx.Class.define('ms123.shell.InternalPlugin', {
 			{
 				nodetypes: ["sw.module"],
 				clazz: ms123.shell.views.Editor,
-				menuicon: "icon/16/apps/utilities-text-editor.png",
+				menuicon: "resource/ms123/edit2.png",
 				title: this.tr("shell.editor"),
 				tabtitle: "%n",
 				kind: "tab"

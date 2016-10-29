@@ -554,7 +554,7 @@ qx.Class.define('ms123.widgets.Table', {
 			buttonMap["copy"] = this._buttonCopy;
 
 			if (this.__updateAccess()) {
-				this._buttonEdit = this._createButton("", "icon/16/apps/utilities-text-editor.png");
+				this._buttonEdit = this._createButton("", "resource/ms123/edit2.png");
 				this._buttonEdit.setToolTipText(this.tr("widgets.table.edit_button"));
 			} else {
 				this._buttonEdit = this._createButton("", "icon/16/apps/utilities-dictionary.png");

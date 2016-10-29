@@ -626,7 +626,7 @@ qx.Class.define("ms123.form.TriggerActionEdit", {
 				control.addListener("changeSelection", function (e) {}, this);
 				break
 			case "fieldButton":
-				control = new qx.ui.form.Button(this.tr("tactions.editfields"), "icon/16/apps/utilities-text-editor.png");
+				control = new qx.ui.form.Button(this.tr("tactions.editfields"), "resource/ms123/edit2.png");
 				break
 			case "serviceLabel":
 				control = new qx.ui.basic.Label(this.tr("tactions.servicelabel"));
