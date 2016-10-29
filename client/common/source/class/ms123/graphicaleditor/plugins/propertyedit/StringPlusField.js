@@ -87,6 +87,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			return this.textField.getValue();
 		},
 		setValue: function( value ) {
+			console.log( "StringPlusField.setValue:", value );
 			this.textField.setValue( value );
 		},
 		// overridden
@@ -132,7 +133,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			} );
 			control.setFocusable( false );
 			control.addListener( "execute", function( e ) {
-				this._createWindow( this.facade.getPropertyValue( this._entityField ) );
+				this._createWindow();
 			}, this );
 			this._add( control );
 			return control;
@@ -144,7 +145,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			return this.key;
 		},
 
-		_createWindow: function( mainEntity ) {
+		_createWindow: function() {
 			var topContainer = new qx.ui.container.Composite();
 			topContainer.setLayout( new qx.ui.layout.VBox( 10 ) );
 			var win = this.createWindow( this.title );
@@ -168,12 +169,30 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 				"optional": false
 			} ];
 
-			var table = this.createTable( complexItems, this.data );
+			var data = [];
+			var method = null;
+			var val = this.getValue();
+			if ( this._isMaybeJSON( val ) ) {
+				var d = JSON5.parse( val );
+				data = d.parameter;
+				method = d.method;
+			}
+			console.log( "data:", data );
+			var table = this.createTable( complexItems, data );
 			var toolbar = this.createToolbar( [ "add", "del" ] );
 			this.serviceSelector = this._serviceSelector();
+			this.serviceSelector.setData( {
+				"service": method
+			} );
 			topContainer.add( this.serviceSelector );
 			topContainer.add( toolbar );
-			win.add( table, {
+			var config = {
+				"helperTree": [ "sw.camel" ],
+				"namespace": "docu"
+			};
+			var helperTree = new ms123.graphicaleditor.plugins.propertyedit.ResourceDetailTree( config, this.facade );
+			var split = this._splitPane( table, helperTree );
+			win.add( split, {
 				edge: "center"
 			} );
 			win.add( topContainer, {
@@ -278,10 +297,12 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			} );
 			return form;
 		},
-
-
+		_isMaybeJSON: function( str ) {
+			return str.startsWith( "{" ) && str.endsWith( "}" );
+		},
 		createTable: function( items, data ) {
 			this.items = items;
+			console.log( "createTable:", this.getValue() );
 			var dialogWidth = 0;
 
 			var colIds = new Array();
@@ -360,15 +381,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			this.table = table;
 
 
-			if ( data != null && data != "" ) {;
-				try {
-					console.log( "data:" + data );
-					data = qx.lang.Json.parse( data );
-					this.setTableData( data );
-				} catch ( e ) {
-					console.error( "ComplexListWindow.createTable:" + data + " wrong value" );
-				}
-			}
+			this.setTableData( data );
 
 			table.setDroppable( true );
 			table.setFocusCellOnPointerMove( true );
@@ -379,6 +392,27 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			selModel.setSelectionMode( qx.ui.table.selection.Model.SINGLE_SELECTION );
 
 			return table;
+		},
+		_handleDrop: function( e ) {
+			console.log( "_handleDrop:" + e );
+			if ( this.table.isEditing() ) {
+				this.table.stopEditing();
+			}
+			var col = this.table.getFocusedColumn();
+			var row = this.table.getFocusedRow();
+			if ( col === undefined || row == undefined ) return;
+			var target = e.getRelatedTarget();
+			var value = null;
+
+
+			if ( qx.Class.implementsInterface( target, qx.ui.form.IStringForm ) ) {
+				value = target.getValue();
+			} else {
+				value = target.getSelection().getItem( 0 ).getValue();
+			}
+			console.log( "cell:" + row + "/" + col );
+			console.log( "_handleDrop:" + value );
+			this.table.getTableModel().setValue( col, row, value );
 		},
 		createToolbar: function( buttonList ) {
 			var toolbar = new qx.ui.toolbar.ToolBar();
