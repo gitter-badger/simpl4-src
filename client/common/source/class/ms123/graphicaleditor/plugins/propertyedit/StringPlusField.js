@@ -17,6 +17,7 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 /** 
+ * @ignore(JSON5.*)
  */
 
 qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
@@ -190,8 +191,8 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 				"helperTree": [ "sw.camel" ],
 				"namespace": "docu"
 			};
-			var helperTree = new ms123.graphicaleditor.plugins.propertyedit.ResourceDetailTree( config, this.facade );
-			var split = this._splitPane( table, helperTree );
+			this._helperTree = new ms123.graphicaleditor.plugins.propertyedit.ResourceDetailTree( config, this.facade );
+			var split = this._splitPane( table, this._helperTree );
 			win.add( split, {
 				edge: "center"
 			} );
@@ -274,7 +275,11 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 					},
 					'config': {
 						'type': 'sw.camel',
-						'editable': false
+						'editable': false,
+						'selected_callback': ( function( x ) {
+							console.log( "Selected_callback:", x );
+							this._helperTree.selectNode(x);
+						} ).bind( this )
 					},
 					'value': ""
 				}
@@ -298,7 +303,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			return form;
 		},
 		_isMaybeJSON: function( str ) {
-			return str.startsWith( "{" ) && str.endsWith( "}" );
+			return str != null && str.startsWith( "{" ) && str.endsWith( "}" );
 		},
 		createTable: function( items, data ) {
 			this.items = items;
@@ -505,10 +510,8 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			console.log( "colnum:" + colnum + "/" + rownum + "/" + this.recordType[ colnum ].type );
 			if ( this.recordType[ colnum ].type != ms123.oryx.Config.TYPE_BOOLEAN ) {
 				this.table.startEditing();
-				if ( this.config.helperTree ) {
-					var value = this.tableModel.getValue( 0, rownum );
-					this._resourceHelper.selectNode( value );
-				}
+				var value = this.tableModel.getValue( 0, rownum );
+				this._helperTree.selectNode( value );
 				return;
 			}
 			if ( this.tableModel.getValue( colnum, rownum ) === true ) {

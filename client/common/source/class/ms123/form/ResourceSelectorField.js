@@ -149,6 +149,9 @@ qx.Class.define("ms123.form.ResourceSelectorField", {
 						this._internalChange = false;
 						console.log("----->data:"+data+"/"+oldVal);
 						this.fireDataEvent("changeValue", data, oldVal);
+						if( this._config.selected_callback){
+							this._config.selected_callback(data);
+						}
 					}).bind(this);
 					var val = this.getChildControl("textfield").getValue();
 					if(this._config.convertIn){
