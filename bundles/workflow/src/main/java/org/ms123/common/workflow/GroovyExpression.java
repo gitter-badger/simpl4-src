@@ -47,7 +47,7 @@ import flexjson.*;
  * 
  * @author Manfred Sattler
  */
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class GroovyExpression implements Expression {
 	private static final Logger m_logger = LoggerFactory.getLogger(GroovyExpression.class);
 	protected JSONDeserializer ds = new JSONDeserializer();
@@ -55,14 +55,14 @@ public class GroovyExpression implements Expression {
 	protected GroovyShell m_shell;
 	protected ProcessEngine m_processEngine;
 
-	private static ConcurrentMap<String, Script> m_scriptCache = new ConcurrentLinkedHashMap.Builder<String, Script>()
-			.maximumWeightedCapacity(100).build();
+	private static ConcurrentMap<String, Script> m_scriptCache = new ConcurrentLinkedHashMap.Builder<String, Script>().maximumWeightedCapacity(100).build();
 
 	public GroovyExpression(GroovyShell shell, ProcessEngine pe, String expressionText) {
 		debug("GroovyExpression:" + expressionText);
 		m_shell = shell;
 		m_processEngine = pe;
 		m_expressionText = expressionText;
+		new Exception(expressionText).printStackTrace();
 	}
 
 	public synchronized Object getValue(VariableScope variableScope) {
@@ -93,11 +93,11 @@ public class GroovyExpression implements Expression {
 			Script script = null;//m_scriptCache.get(expr);
 			script = m_shell.parse(expr);
 			Binding binding = new Binding(scope.getVariables());
-			if( scope instanceof DelegateExecution){
-					DelegateExecution e = (DelegateExecution)scope;
-					binding.setVariable( "__processBusinessKey", e.getProcessBusinessKey());
-					binding.setVariable( "__processInstanceId", e.getProcessInstanceId());
-					binding.setVariable( "__processDefinitionId", e.getProcessDefinitionId());
+			if (scope instanceof DelegateExecution) {
+				DelegateExecution e = (DelegateExecution) scope;
+				binding.setVariable("__processBusinessKey", e.getProcessBusinessKey());
+				binding.setVariable("__processInstanceId", e.getProcessInstanceId());
+				binding.setVariable("__processDefinitionId", e.getProcessDefinitionId());
 			}
 			script.setBinding(binding);
 			debug("GroovyExpression.vars:" + binding.getVariables());
@@ -109,8 +109,7 @@ public class GroovyExpression implements Expression {
 			if (scope instanceof ActivityExecution) {
 				ActivityExecution de = (ActivityExecution) scope;
 				String activityId = de.getCurrentActivityId();
-				List<HistoricActivityInstance> activityList = m_processEngine.getHistoryService()
-						.createHistoricActivityInstanceQuery().activityId(activityId).list();
+				List<HistoricActivityInstance> activityList = m_processEngine.getHistoryService().createHistoricActivityInstanceQuery().activityId(activityId).list();
 				String activityName = "";
 				for (HistoricActivityInstance h : activityList) {
 					log("h:" + h.getActivityName());
@@ -124,29 +123,24 @@ public class GroovyExpression implements Expression {
 		}
 	}
 
-	private boolean maybeJSON( String string ) {
-		return string.startsWith( "{" ) && string.endsWith( "}" );
+	private boolean maybeJSON(String string) {
+		return string.startsWith("{") && string.endsWith("}");
 	}
-	private Object getJSON(String str){
-		try{
+
+	private Object getJSON(String str) {
+		try {
 			return ds.deserialize(str);
-		}catch(Exception e){
-			error("GroovyExpression.getJSON",e);
+		} catch (Exception e) {
+			error("GroovyExpression.getJSON", e);
 			return str;
 		}
 	}
 
-	
-
 	private Object getService(String clazzName) {
-		debug("getService:" + clazzName);
 		Map beans = Context.getProcessEngineConfiguration().getBeans();
 		BundleContext bc = (BundleContext) beans.get("bundleContext");
-		debug("__beans__:" + beans);
 		ServiceReference sr = bc.getServiceReference(clazzName);
-		debug("sr___:" + sr);
 		Object o = bc.getService(sr);
-		debug("o:" + o);
 		return o;
 	}
 
@@ -157,14 +151,14 @@ public class GroovyExpression implements Expression {
 		if (str.startsWith("~")) {
 			return str.substring(1);
 		}
-		str=str.trim();
+		str = str.trim();
 		if (str.startsWith("#")) {
 			return eval(str.substring(1), scope);
 		}
-		if( maybeJSON( str ) ){
-			Object obj = getJSON( str );
-			if( obj instanceof Map){
-				return ExpressionCamelExecutor.execute( (Map)obj, scope);
+		if (str.startsWith("pc:{")) {
+			Object obj = getJSON(str.substring(3));
+			if (obj instanceof Map) {
+				return ExpressionCamelExecutor.execute((Map) obj, scope);
 			}
 		}
 		int countRepl = 0;
@@ -179,7 +173,7 @@ public class GroovyExpression implements Expression {
 					first = i + 2;
 				}
 				openBrackets++;
-			} else if (str.charAt(i) == '}' && openBrackets>0 && !hasMoreRightBrackets(str,i)) {
+			} else if (str.charAt(i) == '}' && openBrackets > 0 && !hasMoreRightBrackets(str, i)) {
 				openBrackets -= 1;
 				if (openBrackets == 0) {
 					countRepl++;
@@ -198,27 +192,30 @@ public class GroovyExpression implements Expression {
 		}
 	}
 
-	private boolean hasMoreRightBrackets(String str, int pos){
+	private boolean hasMoreRightBrackets(String str, int pos) {
 		int len = str.length();
 		boolean hasMore = false;
-		for( int i=pos+1; i < len; i++){
-			if( str.charAt(i) == '}' ){
+		for (int i = pos + 1; i < len; i++) {
+			if (str.charAt(i) == '}') {
 				return true;
 			}
-			if( str.charAt(i) == '$' && i+1<len && str.charAt(i+1) == '{' ){
+			if (str.charAt(i) == '$' && i + 1 < len && str.charAt(i + 1) == '{') {
 				return false;
 			}
 		}
 		return false;
 	}
+
 	private void debug(String message) {
 		m_logger.debug(message);
 	}
+
 	private void log(String message) {
 		m_logger.info(message);
 	}
+
 	private void error(String message, Throwable t) {
-		m_logger.error(message,t);
+		m_logger.error(message, t);
 	}
 }
 

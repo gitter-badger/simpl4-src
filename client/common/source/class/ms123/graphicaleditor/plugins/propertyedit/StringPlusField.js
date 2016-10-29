@@ -172,8 +172,8 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			var data = [];
 			var method = null;
 			var val = this.getValue();
-			if ( this._isMaybeJSON( val ) ) {
-				var d = JSON5.parse( val );
+			if ( val.startsWith("pc:")) {
+				var d = JSON5.parse( val.substring(3) );
 				data = d.parameter;
 				method = d.method;
 			}
@@ -217,7 +217,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 
 			data = JSON.stringify( data );
 			console.log( "data:" + data );
-			this.setValue( data );
+			this.setValue( "pc:"+data );
 			this.editWindow.close();
 		},
 		_getButtons: function() {
