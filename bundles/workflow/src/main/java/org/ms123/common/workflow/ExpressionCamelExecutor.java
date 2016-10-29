@@ -82,6 +82,12 @@ public class ExpressionCamelExecutor {
 		String ss[] = s.split(":");
 		return ss[0];
 	}
+	private static boolean isEmpty(String s) {
+		if (s == null || "".equals(s.trim())) {
+			return true;
+		}
+		return false;
+	}
 
 	private static CallService getCallService() {
 		Map beans = Context.getProcessEngineConfiguration().getBeans();
@@ -130,8 +136,11 @@ public class ExpressionCamelExecutor {
 		for (Map<String, String> m : variablesmapping) {
 			String processvar = m.get("processvariable");
 			Object o = getValue(processvar, vars);
-			String pvar = m.get("servicevariable");
-			values.put(pvar, o);
+			String servicevar = m.get("servicevariable");
+			if( isEmpty( servicevar)){
+				servicevar = processvar;
+			}
+			values.put(servicevar, o);
 		}
 		info(ExpressionCamelExecutor.class, "getParams:" + values);
 		return values;
