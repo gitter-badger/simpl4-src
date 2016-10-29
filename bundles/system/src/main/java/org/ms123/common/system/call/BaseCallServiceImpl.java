@@ -82,6 +82,7 @@ abstract class BaseCallServiceImpl {
 			put("boolean", java.lang.Boolean.class);
 			put("map", java.util.Map.class);
 			put("list", java.util.List.class);
+			put("any", java.lang.Object.class);
 		}
 	};
 
