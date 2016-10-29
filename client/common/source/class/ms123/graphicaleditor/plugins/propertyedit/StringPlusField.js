@@ -172,7 +172,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			var data = [];
 			var method = null;
 			var val = this.getValue();
-			if ( val.startsWith("pc:")) {
+			if ( val != null && val.startsWith("pc:")) {
 				var d = JSON5.parse( val.substring(3) );
 				data = d.parameter;
 				method = d.method;
