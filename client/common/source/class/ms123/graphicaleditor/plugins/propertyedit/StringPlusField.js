@@ -96,7 +96,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 			switch ( id ) {
 				case "textfield":
 					control = new qx.ui.form.TextField();
-					control.setLiveUpdate( false );
+					control.setLiveUpdate( true );
 					control.setFocusable( false );
 					control.setReadOnly( false );
 					control.setEnabled( true );
@@ -105,8 +105,12 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 						flex: 1
 					} );
 					control.addListener( 'changeValue', ( function( e ) {
-						console.log( "innerListener:old", e.__old + "/new:" + e.__data );
+						console.debug( "innerListener("+this.getFieldKey()+"):old", e.__old + "/new:" + e.__data );
 						this.fireDataEvent( "changeValue", e.__data, e.__old );
+					} ).bind( this ) )
+					control.addListener( 'focusout', ( function( e ) {
+						console.debug( "focusout("+this.getFieldKey()+")" );
+						this.fireDataEvent( "changeValue", this.getValue(), null );
 					} ).bind( this ) )
 					break;
 				case "select":
@@ -117,6 +121,8 @@ qx.Class.define( "ms123.graphicaleditor.plugins.propertyedit.StringPlusField", {
 						padding: 0,
 						margin: 0
 					} );
+					control.addState( "inner" );
+					control.setFocusable( false );
 					control.addListener( "execute", function() {
 						this.resetValue();
 					}, this );
