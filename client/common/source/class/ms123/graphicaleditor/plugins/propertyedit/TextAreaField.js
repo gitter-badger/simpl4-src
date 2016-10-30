@@ -84,9 +84,9 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.TextAreaField", {
 		 */
 		getValue: function () {
 			if( this.data && this.data.length> 32){
-				console.log("TextAreaField.getValue1:" + this.data.substring(0,31));
+				//console.log("TextAreaField.getValue1:" + this.data.substring(0,31));
 			}else{
-				console.log("TextAreaField.getValue2:" + this.data);
+				//console.log("TextAreaField.getValue2:" + this.data);
 			}
 			return this.data;
 		},

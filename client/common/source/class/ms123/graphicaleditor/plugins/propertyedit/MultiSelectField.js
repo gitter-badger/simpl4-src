@@ -78,7 +78,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.MultiSelectField", {
 		 * string will be returned.
 		 */
 		getValue: function () {
-			console.log("MultiSelectField.getValue:" + this.data);
 			return this.data;
 		},
 
@@ -90,7 +89,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.MultiSelectField", {
 		 * param {Object} value The value to be set (JSON format or empty string)
 		 */
 		setValue: function (value) {
-			console.log("MultiSelectField.setValue:" + value);
 			//			if (value != undefined && value && value.length > 0) {
 			//				if (this.data == undefined) {
 			this.data = value;

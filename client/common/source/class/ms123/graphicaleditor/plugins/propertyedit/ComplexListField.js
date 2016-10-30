@@ -49,7 +49,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListField", {
 			this._env=env;
 		},
 		setValue: function (value) {
-			console.log("ComplexListWindow.setValue:" + value);
 			this.textField.setValue(value);
 			this.data = value;
 		},
