@@ -426,7 +426,9 @@ public abstract class TaskBaseExecutor implements Constants {
 
 		String activityId = getString(tc, ACTIVITY_ID, processCriteria.get(ACTIVITY_ID));
 		if (!isEmpty(activityId)) {
-			eq.activityId(trimToEmpty(evalstr(activityId, vars)));
+			String aid = trimToEmpty(evalstr(activityId, vars));
+			eq.activityId(aid);
+			log("getProcessInstances.activityId:" + aid);
 			hasCriteria = true;
 		}
 		String executionId = getString(tc, EXECUTION_ID, processCriteria.get(EXECUTION_ID));
