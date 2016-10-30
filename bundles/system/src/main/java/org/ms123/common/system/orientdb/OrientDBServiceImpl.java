@@ -103,6 +103,7 @@ public class OrientDBServiceImpl implements OrientDBService {
 			f = new OrientGraphFactory("remote:127.0.0.1/" + name, "root", passwd, true);
 			factoryMap.put(name, f);
 		}
+		info(this, "getFactory("+name+")"+f);
 		return f;
 	}
 
@@ -123,6 +124,7 @@ public class OrientDBServiceImpl implements OrientDBService {
 	private void dbCreate(String name) {
 		try {
 			serverAdmin.createDatabase(name, "graph", "plocal");
+			info(this, "dbCreate("+name+")");
 		} catch (Exception e) {
 			e.printStackTrace();
 			error(this, "OrientDBServiceImpl.dbCreate.error:%[exception]s", e);
@@ -131,7 +133,9 @@ public class OrientDBServiceImpl implements OrientDBService {
 
 	private boolean dbExists(String name) {
 		try {
-			return serverAdmin.existsDatabase(name, "plocal");
+			boolean b = serverAdmin.existsDatabase(name, "plocal");
+			info(this, "dbExists("+name+"):"+b);
+			return b;
 		} catch (Exception e) {
 			e.printStackTrace();
 			error(this, "OrientDBServiceImpl.dbExists.error:%[exception]s", e);

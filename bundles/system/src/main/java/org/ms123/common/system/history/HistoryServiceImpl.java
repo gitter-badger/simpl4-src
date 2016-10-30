@@ -98,7 +98,6 @@ public class HistoryServiceImpl extends BaseHistoryServiceImpl implements Histor
 				Date time = new Date();
 				String hint = (String) event.getProperty(HISTORY_HINT);
 				String msg = (String) event.getProperty(HISTORY_MSG);
-				debug("handleEvent:"+this.historyAccess);
 				if( this.historyAccess == null){
 					throw new RuntimeException("HistoryServiceImpl.handleEvent:historyAccess is null");
 				}
