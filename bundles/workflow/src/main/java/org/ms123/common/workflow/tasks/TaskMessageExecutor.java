@@ -27,13 +27,33 @@ import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.ms123.common.system.thread.ThreadContext;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
+import org.osgi.framework.BundleContext;
+import org.apache.camel.util.IntrospectionSupport;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
+import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
+import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
+import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
+import static org.ms123.common.system.history.HistoryService.HISTORY_HINT;
+import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_START_PROCESS_EXCEPTION;
+import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_JOB_EXCEPTION;
+import static org.ms123.common.system.history.HistoryService.HISTORY_TOPIC;
 import flexjson.*;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegate {
 
 	protected JSONDeserializer ds = new JSONDeserializer();
+	protected JSONSerializer js = new JSONSerializer();
 	private Expression processcriteria;
 	private Expression messagename;
 	private Expression signalname;
@@ -47,8 +67,6 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		try {
 			Map<String, Object> variables = getParams(execution, variablesmapping, "messagevar");
 			Object vm = processcriteria.getValue(execution);
-			log("TaskMessageExecutor(vm):" + vm);
-			log("TaskMessageExecutor(isString):" + (vm instanceof String));
 			List<Map<String, String>> l = null;
 			if (vm instanceof String) {
 				l = (List) ds.deserialize((String) vm);
@@ -62,10 +80,14 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 				processCriteria.put(name, value);
 			}
 
-			log("TaskMessageExecutor(variables):" + variables);
-			log("TaskMessageExecutor(processcriteria):" + processCriteria);
+			info(this, "TaskMessageExecutor(variables):" + variables);
+			info(this, "TaskMessageExecutor(processcriteria):" + processCriteria);
 			List<ProcessInstance> pl = getProcessInstances(tc, processCriteria, false);
-			log("TaskMessageExecutor.processInstanceList:" + pl);
+			for (ProcessInstance p : pl) {
+				Map map = new HashMap();
+				IntrospectionSupport.getProperties(p, map, null);
+				info(this, "\tprocessInstance:" + map);
+			}
 			String messageName = null;
 			if (messagename != null) {
 				messageName = messagename.getValue(execution).toString();
@@ -74,7 +96,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 			if (signalname != null) {
 				signalName = signalname.getValue(execution).toString();
 			}
-			log("TaskMessageExecutor(signalName):" + signalName);
+			info(this, "TaskMessageExecutor(signalName):" + signalName);
 			if (!isEmpty(messageName)) {
 				doSendMessageEvent(tc, pl, variables, messageName);
 			} else if (!isEmpty(signalName)) {
@@ -89,22 +111,22 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 	}
 
 	private void doSendMessageEvent(TaskContext tc, List<ProcessInstance> processInstanceList, Map<String, Object> variables, String messageName) {
-		log("messageName:" + messageName);
+		info(this, "messageName:" + messageName);
 		RuntimeService runtimeService = tc.getPE().getRuntimeService();
 		if (processInstanceList != null) {
 			for (ProcessInstance pi : processInstanceList) {
-				log("PI:" + pi.getId());
+				info(this, "PI:" + pi.getId());
 				Execution execution = runtimeService.createExecutionQuery().executionId(pi.getId()).messageEventSubscriptionName(messageName).singleResult();
-				log("\tExecution:(" + pi.getId() + ")" + execution);
+				info(this, "\tExecution:(" + pi.getId() + ")" + execution);
 				if (execution != null) {
-					log("doSendMessageEvent:" + messageName + "/" + execution.getId());
+					info(this, "doSendMessageEvent:" + messageName + "/" + execution.getId());
 					if (variables == null) {
 						runtimeService.messageEventReceived(messageName, execution.getId());
 					} else {
 						runtimeService.messageEventReceived(messageName, execution.getId(), variables);
 					}
 				} else {
-					log("doSendMessageEvent.message(" + messageName + ") not found in process:" + pi.getId());
+					info(this, "doSendMessageEvent.message(" + messageName + ") not found in process:" + pi.getId());
 				}
 			}
 		}
@@ -113,7 +135,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 	private void doSendSignalEvent(TaskContext tc, List<ProcessInstance> processInstanceList, Map<String, Object> variables, String signalName) {
 		RuntimeService runtimeService = tc.getPE().getRuntimeService();
 		if (processInstanceList == null) {
-			log("doSendSignalEvent:" + signalName);
+			info(this, "doSendSignalEvent:" + signalName);
 			if (variables == null) {
 				runtimeService.signalEventReceived(signalName);
 			} else {
@@ -122,28 +144,42 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		} else {
 			for (ProcessInstance pi : processInstanceList) {
 				Execution execution = runtimeService.createExecutionQuery().executionId(pi.getId()).signalEventSubscriptionName(signalName).singleResult();
-				log("\tExecution(" + pi.getId() + "):" + execution);
+				info(this, "\tExecution(" + pi.getId() + "):" + execution);
 				if (execution != null) {
-					log("doSendSignalEvent:" + signalName + "/" + execution.getId());
+					info(this, "doSendSignalEvent:" + signalName + "/" + execution.getId());
 					if (variables == null) {
 						runtimeService.signalEventReceived(signalName, execution.getId());
 					} else {
 						runtimeService.signalEventReceived(signalName, execution.getId(), variables);
 					}
 				} else {
-					log("doSendSignalEvent.signal(" + signalName + ") not found in process:" + pi.getId());
+					info(this, "doSendSignalEvent.signal(" + signalName + ") not found in process:" + pi.getId());
 				}
 			}
 		}
 	}
 
 	private void doSendSignal(TaskContext tc, List<ProcessInstance> processInstanceList, Map<String, Object> variables) {
+		RuntimeService runtimeService = tc.getPE().getRuntimeService();
 		for (ProcessInstance pi : processInstanceList) {
-			//if( pi.getParentId() != null){
+			try {
+				info(this, "doSendSignal(eid:" + pi.getId() + ",pid:" + pi.getProcessInstanceId() + "):"+variables);
+				if (variables != null) {
+					runtimeService.signal(pi.getId(), variables);
+				} else {
+					runtimeService.signal(pi.getId());
+				}
+			} catch (Exception e) {
+				com.jcabi.log.Logger.error(this, "doSendSignal(eid:" + pi.getId() + ",pid:" + pi.getProcessInstanceId() + "):%[exception]s", e);
+				createLogEntry(tc, getProcessDefinition(tc, pi), pi, e);
+				throw new RuntimeException("doSendSignal", e);
+			}
+		}
+	}
+
+	private void doSendSignalAsync(TaskContext tc, List<ProcessInstance> processInstanceList, Map<String, Object> variables) {
+		for (ProcessInstance pi : processInstanceList) {
 			signal(tc, pi, variables);
-			//}else{
-			//	log("doSendSignal.processInstance:don't send signal to -> eid:" + pi.getId() + ",pid:"+pi.getProcessInstanceId());
-			//}
 		}
 	}
 
@@ -154,7 +190,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 	}
 
 	private class SignalThread extends Thread {
-		Execution execution;
+		ProcessInstance execution;
 		TaskContext tc;
 		ProcessDefinition processDefinition;
 		Map variables;
@@ -175,21 +211,22 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 			RuntimeService runtimeService = tc.getPE().getRuntimeService();
 			while (true) {
 				try {
-					log("SignalThread.sending signal to -> eid:" + execution.getId() + ",pid:" + execution.getProcessInstanceId() + ",parentId:" + execution.getParentId());
+					info(this, "SignalThread.sending signal to -> eid:" + execution.getId() + ",pid:" + execution.getProcessInstanceId() + ",parentId:" + execution.getParentId() + ",activityId:" + execution.getActivityId());
 					if (this.variables != null) {
 						runtimeService.signal(execution.getId(), this.variables);
 					} else {
 						runtimeService.signal(execution.getId());
 					}
 				} catch (org.activiti.engine.ActivitiOptimisticLockingException e) {
-					log("SignalThread:" + e);
+					info(this, "SignalThread:" + e);
 					try {
 						Thread.sleep(100L);
 					} catch (Exception x) {
 					}
 					continue;
 				} catch (Exception e) {
-					error(this.tc, "SignalThread(eid:" + execution.getId() + ",pid:" + execution.getProcessInstanceId() + ",parentId:" + execution.getParentId() + "):", e);
+					createLogEntry(this.tc, this.processDefinition, this.execution, e);
+					com.jcabi.log.Logger.error(this, "SignalThread(eid:" + execution.getId() + ",pid:" + execution.getProcessInstanceId() + ",parentId:" + execution.getParentId() + "):%[exception]s", e);
 				} finally {
 					ThreadContext.getThreadContext().finalize(null);
 				}
@@ -198,12 +235,35 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		}
 	}
 
+	private void createLogEntry(TaskContext tc, ProcessDefinition pd, ProcessInstance pi, Exception e) {
+		Map beans = ((ProcessEngineConfigurationImpl) tc.getPE().getProcessEngineConfiguration()).getBeans();
+		EventAdmin eventAdmin = (EventAdmin) beans.get("eventAdmin");
+		Map props = new HashMap();
+
+		String key = pd.getTenantId() + "/" + getProcessName(pd.getId()) + "/" + pi.getId();
+		props.put(HISTORY_KEY, key);
+		props.put(HISTORY_TYPE, HISTORY_ACTIVITI_JOB_EXCEPTION);
+		info(this, "createLogEntry.props:" + props);
+
+		Throwable r = getRootCause(e);
+		props.put(HISTORY_MSG, r != null ? getStackTrace(r) : getStackTrace(e));
+		eventAdmin.postEvent(new Event(HISTORY_TOPIC, props));
+	}
+
+	private String getProcessName(String id) {
+		int ind = id.indexOf(":");
+		if (ind != -1) {
+			return id.substring(0, ind);
+		}
+		return id;
+	}
+
 	private ProcessDefinition getProcessDefinition(TaskContext tc, ProcessInstance processInstance) {
 		ProcessDefinition processDefinition = tc.getPE().getRepositoryService().createProcessDefinitionQuery().processDefinitionId(processInstance.getProcessDefinitionId()).singleResult();
 		if (processDefinition == null) {
 			throw new RuntimeException("TaskMessageExecutor:getProcessDefinition:processDefinition not found:" + processInstance);
 		}
-		log("getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
+		info(this, "getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
 		return processDefinition;
 	}
 
@@ -212,13 +272,6 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 			return true;
 		}
 		return false;
-	}
-
-	private String getName(String s) {
-		if (s == null) {
-			throw new RuntimeException("TaskMessageExecutor.routename is null");
-		}
-		return s;
 	}
 }
 
