@@ -125,7 +125,7 @@ public class ShiroExecuteJobsRunnable implements Runnable {
 		log("props:" + props);
 		Throwable rc = getRootCause(e);
 		props.put(HISTORY_MSG, getStackTrace(rc != null ? rc : e));
-		m_eventAdmin.sendEvent(new Event(HISTORY_TOPIC, props));
+		m_eventAdmin.postEvent(new Event(HISTORY_TOPIC, props));
 	}
 	private String getName(String id){
 		int ind = id.indexOf(":");
