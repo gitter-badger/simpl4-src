@@ -26,6 +26,9 @@ import com.orientechnologies.orient.core.command.OCommandRequest;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.orientechnologies.orient.server.OServer;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
+
+
 import com.orientechnologies.orient.server.OServerMain;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
@@ -107,6 +110,8 @@ public class OrientDBServiceImpl implements OrientDBService {
 		return f;
 	}
 
+
+
 	public List<Map<String, Object>> executeQuery(OrientGraph graph, String sql, Object... args) {
 		OCommandRequest query = new OSQLSynchQuery(sql);
 		Iterable<Element> ret = graph.command(query).execute(args);
@@ -119,6 +124,11 @@ public class OrientDBServiceImpl implements OrientDBService {
 			}
 		}
 		return list;
+	}
+
+	public void executeUpdate(OrientGraph graph, String sql, Object... args) {
+		OCommandRequest update = new OCommandSQL(sql);
+		graph.command(update).execute(args);
 	}
 
 	private void dbCreate(String name) {

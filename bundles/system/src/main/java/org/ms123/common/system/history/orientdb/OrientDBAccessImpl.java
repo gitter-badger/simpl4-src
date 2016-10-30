@@ -22,8 +22,12 @@ import com.orientechnologies.orient.core.command.OCommandRequest;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.Vertex;
+import com.orientechnologies.orient.core.metadata.schema.OSchemaProxy;
+import com.orientechnologies.orient.core.metadata.schema.OClass;
+import com.orientechnologies.orient.core.metadata.schema.OType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -171,6 +175,21 @@ public class OrientDBAccessImpl implements HistoryAccess, HistoryService {
 		return ret;
 	}
 
+	private void createClassAndIndex(){
+		try{
+			OSchemaProxy schema = orientGraph.getRawGraph().getMetadata().getSchema();
+			if( schema.getClass("History") != null){
+				return;
+			}
+			m_orientdbService.executeUpdate(orientGraph, "CREATE CLASS History EXTENDS V");
+			m_orientdbService.executeUpdate(orientGraph, "CREATE PROPERTY History.key STRING");
+			m_orientdbService.executeUpdate(orientGraph, "CREATE INDEX History.key ON History ( key ) NOTUNIQUE");
+		}catch( Exception e){
+			error(this, "createClassAndIndex:%[exception]s",e);
+			e.printStackTrace();
+		}
+	}
+
 	private void initHistory() {
 		if (orientGraph != null) {
 			return;
@@ -178,6 +197,7 @@ public class OrientDBAccessImpl implements HistoryAccess, HistoryService {
 		try {
 			OrientGraphFactory factory = m_orientdbService.getFactory(HISTORY_DATABASE);
 			orientGraph = factory.getTx();
+			createClassAndIndex();
 		} catch (Exception e) {
 			info(this,"OrientDBAccessImpl.initHistory:" + e.getMessage());
 			orientGraph = null;
