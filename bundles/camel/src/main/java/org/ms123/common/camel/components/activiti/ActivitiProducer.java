@@ -228,17 +228,16 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	}
 
 	private void doGetProcessVariables(Exchange exchange) {
-		List<ProcessInstance> processInstanceList = getProcessInstances(exchange, false );
+		List<ProcessInstance> processInstanceList = getProcessInstances(exchange, false, false );
 		boolean withMetadata = getBoolean(exchange, "metadata", this.withMetadata);
 
 		List<Map<String,Object>> retList = new ArrayList<Map<String,Object>>();
 		for( ProcessInstance pi : processInstanceList){
-			info(this,"doGetProcessVariables.processInstance1:" + pi);
 			pi = 	runtimeService.createProcessInstanceQuery().includeProcessVariables().processInstanceId( pi.getId()).singleResult();
-			info(this,"doGetProcessVariables.processInstance2:" + pi);
 			if( pi == null){
 				continue;
 			}
+			info(this,"doGetProcessVariables.processInstance:" + pi);
 			info(this,"doGetProcessVariables.variables:" + pi.getProcessVariables());
 			String variableNames = getString(exchange, "variableNames", this.variableNames);
 			if( isEmpty(variableNames)){
@@ -252,12 +251,12 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 				retList.add( m );
 			}else{
 				List<String> nameList = Arrays.asList(variableNames.split(","));
-				info(this,"doGetProcessVariables:nameList:" + nameList);
+				debug(this,"doGetProcessVariables:nameList:" + nameList);
 				Map<String,Object> vars = pi.getProcessVariables();
 				Map<String,Object> ret = new HashMap();
 				for (Map.Entry<String, Object> entry : vars.entrySet()) {
 					if( nameList.indexOf( entry.getKey()) > -1){
-						info(this,"doGetProcessVariables:var:" + entry.getKey()+"="+entry.getValue());
+						debug(this,"doGetProcessVariables:var:" + entry.getKey()+"="+entry.getValue());
 						ret.put( entry.getKey(), entry.getValue());
 					}
 				}
