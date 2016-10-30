@@ -62,7 +62,6 @@ public class GroovyExpression implements Expression {
 		m_shell = shell;
 		m_processEngine = pe;
 		m_expressionText = expressionText;
-		new Exception(expressionText).printStackTrace();
 	}
 
 	public synchronized Object getValue(VariableScope variableScope) {
