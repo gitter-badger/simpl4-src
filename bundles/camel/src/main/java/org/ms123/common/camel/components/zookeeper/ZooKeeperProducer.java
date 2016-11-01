@@ -58,6 +58,7 @@ public class ZooKeeperProducer extends DefaultProducer{
     public static final String ZK_OPERATION_WRITE  = "WRITE";
     public static final String ZK_OPERATION_GET  = "GET";
     public static final String ZK_OPERATION_DELETE = "DELETE";
+    public static final String ZK_OPERATION_LIST = "LIST";
 
     private final ZooKeeperConfiguration configuration;
     private ZooKeeperConnectionManager zkm;
@@ -75,36 +76,33 @@ public class ZooKeeperProducer extends DefaultProducer{
 
         boolean isDelete = configuration.getMode().equals(ZK_OPERATION_DELETE);
         boolean isGet = configuration.getMode().equals(ZK_OPERATION_GET);
+        boolean isList = configuration.getMode().equals(ZK_OPERATION_LIST);
 
-log.info("isGet:"+isGet);
         if (true/*ExchangeHelper.isOutCapable(exchange)*/) {
             if (isDelete) {
                 if (log.isDebugEnabled()) {
                     log.debug(format("Deleting znode '%s', waiting for confirmation", context.node));
                 }
-
                 OperationResult result = synchronouslyDelete(context);
-                if (configuration.isListChildren()) {
-                    result = listChildren(context);
+                updateExchangeWithResult(context, result);
+            }else if (isList) {
+                if (log.isDebugEnabled()) {
+                    log.debug(format("List childs of znode '%s'", context.node));
                 }
+                OperationResult result = listChildren(context);
                 updateExchangeWithResult(context, result);
             }else if (isGet) {
                 if (log.isDebugEnabled()) {
                     log.debug(format("Get znode '%s', waiting for confirmation", context.node));
                 }
-
                 OperationResult result = synchronouslyGetData(context);
-log.info("result:"+result);
+								log.info("result:"+result);
                 updateExchangeWithResult(context, result);
             } else {
-                //if (log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.info(format("Storing data to znode '%s', waiting for confirmation", context.node));
-                //}
-
-                OperationResult result = synchronouslySetData(context);
-                if (configuration.isListChildren()) {
-                    result = listChildren(context);
                 }
+                OperationResult result = synchronouslySetData(context);
                 updateExchangeWithResult(context, result);
             }
         } else {
@@ -150,17 +148,20 @@ log.info("result:"+result);
     }
 
 		private void updateExchangeWithResult(ProductionContext context, OperationResult result) {
+			boolean isGet = configuration.getMode().equals(ZK_OPERATION_GET);
+			boolean isWrite = configuration.getMode().equals(ZK_OPERATION_WRITE);
 			log.info("isOk:"+result.isOk());
-			//ZooKeeperMessage out = new ZooKeeperMessage(context.node, result.getStatistics(), context.in.getHeaders());
 			if (result.isOk()) {
-				//            out.setBody(result.getResult());
 				log.info("updateExchangeWithResult("+result.isOk()+"):"+result.getResult()+"\tdest:"+configuration.getDestination());
-				Object obj = deserialize((byte[])result.getResult());
-				ExchangeUtils.setDestination(configuration.getDestination(), obj, context.exchange);
+				if( isGet || isWrite){
+					Object obj = deserialize((byte[])result.getResult());
+					ExchangeUtils.setDestination(configuration.getDestination(), obj, context.exchange);
+				}else{
+					ExchangeUtils.setDestination(configuration.getDestination(), result.getResult(), context.exchange);
+				}
 			} else {
 				context.exchange.setException(result.getException());
 			}
-			//context.exchange.setOut(out);
 		}
 
     private OperationResult listChildren(ProductionContext context) throws Exception {
