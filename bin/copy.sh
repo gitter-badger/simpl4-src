@@ -147,6 +147,7 @@ cp    $SRCTOPDIR/etc/run.bat.tpl $SERVERDIRECTORY/
 cp    $SRCTOPDIR/etc/README-deployed.md $DESTDIRECTORY/README.md
 cp    $SRCTOPDIR/etc/warbuild.xml $DESTDIRECTORY/build.xml
 cp    $SRCTOPDIR/etc/orientdb-server-config.xml $ETCDIRECTORY/
+cp    $SRCTOPDIR/etc/zookeeper.properties $ETCDIRECTORY/
 #cp -r $SRCTOPDIR/etc/openfire $ETCDIRECTORY/
 
 

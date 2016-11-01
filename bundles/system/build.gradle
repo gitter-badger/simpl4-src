@@ -41,4 +41,5 @@ dependencies {
 	compile files("${repository}/hazelcast-3.6.3.jar")
 	compile files("${repository}/OrientDBService-1.0.0.jar")
 	compile files("${repository}/h2-1.4.187.jar")
+	compile files("${repository}/zookeeper-3.4.9.jar")
 }
