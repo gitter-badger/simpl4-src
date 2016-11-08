@@ -327,19 +327,20 @@
 					if( _.isEmpty(node.hash)){
 						node.hash = node.id;
 					}
-					if ( _.isEmpty(node.hash) ) {
-						if ( name ) {
-							var lc = name.toLowerCase();
-							var hash = base = lc.replace( /[^a-z0-9_]/g, "-" );
-							var i=0;
-							while( this._hashExists( pages, hash)){
-								hash = base + i;	
-								i++;	
-							}
-							node.hash = hash;
-						} else {
-							console.error( "Warning.menu:name and hash are empty:", node );
-						}
+					if ( _.isEmpty(node.hash) && name ) {
+						node.hash = name.toLowerCase().replace( /[^a-z0-9_]/g, "-" );
+					}
+					var hash = base = node.hash;
+					var x=0;
+					while( this._hashExists( pages, hash)){
+						hash = base + x;	
+						x++;	
+					}
+					if( x>0 && node.uri){
+console.log("hash:",hash);
+						node.hash = hash;
+						var hasQuery = node.uri.indexOf( "?" ) >= 0;
+						node.uri += ( hasQuery ? "&" : "?" ) + "dummy="+i;
 					}
 					node.url = node.uri || node.url;
 					if ( node.url && node.url.indexOf( "%l" ) != -1 ) {

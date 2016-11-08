@@ -59,6 +59,14 @@ qx.Class.define( "ms123.util.DragDropTree", {
 		this.setAllowDropTypes( [ "*" ] );
 
 		this._createIndicator();
+		this._link = false;
+
+		this.addListener("appear", function() { 
+				this.focus();
+		}); 
+
+		this.addListener( ms123.oryx.Config.EVENT_KEYDOWN, this._onKeyDown.bind( this ), false );
+		this.addListener( ms123.oryx.Config.EVENT_KEYUP, this._onKeyUp.bind( this ), false );
 	},
 
 	/*
@@ -262,6 +270,16 @@ qx.Class.define( "ms123.util.DragDropTree", {
 		_showIndicator: function() {
 			this._indicator.setOpacity( 1.0 );
 		},
+		_onKeyUp: function( e ) {
+			var iden = e.getKeyIdentifier();
+			console.log( "_onKeyUp.iden:" + iden );
+			if ( iden == "Shift" ) this._link = false;
+		},
+		_onKeyDown: function( e ) {
+			var iden = e.getKeyIdentifier();
+			console.log( "_onKeyDown.iden:" + iden );
+			if ( iden == "Shift" ) this._link = true;
+		},
 
 		/**
 		 * Check if drag element can be dropped
@@ -434,18 +452,18 @@ qx.Class.define( "ms123.util.DragDropTree", {
 		},
 		_processDragInBetween: function( dragDetails ) {
 			var dropTarget = this.getDropTarget();
-			var color="#9dcbfe";
+			var color = "#9dcbfe";
 			var pos = -1;
 			if ( dropTarget && dropTarget.type === qx.ui.treevirtual.SimpleTreeDataModel.Type.BRANCH ) {
-				pos = parseInt(dragDetails.deltaY/(dragDetails.rowHeight/3)) -1;
-				if( pos==0){
+				pos = parseInt( dragDetails.deltaY / ( dragDetails.rowHeight / 3 ) ) - 1;
+				if ( pos == 0 ) {
 					color = "#ff5252";
 				}
-			}else{
-				pos = parseInt(dragDetails.deltaY/(dragDetails.rowHeight/2)) == 0 ? -1 : 1;
+			} else {
+				pos = parseInt( dragDetails.deltaY / ( dragDetails.rowHeight / 2 ) ) == 0 ? -1 : 1;
 			}
-			this.setIndicatorStyle(color);
-			this._indicator.setDomTop( (( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2) + dragDetails.deltaY );
+			this.setIndicatorStyle( color );
+			this._indicator.setDomTop( ( ( dragDetails.row - dragDetails.firstRow ) * dragDetails.rowHeight - 2 ) + dragDetails.deltaY );
 			this._showIndicator();
 			return pos;
 		},
@@ -664,7 +682,7 @@ qx.Class.define( "ms123.util.DragDropTree", {
 				 * check if the dragged item can be dropped at the current
 				 * position and change drag cursor accordingly
 				 */
-				var valid = this._checkDroppable( sourceData, dropTargetRelativePosition, dragDetails);
+				var valid = this._checkDroppable( sourceData, dropTargetRelativePosition, dragDetails );
 			}
 
 			/*
@@ -786,10 +804,16 @@ qx.Class.define( "ms123.util.DragDropTree", {
 					/*
 					 * remove from parent node of dropped node
 					 */
-					var parentNode = nodeArr[ node.parentNodeId ];
-					if ( !parentNode ) this.error( "Cannot find the dropped node's parent node!" );
-					var pnc = parentNode.children;
-					pnc.splice( pnc.indexOf( node.nodeId ), 1 );
+					if ( this._link === false ) {
+						var parentNode = nodeArr[ node.parentNodeId ];
+						if ( !parentNode ) this.error( "Cannot find the dropped node's parent node!" );
+						var pnc = parentNode.children;
+						pnc.splice( pnc.indexOf( node.nodeId ), 1 );
+					} else {
+						var nodeId = this.deepCopyNode( node );
+						var nodeArr = this.getDataModel().getData();
+						node = nodeArr[ nodeId ];
+					}
 
 
 					/*
@@ -805,7 +829,7 @@ qx.Class.define( "ms123.util.DragDropTree", {
 							var tpnc = targetParentNode.children;
 							var delta = dropPosition > 0 ? 1 : 0;
 							var position = tpnc.indexOf( dropTarget.nodeId ) + delta;
-							console.log( "dropTarget("+dropPosition+";"+position+"):", dropTarget.label + "" );
+							console.log( "dropTarget(" + dropPosition + ";" + position + "):", dropTarget.label + "" );
 							tpnc.splice( position, 0, node.nodeId );
 							node.parentNodeId = targetParentNode.nodeId;
 						}
