@@ -40,6 +40,10 @@ import com.hazelcast.core.MapLoader;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.core.HazelcastInstance;
+import org.ms123.common.system.orientdb.OrientDBService;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.orientechnologies.orient.core.metadata.schema.OSchemaProxy;
 
 
 import static com.jcabi.log.Logger.info;
@@ -53,8 +57,11 @@ import static com.jcabi.log.Logger.error;
 public class HazelcastServiceImpl  implements HazelcastService, MapStoreFactory{
 
 
+	private static String HAZELCAST_DATABASE = "hzstore";
 	private BundleContext bundleContext;
 	private Map<String, HazelcastInstance> instances = new HashMap<String,HazelcastInstance>();
+	private OrientDBService orientdbService;
+	private OrientGraph orientGraph;
 
 
 	public HazelcastServiceImpl() {
@@ -104,7 +111,47 @@ public class HazelcastServiceImpl  implements HazelcastService, MapStoreFactory{
 
 	public MapLoader newMapStore(String mapName, Properties properties) {
 		info(this, "newMapStore:"+mapName+"/"+properties);
-		return new OrientDBMapStore();
+		this.initOrientdb();
+		return new OrientDBMapStore(this.orientdbService,this.orientGraph,mapName);
+	}
+
+
+	private void initOrientdb() {
+		if (orientGraph != null) {
+			return;
+		}
+		try {
+			OrientGraphFactory factory = this.orientdbService.getFactory(HAZELCAST_DATABASE);
+			this.orientGraph = factory.getTx();
+			createClassAndIndex();
+		} catch (Exception e) {
+			info(this,"OrientDBAccessImpl.initHistory:" + e.getMessage());
+			orientGraph = null;
+			e.printStackTrace();
+		}
+	}
+
+	private void createClassAndIndex(){
+		try{
+			OSchemaProxy schema = this.orientGraph.getRawGraph().getMetadata().getSchema();
+			if( schema.getClass("Store") != null){
+				return;
+			}
+			orientdbService.executeUpdate(this.orientGraph, "CREATE CLASS Store EXTENDS V");
+			orientdbService.executeUpdate(this.orientGraph, "CREATE PROPERTY Store.map STRING");
+			orientdbService.executeUpdate(this.orientGraph, "CREATE PROPERTY Store.key STRING");
+			orientdbService.executeUpdate(this.orientGraph, "CREATE INDEX Store.mapkey ON Store ( map,key ) UNIQUE");
+			orientdbService.executeUpdate(this.orientGraph, "CREATE INDEX Store.map ON Store ( map ) NOTUNIQUE");
+		}catch( Exception e){
+			error(this, "createClassAndIndex:%[exception]s",e);
+			e.printStackTrace();
+		}
+	}
+
+	@Reference(dynamic = true, optional = true)
+	public void setOrientDBService(OrientDBService os) {
+		info(this,"HazelcastServiceImpl.setOrientDBService:" + os);
+		this.orientdbService = os;
 	}
 }
 
