@@ -104,9 +104,14 @@ class BasePermissionServiceImpl implements Constants {
 
 	public boolean hasRole(String role) {
 		if( "global.guest".equals(role)) return true;
-		Subject subject = SecurityUtils.getSubject();
-		debug("hasRole:" + role + "/" + subject.hasRole(role));
-		return subject.hasRole(role);
+		try{
+			Subject subject = SecurityUtils.getSubject();
+			debug("hasRole:" + role + "/" + subject.hasRole(role));
+			return subject.hasRole(role);
+		}catch( Exception e){
+			error("hasRole:",e);
+			return false;
+		}
 	}
 
 	public boolean isPermitted(Permission wp) {
