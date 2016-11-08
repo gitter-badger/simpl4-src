@@ -337,7 +337,6 @@
 						x++;	
 					}
 					if( x>0 && node.uri){
-console.log("hash:",hash);
 						node.hash = hash;
 						var hasQuery = node.uri.indexOf( "?" ) >= 0;
 						node.uri += ( hasQuery ? "&" : "?" ) + "dummy="+i;
