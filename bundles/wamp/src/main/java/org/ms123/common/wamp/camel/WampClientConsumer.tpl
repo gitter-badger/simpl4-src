@@ -73,10 +73,11 @@ public class WampClientConsumer extends DefaultConsumer {
 	private void wampClientConnected() {
 /* $if version >= 1.8 $ */
 		String namespace = endpoint.getCamelContext().getName().split("/")[0];
-		info(this,"Consumer.register:" + namespace + "." + endpoint.getProcedure());
+		String fqPrefix = endpoint.getCamelContext().getName().replace("/",".");
+		info(this,"Consumer.register:" + fqPrefix + "." + endpoint.getProcedure()+"|fqPrefix:"+fqPrefix);
 		String mode = endpoint.getMode();
 		if( "rpc".equals(mode)){
-			Subscription addProcSubscription = this.clientSession.registerProcedure(namespace + "." + endpoint.getProcedure()).subscribe((request) -> {
+			Subscription addProcSubscription = this.clientSession.registerProcedure(fqPrefix + "." + endpoint.getProcedure()).subscribe((request) -> {
 
 				info(this,"Consumer.Procedure called:" + request + "/hashCode:" + this.hashCode());
 				final boolean reply = false;
