@@ -69,6 +69,7 @@ import org.apache.camel.Producer;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
 import org.apache.camel.Exchange;
+import org.apache.camel.Consumer;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.spi.CamelContextNameStrategy;
 import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
@@ -184,22 +185,64 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 		return GroovyExpression.evaluate( expr, exchange);
 	}
 
-	public CamelContext getCamelContext(String namespace) {
+	public CamelContext getCamelContext(String namespace, String routeName) {
+		info(this,"getCamelContext: " + namespace+"|"+routeName);
 		try{
-			return m_contextCache.get(getContextKey(namespace)).context;
+			List<ContextCacheEntry> cceList = getContextCacheEntryList(namespace);
+			for( ContextCacheEntry cce : cceList){	
+				if( routeName.startsWith("websocket")){
+					if( getEndpoint(routeName, cce.context) != null){
+						info(this,"getCamelContext found: " + cce);
+						return cce.context;
+					}
+				}else{
+					Route route = cce.context.getRoute( routeName);
+					if( route != null){
+						info(this,"getCamelContext found: " + cce);
+						return cce.context;
+					}
+				}
+			}
+			throw new RuntimeException("");
 		}catch(Exception e){
 			throw new RuntimeException("BaseCamelServiceImpl.getCamelContext("+namespace+"): not found");
 		}
 	}
 
-	public Map<String,Object> getProcedureShape(String namespace, String procedureName) {
-		debug(this,"getProcedureShape:"+procedureName);
+	private Endpoint getEndpoint(String uri, CamelContext cc) {
+		Map<String, Endpoint> endpoints = cc.getEndpointMap();
+		for (Map.Entry<String, Endpoint> entry : endpoints.entrySet()) {
+			String key = entry.getKey();
+			if (key.equals(uri) || key.startsWith(uri + ":") || key.startsWith(uri + "?")) {
+				return entry.getValue();
+			}
+		}
+		//@@@MS Sometimes (sharedEndpoints?) is the Endpoint not in the map;
+		List<Route> routes = cc.getRoutes();
+		for (Route r : routes) {
+			Consumer c = r.getConsumer();
+			String key = c.getEndpoint().getEndpointUri();
+			if (key.equals(uri) || key.startsWith(uri + ":") || key.startsWith(uri + "?")) {
+				return c.getEndpoint();
+			}
+		}
+		return null;
+	}
+	public Map<String,Object> getProcedureShape(String namespace, String serviceName, String procedureName) {
+		info(this,"getProcedureShape:"+serviceName+"|"+procedureName);
 		Iterator<Map.Entry<String,Map>> iter = m_procedureCache.entrySet().iterator();
 		while (iter.hasNext()) {
 			Map.Entry<String,Map> entry = iter.next();
 			String key = entry.getKey();
-			if(key.startsWith(namespace+"/") && key.endsWith("/"+procedureName)){
-				return entry.value;
+			if( serviceName != null){
+				if(key.equals(namespace+"/"+serviceName+"/"+procedureName) ){
+					info(this,"\tHit:"+key);
+					return entry.value;
+				}
+			}else{
+				if(key.startsWith(namespace+"/") && key.endsWith("/"+procedureName)){
+					return entry.value;
+				}
 			}
 		}
 	}
@@ -230,9 +273,31 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 		}
 	}
 
+	private ContextCacheEntry getContextCacheEntry(String namespace, String routeId){
+		for( String key : m_contextCache.keySet()){
+			if( key.startsWith(namespace+"/")){
+				ContextCacheEntry cce = m_contextCache.get(key);
+				if( cce.routeEntryMap[routeId] != null){
+					return cce;
+				}
+			}
+		}
+		return null;
+	}
+	private List<ContextCacheEntry> getContextCacheEntryList(String namespace){
+		List<ContextCacheEntry> list = new ArrayList<ContextCacheEntry>();
+		for( String key : m_contextCache.keySet()){
+			if( key.startsWith(namespace+"/")){
+				ContextCacheEntry cce = m_contextCache.get(key);
+				list.add( cce);
+			}
+		}
+		return list;
+	}
 
 	public Map getRootShapeByBaseRouteId(String namespace,String routeId){
-		ContextCacheEntry cce  = m_contextCache.get(getContextKey(namespace));
+		//ContextCacheEntry cce  = m_contextCache.get(getContextKey(namespace));
+		ContextCacheEntry cce  = getContextCacheEntry(namespace, routeId);
 		if( cce == null){
 			return null;
 		}
@@ -262,14 +327,11 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 	protected List<String> _getContextNames(String namespace){
 		List<String> retList = new ArrayList();
 		for( String key : m_contextCache.keySet()){
-			String ns = key;
-			if( namespace != null){
-				if( !ns.equals(namespace)){
-					continue;
-				}
+			if( namespace != null && key.startsWith(namespace+"/")){
+				retList.add(key);
 			}
-			retList.add(key);
 		}
+		info(this, "_getContextNames:"+retList);
 		return retList;
 	}
 	protected Map<String,List> _getRouteVisGraph(String contextKey, String routeId){
@@ -320,7 +382,10 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 	protected synchronized void _createRoutesFromJson(String namespace,String path){
 		Map<String, List> routesJsonMap = getRoutesJsonMap(namespace);
 		if( routesJsonMap.size() == 0){
-			stopNotActiveRoutes( namespace, getContextKey(namespace), []);
+			List<ContextCacheEntry> cceList = getContextCacheEntryList(namespace);
+			for( ContextCacheEntry cce : cceList){	
+				stopNotActiveRoutes( namespace, cce, []);
+			}
 			removeProcedureShape(namespace+"/");
 		}
 		for( String  contextKey : routesJsonMap.keySet()){
@@ -347,6 +412,11 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 				String routeBaseId = Utils.getId(rootShape);
 				if( path != null && _path != path ){
 					okList.add( routeBaseId);
+					continue;
+				}
+				boolean enabled = getBoolean(rootShape, ENABLED, true);
+				if( enabled == false){
+					stopNotActiveRoutes( namespace, contextKey, []);
 					continue;
 				}
 				debug(this,"routeBaseId:"+routeBaseId);
@@ -378,7 +448,7 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 					cce.routeEntryMap[routeBaseId] = re;
 					okList.add( routeBaseId);
 				}else{
-debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
+					debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 					if( re.lastError == null  && re.md5 == md5 ){
 						//Nothing changed.
 						okList.add( routeBaseId);
@@ -436,8 +506,11 @@ debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 	}
 
 	private void stopNotActiveRoutes(String namespace, String contextKey, List okList){
-		info(this,"stopNotActiveRoutes:"+contextKey+"/"+okList);
 		ContextCacheEntry cce = m_contextCache.get(contextKey);
+		stopNotActiveRoutes(namespace,cce, okList);
+	}
+	private void stopNotActiveRoutes(String namespace, ContextCacheEntry cce, List okList){
+		info(this,"stopNotActiveRoutes:"+cce+"/"+okList);
 		if( cce == null) return;
 		List<String> ridList = [];
 		cce.context.getRouteDefinitions().each(){RouteDefinition rdef->
@@ -445,7 +518,7 @@ debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 		}
 		for( String rid in ridList){
 			if( !containsRid(okList,rid)){
-				debug(this,"Remove route:"+rid);
+				info(this,"Remove route:"+rid);
 				cce.context.stopRoute(rid);
 				cce.context.removeRoute(rid);
 				def baseRouteId = Utils.getBaseRouteId(rid);
@@ -453,10 +526,10 @@ debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 				removeProcedureShape(namespace+"/"+baseRouteId+"/");
 			}
 		}
-		debug(this,"-->Context("+contextKey+"):status:"+cce.context.getStatus());
+		info(this,"-->Context("+cce+"):status:"+cce.context.getStatus());
 		cce.context.getRouteDefinitions().each(){RouteDefinition rdef->
 			String rid = rdef.getId();
-			debug(this,"\tRoute("+rid+"):status:"+cce.context.getRouteStatus(rid));
+			info(this,"\tRoute("+rid+"):status:"+cce.context.getRouteStatus(rid));
 		}
 	}
 
@@ -523,12 +596,13 @@ debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 			try{
 				rootShape = (Map)m_ds.deserialize(routeString);
 			}catch(Exception e){
+				e.printStackTrace();
 				info(this,"Cannot deserialize:"+path);
 				continue;
 			}
-			String contextKey = getContextKey(namespace);
-			boolean enabled = getBoolean(rootShape, ENABLED, true);
-			if( !enabled) continue;
+			String contextKey = getContextKey(namespace, Utils.getBaseName(path));
+//			boolean enabled = getBoolean(rootShape, ENABLED, true);
+//			if( !enabled) continue;
 			if( routesJsonMap[contextKey] == null){
 				routesJsonMap[contextKey] = [];
 			}
@@ -549,12 +623,15 @@ debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 	}
 
 	public void newGroovyClassLoader(String namespace){
-		String key = getContextKey(namespace);
-		GroovyRegistry gr = m_contextCache.get(key).groovyRegistry;
-		gr.newClassLoader();
-		CamelContext co = m_contextCache.get(key).context;
-		co.stop();
-		co.start();
+		//String key = getContextKey(namespace);
+		List<ContextCacheEntry> cceList = getContextCacheEntryList(namespace);
+		for( ContextCacheEntry cce : cceList){
+			GroovyRegistry gr = cce.groovyRegistry;
+			gr.newClassLoader();
+			CamelContext co = cce.context;
+			co.stop();
+			co.start();
+		}
 	}
 
 
@@ -633,8 +710,8 @@ debug(this,"lastError:"+re.lastError+"/"+re.md5+"/"+md5+"/"+(re.md5==md5));
 		}
 	}
 
-	private String getContextKey(String namespace){
-		return namespace;
+	private String getContextKey(String namespace, String base){
+		return namespace+"/"+base;
 	}
 
 	protected boolean getBoolean(Map shape, String name,boolean _default) {

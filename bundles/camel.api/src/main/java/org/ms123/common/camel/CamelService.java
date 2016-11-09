@@ -32,14 +32,11 @@ public interface CamelService {
 	public final String OVERRIDEID = "overrideid";
 	public final String RESOURCEID = "resourceId";
 	public final String CAMEL_TYPE = "sw.camel";
-	public CamelContext getCamelContext(String namespace);
+	public CamelContext getCamelContext(String namespace,String routeId);
 	public Map getRootShapeByBaseRouteId(String namespace, String baseRouteId);
 	public List<Map<String,Object>> getProcedureShapesForPrefix(String prefix);
-	public Map getProcedureShape(String namespace, String procedureName);
+	public Map getProcedureShape(String namespace, String serviceName, String procedureName);
 	public void saveHistory(Exchange exchange);
-	public Object camelSend(String epUri, final Map<String, Object> properties);
-	public Object camelSend(String epUri, final Object body, final Map<String, Object> properties);
-	public Object camelSend(String epUri, final Object body, final Map<String, Object> headers, final Map<String, Object> properties);
 	public Object camelSend(String ns, Endpoint endpoint, final Object body, final Map<String, Object> headers, final Map<String, Object> properties);
 	public Object camelSend(String ns, Endpoint endpoint, final Object body, final Map<String, Object> headers, final Map<String, Object> properties, String returnSpec,List<String> returnHeaderList);
 	public Object camelSend(String ns, String routeName,Map<String, Object> properties);

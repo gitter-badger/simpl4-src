@@ -38,7 +38,7 @@ qx.Class.define("ms123.processexplorer.plugins.CamelDefinitions", {
 		if( contextSelection)
 		this._createRouteTable(this._getRouteInfoList(contextSelection.getLabel()));
 		//this._refreshDefinitions();
-		this.facade.registerOnEvent(ms123.processexplorer.Config.EVENT_CAMELROUTESDEPLOYMENT_CHANGED, this._handleEvent.bind(this));
+//		this.facade.registerOnEvent(ms123.processexplorer.Config.EVENT_CAMELROUTESDEPLOYMENT_CHANGED, this._handleEvent.bind(this));
 		var options= {
 			physics: {
 				hierarchicalRepulsion: {
@@ -104,7 +104,7 @@ qx.Class.define("ms123.processexplorer.plugins.CamelDefinitions", {
 			contextController.setDelegate({
 				bindItem: function (controller, item, index) {
 					controller.bindProperty("label", "label", null, item, index);
-					//controller.bindProperty("data", "model", null, item, index);
+					controller.bindProperty("", "model", null, item, index);
 				}
 			});
 			this._contextController=contextController;
@@ -139,7 +139,17 @@ qx.Class.define("ms123.processexplorer.plugins.CamelDefinitions", {
 			var items = model.getItems();
 			this._contextController.setModel(items);
 			if( items.getLength()>0){
-				this._contextSelect.setModelSelection([items.getItem(0)]);
+				if( this._currentSelection ){
+					for( var i=0; i < items.getLength(); i++){
+						var item = items.getItem(i);
+						if( item.getLabel() == this._currentSelection.getLabel()){
+							this._contextSelect.setModelSelection([item]);
+							break;
+						}
+					}
+				}else{
+					this._contextSelect.setModelSelection([items.getItem(0)]);
+				}
 			}
 		},
 		_createRouteTable: function (data) {
@@ -175,7 +185,8 @@ qx.Class.define("ms123.processexplorer.plugins.CamelDefinitions", {
 
 			var selModel = table.getSelectionModel();
 			selModel.setSelectionMode(qx.ui.table.selection.Model.SINGLE_SELECTION);
-			selModel.addListener("changeSelection", function (e) {
+			//selModel.addListener("changeSelection", function (e) {
+			table.addListener("cellTap", function (e) {
 				var index = selModel.getLeadSelectionIndex();
 				console.log("index:"+index);
 				var count = selModel.getSelectedCount();
@@ -227,6 +238,7 @@ qx.Class.define("ms123.processexplorer.plugins.CamelDefinitions", {
 			return toolbar;
 		},
 		_refreshDefinitions:function(){
+			this._currentSelection = this._contextSelect.getModelSelection().getItem(0);
 			this._refreshContextModel();
 			this._clearRouteTable();
 			this._contextSelectionChanged();
@@ -244,7 +256,15 @@ qx.Class.define("ms123.processexplorer.plugins.CamelDefinitions", {
 				ms123.form.Dialog.alert("CamelDefinitions._getContextNames:" + e);
 				return;
 			}
+			this._sortByName(result)
 			return result;
+		},
+		_sortByName: function (array) {
+			array.sort(function (a, b) {
+				if (a < b) return -1;
+				if (a > b) return 1;
+				return 0;
+			});
 		},
 		_getRouteInfoList: function (contextKey) {
 			var result = null;

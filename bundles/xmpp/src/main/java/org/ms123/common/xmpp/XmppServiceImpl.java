@@ -227,11 +227,12 @@ public class XmppServiceImpl extends BaseXmppServiceImpl implements XmppService 
 
 		public WebSocket(Map<String, Object> config, Map<String, String> parameterMap) {
 			m_js.prettyPrint(true);
+			if( true) throw new RuntimeException("XmppServiceImpl: defect code called");
 			m_config = config;
 			m_params = parameterMap;
 			String namespace = m_params.get("namespace");
 			String routesName = m_params.get("routes");
-			m_context = m_camelService.getCamelContext(namespace);
+			m_context = m_camelService.getCamelContext(namespace,"Only for compiling");
 			m_outTemplate = m_context.createProducerTemplate();
 			Map shape = getRootShape(namespace, routesName);
 			String recvEndpointUri = getString(shape, "recvEndpoint", null);

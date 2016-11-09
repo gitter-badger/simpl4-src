@@ -110,6 +110,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.ServiceTest", {
 			var serviceShapes = this._getServiceShapes();
 			var json = this.facade.getJSON();
 			var id = json.properties.overrideid.replace( /\.camel$/, "" );
+			id = id.replace( /\.service$/, "" );
 			this.id = id;
 			this.serviceTestData = this._getHistory();
 			var ssMap = this._filterServiceShapes( id, serviceShapes );

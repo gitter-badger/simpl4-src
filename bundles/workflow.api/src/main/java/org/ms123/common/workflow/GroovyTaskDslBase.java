@@ -25,24 +25,14 @@ import java.text.*;
 import java.util.concurrent.TimeUnit;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.libhelper.Inflector;
-import org.ms123.common.camel.api.CamelService;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.Event;
 import org.osgi.framework.BundleContext;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Processor;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.util.ExchangeHelper;
 import org.apache.commons.beanutils.BeanMap;
 import flexjson.*;
 
 @SuppressWarnings("unchecked")
 public abstract class GroovyTaskDslBase extends Script {
-
-	protected CamelContext m_camelContext;
-	protected ProducerTemplate m_camelTemplate;
 
 	protected Inflector m_inflector = Inflector.getInstance();
 
@@ -179,47 +169,6 @@ public abstract class GroovyTaskDslBase extends Script {
 		return (String) this.getBinding().getVariable("__pid");
 	}
 
-	public CamelContext getCamelContext() {
-		if (m_camelContext == null){
-			CamelService ws = (CamelService) this.getBinding().getVariable("__camelService");
-			m_camelContext = ws.getCamelContext(getNamespace() );
-		}
-		return m_camelContext;
-	}
-
-	public ProducerTemplate getCamelTemplate(){
-		if( m_camelTemplate == null){
-			m_camelTemplate = getCamelContext().createProducerTemplate();
-		}
-		return m_camelTemplate;
-	}
-	
-	public Object camelSend(String epUri, final Map<String, Object> properties) {
-		return camelSend(epUri, null, null,properties);
-	}
-	public Object camelSend(String epUri, final Object body, final Map<String, Object> properties) {
-		return camelSend(epUri, body, null,properties);
-	}
-	public Object camelSend(String epUri, final Object body, final Map<String, Object> headers, final Map<String, Object> properties) {
-		Processor p = new Processor() {
-			public void process(Exchange exchange) {
-				if (properties != null) {
-					for (String key : properties.keySet()) {
-						exchange.setProperty(key, properties.get(key));
-					}
-				}
-				Message in = exchange.getIn();
-				if (headers != null) {
-					for (String key : headers.keySet()) {
-						in.setHeader(key, headers.get(key));
-					}
-				}
-				in.setBody(body);
-			}
-		};
-		Exchange result = getCamelTemplate().send(epUri, p);
-    return ExchangeHelper.extractResultBody(result, null);
-	}
 
 	public Map beanToMap(Object bean) {
 		return (Map) m_ds.deserialize(m_js.deepSerialize(bean));

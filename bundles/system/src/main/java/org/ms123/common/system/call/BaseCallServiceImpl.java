@@ -254,10 +254,13 @@ abstract class BaseCallServiceImpl {
 			return false;
 		}
 	}
-	protected Map getProcedureShape(String ns, String methodName){
-		Map shape  = m_camelService.getProcedureShape(ns,methodName );
+	protected Map getProcedureShape(String ns, String serviceName, String methodName){
+		Map shape  = m_camelService.getProcedureShape(ns,serviceName, methodName );
 		if( shape == null && methodName.endsWith(".camel")){
-			shape = m_camelService.getProcedureShape( ns, methodName.substring(0, methodName.length()-6));
+			shape = m_camelService.getProcedureShape( ns, serviceName,methodName.substring(0, methodName.length()-6));
+		}
+		if( shape == null && methodName.endsWith(".service")){
+			shape = m_camelService.getProcedureShape( ns, serviceName,methodName.substring(0, methodName.length()-8));
 		}
 		return shape;
 	}

@@ -194,36 +194,6 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 	}
 	/*END JSON-RPC-API*/
 
-	public Object camelSend(String epUri, final Map<String, Object> properties) {
-		return camelSend(epUri, null, null, properties);
-	}
-
-	public Object camelSend(String epUri, final Object body, final Map<String, Object> properties) {
-		return camelSend(epUri, body, null, properties);
-	}
-
-	public Object camelSend(String epUri, final Object body, final Map<String, Object> headers, final Map<String, Object> properties) {
-		Processor p = new Processor() {
-
-			public void process(Exchange exchange) {
-				if (properties != null) {
-					for (String key : properties.keySet()) {
-						exchange.setProperty(key, properties.get(key));
-					}
-				}
-				Message in = exchange.getIn();
-				if (headers != null) {
-					for (String key : headers.keySet()) {
-						in.setHeader(key, headers.get(key));
-					}
-				}
-				in.setBody(body);
-			}
-		};
-		ProducerTemplate template = getCamelContext((String) properties.get("namespace")).createProducerTemplate();
-		Exchange result = template.send(epUri, p);
-		return ExchangeHelper.extractResultBody(result, null);
-	}
 
 	public Object camelSend(String ns, Endpoint endpoint, final Object body, final Map<String, Object> headers, final Map<String, Object> properties) {
 		Processor p = new Processor() {
@@ -244,7 +214,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 			}
 		};
 		//String ns = (String) properties.get("namespace");
-		ProducerTemplate template = getCamelContext(ns).createProducerTemplate();
+		ProducerTemplate template = endpoint.getCamelContext().createProducerTemplate();
 		Exchange result = template.send(endpoint, p);
 		return ExchangeHelper.extractResultBody(result, null);
 	}
@@ -253,7 +223,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 		return camelSend(ns,routeName,null,null,properties);
 	}
 	public Object camelSend(String ns, String routeName,Object body, Map<String, Object> headers, Map<String, Object> properties){
-		Route route = getCamelContext(ns).getRoute(routeName);
+		Route route = getCamelContext(ns,routeName).getRoute(routeName);
 		if( route == null){
 			throw new RuntimeException("CamelServiceImpl:route '"+routeName+"' not found");
 		}
@@ -280,7 +250,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 				in.setBody(body);
 			}
 		};
-		ProducerTemplate template = getCamelContext(ns).createProducerTemplate();
+		ProducerTemplate template = endpoint.getCamelContext().createProducerTemplate();
 		Exchange exchange = template.send(endpoint, p);
 
 		Object camelBody = ExchangeHelper.extractResultBody(exchange, null);

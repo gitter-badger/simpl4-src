@@ -64,7 +64,7 @@ public class S4WebSocketCreator implements WebSocketCreator {
 		return serviceClassName;
 	}
 
-	private synchronized CamelContext getCamelContext(Map<String, String> parameterMap) throws Exception {
+	private synchronized CamelContext getCamelContext(Map<String, String> parameterMap, String uri) throws Exception {
 		String namespace = getParameter("namespace", parameterMap);
 		CamelContext cc = m_camelContextMap.get(namespace);
 		if (cc != null) {
@@ -78,12 +78,14 @@ public class S4WebSocketCreator implements WebSocketCreator {
 		if (service == null) {
 			throw new Exception("WebSocketCreator.Cannot resolve service:org.ms123.common.camel.api.CamelService");
 		}
-		Class[] cargs = new Class[1];
+		Class[] cargs = new Class[2];
 		cargs[0] = String.class;
+		cargs[1] = String.class;
 		try {
 			Method meth = service.getClass().getMethod("getCamelContext", cargs);
-			Object[] args = new Object[1];
+			Object[] args = new Object[2];
 			args[0] = namespace;
+			args[1] = uri;
 			cc = (CamelContext) meth.invoke(service, args);
 			m_camelContextMap.put(namespace, cc);
 			return cc;
@@ -121,7 +123,7 @@ public class S4WebSocketCreator implements WebSocketCreator {
 		} else {
 			uri = "websocket://" + name;
 		}
-		CamelContext cc = getCamelContext(parameterMap);
+		CamelContext cc = getCamelContext(parameterMap, uri);
 
 		Endpoint ep = getEndpoint(uri, cc);
 		if (ep == null) {

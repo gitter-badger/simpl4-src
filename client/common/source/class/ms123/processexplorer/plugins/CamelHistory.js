@@ -107,7 +107,6 @@ qx.Class.define("ms123.processexplorer.plugins.CamelHistory", {
 			});
 			var m = form.getModel();
 			form.setData({processState:'all'});
-			this._formInstance = form;
 			m.addListener("changeBubble", this.__changeListenerInstances, this);
 			return form;
 		},
@@ -250,8 +249,8 @@ qx.Class.define("ms123.processexplorer.plugins.CamelHistory", {
 			}
 			console.log("_handleEvent:"+JSON.stringify(this._camelRouteDefinition,null,2));
 			this._init();
-			this._formInstance.setData({processState:'all',startTimeFrom:null,startTimeTo:null});
-			this._getRouteInstances(null,null);
+			var data = this._searchForm.getData();
+			this._getRouteInstances(data.startTimeFrom, data.startTimeTo);
 			this.setEnabled(true);
 		}
 	}

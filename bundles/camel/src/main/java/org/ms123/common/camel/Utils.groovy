@@ -41,7 +41,8 @@ import static org.ms123.common.camel.api.CamelService.RESOURCEID;
 @groovy.transform.TypeChecked
 public class Utils {
 	public static String createRouteId( String baseId, int index){
-		baseId = baseId.replace(".camel","");
+		baseId = baseId.replaceAll('\\.camel$',"");
+		baseId = baseId.replaceAll('\\.service$',"");
 		return baseId+":"+index;
 	}
 	public static String getBaseRouteId( String routeId){
@@ -57,7 +58,20 @@ public class Utils {
 		if( id == null || id.trim().length()==0){
 			id = (String)shape.get(RESOURCEID);
 		}
-		id = id.replace(".camel","");
+		id = id.replaceAll('\\.camel$',"");
+		id = id.replaceAll('\\.service$',"");
 		return id;
+	}
+	public static String getBaseName( String path){
+		int ind = path.lastIndexOf("/");
+		String base = null;
+		if( ind == -1){
+			base = path;
+		}else{
+			base = path.substring(ind+1);
+		}
+		base = base.replaceAll('\\.camel$','');
+		base = base.replaceAll('\\.service$','');
+		return base.replaceAll('\\.', '_');
 	}
 }

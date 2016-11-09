@@ -49,6 +49,7 @@ import org.ms123.common.rpc.RpcException;
 import org.ms123.common.rpc.JsonRpcServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import static org.apache.commons.lang3.StringUtils.countMatches;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
@@ -84,23 +85,31 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 
 	public Object callCamel(String methodName, Object _methodParams, HttpServletRequest request, HttpServletResponse response) {
 		Map methodParams = (Map) _methodParams;
-		int dot = methodName.indexOf(".");
+		int dot = countMatches( methodName, ".");
 		String namespace = null;
-		if( dot > 0){
+		String serviceName = null;
+		String fqMethodName = methodName;
+		if( dot == 1){
 			String a[] = methodName.split("\\.");
 			namespace = a[0];
 			methodName = a[1];
+		}
+		if( dot == 2){
+			String a[] = methodName.split("\\.");
+			namespace = a[0];
+			serviceName = a[1];
+			methodName = a[2];
 		}
 		if( namespace == null){
 			namespace = getNamespace(methodParams);
 			if (namespace == null) {
 				throw new RpcException(JsonRpcServlet.ERROR_FROM_SERVER, JsonRpcServlet.PARAMETER_MISMATCH, "Method("+methodName+"):Namespace not found");
 			}
+			fqMethodName = namespace+"."+methodName;
 		}
 		info(this,"procedure:"+namespace+"."+methodName);
 		info(this,"methodParams:"+methodParams);
-		String fqMethodName = namespace+"."+methodName;
-		Map shape  = this.getProcedureShape(namespace,methodName );
+		Map shape  = this.getProcedureShape(namespace,serviceName,methodName );
 		if( shape == null){
 			info(this,"getProcedureShape is null:"+fqMethodName);
 			shape = getRootShape(namespace, methodName);
@@ -181,7 +190,7 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 		}
 
 		String routeId = getId(shape);
-		CamelContext cc = m_camelService.getCamelContext(namespace);
+		CamelContext cc = m_camelService.getCamelContext(namespace,routeId);
 		Route route = cc.getRoute(routeId);
 		if( route == null){ //Maybe multiple routes
 			route= getRouteWithDirectConsumer(cc, routeId);

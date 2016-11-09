@@ -36,6 +36,7 @@ import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
+//@@@MS kaputt
 @SuppressWarnings({"unchecked","deprecation"})
 public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehaviorDefaultImpl {
 
@@ -49,8 +50,8 @@ public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehav
 		setTenantAndName(execution);
 		CamelService cs = (CamelService) lookupServiceByName(CamelService.class.getName());
 		info(this,"m_tenant:" + m_tenant + "/" + ns + "/" + cs);
-		camelContextObj = cs.getCamelContext(ns);
-		info(this,"camelContextObj:" + camelContextObj);
+		//camelContextObj = cs.getCamelContext(ns);
+		//info(this,"camelContextObj:" + camelContextObj);
 	}
 
 	protected ActivitiEndpoint getEndpoint(String key) {
