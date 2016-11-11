@@ -74,12 +74,13 @@ qx.Class.define("ms123.form.Dialog", {
 		 * param context {Object} 
 		 */
 		alert: function (message, callback, context, inWindow) {
-			(new ms123.form.Alert({
+				toastr.info(message.toString())
+/*			(new ms123.form.Alert({
 				"message": message,
 				"callback": callback || null,
 				"context": context || null,
 				"inWindow": inWindow !== undefined ? inWindow : true
-			})).show();
+			})).show();*/
 		},
 
 		/**
