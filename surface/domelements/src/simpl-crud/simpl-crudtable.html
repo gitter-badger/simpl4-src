@@ -65,8 +65,13 @@
 					<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
 			</template>
 		</div>
+		<div style="overflow:hidden;" class="layout horizontal center-justified">
+				<div class="spinner"></div>
+			</table>
+		</div>
 		<div style="overflow:hidden;">
-			<table id="dataTablesId" class="dataTables responsive" style="width:100%;"></table>
+			<table id="dataTablesId" class="dataTables responsive" style="width:100%;">
+			</table>
 		</div>
 	</template>
 	<script>
@@ -275,7 +280,30 @@
 					console.error("crudtable.nometa:",this.filter);
 					return;
 				}
-				this.dataSet = this.preProcessData( this.getData( this.filter ) );
+				this.showSpinner( this.$.dataTablesId );
+				this.getData( this.filter, firsttime );
+			},
+			showSpinner: function( table ) {
+				this.async( function() {
+					var sel = this.querySelector( ".spinner" );
+					if ( sel ) {
+						sel.innerHTML = '';
+						Spinners.create( sel, {
+							radius: 22,
+							dashes: 30,
+							width: 2.5,
+							height: 10,
+							opacity: 1,
+							padding: 3,
+							rotation: 600,
+							color: '#000000'
+						} ).play();
+					}
+				}, 50 );
+			},
+			_dataComplete:function( data, firsttime){
+				var sel = this.querySelector( ".spinner" ).innerHTML="";
+				this.dataSet = this.preProcessData( data );
 				if ( firsttime ) {
 					if ( this.dtOptions == "" ) {
 						var options = {
@@ -407,7 +435,7 @@
 			refresh: function() {
 				this.filterChanged();
 			},
-			getData: function( filter ) {
+			getData: function( filter, firsttime ) {
 				this.selection = null;
 				var props = simpl4.util.EntityManager.getEntityViewProperties( filter.entity, "main-grid", {
 					namespace: this.namespace
@@ -442,6 +470,7 @@
 				var data;
 				if ( filter.rpc ) {
 					data = simpl4.util.Rpc.rpcSync( "data:query", filter.rpc );
+					this._dataComplete( data.rows, firsttime);
 				} else if ( propsEntity.customServiceRead ) {
 					var customService = propsEntity.customServiceRead;
 					if ( customService.indexOf( ":" ) == -1 ) {
@@ -451,12 +480,10 @@
 						var x = customService.split( ":" );
 						customService = x[ 0 ] + ":" + this.namespace + "." + x[ 1 ];
 					}
-					//console.log("xxx.customService:",customService);
-					//console.log("xxx.fields:",fields);
-					//console.log("xxx.filter:",filter);
-					//console.log("xxx.entity:",e);
-					try {
-						data = simpl4.util.Rpc.rpcSync( customService, {
+ 					var params = {
+            service: customService.split(":")[0],
+            method: customService.split(":")[1],
+            parameter: {
 							storeId: this.namespace + "_" + p,
 							pageSize: 100,
 							orderby: props.orderby,
@@ -464,35 +491,48 @@
 							entity: e,
 							fields: fields,
 							filter: filter
-						} );
-					} catch ( e ) {
-						console.error( "simpl-crudtable1:", e );
-						this.fire( "error", {
-							error: e
-						} );
-						return [];
-					}
-					console.log( "xxx.data:", data );
-					return data;
+            },
+            async: true,
+            context: this,
+            failed: function( e ) {
+							console.error( "simpl-crudtable1:", e );
+							this.fire( "error", {
+								error: e
+							} );
+            },
+            completed: function( ret ) {
+							console.error("completed:",ret);
+							this._dataComplete( ret, firsttime);
+            }
+          }
+          simpl4.util.Rpc.rpcAsync( params );
 				} else {
-					try {
-						data = simpl4.util.Rpc.rpcSync( "data:query", {
+ 					var params = {
+            service: "data",
+            method: "query",
+            parameter: {
 							storeId: this.namespace + "_" + p,
 							pageSize: 100,
 							orderby: props.orderby,
 							entity: e,
 							fields: fields,
 							filter: filter
-						} );
-					} catch ( e ) {
-						console.error( "simpl-crudtable2:", e );
-						this.fire( "error", {
-							error: e
-						} );
-						return [];
-					}
+            },
+            async: true,
+            context: this,
+            failed: function( e ) {
+							console.error( "simpl-crudtable2:", e );
+							this.fire( "error", {
+								error: e
+							} );
+            },
+            completed: function( ret ) {
+							console.error("completed2:",ret.rows);
+							this._dataComplete( ret.rows, firsttime);
+            }
+          }
+          simpl4.util.Rpc.rpcAsync( params );
 				}
-				return data.rows;
 			}
 		} );
 
