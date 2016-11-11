@@ -191,6 +191,7 @@
 		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
+			<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 
 			<input is="iron-input" id="input"  class="form-control"
 				aria-labelledby$="[[_ariaLabelledBy]]"
@@ -638,6 +639,7 @@
     <paper-input-container id="decorator" no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
       <label hidden$="[[!label]]">[[label]]</label>
+			<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 
       <iron-autogrow-textarea id="input" class="paper-input-input"
         bind-value="{{editValue}}"
@@ -912,6 +914,7 @@
 		<div class="vertical layout">
 			<paper-checkbox checked="{{value}}">
 				<label id="label" hidden$="[[!label]]">[[label]]</label>
+			  <paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 			</paper-checkbox>
 
 			<template is="dom-if" if="[[errorMessage]]">
@@ -1111,6 +1114,7 @@
 	<template>
 		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[isInvalid]]">
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
+			<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 			<input hidden is="iron-input" id="input" bind-value="[[value]]" />
 			<div>
 				<select multiple$=[[multiple]]  id="select" name="[[name]]">
@@ -1499,6 +1503,7 @@
 	<template>
 		<paper-input-container id="decorator" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[invalid]]">
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
+			<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 			<input hidden is="iron-input" id="input" bind-value="[[value]]" />
 			<select multiple$=[[multiple]]  id="select" name="[[name]]">
 				<!--template is="dom-repeat" as="i" items="{{items}}">
@@ -1673,6 +1678,7 @@
 
 		<div id="floatedLabel" hidden$="[[!label]]" class="floatedLabel">
 			<label class="label-text">{{label}}</label>
+			<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 		</div>
 		<div id="containerId" vertical layout style$="[[getContainerStyle(height)]]">
 
@@ -1919,6 +1925,7 @@
 
 			<div id="floatedLabel" hidden$="[[!label]]" class="floatedLabel">
 				<label class="label-text">{{label}}</label>
+				<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 			</div>
 			<div class="vertical layout" style="[[getHeight(height)]">
 				<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTable" invalid$="[[isInvalid]]" selection="{{selection}}" multi-Select="[[multiSelect]]" selected="{{value}}" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[items]]">
@@ -2079,7 +2086,8 @@
 		<div class="layout horizontal center">
 		<paper-input-container id="decorator" class="flex" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]">
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
-				<input is="iron-input" id="input" value="{{editValue}}" bind-value="[[editValue]]"  readonly disabled$={{disabled}}>
+			<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
+			<input is="iron-input" id="input" value="{{editValue}}" bind-value="[[editValue]]"  readonly disabled$={{disabled}}>
 			</paper-input-container>
 			<paper-button on-tap="actionCallback" class="button" raised>
 				<iron-icon icon="launch"></iron-icon>
@@ -2253,7 +2261,8 @@
 		<div class="layout horizontal center">
 		<paper-input-container id="decorator" class="flex" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]">
 			<label id="label" hidden$="[[!label]]">[[label]]</label>
-				<input is="iron-input" id="input" value="{{editValue}}" bind-value="[[editValue]]"  readonly disabled$={{disabled}}>
+			<paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
+			<input is="iron-input" id="input" value="{{editValue}}" bind-value="[[editValue]]"  readonly disabled$={{disabled}}>
 			</paper-input-container>
 			<paper-button on-tap="actionCallback" class="button" raised>
 				<iron-icon icon="launch"></iron-icon>

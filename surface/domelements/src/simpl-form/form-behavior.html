@@ -670,6 +670,19 @@
 				} else {
 					shape.properties.label = "";
 				}
+				var helpChild = this._getHelpShape( shape.childShapes );
+				if ( helpChild != null ) {
+					shape.properties.help = helpChild.properties.xf_message;
+					if ( shape.childShapes.length == 1 ) {
+						shape.childShapes = [];
+					}
+					var help = shape.properties.help;
+					if ( help && help.match( /^[@%]/ ) ) {
+						shape.properties.help = tr( help.substring( 1 ) );
+					}
+				} else {
+					shape.properties.help = null;
+				}
 				if ( !this._isEmpty( shape.properties.xf_default ) ) {
 					if ( shape.stencil.id.toLowerCase() == 'input' ) {
 						if ( shape.properties.xf_type.startsWith( "date" ) ) {
@@ -837,6 +850,14 @@
 			}, shape.stencil, {
 				childShapes: shape.childShapes
 			} );
+		},
+		_getHelpShape: function( childs ) {
+			for ( var i = 0; i < childs.length; i++ ) {
+				if ( childs[ i ].stencil.id.toLowerCase() == 'help' ) {
+					return childs[ i ];
+				}
+			}
+			return null;
 		},
 		_getLabelShape: function( childs ) {
 			for ( var i = 0; i < childs.length; i++ ) {
