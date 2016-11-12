@@ -99,7 +99,7 @@ public class OrientDBServiceImpl implements OrientDBService {
 
 	public synchronized OrientGraphFactory getFactory(String name) {
 		OrientGraphFactory f = factoryMap.get(name);
-		if (f == null) {
+		if (f == null || !dbExists(name)) {
 			if (!dbExists(name)) {
 				dbCreate(name);
 			}
