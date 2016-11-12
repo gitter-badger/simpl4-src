@@ -37,6 +37,7 @@
 	@asset(qx/icon/${qx.icontheme}/22/actions/dialog-cancel.png)
 	@asset(qx/icon/${qx.icontheme}/22/actions/dialog-ok.png)
 	@asset(qx/icon/${qx.icontheme}/22/actions/document-save.png)
+	@ignore(toastr.*)
 */
 
 
@@ -74,13 +75,16 @@ qx.Class.define("ms123.form.Dialog", {
 		 * param context {Object} 
 		 */
 		alert: function (message, callback, context, inWindow) {
+			if( callback==null){
 				toastr.info(message.toString())
-/*			(new ms123.form.Alert({
-				"message": message,
-				"callback": callback || null,
-				"context": context || null,
-				"inWindow": inWindow !== undefined ? inWindow : true
-			})).show();*/
+			}else{
+				(new ms123.form.Alert({
+					"message": message,
+					"callback": callback || null,
+					"context": context || null,
+					"inWindow": inWindow !== undefined ? inWindow : true
+				})).show();
+			}
 		},
 
 		/**
