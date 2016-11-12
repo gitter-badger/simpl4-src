@@ -550,10 +550,12 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ResourceDetailTree",
 		_getRouteChildren:function(model, procedureShapes){
 			model.children=[];
 			var val = model.value;
+			val = val.replace(/\.camel$/,"");
+			val = val.replace(/\.service/,"");
 			for( var i=0; i< procedureShapes.length; i++){
 				var shape = procedureShapes[i];
 				var props = shape.properties;
-				if( qx.lang.String.startsWith(props.overrideid,val.replace(/\.camel$/,"")+":")){
+				if( qx.lang.String.startsWith(props.overrideid,val+":")){
 					var node ={};
 					node.id = node.name = node.value = node.title = props.urivalue_name;
 					node.path = model.path + "/"+ node.name;

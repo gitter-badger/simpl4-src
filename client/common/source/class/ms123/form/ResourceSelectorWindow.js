@@ -336,9 +336,11 @@ qx.Class.define("ms123.form.ResourceSelectorWindow", {
 		_getRouteChildren:function(model, procedureShapes){
 			model.children=[];
 			var val = model.value;
+			val = val.replace(/\.camel$/,"");
+			val = val.replace(/\.service/,"");
 			for( var i=0; i< procedureShapes.length; i++){
 				var shape = procedureShapes[i];
-				if( qx.lang.String.startsWith(shape.properties.overrideid,val.replace(/\.camel$/,"")+":")){
+				if( qx.lang.String.startsWith(shape.properties.overrideid,val+":")){
 					var node ={};
 					node.id = node.name = node.value = node.title = shape.properties.urivalue_name;
 					node.path = model.path + "/"+ node.name;
