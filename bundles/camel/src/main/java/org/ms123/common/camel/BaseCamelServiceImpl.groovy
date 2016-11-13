@@ -510,7 +510,7 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 		stopNotActiveRoutes(namespace,cce, okList);
 	}
 	private void stopNotActiveRoutes(String namespace, ContextCacheEntry cce, List okList){
-		info(this,"stopNotActiveRoutes:"+cce+"/"+okList);
+		debug(this,"stopNotActiveRoutes:"+cce+"/"+okList);
 		if( cce == null) return;
 		List<String> ridList = [];
 		cce.context.getRouteDefinitions().each(){RouteDefinition rdef->
@@ -526,10 +526,10 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 				removeProcedureShape(namespace+"/"+baseRouteId+"/");
 			}
 		}
-		info(this,"-->Context("+cce+"):status:"+cce.context.getStatus());
+		debug(this,"-->Context("+cce+"):status:"+cce.context.getStatus());
 		cce.context.getRouteDefinitions().each(){RouteDefinition rdef->
 			String rid = rdef.getId();
-			info(this,"\tRoute("+rid+"):status:"+cce.context.getRouteStatus(rid));
+			debug(this,"\tRoute("+rid+"):status:"+cce.context.getRouteStatus(rid));
 		}
 	}
 
@@ -623,14 +623,20 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 	}
 
 	public void newGroovyClassLoader(String namespace){
-		//String key = getContextKey(namespace);
-		List<ContextCacheEntry> cceList = getContextCacheEntryList(namespace);
-		for( ContextCacheEntry cce : cceList){
-			GroovyRegistry gr = cce.groovyRegistry;
-			gr.newClassLoader();
-			CamelContext co = cce.context;
-			co.stop();
-			co.start();
+		for( String key : m_contextCache.keySet()){
+			if( key.startsWith(namespace+"/")){
+				ContextCacheEntry  cce = m_contextCache.get(key);
+				CamelContext co = cce.context;
+				co.stop();
+				List<RouteDefinition> rdList = co.getRouteDefinitions();
+				cce = new ContextCacheEntry();
+				m_contextCache.put(key, cce);
+				cce.groovyRegistry = new GroovyRegistry( BaseCamelServiceImpl.class.getClassLoader(), m_bundleContext, namespace);
+				cce.context = CamelContextBuilder.createCamelContext(namespace,cce.groovyRegistry, m_bundleContext,true);
+				cce.context.setNameStrategy( new FixedCamelContextNameStrategy(key));
+				cce.context.addRouteDefinitions( rdList);
+				cce.context.start();
+			}
 		}
 	}
 

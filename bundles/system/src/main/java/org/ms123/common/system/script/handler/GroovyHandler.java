@@ -77,7 +77,7 @@ public class GroovyHandler implements ScriptHandler {
 		if (camelService == null) {
 			throw new RuntimeException("GroovyHandler.Cannot resolve camelService");
 		}
-		camelService.newGroovyClassLoader();
+		camelService.newGroovyClassLoader(namespace);
 	}
 
 }
