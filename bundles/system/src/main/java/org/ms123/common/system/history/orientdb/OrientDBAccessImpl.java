@@ -195,7 +195,7 @@ public class OrientDBAccessImpl implements HistoryAccess, HistoryService {
 			return;
 		}
 		try {
-			OrientGraphFactory factory = m_orientdbService.getFactory(HISTORY_DATABASE);
+			OrientGraphFactory factory = m_orientdbService.getFactory(HISTORY_DATABASE,false);
 			orientGraph = factory.getTx();
 			createClassAndIndex();
 		} catch (Exception e) {

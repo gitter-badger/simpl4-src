@@ -51,6 +51,20 @@ import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
 /** OrientDBService implementation
+--------------------------
+TX|Autostart|Commit|result
+ x|false    |false |ok
+ x|true     |false |nok
+ x|false    |true  |ok
+ x|true     |true  |ok
+ -|false    |false |ok
+ -|true     |false |nok
+ -|false    |true  |ok
+ -|true     |true  |nok
+--------------------------
+Best for transactions
+TX|false   |begin and end
+initSchema musr be with getRawGraph done
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=orientdb" })
@@ -98,15 +112,21 @@ public class OrientDBServiceImpl implements OrientDBService {
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name) {
-		OrientGraphFactory f = factoryMap.get(name);
+		return getFactory( name, false);
+	}
+
+	public synchronized OrientGraphFactory getFactory(String name, boolean autoCommit) {
+		OrientGraphFactory f = factoryMap.get(name+"/"+autoCommit);
+		
 		if (f == null || !dbExists(name)) {
 			if (!dbExists(name)) {
 				dbCreate(name);
 			}
 			f = new OrientGraphFactory("remote:127.0.0.1/" + name, "root", passwd, true);
-			factoryMap.put(name, f);
+			f.setAutoStartTx(autoCommit);
+			factoryMap.put(name+"/"+autoCommit, f);
 		}
-		info(this, "getFactory("+name+")"+f);
+		info(this, "getFactory("+name+")"+f.isAutoStartTx());
 		return f;
 	}
 
