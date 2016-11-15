@@ -152,8 +152,9 @@
 			}, 1000 );
 			this.observeOverlayBackdrop();
 		},
-
-
+		scrollbarUpdate:function(){
+			this._scrollbar.update();
+		},
 		observeOverlayBackdrop: function() {
 			var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 			var obs = new MutationObserver( function( mutations, observer ) {
