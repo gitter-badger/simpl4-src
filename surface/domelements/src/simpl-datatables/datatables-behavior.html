@@ -270,7 +270,7 @@ r - processing display element<br/>
 			}, 10 );
 		},
 		__dataChanged: function() {
-			var firsttime = this.preparedMeta == null;
+			//var firsttime = this.preparedMeta == null;
 			if ( this.meta == null || this.meta.length == 0 ) {
 				if ( this.data == null || this.data.length == 0 ) {
 					return;
@@ -285,7 +285,7 @@ r - processing display element<br/>
 			if ( this.preparedMeta == null ) {
 				return;
 			}
-			if ( firsttime ) {
+			if ( this._api == null ) {
 				this._createTable( this.preparedMeta, this.data, this.options );
 			} else {
 				this._api.clear();
