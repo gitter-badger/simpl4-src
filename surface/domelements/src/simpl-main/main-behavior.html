@@ -155,6 +155,9 @@
 		scrollbarUpdate:function(){
 			this._scrollbar.update();
 		},
+		getScrollbarOffset:function(){
+			return this._scrollbar.offset;
+		},
 		observeOverlayBackdrop: function() {
 			var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 			var obs = new MutationObserver( function( mutations, observer ) {
