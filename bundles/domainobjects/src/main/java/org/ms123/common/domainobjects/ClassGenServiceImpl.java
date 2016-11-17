@@ -1247,6 +1247,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 			}
 			ctClass.addConstructor(getConstructor1(ctClass, classname, pkNameList));
 			ctClass.addConstructor(getConstructor2(ctClass, classname, pkNameList, fields));
+			ctClass.addMethod(_getToStringMethod(ctClass));
 			ctClass.addMethod(getCheckNullMethod(ctClass));
 			ctClass.addMethod(getToStringMethod(ctClass, pkNameList));
 			ctClass.addMethod(getEqualsMethod(ctClass, classname, pkNameList));
@@ -1281,7 +1282,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 				if (!first) {
 					m += "sb.append(\":\");";
 				}
-				m += "sb.append(checkNull(this." + pkName + ").toString());";
+				m += "sb.append(toString(checkNull(this." + pkName + ")));";
 				first = false;
 			}
 			m += "return sb.toString();";
@@ -1324,6 +1325,20 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 				first = false;
 			}
 			m += ";}";
+			return CtNewMethod.make(m, ctClass);
+		}
+
+		private CtMethod _getToStringMethod(CtClass ctClass) throws Exception {
+			String m = "public Object toString(Object obj) {";
+			m += "if( obj instanceof Double) {";
+			m += "  long l = ((Double)obj).longValue();";
+			m += "  double d = ((Double)obj).doubleValue();";
+			m += "  if(d  == l) {";
+    	m += "    return Long.toString(((Double)obj).longValue());";
+			m += "  }";
+			m += "}";
+			m += "return obj.toString();";
+			m += "}";
 			return CtNewMethod.make(m, ctClass);
 		}
 
