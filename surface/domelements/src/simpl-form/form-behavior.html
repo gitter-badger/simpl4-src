@@ -45,7 +45,7 @@
 				if ( this._isNotEmpty( readonlyExpr ) ) {
 					var e = this._maskedEval( readonlyExpr, env );
 					if ( e ) {
-						f.setAttribute( "disabled", "" );
+						f.setAttribute( "disabled", "r" );
 					} else {
 						f.removeAttribute( "disabled" );
 					}
@@ -54,7 +54,7 @@
 					if ( e ) {
 						f.removeAttribute( "disabled" );
 					} else {
-						f.setAttribute( "disabled", "" );
+						f.setAttribute( "disabled", "e" );
 					}
 				}
 				var excludeExpr = f.getAttribute( "exclude-expr" );

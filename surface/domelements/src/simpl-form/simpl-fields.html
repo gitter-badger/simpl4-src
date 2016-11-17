@@ -1296,6 +1296,17 @@
 				ajaxOptionsDataType: {
 						type: String,
 						value: null
+				},
+				mutationObserver: {
+					value: ( function() {
+						var observer = new MutationObserver( this.mutated.bind(this) );
+						observer.observe( this, {
+							attributes: true,
+							attributeOldValue: true,
+							attributeFilter: [ 'disabled' ]
+						} );
+						return observer;
+					} ),
 				}
 			},
 			observers: [
@@ -1303,6 +1314,29 @@
 				'compactChanged(compact)',
 				'jsonItemsChanged(jsonItems)'
 			],
+			mutated: function( mutations ) {
+				var self = this;
+				mutations.forEach( function( mutation ) {
+					var entry = {
+						name: mutation.target.getAttribute( "name" ),
+						value: mutation.target.getAttribute( "disabled" ),
+						oldValue: mutation.oldValue
+					};
+					if ( entry.oldValue == entry.value ) {
+						return;
+					}
+					console.log( 'Recording mutation:', entry );
+					var fl = self.querySelector( ".focused-line" );
+					console.log( 'fl:', fl );
+					if( fl == null) return;
+					if ( entry.value == "r" ) {
+						fl.style.display = "none";
+					} else {
+						fl.style.display = "block";
+					}
+
+				})
+			},
 			ready: function() {
 				this.isInvalid = false;
 			},
@@ -1439,6 +1473,12 @@
 				this.createSelectize();
 				this.selectizeControl = this.$.decorator.querySelector( ".selectize-control" );
 //					jQuery( this.selectizeControl ).css( "pointer-events", "none" );
+				this.async( function() {
+					var inp = this.querySelector("input[tabindex]");
+					if( inp){
+						inp.setAttribute("tabindex", "-1");
+					}
+				},200 );
 			},
 			isEmpty: function( s ) {
 				if( Array.isArray(s)){
