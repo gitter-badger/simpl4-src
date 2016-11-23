@@ -59,6 +59,10 @@ public class BundleJavaManager extends ForwardingJavaFileManager<JavaFileManager
 			bundleWiringCache = new HashMap<String, BundleWiring>();
 			for (Bundle b : bundle.getBundleContext().getBundles()) {
 				bundleWiring = b.adapt(BundleWiring.class);
+				if( bundleWiring == null){
+					error(this,"bundleWiring is null:"+b);
+					continue;
+				}
 				addResourcesToCache(bundleWiring);
 			}
 		}
