@@ -580,6 +580,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 		}
 		if (pkList.size() == 0) {
 			Map pkMap = new HashMap();
+			pkMap.put("generated", "true");
 			pkMap.put("idClass", idClass);
 			pkMap.put("idField", idField);
 			pkMap.put("idConstraint", idConstraint);
@@ -637,20 +638,24 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 
 		fields = sortFields(fields, (List) entMap.get("primaryKeys"));
 		List<Map> pkList = getPrimaryKeys(fields);
+		
+		boolean pkGenerated = pkList.size()==1 && pkList.get(0).get("generated")!=null;
 
 		Annotation annotation = new Annotation("javax.jdo.annotations.PersistenceCapable", constPool);
-		if (pkList.size() == 1) {
-			EnumMemberValue mv = new EnumMemberValue(constPool);
-			mv.setType("javax.jdo.annotations.IdentityType");
-			mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
-			annotation.addMemberValue("identityType", mv);
-		} else {
-			String pkClass = classname + "_PK";
-			annotation.addMemberValue("objectIdClass", new ClassMemberValue(pkClass, constPool));
-			EnumMemberValue mv = new EnumMemberValue(constPool);
-			mv.setType("javax.jdo.annotations.IdentityType");
-			mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
-			annotation.addMemberValue("identityType", mv);
+		if( pkGenerated == false ){
+			if (pkList.size() == 1) {
+				EnumMemberValue mv = new EnumMemberValue(constPool);
+				mv.setType("javax.jdo.annotations.IdentityType");
+				mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
+				annotation.addMemberValue("identityType", mv);
+			} else {
+				String pkClass = classname + "_PK";
+				annotation.addMemberValue("objectIdClass", new ClassMemberValue(pkClass, constPool));
+				EnumMemberValue mv = new EnumMemberValue(constPool);
+				mv.setType("javax.jdo.annotations.IdentityType");
+				mv.setValue(javax.jdo.annotations.IdentityType.APPLICATION.toString());
+				annotation.addMemberValue("identityType", mv);
+			}
 		}
 
 		String tableName = (String) entMap.get("tableName");
@@ -672,10 +677,12 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 			AnnotationsAttribute idAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
 			f.getFieldInfo().addAttribute(idAttr);
 			annotation = new Annotation("javax.jdo.annotations.Persistent", constPool);
-			EnumMemberValue emv = new EnumMemberValue(constPool);
-			emv.setType("javax.jdo.annotations.IdGeneratorStrategy");
-			emv.setValue(javax.jdo.annotations.IdGeneratorStrategy.UUIDHEX.toString());
-			annotation.addMemberValue("valueStrategy", emv);
+			if( pkGenerated){
+				EnumMemberValue emv = new EnumMemberValue(constPool);
+				emv.setType("javax.jdo.annotations.IdGeneratorStrategy");
+				emv.setValue(javax.jdo.annotations.IdGeneratorStrategy.UUIDHEX.toString());
+				annotation.addMemberValue("valueStrategy", emv);
+			}
 			idAttr.addAnnotation(annotation);
 			annotation = new Annotation("javax.jdo.annotations.PrimaryKey", constPool);
 			if (pkMap.get("idColumn") != null) {
