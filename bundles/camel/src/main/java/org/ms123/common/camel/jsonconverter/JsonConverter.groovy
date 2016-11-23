@@ -308,15 +308,19 @@ abstract class JsonConverterImpl implements JsonConverter{
 
 	def createProcessorJava(processMethodStr,importStr, namespace, completeClass) {
 		def code = null;
+		def clazz = null;
 		if( completeClass){
 			code = processMethodStr;
 		}else{
 			code = buildScript(processMethodStr,importStr,false);
 		}
 		try {
-			def clazz = JavaCompiler.compile(namespace, bundleContext.getBundle(), getClassName(code), code);
+			clazz = JavaCompiler.compile(namespace, bundleContext.getBundle(), getClassName(code), code);
 			return clazz.newInstance();
 		} catch (Throwable e) {
+			e.printStackTrace();
+			System.err.println("createProcessorJava.clazz:"+clazz);
+			System.err.println("createProcessorJava.code:"+code);
 			throw new RuntimeException(e.getMessage() as String);
 		}
 	}
