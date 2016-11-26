@@ -172,6 +172,7 @@ r - processing display element<br/>
 			return this._api;
 		},
 		_addDetailCopier: function( mainElem, api ) {
+			var self = this;
 			mainElem.on( 'keyup change', '.child input, .child select, .child textarea', function( e ) {
 				var srcDetailElem = $( this );
 				var rowIdx = srcDetailElem.closest( 'ul' ).data( 'dtr-index' );
@@ -184,6 +185,17 @@ r - processing display element<br/>
 				if ( srcDetailElem.is( ':checked' ) ) {
 					$( 'input', cell ).prop( 'checked', true );
 				}
+			} );
+			mainElem.on( 'click', '.child iron-icon', function( e ) {
+				var index = self._getIndexDetail(e.target);
+				var row = self._copySelection(self._api.rows( index.row ).data());
+				this.fire( "rows-selected", {
+					dt: self,
+					doubleTap: false,
+					index: index,
+					target: e.target,
+					rows: row
+				} );
 			} );
 		},
 		_createRowListener: function() {
@@ -236,6 +248,13 @@ r - processing display element<br/>
 				rows: sel
 			} );
 			this.selection = sel;
+		},
+		_getIndexDetail: function( target ) {
+			var closest = $( target ).closest( "li" );
+			return {
+					row:closest.attr("data-dt-row"),
+					column:closest.attr("data-dt-column")
+			}
 		},
 		_getIndex: function( target ) {
 			var closest = $( target ).closest( "td" );
