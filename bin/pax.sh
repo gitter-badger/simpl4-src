@@ -108,7 +108,8 @@ vmOptions="\
  -Dkaraf.startLocalConsole=true \
  -Dh2.bindAddress=127.0.0.1 \
  -Dkaraf.systemBundlesStartLevel=0 \
- -Dkaraf.startRemoteShell=false \
+ -Dkaraf.startRemoteShell=true \
+ -Dkaraf.base=\$SIMPL4DIR \
  -Dfelix.cm.dir=\$SIMPL4DIR/etc/config \
  -Detc.dir=\$SIMPL4DIR/etc \
  -Dfelix.fileinstall.dir=\$SIMPL4DIR/gitrepos/.bundles \
@@ -192,7 +193,7 @@ do
 done
 
 karafbundles=""
-for i in $REPOSITORY/karaf/*[bj]ar
+for i in $REPOSITORY/karaf4/*[bj]ar
 do
 	karafbundles=${karafbundles}"scan-bundle:file:$i "
 done
@@ -291,14 +292,13 @@ ${cassandrabundles} \
   scan-bundle:file:$REPOSITORY/lucene-core-3.6.2.bar \
 	scan-bundle:file:$REPOSITORY/milton-trunk_14-02-12.bar \
   scan-bundle:file:$REPOSITORY/milyn-smooks-all-1.5.jar \
-	scan-bundle:file:$REPOSITORY/mina-core-2.0.2.jar \
+	scan-bundle:file:$REPOSITORY/mina-core-2.0.16.jar \
   scan-bundle:file:$REPOSITORY/mvel2-2.1.RC1.jar \
 	scan-bundle:file:$REPOSITORY/mysql-connector-java-5.1.34-bin.jar \
 	scan-bundle:file:$REPOSITORY/object-traverser.bar \
   scan-bundle:file:$REPOSITORY/ops4j-base-lang-1.5.0.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.shell-1.4.3.jar \
-	scan-bundle:file:$REPOSITORY/jline-2.12.jar \
-	scan-bundle:file:$REPOSITORY/org.jledit.core_0.2.1.jar \
+	scan-bundle:file:$REPOSITORY/jline-3.0.1.jar \
 	scan-bundle:file:$REPOSITORY/org.eclipse.jgit-4.1.1.201511131810-r.jar \
 	scan-bundle:file:$REPOSITORY/JavaEWAH-0.7.9.jar \
 	scan-bundle:file:$REPOSITORY/org.json_2.0.jar \
@@ -378,6 +378,10 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/oro-2.0.8.bar \
   scan-bundle:file:$REPOSITORY/sojo-1.0.0.bar \
 	scan-bundle:file:$REPOSITORY/sshd-core-0.12.0.jar \
+	scan-bundle:file:$REPOSITORY/sshd-core-1.3.0.jar \
+	scan-bundle:file:$REPOSITORY/bcpg-jdk15on-1.55.jar \
+	scan-bundle:file:$REPOSITORY/bcprov-jdk15on-1.55.jar \
+	scan-bundle:file:$REPOSITORY/bcpkix-jdk15on-1.55.jar \
   scan-bundle:file:$REPOSITORY/tika-core-1.5-SNAPSHOT.jar \
   scan-bundle:file:$REPOSITORY/tika-bundle-1.5-SNAPSHOT.jar \
   scan-bundle:file:$REPOSITORY/xom-1.2.7.jar \
