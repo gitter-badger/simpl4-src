@@ -17,11 +17,21 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ms123.common.system.ssh;
-import java.util.List;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Set;
 import java.util.Map;
 
-public interface SshService {
-	public boolean addFileEventListener(SshFileEventListener listener);
 
-	public boolean removeFileEventListener(SshFileEventListener listener);
+/**
+ * Can be registered in order to receive events about SCP transfers
+ *
+ */
+public interface SshFileEventListener {
+    /**
+     */
+    default void fileCreated(String username, Path file, Path home, Map<String,Object> params) {
+    }
+
 }

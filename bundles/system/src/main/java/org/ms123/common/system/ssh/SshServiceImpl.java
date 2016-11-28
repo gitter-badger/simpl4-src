@@ -28,7 +28,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Arrays;
+
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.file.nativefs.NativeFileSystemFactory;
@@ -42,10 +47,15 @@ import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.keyprovider.AbstractGeneratorHostKeyProvider;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.scp.ScpCommandFactory;
+import org.apache.sshd.common.scp.ScpTransferEventListener;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.shell.ProcessShellFactory;
 import org.apache.sshd.server.SshServer;
+import org.apache.sshd.common.session.Session;
 import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
+import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
+import org.apache.sshd.server.subsystem.sftp.AbstractSftpEventListenerAdapter;
+import org.apache.sshd.server.subsystem.sftp.Handle;
 import org.apache.karaf.shell.ssh.OpenSSHGeneratorFileKeyProvider;
 import org.apache.karaf.shell.ssh.UserAuthFactoriesFactory;
 import org.apache.karaf.shell.ssh.KarafJaasAuthenticator;
@@ -60,7 +70,8 @@ import org.ms123.common.auth.api.AuthService;
 import org.ms123.common.system.tm.TransactionService;
 import org.apache.karaf.shell.api.console.SessionFactory;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import flexjson.*;
+import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -80,7 +91,11 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 	private JSONSerializer js = new JSONSerializer();
 
 	private SshServer sshServer;
+	private SftpSubsystemFactory sftpSubsystemFactory;
+	private ScpCommandFactory scpCommandFactory;
+  private List<SshFileEventListener> fileListeners = new ArrayList<SshFileEventListener>();
 	private BundleContext bundleContext;
+	private Map<String,Path> userHomeMap = new HashMap<String,Path>();
 
 	public SshServiceImpl() {
 	}
@@ -166,8 +181,10 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 		server.setCipherFactories(SshUtils.buildCiphers(ciphers));
 		server.setKeyExchangeFactories(SshUtils.buildKexAlgorithms(kexAlgorithms));
 		//	server.setShellFactory(new ShellFactoryImpl(sessionFactory));
-		server.setCommandFactory(new ScpCommandFactory.Builder().withDelegate(new ShellCommandFactory(sessionFactory)).build());
-		server.setSubsystemFactories(Arrays.<NamedFactory<org.apache.sshd.server.Command>> asList(new SftpSubsystemFactory()));
+		scpCommandFactory = new ScpCommandFactory.Builder().withDelegate(new ShellCommandFactory(sessionFactory)).build();
+		server.setCommandFactory(scpCommandFactory);
+		sftpSubsystemFactory = new SftpSubsystemFactory();
+		server.setSubsystemFactories(Arrays.<NamedFactory<org.apache.sshd.server.Command>> asList(sftpSubsystemFactory));
 		server.setKeyPairProvider(keyPairProvider);
 		//KarafJaasAuthenticator authenticator = new KarafJaasAuthenticator(sshRealm);
 		//server.setPasswordAuthenticator(authenticator);
@@ -196,6 +213,7 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 			String homedir = user.get("homedir");
 			if( homedir != null){
 				vfs.setUserHomeDir(user.get("userid"), Paths.get(System.getProperty("git.repos"), homedir));
+				userHomeMap.put( user.get("userid"), Paths.get(System.getProperty("git.repos"), homedir));
 			}
 		}
 
@@ -209,9 +227,57 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 		if (welcomeBanner != null) {
 			server.getProperties().put(SshServer.WELCOME_BANNER, welcomeBanner);
 		}
-		return server;
+		SftpEventListener evl = new AbstractSftpEventListenerAdapter(){
+			public void close(ServerSession session, String remoteHandle, Handle localHandle){
+				info(this, "remoteHandle:"+remoteHandle+"|"+ localHandle.getFile());
+				String username = session.getUsername();
+				Path homedir = userHomeMap.get(username);
+				Path file = localHandle.getFile();
+				for( SshFileEventListener l : fileListeners){
+					l.fileCreated( username, file, homedir, null);
+				}
+			}
+		};
+		sftpSubsystemFactory.addSftpEventListener(evl);
 
+		scpCommandFactory.addEventListener(new ScpTransferEventListener() {
+			@Override
+			public void startFileEvent(Session sess, FileOperation fileOperation, Path path, long l, Set<PosixFilePermission> set) {
+				info(this,"startFileEvent("+sess+") (" + (fileOperation == FileOperation.SEND ? "SEND" : "RECEIVE") + ") " + path);
+			}
+
+			@Override
+			public void startFolderEvent(Session sess, FileOperation fileOperation, Path path, Set<PosixFilePermission> set) {
+				info(this,"startFolderEvent (" + (fileOperation == FileOperation.SEND ? "SEND" : "RECEIVE") + ") " + path);
+			}
+
+			@Override
+			public void endFileEvent(Session sess, FileOperation fileOperation, Path path, long length, Set<PosixFilePermission> set, Throwable throwable) {
+				info(this,"endFileEvent("+sess+") ("+ sess.getUsername()+") (" + (fileOperation == FileOperation.SEND ? "SEND" : "RECEIVE") + ") " + path);
+				String username = sess.getUsername();
+				Path homedir = userHomeMap.get(username);
+				for( SshFileEventListener l : fileListeners){
+					l.fileCreated( username, path, homedir, null);
+				}
+			}
+
+			@Override
+			public void endFolderEvent(Session sess, FileOperation fileOperation, Path path, Set<PosixFilePermission> set, Throwable throwable) {
+				info(this,"endFolderEvent (" + (fileOperation == FileOperation.SEND ? "SEND" : "RECEIVE") + ") " + path);
+			}
+		});
+
+		return server;
 	}
+
+	public boolean addFileEventListener(SshFileEventListener listener){
+		return fileListeners.add(listener);
+	}
+
+	public boolean removeFileEventListener(SshFileEventListener listener){
+		return fileListeners.remove(listener);
+	}
+
 	private <T> T lookupServiceByClass(Class<T> clazz) {
 		T service = null;
 		ServiceReference sr = this.bundleContext.getServiceReference(clazz);
