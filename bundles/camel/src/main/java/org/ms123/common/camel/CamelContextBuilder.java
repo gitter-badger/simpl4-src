@@ -48,6 +48,8 @@ import org.ms123.common.camel.components.repo.*;
 import org.ms123.common.camel.components.direct.*;
 import org.ms123.common.camel.components.hazelcast.*;
 import org.ms123.common.camel.components.zookeeper.*;
+import org.ms123.common.camel.components.deepzoom.*;
+import org.ms123.common.camel.components.scpevent.*;
 import org.ms123.common.camel.trace.*;
 import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.data.api.DataLayer;
@@ -113,6 +115,8 @@ public class CamelContextBuilder {
 		sr.put("docbook", new DocbookComponent());
 		sr.put("hazelcast", new HazelcastComponent());
 		sr.put("zookeeper", new ZooKeeperComponent());
+		sr.put("deepzoom", new DeepZoomComponent());
+		sr.put("scpevent", new ScpEventComponent());
 		sr.put("jndiContext", jndiContext);
 		TransactionService ts = (TransactionService) or.lookupByName(TransactionService.class.getName());
 		sr.put(org.springframework.transaction.PlatformTransactionManager.class.getName(), ts.getPlatformTransactionManager());

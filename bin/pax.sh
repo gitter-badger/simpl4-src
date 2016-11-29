@@ -421,6 +421,7 @@ ${cassandrabundles} \
 	scan-bundle:file:$REPOSITORY/unix4j-0.3.1.jar \
 	scan-bundle:file:$REPOSITORY/jcabi-1.0.jar \
 	scan-bundle:file:$REPOSITORY/dom4j-1.6.1.bar \
+	scan-bundle:file:$REPOSITORY/imgscalr-lib-4.2.bar \
 	scan-bundle:file:$REPOSITORY/hazelcast-3.6.3.jar \
 	scan-bundle:file:$REPOSITORY/zookeeper-3.4.9.jar \
 	scan-bundle:file:$REPOSITORY/OrientDBService-1.0.0.jar \

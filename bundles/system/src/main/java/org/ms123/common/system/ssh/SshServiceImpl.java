@@ -256,7 +256,12 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 				info(this,"endFileEvent("+sess+") ("+ sess.getUsername()+") (" + (fileOperation == FileOperation.SEND ? "SEND" : "RECEIVE") + ") " + path);
 				String username = sess.getUsername();
 				Path homedir = userHomeMap.get(username);
+				if( homedir == null){
+					homedir = Paths.get("/");
+				}
+info(this,"endFileEvent:listener:"+fileListeners);
 				for( SshFileEventListener l : fileListeners){
+info(this,"\t"+path);
 					l.fileCreated( username, path, homedir, null);
 				}
 			}

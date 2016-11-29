@@ -50,6 +50,7 @@ dependencies {
 	compile files("${repository}/vfs/commons-vfs2-2.1.jar")
 	compile files("${repository}/camel/camel-ftp-2.18.0.jar")
  	compile files("${repository}/jcabi-1.0.jar")
+ 	compile files("${repository}/imgscalr-lib-4.2.bar")
  	compile files("${repository}/zookeeper-3.4.9.jar")
   compile files('build/classes/main')
 }
