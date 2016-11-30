@@ -1467,6 +1467,7 @@
 			},
 			_attached: function() {
 				this.alwaysFloatLabel = true;
+				this.placeholder=" "; //@@@MS is needed to show the floating label, if the the field is empyty.
 				//console.log( "select-field(" + this.name + ").attached" );
 				this.isDomReady = true;
 				if ( this.compact ) {
