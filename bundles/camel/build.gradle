@@ -52,5 +52,7 @@ dependencies {
  	compile files("${repository}/jcabi-1.0.jar")
  	compile files("${repository}/imgscalr-lib-4.2.bar")
  	compile files("${repository}/zookeeper-3.4.9.jar")
+ 	compile files("${repository}/pdfbox/pdfbox-2.0.3.jar")
+ 	compile files("${repository}/pdfbox/fontbox-2.0.3.jar")
   compile files('build/classes/main')
 }
