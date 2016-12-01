@@ -32,7 +32,7 @@ dependencies {
 	compile files("${repository}/jta-1.1.jar")
   compile files("${repository}/org.osgi.compendium-4.3.1.jar")
   compile files("${repository}/org.osgi.core-4.3.1.jar")
-	compile files("${repository}/pax-logging-api-1.7.1.jar")
+	compile files("${repository}/pax-logging-api-1.9.1.jar")
   compile files("${repository}/pax-web-jetty-bundle-4.1.1.jar")
 	compile files("${repository}/spring/spring-beans-3.2.5.RELEASE.jar")
 	compile files("${repository}/spring/spring-tx-3.2.5.RELEASE.jar")

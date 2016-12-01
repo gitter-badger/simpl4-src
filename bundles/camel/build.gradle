@@ -39,7 +39,7 @@ dependencies {
   compile files("${repository}/org.osgi.compendium-4.3.1.jar")
   compile files("${repository}/org.osgi.core-4.3.1.jar")
 	compile files("${repository}/ostermillerutils_1_07_00.jar")
-  compile files("${repository}/pax-logging-api-1.7.1.jar")
+  compile files("${repository}/pax-logging-api-1.9.1.jar")
   compile files("${repository}/pax-web-jetty-bundle-4.1.1.jar")
   compile files("${repository}/slf4j-api-1.6.1.jar")
 	compile files("${repository}/spring/spring-tx-3.2.5.RELEASE.jar")
@@ -54,5 +54,6 @@ dependencies {
  	compile files("${repository}/zookeeper-3.4.9.jar")
  	compile files("${repository}/pdfbox/pdfbox-2.0.3.jar")
  	compile files("${repository}/pdfbox/fontbox-2.0.3.jar")
+ 	compile files("${repository}/dom4j-1.6.1.bar")
   compile files('build/classes/main')
 }
