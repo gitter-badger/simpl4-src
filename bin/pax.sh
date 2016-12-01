@@ -222,6 +222,12 @@ do
 	cassandrabundles=${cassandrabundles}"scan-bundle:file:$i "
 done
 
+pdfboxbundles=""
+for i in $REPOSITORY/pdfbox/*[bj]ar
+do
+	pdfboxbundles=${pdfboxbundles}"scan-bundle:file:$i "
+done
+
 $SRCTOPDIR/bin/pax-run.sh \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.configadmin-1.8.0.jar \
 	scan-bundle:file:$REPOSITORY/org.osgi.compendium-5.0.0.jar \
@@ -255,6 +261,7 @@ ${springbundles} \
 ${vfsbundles} \
 ${activemqbundles} \
 ${cassandrabundles} \
+${pdfboxbundles} \
 	scan-bundle:file:$REPOSITORY/pax-web-jetty-bundle-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-spi-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-jsp-4.1.1.bar@3 \
