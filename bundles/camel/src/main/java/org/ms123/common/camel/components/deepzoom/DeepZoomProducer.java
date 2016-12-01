@@ -59,6 +59,7 @@ public class DeepZoomProducer extends DefaultAsyncProducer {
 			dz.processImageFile(new File(input), new File(outdir));
 		} catch (Exception e) {
 			error(this, "process.error:%[exception]s", e);
+			throw new RuntimeException("DeepZoomProducer",e);
 		}
 		return true;
 	}
