@@ -360,8 +360,8 @@ ${pdfboxbundles} \
   scan-bundle:file:$REPOSITORY/pax-swissbox-extender-1.8.0.jar \
   scan-bundle:file:$REPOSITORY/pax-swissbox-lifecycle-1.8.0.jar \
   scan-bundle:file:$REPOSITORY/pax-swissbox-core-1.8.0.jar \
-  scan-bundle:file:$REPOSITORY/pax-logging-logback-1.7.1.jar@2 \
-  scan-bundle:file:$REPOSITORY/pax-logging-api-1.7.1.jar@2 \
+  scan-bundle:file:$REPOSITORY/pax-logging-logback-1.9.1.jar@2 \
+  scan-bundle:file:$REPOSITORY/pax-logging-api-1.9.1.jar@2 \
   scan-bundle:file:$REPOSITORY/commons.compiler-2.6.1.jar \
   scan-bundle:file:$REPOSITORY/phonet4j-1.0.2.bar \
 	scan-bundle:file:$REPOSITORY/poi-3.8beta4-all.bar \
