@@ -67,7 +67,7 @@ public class DeepZoomEndpoint extends DefaultEndpoint {
 		return this.inputpath;
 	}
 
-	public void setInputpath(String filepattern) {
+	public void setInputpath(String inputpath) {
 		this.inputpath = inputpath;
 	}
 

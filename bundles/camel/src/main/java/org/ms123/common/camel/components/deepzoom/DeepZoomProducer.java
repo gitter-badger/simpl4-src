@@ -51,7 +51,7 @@ public class DeepZoomProducer extends DefaultAsyncProducer {
 		info(this, "Input:" + input);
 		info(this, "Outdir:" + outdir);
 		input = ExchangeUtils.getParameter(input, exchange, String.class, "inputpath");
-		outdir = ExchangeUtils.getParameter(input, exchange, String.class, "outputdir");
+		outdir = ExchangeUtils.getParameter(outdir, exchange, String.class, "outputdir");
 		info(this, "Input2:" + input);
 		info(this, "Outdir2:" + outdir);
 		DeepZoom dz = new DeepZoom();
