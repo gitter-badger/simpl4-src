@@ -38,7 +38,10 @@ public class HotspotEndpoint extends DefaultEndpoint {
 	private String inputpath;
 
 	@UriParam
-	private String outputdir;
+	private String outputfile;
+
+	@UriParam
+	private String regex;
 
 	public HotspotEndpoint(String uri, HotspotComponent component, String remaining) {
 		super(uri, component);
@@ -67,16 +70,24 @@ public class HotspotEndpoint extends DefaultEndpoint {
 		return this.inputpath;
 	}
 
-	public void setInputpath(String inputpath) {
-		this.inputpath = inputpath;
+	public void setInputpath(String i) {
+		this.inputpath = i;
 	}
 
-	public String getOutputdir() {
-		return this.outputdir;
+	public String getOutputfile() {
+		return this.outputfile;
 	}
 
-	public void setOutputdir(String outputdir) {
-		this.outputdir = outputdir;
+	public void setOutputfile(String o) {
+		this.outputfile = o;
+	}
+
+	public String getRegex() {
+		return this.regex;
+	}
+
+	public void setRegex(String r) {
+		this.regex = r;
 	}
 }
 

@@ -54,55 +54,49 @@ public class PDFExtractor extends PDFTextStripper {
 	private static final float MAXHEIGHTFORLINE_RESET_VALUE = -1;
 	private static final float MINYTOPFORLINE_RESET_VALUE = Float.MAX_VALUE;
 	private static final float LASTWORDSPACING_RESET_VALUE = -1;
-	//	private TextNormalize normalize = null;
 	protected List stringObjects;
 	protected Pattern pattern;
+	protected boolean prevMethod = false;
 
 	/**
 	 * Default constructor.
 	 *
 	 * @throws IOException If there is an error constructing this class.
 	 */
-	public PDFExtractor(String encoding) throws IOException {
-		//super(encoding);
+	public PDFExtractor() throws IOException {
 		super();
-		//		normalize = new TextNormalize(this.outputEncoding);
-		//		this.setForceParsing( false );
 		this.setSortByPosition(true);
 		this.setShouldSeparateByBeads(false);
 		this.stringObjects = new ArrayList();
 	}
 
-	public PDFExtractor() throws IOException {
-		this("UTF-8");
-	}
-
 	public static void main(String[] args) throws Exception {
-		//Map ret = PDFExtractor.getStringObjects( "SD_2500234.pdf", "(^Bl\\..*)|(^[0-9][0-9a-zA-Z]{0,2}$)", 1 );
-		Map ret = PDFExtractor.getStringObjects("P3.pdf", "[0-9]{1,4}", 1);
+		List ret = PDFExtractor.getStringObjects("P3.pdf", "[0-9]{1,4}", 1);
 		System.out.println("ret:" + ret);
 
 	}
 
-	public static Map getStringObjects(String file, String regex, int startpage) throws Exception {
-		Map ret = new HashMap();
+	public static List<StringObject> getStringObjects(String file, String regex, int startpage) throws Exception {
+		return getStringObjects(file, regex, startpage, false);
+	}
+
+	public static List<StringObject> getStringObjects(String file, String regex, int startpage, boolean prev) throws Exception {
 		PDDocument document = null;
+		PDFExtractor ms = new PDFExtractor();
 		try {
-			PDFExtractor ms = new PDFExtractor();
+			ms.prevMethod = prev;
 			ms.setStartPage(startpage);
 			ms.setEndPage(startpage);
 			document = PDDocument.load(new java.io.File(file));
-			//document = PDDocument.load(file, true);
 			StringWriter sw = new StringWriter();
 			ms.pattern = Pattern.compile(regex);
 			ms.writeText(document, sw);
-			ret.put("list", ms.stringObjects);
 		} finally {
 			if (document != null) {
 				document.close();
 			}
 		}
-		return ret;
+		return ms.stringObjects;
 	}
 
 	/**
@@ -204,10 +198,6 @@ public class PDFExtractor extends PDFTextStripper {
 				TextPosition position = (TextPosition) textIter.next();
 				PositionWrapper current = new PositionWrapper(position);
 				String characterValue = position.getUnicode();
-				/*        float xx = position.getXDirAdj();
-									float yy = position.getYDirAdj();
-									float hh = position.getHeightDir();
-									System.out.println("position:"+position+ " ---> "+hh+",\t"+xx+",\t"+yy);*/
 
 				// Resets the average character width when we see a change in font
 				// or a change in the font size
@@ -356,7 +346,6 @@ public class PDFExtractor extends PDFTextStripper {
 			// print the final line
 
 			if (line.size() > 0) {
-				//System.out.println("line:" + line);
 				writeLine(normalize(line, isRtlDominant, hasRtl), isRtlDominant);
 				writeParagraphEnd();
 			}
@@ -374,35 +363,62 @@ public class PDFExtractor extends PDFTextStripper {
 	 * @return a list of strings, one string for every word
 	 */
 	private List<String> normalize(List<TextPosition> line, boolean isRtlDominant, boolean hasRtl) {
+		if (prevMethod) {
+			return _normalize(line, isRtlDominant, hasRtl);
+		}
 		LinkedList<String> normalized = new LinkedList<String>();
 		StringBuilder lineBuilder = new StringBuilder();
 		TextPosition last = line.get(0);
 
 		for (TextPosition text : line) {
 			last = text;
-			if (false/*@@@text instanceof WordSeparator*/) {
-				String lineStr = lineBuilder.toString();
-
-				if (hasRtl) {
-					//lineStr = normalize.makeLineLogicalOrder(lineStr, isRtlDominant);
-				}
-				//lineStr = normalize.normalizePres(lineStr);
-				normalized.add(lineStr);
-				lineBuilder = new StringBuilder();
-			} else {
-				lineBuilder.append(text.getUnicode());
-			}
+			lineBuilder.append(text.getUnicode());
 		}
 		if (lineBuilder.length() > 0) {
 			String lineStr = lineBuilder.toString();
-
-			if (hasRtl) {
-				//lineStr = normalize.makeLineLogicalOrder(lineStr, isRtlDominant);
-			}
-			//lineStr = normalize.normalizePres(lineStr);
 			normalized.add(lineStr);
 		}
-		System.out.println("normalized:" + normalized + "/" + line.size());
+
+		System.err.println("normalized:" + normalized + "/" + line.size());
+		Matcher matcher = pattern.matcher(normalized.get(0));
+		while (matcher.find()) {
+			System.err.printf("%s an Position [%d,%d]%n", matcher.group(), matcher.start(), matcher.end());
+			int start = matcher.start();
+			int end = matcher.end();
+			String text = matcher.group();
+			float x1 = line.get(start).getX();
+			float y1 = line.get(start).getY();
+			float x2 = line.get(end - 1).getX();
+			float y2 = line.get(end - 1).getY();
+			float h = line.get(end - 1).getHeight();
+			float w = line.get(end - 1).getWidth();
+			float h1 = line.get(start).getHeight();
+			float w1 = line.get(start).getWidth();
+			float ht = 0;
+			for (int i = start; i < end; i++) {
+				ht = Math.max(ht, line.get(i).getHeight());
+			}
+
+			StringObject so = new StringObject(text, x1, y1 - ht, w + (x2 - x1), ht, line.get(start).isRotated());
+			stringObjects.add(so);
+		}
+		return normalized;
+	}
+
+	private List<String> _normalize(List<TextPosition> line, boolean isRtlDominant, boolean hasRtl) {
+		LinkedList<String> normalized = new LinkedList<String>();
+		StringBuilder lineBuilder = new StringBuilder();
+		TextPosition last = line.get(0);
+
+		for (TextPosition text : line) {
+			last = text;
+			lineBuilder.append(text.getUnicode());
+		}
+		if (lineBuilder.length() > 0) {
+			String lineStr = lineBuilder.toString();
+			normalized.add(lineStr);
+		}
+		System.err.println("normalized:" + normalized + "/" + line.size());
 		if (pattern.matcher(normalized.get(0)).matches()) {
 			float x1 = line.get(0).getX();
 			float y1 = line.get(0).getY();
@@ -417,7 +433,6 @@ public class PDFExtractor extends PDFTextStripper {
 				ht = Math.max(ht, line.get(i).getHeight());
 			}
 			StringObject so = new StringObject(normalized.get(0), x1, y1 - ht, w + (x2 - x1), ht, last.isRotated());
-			System.out.println("so:" + so + ",x1:" + x1 + ",x2:" + x2 + ",y1:" + y1 + ",y2:" + y2 + ",h:" + h + ",w:" + w + ",h1:" + h1 + ",w1:" + w1 + ",ht:" + ht);
 			stringObjects.add(so);
 		} else if (normalized.get(0).indexOf(" ") != -1) {
 			tryWithDelimeter(line, " ");
