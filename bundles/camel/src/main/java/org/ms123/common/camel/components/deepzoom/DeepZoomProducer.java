@@ -18,19 +18,26 @@
  */
 package org.ms123.common.camel.components.deepzoom;
 
-import org.apache.camel.AsyncCallback;
-import org.apache.camel.Exchange;
-import org.apache.camel.InvalidPayloadRuntimeException;
-import org.apache.camel.impl.DefaultAsyncProducer;
-import org.apache.camel.util.ExchangeHelper;
-import org.apache.camel.util.MessageHelper;
-import org.apache.camel.Message;
-import org.ms123.common.camel.api.ExchangeUtils;
-import static com.jcabi.log.Logger.info;
-import static com.jcabi.log.Logger.error;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.File;
+import org.apache.camel.AsyncCallback;
+import org.apache.camel.Exchange;
+import org.apache.camel.impl.DefaultAsyncProducer;
+import org.apache.camel.util.ExchangeHelper;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.tools.imageio.ImageIOUtil;
+import org.ms123.common.camel.api.ExchangeUtils;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
+import static org.apache.commons.io.FilenameUtils.getFullPath;
+
+
 
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class DeepZoomProducer extends DefaultAsyncProducer {
@@ -46,22 +53,63 @@ public class DeepZoomProducer extends DefaultAsyncProducer {
 
 	@Override
 	public boolean process(Exchange exchange, AsyncCallback callback) {
-		String input = getEndpoint().getInputpath();
-		String outdir = getEndpoint().getOutputdir();
-		info(this, "Input:" + input);
+		String pdfFile = getEndpoint().getPdfFile();
+		String outdir = getEndpoint().getOutputDirectory();
+		String vfsRoot = getEndpoint().getVfsRoot();
+		String regex = getEndpoint().getHotspotRegex();
+		double factor = getEndpoint().getFactor();
+		info(this, "PdfFile:" + pdfFile);
 		info(this, "Outdir:" + outdir);
-		input = ExchangeUtils.getParameter(input, exchange, String.class, "inputpath");
-		outdir = ExchangeUtils.getParameter(outdir, exchange, String.class, "outputdir");
-		info(this, "Input2:" + input);
+		info(this, "VfsRoot:" + vfsRoot);
+		info(this, "Regex:" + regex);
+		pdfFile = ExchangeUtils.getParameter(pdfFile, exchange, String.class, "pdffile");
+		outdir = ExchangeUtils.getParameter(outdir, exchange, String.class, "outputdirectory");
+		vfsRoot = ExchangeUtils.getParameter(vfsRoot, exchange, String.class, "vfsroot");
+		info(this, "pdfFile2:" + pdfFile);
 		info(this, "Outdir2:" + outdir);
-		DeepZoom dz = new DeepZoom();
+		info(this, "VfsRoot2:" + vfsRoot);
+
+		outdir = Paths.get( vfsRoot, outdir).toString();
+		File out = new File( outdir);
+		if( !out.exists()){
+			out.mkdirs();
+		}
+		info(this, "Outdir3:" + outdir);
+		pdfFile = Paths.get( vfsRoot, pdfFile).toString();
+		String pngFile = Paths.get( getFullPath(pdfFile), getBaseName(pdfFile)+ ".png").toString();
+
 		try {
-			dz.processImageFile(new File(input), new File(outdir));
+			createImage( pdfFile, pngFile, 450 );
 		} catch (Exception e) {
 			error(this, "process.error:%[exception]s", e);
-			throw new RuntimeException("DeepZoomProducer",e);
+			throw new RuntimeException("DeepZoomProducer.createPng",e);
+		}
+
+		DeepZoom dz = new DeepZoom();
+		try {
+			dz.processImageFile(new File(pngFile), new File(outdir));
+		} catch (Exception e) {
+			error(this, "process.error:%[exception]s", e);
+			throw new RuntimeException("DeepZoomProducer.createImages",e);
+		}
+
+		HotspotCreator hc = new HotspotCreator();
+		try {
+			hc.process(pdfFile, outdir, regex, factor);
+		} catch (Exception e) {
+			error(this, "process.error:%[exception]s", e);
+			throw new RuntimeException("DeepZoomProducer.createHotspots",e);
 		}
 		return true;
+	}
+
+	private void createImage(String pdfFile, String pngFile, int dpi) throws Exception{
+		info(this, "createImage:"+pdfFile + " -> " + pngFile);
+		PDDocument document = PDDocument.load(new File(pdfFile));
+		PDFRenderer renderer = new PDFRenderer(document);
+		BufferedImage image = renderer.renderImageWithDPI(0, dpi, ImageType.GRAY);
+		document.close();
+		ImageIOUtil.writeImage(image, pngFile, dpi);
 	}
 
 }

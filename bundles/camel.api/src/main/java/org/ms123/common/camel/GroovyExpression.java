@@ -24,6 +24,7 @@ import groovy.lang.Script;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.nio.file.Paths;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.language.groovy.GroovyShellFactory;
@@ -164,6 +165,12 @@ public class GroovyExpression {
 			map.put("out", msg);
 			map.put("response", msg);
 		}
+		String namespace = exchange.getContext().getRegistry().lookupByNameAndType("namespace", String.class);
+		String gitRepos = System.getProperty("git.repos");
+		map.put("namespace", namespace);
+		map.put("gitRepos", gitRepos);
+		map.put("home", Paths.get(gitRepos,namespace).toString());
+		map.put("homeData", Paths.get(gitRepos,namespace+"_data").toString());
 		map.put("camelContext", exchange.getContext());
 	}
 

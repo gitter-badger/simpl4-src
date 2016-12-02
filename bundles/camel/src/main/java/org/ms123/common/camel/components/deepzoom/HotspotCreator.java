@@ -16,16 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.camel.components.hotspot;
+package org.ms123.common.camel.components.deepzoom;
 
-import org.apache.camel.AsyncCallback;
-import org.apache.camel.Exchange;
-import org.apache.camel.InvalidPayloadRuntimeException;
-import org.apache.camel.impl.DefaultAsyncProducer;
-import org.apache.camel.util.ExchangeHelper;
-import org.apache.camel.util.MessageHelper;
-import org.apache.camel.Message;
-import org.ms123.common.camel.api.ExchangeUtils;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
 import java.util.HashMap;
@@ -33,6 +25,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Iterator;
 import java.io.File;
+import java.nio.file.Paths;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
 import org.dom4j.DocumentHelper;
@@ -42,37 +35,23 @@ import org.dom4j.io.XMLWriter;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
-public class HotspotProducer extends DefaultAsyncProducer {
+public class HotspotCreator{
 
-	public HotspotProducer(HotspotEndpoint endpoint) {
-		super(endpoint);
+	public HotspotCreator() {
 	}
 
-	@Override
-	public HotspotEndpoint getEndpoint() {
-		return (HotspotEndpoint) super.getEndpoint();
-	}
-
-	@Override
-	public boolean process(Exchange exchange, AsyncCallback callback) {
-		String input = getEndpoint().getInputpath();
-		String outfile = getEndpoint().getOutputfile();
-		String regex = getEndpoint().getRegex();
-		info(this, "Input:" + input);
-		info(this, "Outdir:" + outfile);
+	public boolean process(String pdfFile, String outdir, String regex, double factor) {
+		info(this, "pdfFile:" + pdfFile);
+		info(this, "Outdir:" + outdir);
 		info(this, "Regex:" + regex);
-		input = ExchangeUtils.getParameter(input, exchange, String.class, "inputpath");
-		outfile = ExchangeUtils.getParameter(outfile, exchange, String.class, "outputfile");
-		regex = ExchangeUtils.getParameter(regex, exchange, String.class, "regex");
-		info(this, "Input2:" + input);
-		info(this, "Outfile2:" + outfile);
-		info(this, "Regex2:" + regex);
+		info(this, "Factor:" + factor);
 		try {
-			List<PDFExtractor.StringObject> soList = PDFExtractor.getStringObjects(input, regex, 1);
-			generateMap(soList, outfile, getBaseName(input), 0.5);
+			List<PDFExtractor.StringObject> soList = PDFExtractor.getStringObjects(pdfFile, regex, 1);
+			String baseName = getBaseName(pdfFile);
+			generateMap(soList, Paths.get(outdir, baseName+".xml").toString(), baseName, factor);
 		} catch (Exception e) {
 			error(this, "process.error:%[exception]s", e);
-			throw new RuntimeException("HotspotProducer",e);
+			throw new RuntimeException("HotspotCreator",e);
 		}
 		return true;
 	}

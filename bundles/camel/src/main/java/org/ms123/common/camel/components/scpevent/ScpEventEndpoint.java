@@ -45,7 +45,10 @@ public class ScpEventEndpoint extends DefaultEndpoint {
 	private String filepattern;
 
 	@UriParam
-	private String pathDestination;
+	private String fileDestination;
+
+	@UriParam
+	private String vfsrootDestination;
 
 	public ScpEventEndpoint(String uri, ScpEventComponent component, String remaining) {
 		super(uri, component);
@@ -86,20 +89,28 @@ public class ScpEventEndpoint extends DefaultEndpoint {
 	public boolean isSingleton() {
 		return true;
 	}
-	public String getPathDestination() {
-		return this.pathDestination;
+	public String getFileDestination() {
+		return this.fileDestination;
 	}
 
-	public void setPathDestination(String pathDestination) {
-		this.pathDestination = pathDestination;
+	public void setFileDestination(String fileDestination) {
+		this.fileDestination = fileDestination;
+	}
+
+	public String getVfsRootDestination() {
+		return this.vfsrootDestination;
+	}
+
+	public void setVfsRootDestination(String v) {
+		this.vfsrootDestination = v;
 	}
 
 
-	public String getFilepattern() {
+	public String getFilePattern() {
 		return this.filepattern;
 	}
 
-	public void setFilepattern(String filepattern) {
+	public void setFilePattern(String filepattern) {
 		this.filepattern = filepattern;
 	}
 }

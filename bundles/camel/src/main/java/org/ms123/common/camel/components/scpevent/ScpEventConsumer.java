@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class ScpEventConsumer extends DefaultConsumer implements SshFileEventListener {
@@ -53,14 +54,21 @@ public class ScpEventConsumer extends DefaultConsumer implements SshFileEventLis
 		sshService.addFileEventListener( this);
 	}
 
-  public void fileCreated(String username, Path path, Path home, Map<String,Object> params) {
-		String pattern = this.endpoint.getFilepattern();
-		path = Paths.get( home.toString() ,path.toString());
-		String pathDest = this.endpoint.getPathDestination();
-		info(this,"fileCreated("+username+",home:"+home+",pattern:"+pattern+",dest:"+pathDest+"):"+path);
+  public void fileCreated(String username, Path filePath, Path vfsRoot, Map<String,Object> params) {
+		String pattern = this.endpoint.getFilePattern();
+		String fileDest = this.endpoint.getFileDestination();
+		if( isEmpty(fileDest)){
+			fileDest = "p.fileName";
+		}
+		String vfsRootDest = this.endpoint.getVfsRootDestination();
+		if( isEmpty(vfsRootDest)){
+			vfsRootDest = "p.vfsRoot";
+		}
+		info(this,"fileCreated("+username+",vfsRoot:"+vfsRoot+",pattern:"+pattern+",fileDest:"+fileDest+"):"+filePath);
 		final boolean reply = false;
 		final Exchange exchange = endpoint.createExchange(reply ? ExchangePattern.InOut : ExchangePattern.InOnly);
-		ExchangeUtils.setDestination(pathDest, path.toString(), exchange);
+		ExchangeUtils.setDestination(fileDest, filePath.toString(), exchange);
+		ExchangeUtils.setDestination(vfsRootDest, vfsRoot.toString(), exchange);
 		try {
 			getAsyncProcessor().process(exchange, new AsyncCallback() {
 
@@ -69,7 +77,7 @@ public class ScpEventConsumer extends DefaultConsumer implements SshFileEventLis
 				}
 			});
 		} catch (Exception e) {
-			getExceptionHandler().handleException("Error processing SSH event: " + path, exchange, e);
+			getExceptionHandler().handleException("Error processing SSH event: " + filePath, exchange, e);
 		}
 	}
 

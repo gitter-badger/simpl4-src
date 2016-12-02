@@ -54,6 +54,7 @@ dependencies {
  	compile files("${repository}/zookeeper-3.4.9.jar")
  	compile files("${repository}/pdfbox/pdfbox-2.0.3.jar")
  	compile files("${repository}/pdfbox/fontbox-2.0.3.jar")
+ 	compile files("${repository}/pdfbox/pdfbox-tools-2.0.3.bar")
  	compile files("${repository}/dom4j-1.6.1.bar")
   compile files('build/classes/main')
 }

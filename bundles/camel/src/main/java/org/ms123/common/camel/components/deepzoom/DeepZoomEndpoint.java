@@ -35,10 +35,19 @@ import static com.jcabi.log.Logger.error;
 public class DeepZoomEndpoint extends DefaultEndpoint {
 
 	@UriParam
-	private String inputpath;
+	private String pdfile;
 
 	@UriParam
 	private String outputdir;
+
+	@UriParam
+	private String vfsroot;
+
+	@UriParam
+	private String hotspotregex;
+
+	@UriParam
+	private double factor;
 
 	public DeepZoomEndpoint(String uri, DeepZoomComponent component, String remaining) {
 		super(uri, component);
@@ -63,20 +72,45 @@ public class DeepZoomEndpoint extends DefaultEndpoint {
 		return true;
 	}
 
-	public String getInputpath() {
-		return this.inputpath;
+	public String getPdfFile() {
+		return this.pdfile;
 	}
 
-	public void setInputpath(String inputpath) {
-		this.inputpath = inputpath;
+	public void setPdfFile(String p) {
+		this.pdfile = p;
 	}
 
-	public String getOutputdir() {
+	public String getOutputDirectory() {
 		return this.outputdir;
 	}
 
-	public void setOutputdir(String outputdir) {
+	public void setOutputDirectory(String outputdir) {
 		this.outputdir = outputdir;
+	}
+
+	public String getHotspotRegex() {
+		return this.hotspotregex;
+	}
+	public void setHotspotRegex(String h) {
+		this.hotspotregex = h;
+	}
+
+	public String getVfsRoot() {
+		return this.vfsroot;
+	}
+	public void setVfsRoot(String v) {
+		this.vfsroot = v;
+	}
+
+	public double getFactor() {
+		return this.factor;
+	}
+	public void setFactor(String d) {
+		try{
+		this.factor = Double.parseDouble(d);
+		}catch(Exception e){
+			this.factor = 1.0;
+		}
 	}
 }
 

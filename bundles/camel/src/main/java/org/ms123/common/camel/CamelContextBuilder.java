@@ -49,7 +49,6 @@ import org.ms123.common.camel.components.direct.*;
 import org.ms123.common.camel.components.hazelcast.*;
 import org.ms123.common.camel.components.zookeeper.*;
 import org.ms123.common.camel.components.deepzoom.*;
-import org.ms123.common.camel.components.hotspot.*;
 import org.ms123.common.camel.components.scpevent.*;
 import org.ms123.common.camel.trace.*;
 import org.ms123.common.camel.api.CamelService;
@@ -117,7 +116,6 @@ public class CamelContextBuilder {
 		sr.put("hazelcast", new HazelcastComponent());
 		sr.put("zookeeper", new ZooKeeperComponent());
 		sr.put("deepzoom", new DeepZoomComponent());
-		sr.put("hotspot", new HotspotComponent());
 		sr.put("scpevent", new ScpEventComponent());
 		sr.put("jndiContext", jndiContext);
 		TransactionService ts = (TransactionService) or.lookupByName(TransactionService.class.getName());

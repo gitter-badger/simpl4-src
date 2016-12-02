@@ -44,7 +44,7 @@ public class DeepZoom {
 	static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 	static final String schemaName = "http://schemas.microsoft.com/deepzoom/2008";
 
-	private Boolean deleteExisting = false;
+	private Boolean deleteExisting = true;
 	private String tileFormat = "png";
 
 	private int tileSize = 256;
