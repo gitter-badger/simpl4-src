@@ -37,8 +37,6 @@ import static com.jcabi.log.Logger.info;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.apache.commons.io.FilenameUtils.getFullPath;
 
-
-
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class DeepZoomProducer extends DefaultAsyncProducer {
 
@@ -58,31 +56,25 @@ public class DeepZoomProducer extends DefaultAsyncProducer {
 		String vfsRoot = getEndpoint().getVfsRoot();
 		String regex = getEndpoint().getHotspotRegex();
 		double factor = getEndpoint().getFactor();
-		info(this, "PdfFile:" + pdfFile);
-		info(this, "Outdir:" + outdir);
-		info(this, "VfsRoot:" + vfsRoot);
-		info(this, "Regex:" + regex);
 		pdfFile = ExchangeUtils.getParameter(pdfFile, exchange, String.class, "pdffile");
 		outdir = ExchangeUtils.getParameter(outdir, exchange, String.class, "outputdirectory");
 		vfsRoot = ExchangeUtils.getParameter(vfsRoot, exchange, String.class, "vfsroot");
-		info(this, "pdfFile2:" + pdfFile);
-		info(this, "Outdir2:" + outdir);
-		info(this, "VfsRoot2:" + vfsRoot);
+		info(this, "VfsRoot:" + vfsRoot);
 
-		outdir = Paths.get( vfsRoot, outdir).toString();
-		File out = new File( outdir);
-		if( !out.exists()){
+		outdir = Paths.get(vfsRoot, outdir).toString();
+		info(this, "Outdir:" + outdir);
+		File out = new File(outdir);
+		if (!out.exists()) {
 			out.mkdirs();
 		}
-		info(this, "Outdir3:" + outdir);
-		pdfFile = Paths.get( vfsRoot, pdfFile).toString();
-		String pngFile = Paths.get( getFullPath(pdfFile), getBaseName(pdfFile)+ ".png").toString();
+		pdfFile = Paths.get(vfsRoot, pdfFile).toString();
+		String pngFile = Paths.get(getFullPath(pdfFile), getBaseName(pdfFile) + ".png").toString();
 
 		try {
-			createImage( pdfFile, pngFile, 450 );
+			createImage(pdfFile, pngFile, 450);
 		} catch (Exception e) {
 			error(this, "process.error:%[exception]s", e);
-			throw new RuntimeException("DeepZoomProducer.createPng",e);
+			throw new RuntimeException("DeepZoomProducer.createPng", e);
 		}
 
 		DeepZoom dz = new DeepZoom();
@@ -90,7 +82,7 @@ public class DeepZoomProducer extends DefaultAsyncProducer {
 			dz.processImageFile(new File(pngFile), new File(outdir));
 		} catch (Exception e) {
 			error(this, "process.error:%[exception]s", e);
-			throw new RuntimeException("DeepZoomProducer.createImages",e);
+			throw new RuntimeException("DeepZoomProducer.createImages", e);
 		}
 
 		HotspotCreator hc = new HotspotCreator();
@@ -98,13 +90,14 @@ public class DeepZoomProducer extends DefaultAsyncProducer {
 			hc.process(pdfFile, outdir, regex, factor);
 		} catch (Exception e) {
 			error(this, "process.error:%[exception]s", e);
-			throw new RuntimeException("DeepZoomProducer.createHotspots",e);
+			throw new RuntimeException("DeepZoomProducer.createHotspots", e);
 		}
+		info(this, "Ready:" + pdfFile);
 		return true;
 	}
 
-	private void createImage(String pdfFile, String pngFile, int dpi) throws Exception{
-		info(this, "createImage:"+pdfFile + " -> " + pngFile);
+	private void createImage(String pdfFile, String pngFile, int dpi) throws Exception {
+		info(this, "createImage:" + pdfFile + " -> " + pngFile);
 		PDDocument document = PDDocument.load(new File(pdfFile));
 		PDFRenderer renderer = new PDFRenderer(document);
 		BufferedImage image = renderer.renderImageWithDPI(0, dpi, ImageType.GRAY);

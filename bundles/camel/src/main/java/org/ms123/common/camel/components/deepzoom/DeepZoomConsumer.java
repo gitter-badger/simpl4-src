@@ -39,7 +39,7 @@ import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class DeepZoomConsumer extends DefaultConsumer implements EventHandler {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DeepZoomConsumer.class);
@@ -76,3 +76,4 @@ public class DeepZoomConsumer extends DefaultConsumer implements EventHandler {
 	}
 
 }
+

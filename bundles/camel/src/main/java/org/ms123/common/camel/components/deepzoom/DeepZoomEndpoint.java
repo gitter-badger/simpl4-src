@@ -91,6 +91,7 @@ public class DeepZoomEndpoint extends DefaultEndpoint {
 	public String getHotspotRegex() {
 		return this.hotspotregex;
 	}
+
 	public void setHotspotRegex(String h) {
 		this.hotspotregex = h;
 	}
@@ -98,6 +99,7 @@ public class DeepZoomEndpoint extends DefaultEndpoint {
 	public String getVfsRoot() {
 		return this.vfsroot;
 	}
+
 	public void setVfsRoot(String v) {
 		this.vfsroot = v;
 	}
@@ -105,10 +107,11 @@ public class DeepZoomEndpoint extends DefaultEndpoint {
 	public double getFactor() {
 		return this.factor;
 	}
+
 	public void setFactor(String d) {
-		try{
-		this.factor = Double.parseDouble(d);
-		}catch(Exception e){
+		try {
+			this.factor = Double.parseDouble(d);
+		} catch (Exception e) {
 			this.factor = 1.0;
 		}
 	}

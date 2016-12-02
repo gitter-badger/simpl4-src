@@ -18,24 +18,24 @@
  */
 package org.ms123.common.camel.components.deepzoom;
 
-import static com.jcabi.log.Logger.info;
-import static com.jcabi.log.Logger.error;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Iterator;
 import java.io.File;
-import java.nio.file.Paths;
-import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
-public class HotspotCreator{
+public class HotspotCreator {
 
 	public HotspotCreator() {
 	}
@@ -48,10 +48,10 @@ public class HotspotCreator{
 		try {
 			List<PDFExtractor.StringObject> soList = PDFExtractor.getStringObjects(pdfFile, regex, 1);
 			String baseName = getBaseName(pdfFile);
-			generateMap(soList, Paths.get(outdir, baseName+".xml").toString(), baseName, factor);
+			generateMap(soList, Paths.get(outdir, baseName + ".xml").toString(), baseName, factor);
 		} catch (Exception e) {
 			error(this, "process.error:%[exception]s", e);
-			throw new RuntimeException("HotspotCreator",e);
+			throw new RuntimeException("HotspotCreator", e);
 		}
 		return true;
 	}
