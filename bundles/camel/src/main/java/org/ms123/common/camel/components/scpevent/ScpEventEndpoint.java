@@ -34,7 +34,7 @@ import static com.jcabi.log.Logger.error;
 
 /**
  */
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 @UriEndpoint(scheme = "scpevent", title = "ScpEvent", syntax = "scpevent:pattern", consumerClass = ScpEventConsumer.class)
 public class ScpEventEndpoint extends DefaultEndpoint {
 
@@ -52,11 +52,11 @@ public class ScpEventEndpoint extends DefaultEndpoint {
 
 	public ScpEventEndpoint(String uri, ScpEventComponent component, String remaining) {
 		super(uri, component);
-//		this.filepattern = filepattern;
+		//		this.filepattern = filepattern;
 		this.bundleContext = BundleContextUtils.getBundleContext(ScpEventEndpoint.class);
-		info(this, "bundleContext:"+this.bundleContext);
+		info(this, "bundleContext:" + this.bundleContext);
 		this.sshService = lookupServiceByClass(SshService.class);
-		info(this, "SshService:"+this.sshService);
+		info(this, "SshService:" + this.sshService);
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class ScpEventEndpoint extends DefaultEndpoint {
 	}
 
 	public Consumer createConsumer(Processor processor) throws Exception {
-		ScpEventConsumer consumer = new ScpEventConsumer(this, processor,this.sshService);
+		ScpEventConsumer consumer = new ScpEventConsumer(this, processor, this.sshService);
 		configureConsumer(consumer);
 		return consumer;
 	}
@@ -89,6 +89,7 @@ public class ScpEventEndpoint extends DefaultEndpoint {
 	public boolean isSingleton() {
 		return true;
 	}
+
 	public String getFileDestination() {
 		return this.fileDestination;
 	}
@@ -105,7 +106,6 @@ public class ScpEventEndpoint extends DefaultEndpoint {
 		this.vfsrootDestination = v;
 	}
 
-
 	public String getFilePattern() {
 		return this.filepattern;
 	}
@@ -114,3 +114,4 @@ public class ScpEventEndpoint extends DefaultEndpoint {
 		this.filepattern = filepattern;
 	}
 }
+

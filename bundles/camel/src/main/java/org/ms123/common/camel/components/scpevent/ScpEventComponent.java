@@ -31,7 +31,7 @@ import static com.jcabi.log.Logger.error;
 
 /**
  */
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class ScpEventComponent extends UriEndpointComponent implements EndpointCompleter {
 
 	private String host;
@@ -65,3 +65,4 @@ public class ScpEventComponent extends UriEndpointComponent implements EndpointC
 		super.doStop();
 	}
 }
+

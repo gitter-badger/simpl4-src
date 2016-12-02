@@ -28,7 +28,7 @@ import org.apache.camel.Message;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class ScpEventProducer extends DefaultAsyncProducer {
 
 	public ScpEventProducer(ScpEventEndpoint endpoint) {
@@ -46,3 +46,4 @@ public class ScpEventProducer extends DefaultAsyncProducer {
 	}
 
 }
+
