@@ -95,7 +95,7 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 	private ScpCommandFactory scpCommandFactory;
   private List<SshFileEventListener> fileListeners = new ArrayList<SshFileEventListener>();
 	private BundleContext bundleContext;
-	private Map<String,Path> userHomeMap = new HashMap<String,Path>();
+	private Map<String,Map<String,String>> userHomeMap = new HashMap<String,Map<String,String>>();
 
 	public SshServiceImpl() {
 	}
@@ -193,8 +193,10 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 		server.setPasswordAuthenticator(new PasswordAuthenticator() {
 			@Override
 			public boolean authenticate(String username, String password, ServerSession session) {
-				info(this, "password.authenticate(" + username + "," + password + ")");
-				return true;
+				Map<String,String> umap = userHomeMap.get(username);
+				String pw = umap.get("password");
+				info(this, "password.authenticate(" + username + "," + password + ","+ pw+ ")");
+				return password != null && password.equals(pw);
 			}
 		});
 		server.setPublickeyAuthenticator(new PublickeyAuthenticator() {
@@ -213,7 +215,10 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 			String homedir = user.get("homedir");
 			if( homedir != null){
 				vfs.setUserHomeDir(user.get("userid"), Paths.get(System.getProperty("git.repos"), homedir));
-				userHomeMap.put( user.get("userid"), Paths.get(System.getProperty("git.repos"), homedir));
+				Map<String,String> umap = new HashMap<String,String>();
+				umap.put( "homedir", Paths.get(System.getProperty("git.repos"), homedir).toString());
+				umap.put( "password", user.get("password"));
+				userHomeMap.put( user.get("userid"), umap );
 			}
 		}
 
@@ -231,7 +236,8 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 			public void close(ServerSession session, String remoteHandle, Handle localHandle){
 				info(this, "remoteHandle:"+remoteHandle+"|"+ localHandle.getFile());
 				String username = session.getUsername();
-				Path homedir = userHomeMap.get(username);
+				Map<String,String> umap = userHomeMap.get(username);
+				Path homedir = Paths.get(umap.get("homedir"));
 				Path file = localHandle.getFile();
 				for( SshFileEventListener l : fileListeners){
 					l.fileCreated( username, file, homedir, null);
@@ -255,13 +261,12 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 			public void endFileEvent(Session sess, FileOperation fileOperation, Path path, long length, Set<PosixFilePermission> set, Throwable throwable) {
 				info(this,"endFileEvent("+sess+") ("+ sess.getUsername()+") (" + (fileOperation == FileOperation.SEND ? "SEND" : "RECEIVE") + ") " + path);
 				String username = sess.getUsername();
-				Path homedir = userHomeMap.get(username);
+				Map<String,String> umap = userHomeMap.get(username);
+				Path homedir = Paths.get(umap.get("homedir"));
 				if( homedir == null){
 					homedir = Paths.get("/");
 				}
-info(this,"endFileEvent:listener:"+fileListeners);
 				for( SshFileEventListener l : fileListeners){
-info(this,"\t"+path);
 					l.fileCreated( username, path, homedir, null);
 				}
 			}
