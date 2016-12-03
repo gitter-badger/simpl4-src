@@ -44,6 +44,8 @@ dependencies {
 	compile files("${repository}/h2-1.4.187.jar")
 	compile files("${repository}/zookeeper-3.4.9.jar")
 	compile files("${repository}/sshd-core-1.3.0.jar")
+	compile files("${repository}/ftpserver-core-1.1.0.jar")
+	compile files("${repository}/ftplet-api-1.1.0.jar")
 	compile files("${repository}/karaf4/org.apache.karaf.shell.ssh-4.1.0.jar")
 	compile files("${repository}/karaf4/org.apache.karaf.shell.core-4.1.0.jar")
 }

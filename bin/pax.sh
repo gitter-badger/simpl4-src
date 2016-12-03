@@ -300,6 +300,8 @@ ${pdfboxbundles} \
 	scan-bundle:file:$REPOSITORY/milton-trunk_14-02-12.bar \
   scan-bundle:file:$REPOSITORY/milyn-smooks-all-1.5.jar \
 	scan-bundle:file:$REPOSITORY/mina-core-2.0.16.jar \
+	scan-bundle:file:$REPOSITORY/ftpserver-core-1.1.0.jar \
+	scan-bundle:file:$REPOSITORY/ftplet-api-1.1.0.jar \
   scan-bundle:file:$REPOSITORY/mvel2-2.1.RC1.jar \
 	scan-bundle:file:$REPOSITORY/mysql-connector-java-5.1.34-bin.jar \
 	scan-bundle:file:$REPOSITORY/object-traverser.bar \
