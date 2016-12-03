@@ -68,7 +68,7 @@ public class ScpEventConsumer extends DefaultConsumer implements SshFileEventLis
 			return;
 		}
 		if (isEmpty(fileDest)) {
-			fileDest = "p.filename";
+			fileDest = "p.pathname";
 		}
 		String vfsRootDest = this.endpoint.getVfsRootDestination();
 		if (isEmpty(vfsRootDest)) {

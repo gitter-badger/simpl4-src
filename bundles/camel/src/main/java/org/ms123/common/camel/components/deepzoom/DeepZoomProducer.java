@@ -34,6 +34,7 @@ import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.ms123.common.camel.api.ExchangeUtils;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.apache.commons.io.FilenameUtils.getFullPath;
 
@@ -56,6 +57,8 @@ public class DeepZoomProducer extends DefaultAsyncProducer {
 		String vfsRoot = getEndpoint().getVfsRoot();
 		String regex = getEndpoint().getHotspotRegex();
 		double factor = getEndpoint().getFactor();
+		if( isEmpty(vfsRoot) ) vfsRoot = "p.vfsroot";
+		if( isEmpty(pdfFile) ) pdfFile = "p.pathname";
 		pdfFile = ExchangeUtils.getParameter(pdfFile, exchange, String.class, "pdffile");
 		outdir = ExchangeUtils.getParameter(outdir, exchange, String.class, "outputdirectory");
 		vfsRoot = ExchangeUtils.getParameter(vfsRoot, exchange, String.class, "vfsroot");
