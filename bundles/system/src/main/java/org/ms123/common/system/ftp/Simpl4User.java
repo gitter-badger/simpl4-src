@@ -27,22 +27,22 @@ import java.util.Map;
 
 /**
  */
-public class Simpl4User extends org.apache.ftpserver.usermanager.impl.BaseUser {
+public class Simpl4User extends BaseUser {
 		private Map<String,String> user;
 		public Simpl4User( Map<String,String> u ){
 			this.user = u;
 		}
 
     public String getName(){
-			return user.get("userid");
+			return this.user.get("userid");
 		}
 
     public String getPassword(){
-			return user.get("password");
+			return this.user.get("password");
 		}
 
 
     public String getHomeDirectory(){
-			return user.get("homedir");
+			return this.user.get("homedir");
 		}
 }

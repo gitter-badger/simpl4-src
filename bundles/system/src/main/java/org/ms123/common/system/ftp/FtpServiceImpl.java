@@ -104,9 +104,11 @@ public class FtpServiceImpl implements FtpService, FrameworkListener {
 				Map<String,String> umap = new HashMap<String,String>();
 				umap.put( "homedir", Paths.get(System.getProperty("git.repos"), homedir).toString());
 				umap.put( "password", user.get("password"));
+				umap.put( "userid", user.get("userid"));
 				this.userMap.put( user.get("userid"), umap );
 			}
 		}
+		info(this,"userMap:"+userMap);
 		FtpServerFactory serverFactory = new FtpServerFactory();
 		ListenerFactory listenerFactory = new ListenerFactory();
 		listenerFactory.setPort(port);

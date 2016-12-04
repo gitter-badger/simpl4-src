@@ -54,7 +54,7 @@ public class Simpl4UserManager implements  UserManager {
 
     public User getUserByName(String username) throws FtpException{
 			info(this, "getUserByName:"+username);
-			Map<String,String> um = userMap.get(username);
+			Map<String,String> um = this.userMap.get(username);
 			if( um != null){
 				info(this, "getUserByName:"+username+" found");
 				return new Simpl4User(um);
