@@ -106,10 +106,17 @@ public class FtpServiceImpl implements FtpService, FrameworkListener {
 		for (Map<String, String> user : userList) {
 			String homedir = user.get("ftphomedir");
 			if (homedir != null) {
+				String access = "rw";
+				String a[] = homedir.split(",");
+				if( a.length == 2){
+					homedir = a[0];
+					access = a[1];
+				}
 				Map<String, String> umap = new HashMap<String, String>();
 				umap.put("homedir", Paths.get(System.getProperty("git.repos"), homedir).toString());
 				umap.put("password", user.get("password"));
 				umap.put("userid", user.get("userid"));
+				umap.put("access", access);
 				this.userMap.put(user.get("userid"), umap);
 			}
 		}
