@@ -20,103 +20,115 @@ package org.ms123.common.system.ftp;
 
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
+import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.security.PublicKey;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Arrays;
 
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
+import org.apache.ftpserver.DataConnectionConfigurationFactory;
+import org.apache.ftpserver.ftplet.DefaultFtplet;
+import org.apache.ftpserver.ftplet.FtpException;
+import org.apache.ftpserver.ftplet.Ftplet;
+import org.apache.ftpserver.ftplet.FtpletResult;
+import org.apache.ftpserver.ftplet.FtpRequest;
+import org.apache.ftpserver.ftplet.FtpSession;
+import org.apache.ftpserver.ftplet.UserManager;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
-
-import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
-import org.apache.ftpserver.usermanager.PasswordEncryptor;
-import org.apache.ftpserver.DataConnectionConfigurationFactory;
 import org.apache.ftpserver.listener.ListenerFactory;
-import org.apache.ftpserver.ftplet.UserManager;
 
-import org.osgi.framework.ServiceReference;
 import org.ms123.common.auth.api.AuthService;
-import static org.apache.commons.io.FileUtils.readFileToString;
-import flexjson.JSONDeserializer;
-import flexjson.JSONSerializer;
-
+import org.ms123.common.namespace.NamespaceService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceReference;
 
-import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=ftp" })
 public class FtpServiceImpl implements FtpService, FrameworkListener {
 	int port = 2124;
+	int dataport = 2125;
 	int passvCount = 10;
 	private JSONDeserializer ds = new JSONDeserializer();
 	private JSONSerializer js = new JSONSerializer();
 
 	private FtpServer ftpServer;
-  private List<FtpFileEventListener> fileListeners = new ArrayList<FtpFileEventListener>();
+	private List<FtpFileEventListener> fileListeners = new ArrayList<FtpFileEventListener>();
 	private BundleContext bundleContext;
-	private Map<String,Map<String,String>> userMap = new HashMap<String,Map<String,String>>();
+	private Map<String, Map<String, String>> userMap = new HashMap<String, Map<String, String>>();
 
 	public FtpServiceImpl() {
 	}
+
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		this.bundleContext = bundleContext;
 		bundleContext.addFrameworkListener(this);
 	}
 
 	public void frameworkEvent(FrameworkEvent event) {
-		info(this,"FtpServiceImpl.frameworkEvent:"+event);
-		if( event.getType() != FrameworkEvent.STARTED){
-			return; 
+		info(this, "FtpServiceImpl.frameworkEvent:" + event);
+		if (event.getType() != FrameworkEvent.STARTED) {
+			return;
 		}
 		_activate();
 	}
+
 	protected void _activate() {
-		try{
+		try {
 			ftpServer = ftpServerStart();
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	protected FtpServer ftpServerStart() throws Exception{
+	protected FtpServer ftpServerStart() throws Exception {
 		AuthService authService = lookupServiceByClass(AuthService.class);
+		NamespaceService nsService = lookupServiceByClass(NamespaceService.class);
+		Map<String, String> branding = nsService.getBranding();
+		String externalHost = branding.get("externalHost");
+		info(this, "externalHost:" + externalHost);
 		List<Map> userList = authService.getUserList();
-		info(this,"userList:"+userList);
-		for( Map<String,String> user : userList){
-			String homedir = user.get("homedir");
-			if( homedir != null){
-				Map<String,String> umap = new HashMap<String,String>();
-				umap.put( "homedir", Paths.get(System.getProperty("git.repos"), homedir).toString());
-				umap.put( "password", user.get("password"));
-				umap.put( "userid", user.get("userid"));
-				this.userMap.put( user.get("userid"), umap );
+		info(this, "userList:" + userList);
+		for (Map<String, String> user : userList) {
+			String homedir = user.get("ftphomedir");
+			if (homedir != null) {
+				Map<String, String> umap = new HashMap<String, String>();
+				umap.put("homedir", Paths.get(System.getProperty("git.repos"), homedir).toString());
+				umap.put("password", user.get("password"));
+				umap.put("userid", user.get("userid"));
+				this.userMap.put(user.get("userid"), umap);
 			}
 		}
-		info(this,"userMap:"+userMap);
+		info(this, "userMap:" + userMap);
 		FtpServerFactory serverFactory = new FtpServerFactory();
+
+		Map<String, Ftplet> ftplets = new LinkedHashMap<String, Ftplet>();
+		ftplets.put("ftplet1", new MyFtplet());
+		serverFactory.setFtplets(ftplets);
+
 		ListenerFactory listenerFactory = new ListenerFactory();
 		listenerFactory.setPort(port);
 
 		DataConnectionConfigurationFactory dccFactory = new DataConnectionConfigurationFactory();
-		int passivePort = port+1;
+		int passivePort = dataport + 1;
 		dccFactory.setPassivePorts(passivePort + "-" + (passivePort + passvCount));
-		listenerFactory.setDataConnectionConfiguration(dccFactory .createDataConnectionConfiguration());
+		dccFactory.setPassiveExternalAddress(externalHost);
+		dccFactory.setActiveLocalPort(dataport);
+		listenerFactory.setDataConnectionConfiguration(dccFactory.createDataConnectionConfiguration());
 		serverFactory.addListener("default", listenerFactory.createListener());
 
 		Simpl4UserManagerFactory userManagerFactory = new Simpl4UserManagerFactory();
@@ -124,17 +136,17 @@ public class FtpServiceImpl implements FtpService, FrameworkListener {
 		UserManager um = userManagerFactory.createUserManager();
 		serverFactory.setUserManager(um);
 
-		FtpServer server = serverFactory.createServer();         
+		FtpServer server = serverFactory.createServer();
 		server.start();
 
 		return server;
 	}
 
-	public boolean addFileEventListener(FtpFileEventListener listener){
+	public boolean addFileEventListener(FtpFileEventListener listener) {
 		return fileListeners.add(listener);
 	}
 
-	public boolean removeFileEventListener(FtpFileEventListener listener){
+	public boolean removeFileEventListener(FtpFileEventListener listener) {
 		return fileListeners.remove(listener);
 	}
 
@@ -161,17 +173,22 @@ public class FtpServiceImpl implements FtpService, FrameworkListener {
 		info(this, "FtpServiceImpl.deactivate");
 		ftpServer.stop();
 	}
-	private static  class ClearTextPasswordEncryptor implements PasswordEncryptor {
-		public String encrypt(String password) {
-			info(this, "encrypt:" + password );
-			return password;
-		}
 
-		public boolean matches(String passwordToCheck, String storedPassword) {
-			info(this, "matches:" + passwordToCheck + " -> " +storedPassword );
-			return true;
+	private class MyFtplet extends DefaultFtplet {
+
+		@Override
+		public FtpletResult onUploadEnd(FtpSession session, FtpRequest request) throws FtpException, IOException {
+			info(this, "onUploadEnd("+session.getUser().getName()+"):" + request.getCommand()+ " -> " + request.getArgument());
+			String username = session.getUser().getName();
+			Map<String,String> umap = userMap.get(username);
+			Path homedir = Paths.get(umap.get("homedir"));
+			Map<String,Object> args = new HashMap<String,Object>();
+			args.put("fromFtp", true );
+			for( FtpFileEventListener l : fileListeners){
+				l.fileCreated( username, Paths.get(request.getArgument()), homedir, args);
+			}
+			return FtpletResult.DEFAULT;
 		}
 	}
-
 }
 
