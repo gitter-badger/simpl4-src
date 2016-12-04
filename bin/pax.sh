@@ -252,7 +252,6 @@ ${karafbundles} \
 ${springbundles} \
 ${vfsbundles} \
 ${activemqbundles} \
-${cassandrabundles} \
 ${pdfboxbundles} \
 	scan-bundle:file:$REPOSITORY/pax-web-jetty-bundle-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-spi-4.1.1.jar@3 \
@@ -348,7 +347,6 @@ ${pdfboxbundles} \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.smtp-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.xmpp-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.wamp-1.0.0.jar \
-  scan-bundle:file:$BUNDLESBUILD/org.ms123.common.cassandra-1.0.0.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.sling.commons.compiler-2.0.2.jar \
 	scan-bundle:file:$REPOSITORY/ostermillerutils_1_07_00.jar \
   scan-bundle:file:$REPOSITORY/pax-swissbox-extender-1.8.0.jar \
