@@ -218,7 +218,8 @@ $.extend( Responsive.prototype, {
 			// has changed. This is used until DataTables implements a native
 			// `updated` event for rows
 			dt.on( 'draw.dtr', function () {
-				that._redrawChildren();
+console.log("redraw");
+//				that._redrawChildren();
 			} );
 
 			$(dt.table().node()).addClass( 'dtr-'+details.type );
