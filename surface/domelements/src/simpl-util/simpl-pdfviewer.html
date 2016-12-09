@@ -66,9 +66,11 @@ Card example:
 			<paper-card heading="[[heading]]" elevation="[[elevation]]">
 				<div class="card-content">
 					<object data="[[file]]" type="application/pdf" width="[[width]]" height="[[height]]">
-						<p>
-							{{notSupportedMessage}} <a href="[[file]]">{{notSupportedLinkMessage}}</a>
-						</p>
+						<iframe src="[[file]]" type="application/pdf" width="[[width]]" height="[[height]]">
+							<p>
+								{{notSupportedMessage}} <a href="[[file]]">{{notSupportedLinkMessage}}</a>
+							</p>
+						</iframe>
 					</object>
 				</div>
 				<div class="card-actions">
@@ -79,9 +81,11 @@ Card example:
 
 		<template is="dom-if" if="[[!card]]">
 			<object data="[[file]]" type="application/pdf" width="[[width]]" height="[[height]]">
-				<p>
-					{{notSupportedMessage}} <a href="[[file]]">{{notSupportedLinkMessage}}</a>
-				</p>
+				<iframe src="[[file]]" type="application/pdf" width="[[width]]" height="[[height]]">
+					<p>
+						{{notSupportedMessage}} <a href="[[file]]">{{notSupportedLinkMessage}}</a>
+					</p>
+				</iframe>
 			</object>
 		</template>
 
