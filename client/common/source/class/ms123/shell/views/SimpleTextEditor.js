@@ -41,10 +41,10 @@ qx.Class.define("ms123.shell.views.SimpleTextEditor", {
 		var config ={}
 		config.mode = type;
 		console.log("config:" , config);
-		if( type= "text/html"){
+		if( type == "text/html"){
 			config.htmlMode=true;
 		}
-		if( type= "text/x-asciidoc"){
+		if( type == "text/x-asciidoc"){
 			config.helper = "DocumentAsciidoctor";
 		}
 		
