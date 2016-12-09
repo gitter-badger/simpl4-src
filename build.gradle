@@ -50,7 +50,13 @@ configure(subprojects -
 	}
 
 	apply plugin: 'groovy'
+	apply plugin: 'scala'
 	apply plugin: 'aspectj'
+
+	tasks.withType(ScalaCompile) {
+		scalaClasspath = fileTree(dir: "${rootDir}/repository/scala");
+	}
+
 
 	defaultTasks "copyToRepo"
 
@@ -70,6 +76,7 @@ configure(subprojects -
 		postbop files("${rootDir}/repository/postbop-0.0.1.jar")
 		compile files("${rootDir}/repository/biz.aQute.bnd-3.0.0.jar")
 		compile files("${rootDir}/repository/groovy-all-2.4.4-indy.jar");
+		compile files("${rootDir}/repository/scala/scala-library-2.12.1.jar");
 		compile files("${rootDir}/repository/aspectjrt-1.8.5.jar")
 		compile files("${rootDir}/repository/shiro-aspectj-1.2.0.jar")
 		compile files("${rootDir}/repository/shiro-core-1.2.0.jar")
@@ -93,6 +100,7 @@ configure(subprojects -
 		main {
 			java { srcDir 'src/main/java' }
 			groovy { srcDir 'src/main/java' }
+			scala { srcDir 'src/main/java' }
 			resources { srcDir 'src/main/resources' }
 		}
 	}
@@ -157,6 +165,7 @@ configure(subprojects -
 			}
 		}
 	}
+	compileScala.dependsOn.remove("compileGroovy")
 	compileGroovy.dependsOn.remove("compileJava")
 	compileJava.dependsOn(compileGroovy)
 	compileGroovy.dependsOn projectClean,preProcess
