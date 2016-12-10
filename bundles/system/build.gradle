@@ -45,4 +45,5 @@ dependencies {
 	compile files("${repository}/ftplet-api-1.1.0.jar")
 	compile files("${repository}/karaf4/org.apache.karaf.shell.ssh-4.1.0.jar")
 	compile files("${repository}/karaf4/org.apache.karaf.shell.core-4.1.0.jar")
+  compile files('build/classes/main')
 }
