@@ -115,8 +115,8 @@ abstract class BaseCallServiceImpl {
 		propMap.put("methodParams", params);
 		propMap.put("methodResult", result);
 		if (sync) {
-			Object answer =m_camelService.camelSend(ns, routeId, propMap);
-			info(this,"CallServiceImpl.CamelSend.sync.answer:" + answer);
+			Object answer = m_camelService.camelSend(ns, routeId, propMap);
+			info(this, "CallServiceImpl.CamelSend.sync.answer:" + answer);
 		} else {
 			new CamelThread(routeId, execUser, propMap).start();
 		}
@@ -173,13 +173,13 @@ abstract class BaseCallServiceImpl {
 				String ns = (String) propMap.get("namespace");
 				ThreadContext.loadThreadContext(ns, execUser); //@@@MS Maybe can removed
 				m_permissionService.loginInternal(ns);
-				info(this,"CallServiceImpl.ThreadContext:" + ThreadContext.getThreadContext());
+				info(this, "CallServiceImpl.ThreadContext:" + ThreadContext.getThreadContext());
 				Object answer = m_camelService.camelSend(ns, routeId, propMap);
-				info(this,"CallServiceImpl.CamelSend.async.answer:" + answer);
+				info(this, "CallServiceImpl.CamelSend.async.answer:" + answer);
 			} catch (Exception e) {
 				e.printStackTrace();
 				ThreadContext.getThreadContext().finalize(e);
-				error(this,"BaseCallServiceImpl.CamelThread:%[exception]s", e);
+				error(this, "BaseCallServiceImpl.CamelThread:%[exception]s", e);
 			} finally {
 				ThreadContext.getThreadContext().finalize(null);
 			}
@@ -189,16 +189,16 @@ abstract class BaseCallServiceImpl {
 	protected Map getRootShape(String ns, String name) {
 		Map shape = m_camelService.getRootShapeByBaseRouteId(ns, name);
 		if (shape == null) {
-			if( !name.endsWith(".camel")){
-				shape = m_camelService.getRootShapeByBaseRouteId(ns, name+".camel");
+			if (!name.endsWith(".camel")) {
+				shape = m_camelService.getRootShapeByBaseRouteId(ns, name + ".camel");
 			}
 		}
 		return shape;
 	}
 
-	protected Object deserializeDefaultvalue(Object obj, Object type){
-		if( obj instanceof String && ("map".equals(type) || "list".equals(type))){
-			obj = m_ds.deserialize( (String)obj);
+	protected Object deserializeDefaultvalue(Object obj, Object type) {
+		if (obj instanceof String && ("map".equals(type) || "list".equals(type))) {
+			obj = m_ds.deserialize((String) obj);
 		}
 		return obj;
 	}
@@ -208,27 +208,30 @@ abstract class BaseCallServiceImpl {
 		String id = ((String) properties.get(OVERRIDEID));
 		return id;
 	}
-	protected String getRouteId( String baseId, int index){
-		return baseId+"_"+index;
+
+	protected String getRouteId(String baseId, int index) {
+		return baseId + "_" + index;
 	}
+
 	private org.ms123.common.system.thread.ThreadContext getThreadContext() {
 		return org.ms123.common.system.thread.ThreadContext.getThreadContext();
 	}
 
-	protected Route getRouteWithDirectConsumer(CamelContext cc, String baseRouteId){
-		for( int i = 1; i < 25; i++){
-			Route route = cc.getRoute(getRouteId(baseRouteId,i));
-			if( route != null ){
-				info(this,".getRouteWithDirectConsumer.Route:"+route);
+	protected Route getRouteWithDirectConsumer(CamelContext cc, String baseRouteId) {
+		for (int i = 1; i < 25; i++) {
+			Route route = cc.getRoute(getRouteId(baseRouteId, i));
+			if (route != null) {
+				info(this, ".getRouteWithDirectConsumer.Route:" + route);
 				Endpoint ep = route.getConsumer().getEndpoint();
 				String epUri = ep.getEndpointUri();
-				if( epUri.startsWith("direct")){
+				if (epUri.startsWith("direct")) {
 					return route;
 				}
 			}
 		}
 		return null;
 	}
+
 	protected String getNamespace(Object params) {
 		String ns = null;
 		if (params instanceof Map) {
@@ -245,66 +248,70 @@ abstract class BaseCallServiceImpl {
 	}
 
 	protected boolean isRPC(Map shape) {
-		Map<String,Boolean> properties = (Map) shape.get(PROPERTIES);
-		try{
+		Map<String, Boolean> properties = (Map) shape.get(PROPERTIES);
+		try {
 			Boolean rpc = properties.get(RPC);
 			return rpc != null && rpc == true;
-		}catch(Exception e){
-			System.err.println("e:"+e);
+		} catch (Exception e) {
+			System.err.println("e:" + e);
 			return false;
 		}
 	}
-	protected Map getProcedureShape(String ns, String serviceName, String methodName){
-		Map shape  = m_camelService.getProcedureShape(ns,serviceName, methodName );
-		if( shape == null && methodName.endsWith(".camel")){
-			shape = m_camelService.getProcedureShape( ns, serviceName,methodName.substring(0, methodName.length()-6));
+
+	protected Map getProcedureShape(String ns, String serviceName, String methodName) {
+		Map shape = m_camelService.getProcedureShape(ns, serviceName, methodName);
+		if (shape == null && methodName.endsWith(".camel")) {
+			shape = m_camelService.getProcedureShape(ns, serviceName, methodName.substring(0, methodName.length() - 6));
 		}
-		if( shape == null && methodName.endsWith(".service")){
-			shape = m_camelService.getProcedureShape( ns, serviceName,methodName.substring(0, methodName.length()-8));
+		if (shape == null && methodName.endsWith(".service")) {
+			shape = m_camelService.getProcedureShape(ns, serviceName, methodName.substring(0, methodName.length() - 8));
 		}
 		return shape;
 	}
+
 	protected boolean isPermitted(String userName, List<String> userRoleList, List<String> permittedUserList, List<String> permittedRoleList) {
-		if(m_permissionService.hasRole(ADMINROLE)){
-			info(this,"userName(admin) is allowed");
+		if (m_permissionService.hasRole(ADMINROLE)) {
+			info(this, "userName(admin) is allowed");
 			return true;
 		}
 		if (permittedUserList.contains(userName)) {
-			info(this,"userName(" + userName + " is allowed:" + permittedUserList);
+			info(this, "userName(" + userName + " is allowed:" + permittedUserList);
 			return true;
 		}
 		for (String userRole : userRoleList) {
 			if (permittedRoleList.contains(userRole)) {
-				info(this,"userRole(" + userRole + " is allowed:" + permittedRoleList);
+				info(this, "userRole(" + userRole + " is allowed:" + permittedRoleList);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	protected Object getValue(String name, Object value, Object def, boolean optional, Class type,String methodName) {
+	protected Object getValue(String name, Object value, Object def, boolean optional, Class type, String methodName) {
 		if (value == null && def != null) {
 			def = convertTo(def, type);
 			value = def;
 		}
 		if (value == null && optional == false) {
-			throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method("+methodName+"):Missing parameter:" + name);
+			throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method(" + methodName + "):Missing parameter:" + name);
 		}
 		if (value == null) {
 			return null;
 		}
 		if (!type.isAssignableFrom(value.getClass())) {
-			if( value instanceof String && type.isAssignableFrom(java.util.Date.class )){
-				info(this,"isostringToDate(" + value);
-				Date v  = toDate((String)value);
-				if( v != null){
+			if (value instanceof String && type.isAssignableFrom(java.util.Date.class)) {
+				info(this, "isostringToDate(" + value);
+				Date v = toDate((String) value);
+				if (v != null) {
 					value = v;
-					info(this,"newValue:" + value );
+					info(this, "newValue:" + value);
 				}
 			}
-			if( value == null){
-				throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method("+methodName+"):" + name + ") wrong type:" + value.getClass() + " needed:" + type);
+			Class clazz = null;
+			if (value != null) {
+				clazz = value.getClass();
 			}
+			throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method(" + methodName + "):" + name + ") wrong type:" + clazz + " needed:" + type);
 		}
 		return value;
 	}
@@ -318,7 +325,7 @@ abstract class BaseCallServiceImpl {
 		return null;
 	}
 
-	protected List<String> getUserRoles(String userName){
+	protected List<String> getUserRoles(String userName) {
 		List<String> userRoleList = null;
 		try {
 			userRoleList = m_permissionService.getUserRoles(userName);
@@ -328,7 +335,7 @@ abstract class BaseCallServiceImpl {
 		return userRoleList;
 	}
 
-	protected int countBodyParams(List<Map> paramList){
+	protected int countBodyParams(List<Map> paramList) {
 		int count = 0;
 		for (Map param : paramList) {
 			String destination = (String) param.get("destination");
@@ -387,3 +394,4 @@ abstract class BaseCallServiceImpl {
 	}
 
 }
+
