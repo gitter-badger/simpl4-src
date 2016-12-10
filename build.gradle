@@ -165,9 +165,11 @@ configure(subprojects -
 			}
 		}
 	}
-	compileScala.dependsOn.remove("compileGroovy")
 	compileGroovy.dependsOn.remove("compileJava")
+	compileScala.dependsOn.remove("compileJava")
 	compileJava.dependsOn(compileGroovy)
+	compileGroovy.dependsOn(compileScala)
+	compileScala.dependsOn(preProcess)
 	compileGroovy.dependsOn projectClean,preProcess
 }
 
