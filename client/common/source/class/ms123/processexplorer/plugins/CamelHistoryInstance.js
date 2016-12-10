@@ -252,6 +252,7 @@ qx.Class.define("ms123.processexplorer.plugins.CamelHistoryInstance", {
 			}).bind(this));
 			table.setStatusBarVisible(false);
 			this._tableModelDetailsHeaders = tableModel;
+			tableModel.setColumnEditable(1, true);
 			return table;
 		},
 
@@ -283,6 +284,7 @@ qx.Class.define("ms123.processexplorer.plugins.CamelHistoryInstance", {
 
 			}).bind(this));
 			table.setStatusBarVisible(false);
+			tableModel.setColumnEditable(1, true);
 			this._tableModelDetailsProperties = tableModel;
 			return table;
 		},
