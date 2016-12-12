@@ -69,9 +69,11 @@
 						page: this._selectedPage
 					} );
 				}
+				var prevPage = this._selectedPage;
 				this._selectedPage = page;
 				this.fire( "menu-selected", {
 					isSelected: true,
+					prevPage: prevPage,
 					page: this._selectedPage
 				} );
 				this.selected = page.hash;
@@ -94,9 +96,11 @@
 				if ( this._selectedPage == null || this.selected != this._selectedPage.hash ) {
 					var page = this.getPageByHash( this.selected );
 					if ( page ) {
+						var prevPage = this._selectedPage;
 						this._selectedPage = page;
 						this.fire( "menu-selected", {
 							isSelected: true,
+							prevPage: prevPage,
 							page: this._selectedPage
 						} );
 					}
