@@ -136,7 +136,7 @@ public class SshServiceImpl implements SshService, FrameworkListener {
 	protected SshServer sshServerStart(SessionFactory sessionFactory) {
 		AuthService authService = lookupServiceByClass(AuthService.class);
 		KarafAgentFactory agentFactory = new KarafAgentFactory();
-		int sshPort = 2122;
+		int sshPort = port;
 		String sshHost = getString("sshHost", "0.0.0.0");
 		long sshIdleTimeout = 1800000;
 		String sshRealm = getString("sshRealm", "karaf");
