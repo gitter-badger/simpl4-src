@@ -448,7 +448,7 @@ CRUD operations for simpl4
 							this.currentTable.refresh();
 						}
 					}, 100 );
-					this.querySelector( "#toastId" ).show( tr("entitytypes.deleted"), "success", "5000" );
+					this.getToast().show( tr("entitytypes.deleted"), "success", "5000" );
 				} catch ( e ) {
 					console.error( "delAction:", e );
 					var msg = null;
@@ -457,7 +457,7 @@ CRUD operations for simpl4
 					} else {
 						msg = e.toString();
 					}
-					this.querySelector( "#toastId" ).show( msg, "error", "10000" );
+					this.getToast().show( msg, "error", "10000" );
 					return;
 				}
 			},
@@ -675,7 +675,7 @@ CRUD operations for simpl4
 				console.log( "saveAction.valid(" + valid + "):", data );
 				if ( !valid ) {
 					var msg = tr( "widgets.table.form_incomplete" );
-					this.querySelector( "#toastId" ).show( msg, "error", "10000" );
+					this.getToast().show( msg, "error", "10000" );
 					return;
 				} else {
 					try {
@@ -700,7 +700,7 @@ CRUD operations for simpl4
 							} else {
 								msg = tr( "data.form.saved" );
 							}
-							this.querySelector( "#toastId" ).show( msg, "success", "10000" );
+							this.getToast().show( msg, "success", "10000" );
 
 							this.needRefresh = true;
 							if ( this.mode == 'add' ) {
@@ -721,7 +721,7 @@ CRUD operations for simpl4
 							msg = m.substring( m.indexOf( "entityName:" ) + 11 );
 							msg = tr( "data.form.save" ) + ": (" + msg + ")";
 						}
-						this.querySelector( "#toastId" ).show( msg, "error", "10000" );
+						this.getToast().show( msg, "error", "10000" );
 						return;
 					}
 				}
@@ -764,6 +764,13 @@ CRUD operations for simpl4
 				this.async( function() {
 					done();
 				}, 50 );
+			},
+			getToast:function(){
+				var t = document.querySelector("#toastGlobal");
+				if( t == null){
+					t = this.querySelector("#toastId");
+				}
+				return t;
 			},
 			alert: function( message ) {
 				this.querySelector( "#error p" ).innerHTML = message;
