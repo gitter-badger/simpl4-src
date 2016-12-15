@@ -81,6 +81,10 @@ table.dataTable.dtr-column > tbody > tr > th.control:before {
 		font-weight:800;
     background-color: white;
 }
+html.ie11 table.dataTable.dtr-column > tbody > tr > td.control:before,
+html.ie11 table.dataTable.dtr-column > tbody > tr > th.control:before {
+    top: 14px !important;
+}
 table.dataTable.dtr-column > tbody > tr.parent td.control:before,
 table.dataTable.dtr-column > tbody > tr.parent th.control:before {
   content: '-';

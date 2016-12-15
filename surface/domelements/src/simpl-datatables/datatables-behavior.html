@@ -129,8 +129,12 @@ r - processing display element<br/>
 			this._translate( dtMeta );
 			if ( dtMeta[ 0 ].class == null || dtMeta[ 0 ].class.indexOf( "control" ) == -1 ) {
 				dtMeta.splice( 0, 0, {
+					data:"__control",
 					class: "control"
 				} );
+				dataSet.forEach( ( function( row, idx ) { //ie and consorten: "null"
+					row.__control="";
+				} ).bind( this ) );
 				options.responsive = {
 					details: {
 						type: "column"

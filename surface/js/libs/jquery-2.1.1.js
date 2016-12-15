@@ -5001,6 +5001,7 @@ function getAll( context, tag ) {
 
 // Support: IE >= 9
 function fixInput( src, dest ) {
+return;
 	var nodeName = dest.nodeName.toLowerCase();
 
 	// Fails to persist the checked state of a cloned checkbox or radio button.
