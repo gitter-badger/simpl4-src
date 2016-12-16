@@ -261,7 +261,8 @@ CRUD operations for simpl4
 			},
 			_enterPressed: function() {
 				console.log( "_enterPressedCrud:", this.saveDisabled );
-				if ( this.noCarriageReturn || this.saveDisabled === true ) return;
+				console.log( "_pageSelected:", this.pageSelected );
+				if ( this.pageSelected==0 || this.noCarriageReturn || this.saveDisabled === true ) return;
 				this.saveAction();
 			},
 			onError: function( e ) {
