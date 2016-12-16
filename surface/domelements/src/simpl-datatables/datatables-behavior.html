@@ -132,16 +132,16 @@ r - processing display element<br/>
 					data:"__control",
 					class: "control"
 				} );
-				dataSet.forEach( ( function( row, idx ) { //ie and consorten: "null"
-					row.__control="";
-				} ).bind( this ) );
 				options.responsive = {
 					details: {
 						type: "column"
 					}
 				};
 			}
-			console.trace( "options:", options );
+			dataSet.forEach( ( function( row, idx ) { //ie and consorten: "null"
+				row.__control="";
+			} ).bind( this ) );
+			console.trace( "options:", dataSet );
 			this._api = dtMainElem.DataTable( jQuery.extend( {
 				"initComplete": function( settings, json ) {
 					self.fire( "init-complete", {
@@ -313,6 +313,7 @@ r - processing display element<br/>
 			} else {
 				this._api.clear();
 				this.data.forEach( ( function( row, idx ) {
+					row.__control="";
 					this._api.row.add( row );
 				} ).bind( this ) );
 				this._api.draw();

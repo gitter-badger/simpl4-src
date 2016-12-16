@@ -321,6 +321,7 @@
 				} else {
 					this._api.clear();
 					this.dataSet.forEach( ( function( row, idx ) {
+						row.__control="";
 						this._api.row.add( row );
 					} ).bind( this ) );
 					this._api.draw();
@@ -527,7 +528,7 @@
 							} );
             },
             completed: function( ret ) {
-							console.error("completed2:",ret.rows);
+							console.log("completed2:",ret.rows);
 							this._dataComplete( ret.rows, firsttime);
             }
           }
