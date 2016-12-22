@@ -112,6 +112,7 @@ vmOptions="\
  -Dkaraf.base=\$SIMPL4DIR \
  -Dfelix.cm.dir=\$SIMPL4DIR/etc/config \
  -Detc.dir=\$SIMPL4DIR/etc \
+ -Dkafka.disabled=true \
  -Dfelix.fileinstall.dir=\$SIMPL4DIR/gitrepos/.bundles \
  -Dorg.ops4j.pax.logging.DefaultServiceLog.level=ERROR \
  -Ddrools.dialect.java.compiler=JANINO \
