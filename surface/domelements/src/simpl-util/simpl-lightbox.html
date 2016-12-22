@@ -333,12 +333,18 @@ is selected. This way, no video will play when the dialog is closed.
 						var blob = new Blob( [ this.response ], {
 							type: 'application/pdf'
 						} );
-						var downloadUrl = URL.createObjectURL( blob );
-						var pdf = document.createElement( 'simpl-pdfviewer' );
-						pdf.file = downloadUrl;
-						pdf.height = "100%";
-						pdf.style = "position:absolute;";
-						self._replaceMedia( pdf );
+
+						if ( window.navigator.msSaveBlob ) {
+							window.navigator.msSaveBlob( blob, "download.pdf" );
+							self.close();
+						} else {
+							var downloadUrl = URL.createObjectURL( blob );
+							var pdf = document.createElement( 'simpl-pdfviewer' );
+							pdf.file = downloadUrl;
+							pdf.height = "100%";
+							pdf.style = "position:absolute;";
+							self._replaceMedia( pdf );
+						}
 						self.$.toastId.close();
 					} else {
 						console.error( "Error download:", this.status );
