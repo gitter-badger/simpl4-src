@@ -96,8 +96,10 @@ r - processing display element<br/>
 		 *  recalc and redraw the table
 		 */
 		recalc: function() {
-			this._api.responsive.recalc();
-			this._api.columns.adjust()
+			if ( this._api ) {
+				this._api.responsive.recalc();
+				this._api.columns.adjust()
+			}
 		},
 		__createTable: function( dtMeta, dataSet, options ) {
 			this.dataSet = dataSet;
@@ -129,7 +131,7 @@ r - processing display element<br/>
 			this._translate( dtMeta );
 			if ( dtMeta[ 0 ].class == null || dtMeta[ 0 ].class.indexOf( "control" ) == -1 ) {
 				dtMeta.splice( 0, 0, {
-					data:"__control",
+					data: "__control",
 					class: "control"
 				} );
 				options.responsive = {
@@ -139,7 +141,7 @@ r - processing display element<br/>
 				};
 			}
 			dataSet.forEach( ( function( row, idx ) { //ie and consorten: "null"
-				row.__control="";
+				row.__control = "";
 			} ).bind( this ) );
 			console.trace( "options:", dataSet );
 			this._api = dtMainElem.DataTable( jQuery.extend( {
@@ -191,8 +193,8 @@ r - processing display element<br/>
 				}
 			} );
 			mainElem.on( 'click', '.child iron-icon', function( e ) {
-				var index = self._getIndexDetail(e.target);
-				var row = self._copySelection(self._api.rows( index.row ).data());
+				var index = self._getIndexDetail( e.target );
+				var row = self._copySelection( self._api.rows( index.row ).data() );
 				this.fire( "rows-selected", {
 					dt: self,
 					doubleTap: false,
@@ -256,8 +258,8 @@ r - processing display element<br/>
 		_getIndexDetail: function( target ) {
 			var closest = $( target ).closest( "li" );
 			return {
-					row:closest.attr("data-dt-row"),
-					column:closest.attr("data-dt-column")
+				row: closest.attr( "data-dt-row" ),
+				column: closest.attr( "data-dt-column" )
 			}
 		},
 		_getIndex: function( target ) {
@@ -313,7 +315,7 @@ r - processing display element<br/>
 			} else {
 				this._api.clear();
 				this.data.forEach( ( function( row, idx ) {
-					row.__control="";
+					row.__control = "";
 					this._api.row.add( row );
 				} ).bind( this ) );
 				this._api.draw();
