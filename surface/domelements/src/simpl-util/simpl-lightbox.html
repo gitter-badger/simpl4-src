@@ -414,6 +414,12 @@ is selected. This way, no video will play when the dialog is closed.
 			},
 
 			_onSelect: function( it ) {
+				this.debounce( 'doSelect', function() {
+					this.__onSelect( it );
+				}, 300 );
+			},
+			__onSelect: function( it ) {
+				console.log( "_onSelect" );
 				if ( !it ) {
 					return;
 				}
