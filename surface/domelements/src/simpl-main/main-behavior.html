@@ -65,6 +65,10 @@
 				value: "",
 				type: String
 			},
+			useKeyboard: {
+				value: false,
+				type: Boolean
+			},
 			toolbarProvided: {
 				value: false,
 				type: Boolean
@@ -260,7 +264,9 @@
 					if ( tb == null ) {
 						tb = this.getEmptyToolbarBottom();
 					}
-					toolbarBottom.parentNode.replaceChild( tb, toolbarBottom );
+					if( toolbarBottom && toolbarBottom.parentNode){
+						toolbarBottom.parentNode.replaceChild( tb, toolbarBottom );
+					}
 				}
 			}
 			this.$.drawerPanel.closeDrawer();

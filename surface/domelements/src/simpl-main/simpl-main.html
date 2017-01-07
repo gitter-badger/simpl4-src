@@ -21,14 +21,15 @@
 <link rel="import" href="css-import-behavior.html">
 <link rel="import" href="main-behavior.html">
 <link rel="import" type="css" href="scrollbar.css">
-	<style>
-body,
-    html {
-      margin: 0 auto;
-      height: 100%;
-      max-width: 1200px;
-    }
-	</style>
+<style>
+	body,
+	html {
+		margin: 0 auto;
+		height: 100%;
+		max-width: 1200px;
+	}
+
+</style>
 <dom-module id="simpl-main">
 	<style>
 		*,
@@ -38,7 +39,6 @@ body,
 			-webkit-box-sizing: border-box;
 			box-sizing: border-box;
 		}
-
 		#loginDialog {
 			overflow: hidden;
 		}
@@ -136,7 +136,7 @@ body,
 		simpl-animatable-page > div {
 			pointer-events: all;
 		}
-		simpl-animatable-page /deep/ > div{
+		simpl-animatable-page /deep/ > div {
 			padding-left: 5px;
 			padding-top: 6px;
 			padding-right: 12px;
@@ -144,10 +144,10 @@ body,
 		a {
 			text-decoration: none;
 		}
-
-		#drawerPanel{
-			position:relative;
+		#drawerPanel {
+			position: relative;
 		}
+
 	</style>
 	<template>
 		<simpl-globals></simpl-globals>
@@ -155,7 +155,9 @@ body,
 
 		<flatiron-director route="{{route}}" auto-hash></flatiron-director>
 
-		<!--iron-a11y-keys id="keys" target="[[target]]" keys="up down left right space space+shift" on-keys-pressed="keyHandler"></iron-a11y-keys-->
+		<template is="dom-if" if="[[useKeyboard]]">
+			<iron-a11y-keys id="keys" target="[[target]]" keys="up down left right space space+shift" on-keys-pressed="keyHandler"></iron-a11y-keys>
+		</template>
 
 		<simpl-dispatcher id="dispatcherId" on-menu-selected="menuItemSelected" selected="{{route}}">
 			<paper-multidrawer-panel id="drawerPanel" drawer-width="230px" responsive-width="[[responsiveWidth]]" disable-swipe="false">
@@ -175,7 +177,7 @@ body,
 					</div>
 				</div>
 
-				<paper-scroll-header-panel id="scrollHeaderPanelId" header-height="64" main>
+				<paper-scroll-header-panel id="scrollHeaderPanelId" fixed$="[[header-fixed]]" header-height="64" main>
 					<template is="dom-if" if="[[!toolbarProvided]]">
 						<paper-toolbar class="main__toolbar" id="mainToolbar">
 							<paper-icon-button id="menuButton" icon="menu" paper-multidrawer-toggle-left on-tap="togglePanel"></paper-icon-button>
@@ -202,6 +204,7 @@ body,
 
 					<template is="dom-if" if="[[toolbarProvided]]">
 						<content select="*"></content>
+						<paper-icon-button id="menuButton" icon="menu" paper-multidrawer-toggle-left on-tap="togglePanel"></paper-icon-button>
 					</template>
 
 					<neon-animated-pages id="pages" selected="{{route}}" attr-for-selected="hash">
