@@ -146,8 +146,9 @@
 				simpl4.util.BaseManager.setLanguage( qlang );
 				simpl4.util.Globals.set( "lang", qlang );
 			} else {
-				simpl4.util.BaseManager.setLanguage( lang ? lang : "en" );
-				simpl4.util.Globals.set( "lang", lang ? lang : "en" );
+				var def = window.defaultLang || "en";
+				simpl4.util.BaseManager.setLanguage( lang ? lang : def );
+				simpl4.util.Globals.set( "lang", lang ? lang : def );
 			}
 			Simpl4.Cache.setItem( "lang", simpl4.util.BaseManager.getLanguage() );
 
