@@ -9,6 +9,7 @@ task buildHtml (type:Exec) {
 task stage (type:Task) {
 	dependsOn buildHtml
 	doLast(){
+		ant.copy( file:"domelements.html", todir:"${surfaceBuildUC}",overwrite:"true")
 		ant.gzip( src:"domelements.html",destfile:"domelements.html.gz")
 		ant.copy( file:"domelements.html.gz", todir:"${surfaceBuild}",overwrite:"true")
 

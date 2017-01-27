@@ -60,6 +60,8 @@ task stage (type:Task) {
 		exec {
 			commandLine strip.tokenize()
 		}
+	ant.copy( file:"${surfaceBuild}/${jsLibs}",tofile:"${surfaceBuildUC}/${jsLibs}")
+	ant.copy( file:"libs/webcomponents-lite.js",tofile:"${surfaceBuildUC}/webcomponents-lite.js")
 	ant.gzip( src:"${surfaceBuild}/${jsLibs}",destfile:"${surfaceBuild}/${jsLibs}.gz")
 	ant.gzip( src:"libs/webcomponents-lite.js",destfile:"${surfaceBuild}/webcomponents-lite.js.gz")
 	ant.delete( file:"${surfaceBuild}/${jsLibs}")

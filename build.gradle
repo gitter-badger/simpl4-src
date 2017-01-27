@@ -27,6 +27,7 @@ ext.docbookOut=gradle.getRootProject().getRootDir().toString()+"/bundles/docbook
 ext.qoodooSDK="${rootDir}/build/${currentBranch}/.qooxdooSDK";
 ext.bundlesBuild="${rootDir}/build/${currentBranch}/bundlesBuild";
 ext.surfaceBuild="${rootDir}/build/${currentBranch}/surfaceBuild";
+ext.surfaceBuildUC="${rootDir}/build/${currentBranch}/surfaceBuild/uc";
 ext.repository="${rootDir}/repository";
 ext.jsLibs="libs.js";
 ext.cssLibs="libs.css";
@@ -339,6 +340,10 @@ def deployClientPart(destdir){
 def deploySurfacePart(destdir){
 	new groovy.util.AntBuilder().copy( overwrite:true, verbose:false, todir:"${destdir}/client/surface"){
 		fileset(dir:"${surfaceBuild}", includes:"*") {
+		}
+	}
+	new groovy.util.AntBuilder().copy( overwrite:true, verbose:false, todir:"${destdir}/client/surface/uc"){
+		fileset(dir:"${surfaceBuildUC}", includes:"*") {
 		}
 	}
 }
