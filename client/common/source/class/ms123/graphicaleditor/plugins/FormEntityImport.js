@@ -86,7 +86,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					'label': this.tr( "graphicaleditor.plugins.form.msgkey_prefix" ),
 					'validation': {
 						required: false,
-						filter: /[A-Za-z0-9_.]/
+						filter: /[A-Za-z0-9_.@]/
 					},
 					'value': "@"
 				}
@@ -124,7 +124,15 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					y: 30
 				}
 			}
+	 		var shapes = this.facade.getSelection();
+			console.log("sel1:",shapes);
+			shapes = this.facade.edit.getAllShapesToConsider(shapes)
+			console.log("sel2:",shapes);
+				console.log("cols:",cols);
 			for ( var i = 0; i < cols.length; i++ ) {
+				if( this._hasField( shapes, cols[i].name )){
+					continue;
+				}
 				var f = this._createField( cols[ i ], msgkeyPrefix );
 				if ( f ) {
 					fields.push( f );
@@ -133,6 +141,14 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			console.log( "fields:", JSON.stringify( fields, null, 2 ) );
 
 			this.facade.edit.editPaste( fields );
+		},
+		_hasField: function(shapes, name){
+			var found = false;
+			shapes.each(qx.lang.Function.bind(function (shape) {
+				var n = shape.properties["oryx-xf_id"];
+				if( n == name) found = true;
+			}, this));
+			return found;
 		},
 		_createField: function( col, msgkeyPrefix ) {
 			var field = {
@@ -200,7 +216,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 						console.log("items:",props.xf_enum);
 					}
 				}
-				field.childShapes[ 0 ].properties.xf_text = msgkeyPrefix + col.label.__messageId;
+				field.childShapes[ 0 ].properties.xf_text = msgkeyPrefix + props.xf_id;
 				field.childShapes[ 0 ].resourceId = ms123.util.IdGen.id();
 				field.resourceId = ms123.util.IdGen.id();
 				jQuery.extend( true, field.bounds, this.currentBounds );
