@@ -20,6 +20,7 @@
  */
 qx.Class.define('ms123.management.UnitDataAccess', {
 	extend: ms123.widgets.DefaultDataAccess,
+	include: [qx.locale.MTranslation],
 
 
 	/******************************************************************************

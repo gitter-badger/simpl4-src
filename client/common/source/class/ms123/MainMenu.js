@@ -140,18 +140,18 @@ qx.Class.define("ms123.MainMenu", {
 		getDataAccess: function (sdesc, entityName) {
 			if (entityName == "user") {
 				return new ms123.widgets.UserDataAccess();
-			} else if (entityName == "unit") {
-				return new ms123.management.UnitDataAccess();
+		//	} else if (entityName == "unit") {
+		//		return new ms123.management.UnitDataAccess();
 			} else {
 				return new ms123.widgets.DefaultDataAccess();
 			}
 		},
 		getToolbar: function (sdesc, entityName) {
-			if (entityName == "unit") {
-				return new ms123.management.UnitToolbar();
-			} else {
+			//if (entityName == "unit") {
+			//	return new ms123.management.UnitToolbar();
+			//} else {
 				return null;
-			}
+			//}
 		},
 		createWidgetList: function (_module, sdesc, _this) {
 console.log("sdesc:",sdesc);
