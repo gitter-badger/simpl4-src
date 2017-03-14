@@ -85,6 +85,8 @@ simpl4.util.BaseManager.extend( "simpl4.util.FormManager", {
 		if ( filter.dataValues ) {
 			rule.find( ".rule-value-container" ).
  			append( "<select-field " + attributes + " name='" + rule.selector.substring( 1 ) + "_value_0' json-items='"+JSON.stringify(filter.dataValues)+"'></select-field>" );
+		}else if( filter.datatype=="boolean"){ rule.find(".rule-value-container").append("<checkbox-field " +
+            attributes + " " + regulaConstraints + ' name="' + rule.selector.substring(1) + '_value_0" ></checkbox-field>')
 		} else {
 			rule.find( ".rule-value-container" ).
 			append( '<input-field ' + attributes + ' ' + regulaConstraints + ' name="' + rule.selector.substring( 1 ) + '_value_0" ></input-field>' );
