@@ -647,7 +647,7 @@ CRUD operations for simpl4
 			getIdValue: function( entityName, namespace, data ) {
 				console.log( "getIdValue:", entityName + "/", data );
 				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
-				if ( pkList == null ) {
+				if ( pkList == null || pkList.length === 0 ) {
 					pkList = [ "id" ];
 				}
 				var idValue = "";
