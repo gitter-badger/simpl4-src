@@ -903,7 +903,11 @@
 <dom-module id="checkbox-field">
 	<style>
 		:host {
-			padding-left: 5px !important;
+			padding: 13px !important;
+			display:inline-block;
+		}
+		:host.compact {
+			padding: 0 !important;
 		}
 		paper-input-error{
 			visibility:visible;
@@ -928,9 +932,20 @@
 		Polymer( {
 			is: "checkbox-field",
 			behaviors: [ FieldBehavior ],
+			properties: {
+				compact: {
+					value: false,
+					type: Boolean
+				}
+			},
 			observers: [
 				'valueChanged(value)'
 			],
+			attached:function(){
+				if( this.compact){
+					jQuery( this ).addClass( "compact" );
+				}
+			},
 			setValue:function(v){
 				this.value = v;
 			},
@@ -1397,7 +1412,11 @@
 			setValue: function( v ) {
 				//console.log( "select-field(" + this.name + ").setValue:",v );
 				this.value = v;
-				this.selectize.setValue(v);
+				if( this.selectize){
+					this.selectize.setValue(v);
+				}else{
+					this.__value = v;
+				}
 			},
 			getValue: function() {
 				//console.log( "select-field(" + this.name + "),getValue:", this.value );
@@ -1459,6 +1478,10 @@
  				var field = this.$.select;
 				var $select = $(field).selectize(options);
 				this.selectize = $select[0].selectize;
+				if( this.__value){
+					this.selectize.setValue(this.__value);
+					this.__value = null;
+				}
 			},
 			attached:function(){
 				this.async( function() {
