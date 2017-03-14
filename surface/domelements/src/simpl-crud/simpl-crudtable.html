@@ -302,7 +302,12 @@
 				}, 50 );
 			},
 			_dataComplete:function( data, firsttime){
-				var sel = this.querySelector( ".spinner" ).innerHTML="";
+				this.async( function() {
+					var sel = this.querySelector( ".spinner" );
+					if ( sel ) {
+						sel.innerHTML='';
+					}
+				}, 150 );
 				this.dataSet = this.preProcessData( data );
 				if ( firsttime ) {
 					if ( this.dtOptions == "" ) {
