@@ -26,7 +26,7 @@
 
 	</style>
 	<template>
-			<div id="jqtree" class="" style="width:100%;"></div>
+		<div id="jqtree" class="" style="width:100%;"></div>
 		<content></content>
 	</template>
 	<script>
@@ -54,16 +54,16 @@
 					type: Object
 				},
 				/**
+				 * the selectedItem
+				 */
+				selectedItem: {
+					notify: true,
+					type: Object
+				},
+				/**
 				 * the options
 				 */
 				options: {
-					type: String
-				},
-				/**
-				 * the namespace
-				 */
-				namespace: {
-					value: null,
 					type: String
 				}
 			},
@@ -71,13 +71,16 @@
 			behaviors: [
 				StyleScopeBehavior
 			],
+			ready: function() {
+			},
 			attached: function() {
 				var o = clone( this._parseOptions( this.options ) );
 				o.data = this.data;
 				this._tree = $( this.$.jqtree ).tree( o )
-				if( this.multiSelect){
+				if ( this.multiSelect ) {
 					this._tree.bind( 'tree.click', this._multiSelection.bind( this ) );
 				}
+				this._tree.bind( 'tree.select', this._itemSelected.bind( this ) );
 			},
 			_multiSelection: function( e ) {
 				// Disable single selection
@@ -95,14 +98,34 @@
 					this._tree.tree( 'addToSelection', selected_node );
 				}
 			},
+
+			_itemSelected: function( event ) {
+				if ( event.node ) {
+					// node was selected
+					var node = event.node;
+					console.log("node:",node);
+					this.selectedItem = {
+						label : node.name,
+						id : node.id
+					}
+					this.fire( "iron-select", {item:this.selectedItem});
+					this.prevSelectedItem = this.selectedItem;
+				} else {
+					// event.node is null
+					// a node was deselected
+					// e.previous_node contains the deselected node
+					this.selectedItem = null;
+					this.fire( "iron-deselect", {item:this.prevSelectedItem});
+				}
+			},
+
 			_parseOptions: function( o ) {
 				if ( o == null ) return {};
 				if ( typeof o == 'string' ) {
 					o = JSON5.parse( o );
 				}
 				return o;
-			},
-			ready: function() {}
+			}
 		} );
 
 	</script>
