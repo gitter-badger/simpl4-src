@@ -1,0 +1,109 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<link rel="import" href="import-js.html">
+<link rel="import" type="css" href="jqtree.css" />
+<dom-module id="simpl-jqtree" flex relative>
+	<style>
+
+
+	</style>
+	<template>
+			<div id="jqtree" class="" style="width:100%;"></div>
+		<content></content>
+	</template>
+	<script>
+		Polymer( {
+			is: 'simpl-jqtree',
+			properties: {
+				/**
+				 * more than one row can be selected
+				 */
+				multiSelect: {
+					type: Boolean,
+					value: false
+				},
+				/**
+				 * The selected rows
+				 */
+				selection: {
+					type: Array,
+					notify: true
+				},
+				/**
+				 * the data
+				 */
+				data: {
+					type: Object
+				},
+				/**
+				 * the options
+				 */
+				options: {
+					type: String
+				},
+				/**
+				 * the namespace
+				 */
+				namespace: {
+					value: null,
+					type: String
+				}
+			},
+			observers: [],
+			behaviors: [
+				StyleScopeBehavior
+			],
+			attached: function() {
+				var o = clone( this._parseOptions( this.options ) );
+				o.data = this.data;
+				this._tree = $( this.$.jqtree ).tree( o )
+				if( this.multiSelect){
+					this._tree.bind( 'tree.click', this._multiSelection.bind( this ) );
+				}
+			},
+			_multiSelection: function( e ) {
+				// Disable single selection
+				e.preventDefault();
+
+				var selected_node = e.node;
+
+				if ( selected_node.id == undefined ) {
+					console.log( 'The multiple selection functions require that nodes have an id' );
+				}
+
+				if ( this._tree.tree( 'isNodeSelected', selected_node ) ) {
+					this._tree.tree( 'removeFromSelection', selected_node );
+				} else {
+					this._tree.tree( 'addToSelection', selected_node );
+				}
+			},
+			_parseOptions: function( o ) {
+				if ( o == null ) return {};
+				if ( typeof o == 'string' ) {
+					o = JSON5.parse( o );
+				}
+				return o;
+			},
+			ready: function() {}
+		} );
+
+	</script>
+</dom-module>
