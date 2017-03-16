@@ -131,9 +131,12 @@
 				while ( node != document.body ) {
 					var isDatatables = node.id && node.id.toLowerCase().indexOf( "datatables" ) >= 0;
 					if ( isDatatables ) return false;
+				  if( node.getAttribute("no-smooth-scroll") != null){
+						return false;
+					}
 					node = node.parentNode;
 				}
-				return true;
+				return false;
 			}
 
 			this._scrollbar = window.Scrollbar.init( mc, {

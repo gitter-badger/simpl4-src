@@ -22,15 +22,21 @@
 	<style>
 		:host /deep/ #dropdown {
 			width: 100%;
-			margin-top: 60px !important;
+			margin-top: 52px !important;
 			position: absolute !important;
 			top: 0px !important;
+		}
+		:host /deep/ .dropdown-content {
+			max-height: 400px !important;
+		}
+		:host /deep/ paper-input-container {
+			padding: 0px !important;
 		}
 
 	</style>
 	<template>
-		<paper-dropdown-menu label="[[label]]">
-			<simpl-jqtree style="width:100%;" class="dropdown-content" selected-item="{{selectedItem}}" multi-select="[[multiSelect]]" options="[[options]]" data="[[data]]" entity="article">
+		<paper-dropdown-menu style="display:inline; !important" label="[[label]]">
+			<simpl-jqtree style="width:100%;" class="dropdown-content" contextmenu="[[contextmenu]]" selected-item="{{selectedItem}}" multi-select="[[multiSelect]]" options="[[options]]" data="[[data]]" entity="article">
 			</simpl-jqtree>
 		</paper-dropdown-menu>
 	</template>

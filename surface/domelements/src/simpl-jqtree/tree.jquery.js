@@ -2457,6 +2457,8 @@ SimpleWidget = (function() {
     return $.fn[widget_name] = function() {
       var $el, args, argument1, function_name, options;
       argument1 = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+console.log("widget_name:",widget_name);
+console.log("widget_name:",argument1);
       $el = this;
       if (argument1 === void 0 || typeof argument1 === 'object') {
         options = argument1;

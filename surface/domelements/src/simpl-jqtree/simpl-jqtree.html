@@ -26,7 +26,8 @@
 
 	</style>
 	<template>
-		<div id="jqtree" class="" style="width:100%;"></div>
+		<div no-smooth-scroll id="jqtree" class="" style="width:100%;"></div>
+		<div style="" id="contextmenuId"></div>
 		<content></content>
 	</template>
 	<script>
@@ -36,7 +37,7 @@
 				/**
 				 * more than one row can be selected
 				 */
-				multiSelect: {
+				multiselect: {
 					type: Boolean,
 					value: false
 				},
@@ -61,6 +62,12 @@
 					type: Object
 				},
 				/**
+				 * the contextmenu
+				 */
+				contextmenu: {
+					type: Array
+				},
+				/**
 				 * the options
 				 */
 				options: {
@@ -76,11 +83,28 @@
 			attached: function() {
 				var o = clone( this._parseOptions( this.options ) );
 				o.data = this.data;
+				console.log("contextmenu:",this.contextmenu);
+				if ( this.contextmenu ) {
+					o.useContextMenu = true;
+				}
+				
+				console.log("o:",o);
 				this._tree = $( this.$.jqtree ).tree( o )
-				if ( this.multiSelect ) {
+				if ( this.multiselect ) {
 					this._tree.bind( 'tree.click', this._multiSelection.bind( this ) );
 				}
 				this._tree.bind( 'tree.select', this._itemSelected.bind( this ) );
+				if ( this.contextmenu ) {
+					this._tree.bind( 'tree.contextmenu', this._contextMenu.bind( this ) );
+					var cm = contextmenu(this.contextmenu);
+					this._contextMenu = cm;
+					contextmenu.attach($(this.$.contextmenuId),cm);
+				}
+			},
+			_contextMenu: function( e ) {
+        var node = e.node;
+				console.log("contextmenu:",e.node);
+				contextmenu.show(this._contextMenu, e.node.element);
 			},
 			_multiSelection: function( e ) {
 				// Disable single selection
@@ -101,7 +125,6 @@
 
 			_itemSelected: function( event ) {
 				if ( event.node ) {
-					// node was selected
 					var node = event.node;
 					console.log("node:",node);
 					this.selectedItem = {
