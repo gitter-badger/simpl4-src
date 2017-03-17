@@ -438,10 +438,10 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 	<template>
 		<paper-tabs selected="{{tabsId}}" selectables="paper-tab" attr-for-selected="tabs-id" scrollable>
 			<template is="dom-repeat" as="i" items="[[item.childShapes]]">
-				<template is="dom-if" if="[[i.title]]" restamp>
-					<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.title)]]</paper-tab>
+				<template is="dom-if" if="[[i.label]]" restamp>
+					<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.label)]]</paper-tab>
 				</template>
-				<template is="dom-if" if="[[!i.title]]" restamp>
+				<template is="dom-if" if="[[!i.label]]" restamp>
 					<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.xf_id)]]</paper-tab>
 				</template>
 			</template>

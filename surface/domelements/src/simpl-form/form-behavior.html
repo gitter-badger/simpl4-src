@@ -653,6 +653,7 @@
 				shape.stencil.id.toLowerCase() == 'gridinput' ||
 				shape.stencil.id.toLowerCase() == 'checkbox' ||
 				shape.stencil.id.toLowerCase() == 'custom' ||
+				shape.stencil.id.toLowerCase() == 'page' ||
 				shape.stencil.id.toLowerCase() == 'group'
 			) {
 				var labelChild = this._getLabelShape( shape.childShapes );
@@ -723,6 +724,13 @@
 					props.xf_columns = undefined;
 					var bounds = shape.bounds;
 					props.height = bounds.lowerRight.y - bounds.upperLeft.y;
+				}
+
+				if ( shape.stencil.id.toLowerCase() == 'page' ) {
+					var label = shape.properties.xf_label;
+					if ( label && label.match( /^[@%]/ ) ) {
+						shape.properties.label  = tr( label.substring( 1 ) );
+					}
 				}
 				if ( shape.stencil.id.toLowerCase() == "enumselect" 
 						|| shape.stencil.id.toLowerCase() == "tableselect" 
