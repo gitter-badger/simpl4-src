@@ -29,18 +29,7 @@ qx.Class.define("ms123.util.RepoList", {
 
 	construct: function (facade,formElement,config) {
 		this.base(arguments);
-console.log("RepoList");
-		this._facade = facade;	
-		var repoList = this._getRepos();
-		for(var i=0; i < repoList.length; i++){
-			var repoName = repoList[i];
-			var listItem = new qx.ui.form.ListItem(repoName,null,repoName);
-			if( formElement.addItem){
-				formElement.addItem(listItem);
-			}else{
-				formElement.add(listItem);
-			}
-		}
+		var repoList = this._getRepos(formElement);
 	},
 
 	/**
@@ -50,29 +39,41 @@ console.log("RepoList");
 	 */
 
 	members: {
-		_getRepos: function () {
-			var completed = (function (data) {}).bind(this);
-
-			var failed = (function (details) {
-				ms123.form.Dialog.alert(this.tr("namespace.getNamespaces") + ":" + details.message);
-			}).bind(this);
-
-			try {
-				var ret = ms123.util.Remote.rpcSync("git:getRepositories", {
-				});
-				console.log("namespace:"+JSON.stringify(ret,null,2));
+		_getRepos: function (formElement) {
+			var completed = (function (ret) {
 				var repoList = [];
 				repoList.push("-");
 				for( var i = 0; i< ret.length;i++){
 					var r = ret[i];
 					repoList.push( r.name );
 				}
-				console.log("rel:"+JSON.stringify(repoList,null,2));
+				console.log("repoList.rel:"+JSON.stringify(repoList,null,2));
+				for(var i=0; i < repoList.length; i++){
+					var repoName = repoList[i];
+					var listItem = new qx.ui.form.ListItem(repoName,null,repoName);
+					if( formElement.addItem){
+						formElement.addItem(listItem);
+					}else{
+						formElement.add(listItem);
+					}
+				}
 				return repoList;
-			} catch (e) {
-				//failed.call(this,e);
-				return [];
+			}).bind(this);
+
+			var failed = (function (details) {
+				ms123.form.Dialog.alert(this.tr("namespace.getNamespaces") + ":" + details.message);
+			}).bind(this);
+
+			var params = {
+				service: "git",
+				method: "getRepositories",
+				parameter: {},
+				context: this,
+				async: true,
+				completed: completed,
+				failed: failed
 			}
+			ms123.util.Remote.rpcAsync(params);
 		}
 	}
 });
