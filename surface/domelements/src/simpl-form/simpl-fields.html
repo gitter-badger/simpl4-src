@@ -1532,6 +1532,202 @@
 	</script>
 </dom-module>
 
+<dom-module id="tree-field">
+	<style>
+		:host {
+			padding: 0.75em 0;
+			--paper-input-container: {
+				padding: 0px;
+			}
+			;
+		}
+		:host.compact {
+			padding: 0;
+		}
+		:host #decorator.compact {
+			padding: 0;
+			margin: 0px;
+		}
+		:host #decorator {
+			line-height: 1;
+		}
+		:host /deep/ .floated-label-placeholder.compact {
+			display: none;
+		}
+		:host #label.compact {
+			display: none;
+		}
+		:host #label {
+			font-size: 14px;
+		}
+		:host.compact /deep/ input {
+			width: initial !important;
+			position:relative !important;
+		}
+
+		:host /deep/ #dropdown {
+			width: 100%;
+			margin-top: 52px !important;
+			position: absolute !important;
+			top: 0px !important;
+		}
+		:host /deep/ .dropdown-content {
+			max-height: 400px !important;
+		}
+		:host /deep/ paper-input-container {
+			padding: 0px !important;
+		}
+
+	</style>
+	<template>
+		<paper-dropdown-menu style="display:inline !important;" id="decorator" label="[[label]]" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[isInvalid]]">
+			<simpl-jqtree style="width:100%;" class="dropdown-content" contextmenu="[[contextmenu]]" selected-item="{{selectedItem}}" multi-select="[[multiSelect]]" options="[[options]]" data="[[items]]">
+			</simpl-jqtree>
+		</paper-dropdown-menu>
+      <template is="dom-if" if="[[errorMessage]]">
+        <paper-input-error invalid$="[[isInvalid]]">[[errorMessage]]</paper-input-error>
+      </template>
+	</template>
+	<script>
+		Polymer( {
+			is: "tree-field",
+			behaviors: [
+				Polymer.IronFormElementBehavior,
+				Polymer.PaperInputBehavior,
+				Polymer.IronControlState,
+				StyleScopeBehavior,
+				FieldBehavior
+			],
+			properties: {
+				selectedItem: {
+					observer: "selectedItemChanged",
+					notify: true,
+					type: Object
+				},
+				multiple: {
+					value: false
+				},
+				compact: {
+					value: false
+				},
+				jsonItems: {
+					type: String
+				},
+				items: {
+					observer:"itemsChanged",
+					type: Object
+				},
+				required: {
+					value: "false",
+					type: String
+				},
+				closeAfterSelect: {
+						type: Boolean,
+						value: false
+				}
+			},
+			observers: [
+				'valueChanged(value)',
+				'compactChanged(compact)',
+				'jsonItemsChanged(jsonItems)'
+			],
+			ready: function() {
+				this.isInvalid = false;
+				this.options = { autoOpen : true }
+			},
+			compactChanged: function( ) {
+				if( this.compact === false) return;
+				this.async( function() {
+					jQuery( this.decorator ).addClass( "compact" );
+					jQuery( this.$.label ).addClass( "compact" );
+					jQuery( this ).addClass( "compact" );
+					var e = this.$.decorator.querySelector( ".floated-label-placeholder" );
+					jQuery( e ).addClass( "compact" );
+				}, 20 );
+			},
+			jsonItemsChanged: function( v ) {
+				var o = JSON.parse( this.jsonItems );
+				this.items = o;
+			},
+			itemsChanged:function(){
+				console.log("itemsChanged:", this.items);
+			},
+			valueChanged: function( v ) {
+				console.log( "select-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
+				if ( this.isDomReady != true ) return;
+				if ( this.withoutCheck ) {
+					this.withoutCheck = false;
+					return;
+				}
+				this.checkConstraints();
+			},
+			setValue: function( v ) {
+				console.log( "select-field(" + this.name + ").setValue:",v );
+				this.value = v;
+				if( this.selectize){
+					this.selectize.setValue(v);
+				}else{
+					this.__value = v;
+				}
+			},
+			getValue: function() {
+				console.log( "select-field(" + this.name + "),getValue:", this.value );
+				if( this.multiple !== true && this.value && Array.isArray(this.value) && this.value.length>0){
+					return this.value[0];
+				}
+				return this.value;
+			},
+			selectedItemChanged: function( val ) {
+				console.log( "select-field(" + this.name + ").selectedItemChanged:", this.value+"/val:"+val );
+				this.value = val;
+				this.fire( 'value-changed', this );
+			},
+			attached:function(){
+				this.async( function() {
+					this._attached();
+				});
+			},
+			_attached: function() {
+				this.alwaysFloatLabel = true;
+				this.placeholder=" "; //@@@MS is needed to show the floating label, if the the field is empyty.
+				console.log( "select-field(" + this.name + ").attached" );
+				this.isDomReady = true;
+				if ( this.compact ) {
+					this.compactChanged();
+				}
+			},
+			isEmpty: function( s ) {
+				if( Array.isArray(s)){
+					return s.length == 0;
+				}
+				if ( s == null || s == '' ) return true;
+				return false;
+			},
+			checkConstraints: function() {
+				this.setInvalid( false );
+				if ( !this.isRequired() ) return;
+				if ( !this.isEmpty(this.value) ) {
+					return;
+				}
+				this.setInvalid( true );
+				this.setErrorMessage( tr( "This field is required" ) );
+			},
+			setErrorMessage: function( message ) {
+				this.errorMessage = message;
+			},
+			setInvalid: function( b ) {
+				this.isInvalid = b;
+			},
+			isRequired: function() {
+				var data = this.form._getData();
+				var req = this.form._maskedEval( this.required, data, false );
+				return req;
+			}
+		} );
+
+	</script>
+</dom-module>
+
 <dom-module id="dropdown-field">
 	<link rel="import" type="css" href="jquery.dropdown.css" />
 	<style>

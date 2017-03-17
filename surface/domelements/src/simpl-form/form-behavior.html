@@ -139,7 +139,7 @@
 					} );
 				}
 			}
-			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,select-field" ), true );
+			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,tree-field,select-field" ), true );
 			for ( var i = 0; i < elements.length; i++ ) {
 				var saveInvalid = elements[ i ].isInvalid;
 				elements[ i ].checkConstraints();
@@ -648,6 +648,7 @@
 				shape.stencil.id.toLowerCase() == 'upload' ||
 				shape.stencil.id.toLowerCase() == 'moduleselector' ||
 				shape.stencil.id.toLowerCase() == 'enumselect' ||
+				shape.stencil.id.toLowerCase() == 'treeselect' ||
 				shape.stencil.id.toLowerCase() == 'tableselect' ||
 				shape.stencil.id.toLowerCase() == 'gridinput' ||
 				shape.stencil.id.toLowerCase() == 'checkbox' ||
@@ -723,8 +724,12 @@
 					var bounds = shape.bounds;
 					props.height = bounds.lowerRight.y - bounds.upperLeft.y;
 				}
-				if ( shape.stencil.id.toLowerCase() == "enumselect" || shape.stencil.id.toLowerCase() == "tableselect" ) {
+				if ( shape.stencil.id.toLowerCase() == "enumselect" 
+						|| shape.stencil.id.toLowerCase() == "tableselect" 
+						|| shape.stencil.id.toLowerCase() == "treeselect" 
+					) {
 					var isTableSelect = shape.stencil.id.toLowerCase() == "tableselect";
+					var isTreeSelect = shape.stencil.id.toLowerCase() == "treeselect";
 					var props = shape.properties;
 					var enumembed = props.xf_enumembed;
 					var _enum = props.xf_enum;
@@ -736,7 +741,9 @@
 					var varname = props.xf_varname;
 					if ( !this._isEmpty( varname ) ) {
 						props.items = this.variables[ varname ];
-						props.items = this._doResultMapping( props.items, resultmapping );
+						if( !isTreeSelect){
+							props.items = this._doResultMapping( props.items, resultmapping );
+						}
 					} else if ( !this._isEmpty( jsonpath ) ) {
 						var a = JSONPath( {
 							json: this._selectionLists,
@@ -749,13 +756,13 @@
 							props.items = a[ 0 ];
 						}
 						props.items = this._doResultMapping( props.items, resultmapping );
-					} else if ( !isTableSelect && enumembed && enumembed.totalCount > 0 ) {
+					} else if ( !isTreeSelect && !isTableSelect && enumembed && enumembed.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
-					} else if ( !isTableSelect && _enum && _enum.totalCount > 0 ) {
+					} else if ( !isTreeSelect && !isTableSelect && _enum && _enum.totalCount > 0 ) {
 						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
-					} else if ( !this._isEmpty( filter ) ) {
+					} else if ( !isTreeSelect && !this._isEmpty( filter ) ) {
 						var filterDesc = {
 							"totalCount": 1,
 							"enumDescription": "sw.filter:" + filter,

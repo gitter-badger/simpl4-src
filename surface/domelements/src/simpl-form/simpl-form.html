@@ -189,6 +189,9 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 		isEnumSelect: function( id ) {
 			return id == 'Enumselect';
 		},
+		isTreeSelect: function( id ) {
+			return id == 'Treeselect';
+		},
 		isUpload: function( id ) {
 			return id == 'Upload';
 		},
@@ -231,7 +234,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			return r;
 		},
 		isField: function( id ) {
-			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id == 'Enumselect' || id == 'Upload' || id == 'Custom' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
+			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id == 'Enumselect' || id == 'Treeselect' || id == 'Upload' || id == 'Custom' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
 			return r;
 		},
 		isInputAndBoolean: function( id, xf_type ) {
@@ -340,6 +343,10 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isEnumSelect(item.id)}}">
 			<select-field field class="flex" name$="{{item.xf_id}}" items="{{item.items}}" multiple="[[item.xf_multiselection]]" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
 			</select-field>
+		</template>
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isTreeSelect(item.id)}}">
+			<tree-field field class="flex" name$="{{item.xf_id}}" items="{{item.items}}" multiple="[[item.xf_multiselection]]" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
+			</tree-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isUpload(item.id)}}">
 			<upload-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" enabled-expr$="{{item.xf_enabled}}" required="[[item.xf_required]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
