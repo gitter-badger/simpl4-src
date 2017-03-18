@@ -1549,7 +1549,8 @@
 			margin: 0px;
 		}
 		:host #decorator {
-			line-height: 1;
+			line-height: 1.3;
+			font-size: 14px;
 		}
 		:host /deep/ .floated-label-placeholder.compact {
 			display: none;
@@ -1567,12 +1568,19 @@
 
 		:host /deep/ #dropdown {
 			width: 100%;
-			margin-top: 52px !important;
-			position: absolute !important;
+			display:inline-block;
+			position: relative !important;
 			top: 0px !important;
 		}
+
+
+		:host /deep/ #contentWrapper {
+			position: absolute;
+			width: 100%;
+		}
+
 		:host /deep/ .dropdown-content {
-			max-height: 400px !important;
+			max-height: 300px !important;
 		}
 		:host /deep/ paper-input-container {
 			padding: 0px !important;
@@ -1581,7 +1589,7 @@
 	</style>
 	<template>
 		<paper-dropdown-menu style="display:inline !important;" id="decorator" label="[[label]]" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[isInvalid]]">
-			<simpl-jqtree style="width:100%;" class="dropdown-content" contextmenu="[[contextmenu]]" selected-item="{{selectedItem}}" multi-select="[[multiSelect]]" options="[[options]]" data="[[items]]">
+			<simpl-jqtree style="width:100%;" jqtree="{{jqtree}}" class="dropdown-content" contextmenu="[[contextmenu]]" selected-item="{{selectedItem}}" multi-select="[[multiSelect]]" options="[[options]]" data="[[items]]">
 			</simpl-jqtree>
 		</paper-dropdown-menu>
       <template is="dom-if" if="[[errorMessage]]">
@@ -1653,7 +1661,7 @@
 				console.log("itemsChanged:", this.items);
 			},
 			valueChanged: function( v ) {
-				console.log( "select-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
+				console.log( "tree-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
 				if ( this.isDomReady != true ) return;
 				if ( this.withoutCheck ) {
 					this.withoutCheck = false;
@@ -1662,23 +1670,29 @@
 				this.checkConstraints();
 			},
 			setValue: function( v ) {
-				console.log( "select-field(" + this.name + ").setValue:",v );
-				this.value = v;
-				if( this.selectize){
-					this.selectize.setValue(v);
-				}else{
-					this.__value = v;
+				console.log( "tree-field(" + this.name + ").setValue:",v );
+				var id = v;
+				if( _.isString(v)){
+					try{
+						id = JSON5.parse(v).id;
+					}catch(e){}		
+				}
+				if( !_.isEmpty(id) ){
+					var node = this.jqtree.tree('getNodeById', id);
+					this.jqtree.tree('selectNode', node);
+					this.jqtree.tree('scrollToNode', node);
+					this.value = node.name;
 				}
 			},
 			getValue: function() {
-				console.log( "select-field(" + this.name + "),getValue:", this.value );
-				if( this.multiple !== true && this.value && Array.isArray(this.value) && this.value.length>0){
-					return this.value[0];
-				}
-				return this.value;
+				console.log( "tree-field(" + this.name + "),getValue:", this.value );
+				//if( this.multiple !== true && this.value && Array.isArray(this.value) && this.value.length>0){
+				//	return this.value[0];
+				//}
+				return JSON.stringify(this.value);
 			},
 			selectedItemChanged: function( val ) {
-				console.log( "select-field(" + this.name + ").selectedItemChanged:", this.value+"/val:"+val );
+				console.log( "tree-field(" + this.name + ").selectedItemChanged:", this.value+"/val:"+val );
 				this.value = val;
 				this.fire( 'value-changed', this );
 			},
@@ -1690,7 +1704,7 @@
 			_attached: function() {
 				this.alwaysFloatLabel = true;
 				this.placeholder=" "; //@@@MS is needed to show the floating label, if the the field is empyty.
-				console.log( "select-field(" + this.name + ").attached" );
+				console.log( "tree-field(" + this.name + ").attached" );
 				this.isDomReady = true;
 				if ( this.compact ) {
 					this.compactChanged();
