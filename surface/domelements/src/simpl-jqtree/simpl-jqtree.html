@@ -62,6 +62,20 @@
 					type: Object
 				},
 				/**
+				 * the jqtree
+				 */
+				jqtree: {
+					notify: true,
+					type: Object
+				},
+				/**
+				 * the cmnode
+				 */
+				cmnode: {
+					notify: true,
+					type: Object
+				},
+				/**
 				 * the contextmenu
 				 */
 				contextmenu: {
@@ -78,33 +92,29 @@
 			behaviors: [
 				StyleScopeBehavior
 			],
-			ready: function() {
-			},
+			ready: function() {},
 			attached: function() {
 				var o = clone( this._parseOptions( this.options ) );
 				o.data = this.data;
-				console.log("contextmenu:",this.contextmenu);
 				if ( this.contextmenu ) {
 					o.useContextMenu = true;
 				}
-				
-				console.log("o:",o);
-				this._tree = $( this.$.jqtree ).tree( o )
+
+				this.jqtree = $( this.$.jqtree ).tree( o )
 				if ( this.multiselect ) {
-					this._tree.bind( 'tree.click', this._multiSelection.bind( this ) );
+					this.jqtree.bind( 'tree.click', this._multiSelection.bind( this ) );
 				}
-				this._tree.bind( 'tree.select', this._itemSelected.bind( this ) );
+				this.jqtree.bind( 'tree.select', this._itemSelected.bind( this ) );
 				if ( this.contextmenu ) {
-					this._tree.bind( 'tree.contextmenu', this._contextMenu.bind( this ) );
-					var cm = contextmenu(this.contextmenu);
+					this.jqtree.bind( 'tree.contextmenu', this._contextMenu.bind( this ) );
+					var cm = contextmenu( this.contextmenu );
 					this._contextMenu = cm;
-					contextmenu.attach($(this.$.contextmenuId),cm);
+					contextmenu.attach( $( this.$.contextmenuId ), cm );
 				}
 			},
 			_contextMenu: function( e ) {
-        var node = e.node;
-				console.log("contextmenu:",e.node);
-				contextmenu.show(this._contextMenu, e.node.element);
+				this.cmnode = e.node;
+				contextmenu.show( this._contextMenu, e.node.element );
 			},
 			_multiSelection: function( e ) {
 				// Disable single selection
@@ -116,29 +126,29 @@
 					console.log( 'The multiple selection functions require that nodes have an id' );
 				}
 
-				if ( this._tree.tree( 'isNodeSelected', selected_node ) ) {
-					this._tree.tree( 'removeFromSelection', selected_node );
+				if ( this.jqtree.tree( 'isNodeSelected', selected_node ) ) {
+					this.jqtree.tree( 'removeFromSelection', selected_node );
 				} else {
-					this._tree.tree( 'addToSelection', selected_node );
+					this.jqtree.tree( 'addToSelection', selected_node );
 				}
 			},
 
 			_itemSelected: function( event ) {
 				if ( event.node ) {
 					var node = event.node;
-					console.log("node:",node);
 					this.selectedItem = {
-						label : node.name,
-						id : node.id
+						label: node.name,
+						id: node.id
 					}
-					this.fire( "iron-select", {item:this.selectedItem});
+					this.fire( "iron-select", {
+						item: this.selectedItem
+					} );
 					this.prevSelectedItem = this.selectedItem;
 				} else {
-					// event.node is null
-					// a node was deselected
-					// e.previous_node contains the deselected node
 					this.selectedItem = null;
-					this.fire( "iron-deselect", {item:this.prevSelectedItem});
+					this.fire( "iron-deselect", {
+						item: this.prevSelectedItem
+					} );
 				}
 			},
 
