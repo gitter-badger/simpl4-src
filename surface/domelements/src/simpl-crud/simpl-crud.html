@@ -121,7 +121,7 @@ CRUD operations for simpl4
 				</template>
 			</section>
 			<section style="padding:0px;position:relative;overflow-x:hidden;" num="1" unresolved>
-				<simpl-panel heading="{{panelHeaderCrudForm}}">
+				<!--simpl-panel heading="{{panelHeaderCrudForm}}"-->
 					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
 						<paper-button class="h flex button button_primary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
 							<iron-icon icon="save"></iron-icon>{{tr('data.form.save')}}</paper-button>
@@ -135,7 +135,7 @@ CRUD operations for simpl4
 						</paper-button>
 					</div>
 					<simpl-form id="formid" mode="{{mode}}" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
-				</simpl-panel>
+				<!--/simpl-panel-->
 				<paper-dialog id="error" class="scrolling">
 					<!--action-dialog-->
 					<div style="padding:15px;">
