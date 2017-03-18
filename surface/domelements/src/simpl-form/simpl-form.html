@@ -436,26 +436,28 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 
 	</style>
 	<template>
-		<paper-tabs selected="{{tabsId}}" selectables="paper-tab" attr-for-selected="tabs-id" scrollable>
-			<template is="dom-repeat" as="i" items="[[item.childShapes]]">
-				<template is="dom-if" if="[[i.label]]" restamp>
-					<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.label)]]</paper-tab>
-				</template>
-				<template is="dom-if" if="[[!i.label]]" restamp>
-					<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.xf_id)]]</paper-tab>
-				</template>
-			</template>
-		</paper-tabs>
-
-		<neon-animated-pages style$="[[pagesStyle]]" selected="[[tabsId]]" attr-for-selected="tabs-id">
-			<template is="dom-repeat" as="i" items="[[item.childShapes]]">
-				<simpl-animatable-page class="page" tabs-id$="[[i.xf_id]]" style$="[[getPageStyle()]]">
-					<template is="dom-repeat" as="j" items="[[i.childShapes]]">
-						<form-element-renderer style$="[[getElementStyle()]]" class="flex" item="[[j]]" />
+		<div id="[[item.xf_id]]">
+			<paper-tabs selected="{{tabsId}}" selectables="paper-tab" attr-for-selected="tabs-id" scrollable>
+				<template is="dom-repeat" as="i" items="[[item.childShapes]]">
+					<template is="dom-if" if="[[i.label]]" restamp>
+						<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.label)]]</paper-tab>
 					</template>
-				</simpl-animatable-page>
-			</template>
-		</neon-animated-pages>
+					<template is="dom-if" if="[[!i.label]]" restamp>
+						<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.xf_id)]]</paper-tab>
+					</template>
+				</template>
+			</paper-tabs>
+
+			<neon-animated-pages style$="[[pagesStyle]]" selected="[[tabsId]]" attr-for-selected="tabs-id">
+				<template is="dom-repeat" as="i" items="[[item.childShapes]]">
+					<simpl-animatable-page class="page" tabs-id$="[[i.xf_id]]" style$="[[getPageStyle()]]">
+						<template is="dom-repeat" as="j" items="[[i.childShapes]]">
+							<form-element-renderer style$="[[getElementStyle()]]" class="flex" item="[[j]]" />
+						</template>
+					</simpl-animatable-page>
+				</template>
+			</neon-animated-pages>
+		</div>
 	</template>
 	<script>
 		Polymer( {
