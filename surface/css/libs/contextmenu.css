@@ -156,7 +156,7 @@ body > cmenu {
 }
 
 .osx10_7 ._contextmenu_screen_ cmenu menuitem{
-    height: 19px;
+//    height: 19px;
     padding: 0px 19px 0px 21px;
 }
 .osx10_7 ._contextmenu_screen_ cmenu menuitem:hover{
