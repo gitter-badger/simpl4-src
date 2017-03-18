@@ -52,6 +52,7 @@
 				 * the data
 				 */
 				data: {
+					observer: "dataChanged",
 					type: Object
 				},
 				/**
@@ -93,7 +94,7 @@
 				StyleScopeBehavior
 			],
 			ready: function() {},
-			attached: function() {
+			_createTree: function() {
 				var o = clone( this._parseOptions( this.options ) );
 				o.data = this.data;
 				if ( this.contextmenu ) {
@@ -110,6 +111,14 @@
 					var cm = contextmenu( this.contextmenu );
 					this._contextMenu = cm;
 					contextmenu.attach( $( this.$.contextmenuId ), cm );
+				}
+			},
+			dataChanged:function(){
+				console.log("dataChanged:", this.dataChanged);
+				if( this.jqtree ){
+					this.jqtree.tree('loadData', this.data);
+				}else{
+					this._createTree();
 				}
 			},
 			_contextMenu: function( e ) {
