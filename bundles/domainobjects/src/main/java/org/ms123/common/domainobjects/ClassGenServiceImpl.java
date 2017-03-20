@@ -89,7 +89,7 @@ import static com.jcabi.log.Logger.info;
 /**
  */
 @SuppressWarnings("unchecked")
-@Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true)
+@Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "kind=nucleus,name=classGen" })
 public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.ClassGenService {
 
 	protected Inflector m_inflector = Inflector.getInstance();

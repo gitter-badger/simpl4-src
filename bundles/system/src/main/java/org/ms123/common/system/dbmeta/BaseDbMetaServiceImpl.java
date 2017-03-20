@@ -51,6 +51,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.compile.CompileService;
+import org.ms123.common.system.orientdb.OrientDBService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import schemacrawler.schema.*;
@@ -74,6 +75,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 
 	protected BundleContext bc;
 	protected CompileService compileService;
+	protected OrientDBService orientDBService;
 	protected NamespaceService namespaceService;
 	protected EntityService entityService;
 	protected GitService gitService;
@@ -93,6 +95,18 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			add("string");
 		}
 	};
+	protected void createOrientMetadata(StoreDesc sdesc) throws Exception {
+		File packDir = new File( gitRepos, sdesc.getNamespace() + "/data_description/"+sdesc.getPack());
+		info(this, "createOrientMetadata.packDir:" + packDir);
+		if( packDir.exists() ){
+			return;
+		}
+		File entDir = new File(packDir, "entitytypes" );
+		entDir.mkdirs();
+		File relFile = new File( packDir, "relations");
+		writeStringToFile( relFile, "[sw]\ntype = sw.relations\n--\n[]\n", "UTF-8");
+
+	}
 
 	protected void buildDatanucleusMetadata(StoreDesc sdesc , String dataSourceName, Map<String, String> datanucleusConfig) throws Exception {
 		String namespace = sdesc.getNamespace();

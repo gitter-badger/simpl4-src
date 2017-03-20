@@ -83,7 +83,9 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 
 	protected CompileService m_compileService;
 
-	private ClassGenService m_classGenService;
+	private ClassGenService m_classGenNucleusService;
+
+	private ClassGenService m_classGenOrientService;
 
 	private PermissionService m_permissionService;
 
@@ -166,7 +168,7 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		try {
 			//BundleDelegatingClassLoader bdc = new BundleDelegatingClassLoader(m_bc.getBundle(), clParent);
 			//Thread.currentThread().setContextClassLoader(bdc);
-			classFiles = m_classGenService.generate(sdesc, entities, outDir.toString());
+			classFiles = m_classGenNucleusService.generate(sdesc, entities, outDir.toString());
 		} finally {
 			Thread.currentThread().setContextClassLoader(clParent);
 		}
@@ -284,10 +286,15 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		System.out.println("DomainObjectsServiceImpl.setEntityService:" + paramEntityService);
 	}
 
-	@Reference(dynamic = true)
-	public void setClassGenService(ClassGenService sgs) {
-		m_classGenService = sgs;
+	@Reference(target = "(kind=nucleus)", dynamic = true)
+	public void setClassGenNucleusService(ClassGenService sgs) {
+		m_classGenNucleusService = sgs;
 		System.out.println("DomainObjectsServiceImpl.setClassGenService:" + sgs);
+	}
+	@Reference(target = "(kind=orient)", dynamic = true)
+	public void setClassGenOrientService(ClassGenService sgs) {
+		m_classGenOrientService = sgs;
+		System.out.println("DomainObjectsServiceImpl.setClassGenOrientService:" + sgs);
 	}
 
 	@Reference(dynamic = true)

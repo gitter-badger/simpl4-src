@@ -48,6 +48,7 @@ import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.compile.CompileService;
+import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.git.GitService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -130,8 +131,23 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 			Map<String, Object> jooqConfig = (Map) config.get("jooq");
 			Map<String, String> datanucleusConfig = (Map) config.get("datanucleus");
 			Map<String, String> dsConfig = (Map) config.get("datasource");
+			Object  _orientDB = dsConfig.get("is_orientdb");
+			Boolean isOrientDB = _orientDB != null ? ((Boolean)_orientDB) : false;
 			String pack = dsConfig.get("packageName");
 
+			if( isOrientDB ){
+				if( "data".equals(pack)){
+					throw new RuntimeException("OrientDB: packname cannot be \"data\"");
+				}
+				String name = dsConfig.get("databaseName");
+				orientDBService.getFactory(pack + "." + name );
+				gitService.setStoreProperty( namespace, "store", pack, "pack", pack);
+				gitService.setStoreProperty( namespace, "store", pack, "namespace", namespace);
+			  gitService.setStoreProperty( namespace, "store", pack, "database", "graph:orientdb");
+				StoreDesc sdesc = StoreDesc.getNamespaceData(namespace, pack);
+				createOrientMetadata(sdesc );
+				return;
+			}
 
 			createDatasource(namespace, dsConfig);
 
@@ -258,6 +274,11 @@ public class DbMetaServiceImpl extends BaseDbMetaServiceImpl implements DbMetaSe
 	public void setGitService(GitService paramService) {
 		System.out.println("DbMetaServiceImpl.setGitService:" + paramService);
 		this.gitService = paramService;
+	}
+	@Reference(dynamic = true)
+	public void setOrientDBService(OrientDBService paramService) {
+		System.out.println("DbMetaServiceImpl.setOrientDBService:" + paramService);
+		this.orientDBService = paramService;
 	}
 	@Reference(dynamic = true)
 	public void setNucleusService(NucleusService paramService) {

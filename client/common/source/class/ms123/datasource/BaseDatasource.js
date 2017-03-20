@@ -66,10 +66,25 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 			 return typeof(s) === 'string' || s instanceof String;
 		 },
 		_createEditForm: function() {},
+		_isEmpty: function( content ) {
+			if ( !content || content.trim().length === 0 ) return true;
+			return false;
+		},
+		_isOrientOk:function(data){
+			if( data.packagename == "data"){
+				ms123.form.Dialog.alert( this.tr( "datasource.orient_pack_data_not_ok" ) );
+				return false;
+			}
+			if( data.isOrientDB && !this._isEmpty(data.packagename) && !this._isEmpty(data.databasename)){
+				return true;
+			}
+			return false;
+		},
 		_save: function() {
 			var data = this._form.getData();
 			var validate = this._form.validate();
-			if ( !validate ) {
+			var isOrientOk = this._isOrientOk(data);
+			if ( !isOrientOk && !validate ) {
 				ms123.form.Dialog.alert( this.tr( "datasource.form_incomplete" ) );
 			} else {
 
@@ -82,6 +97,7 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 					'osgi.jdbc.driver.class': this._getItem( data.name, 'driver' ),
 					'databaseName': data.databasename,
 					'url': data.url,
+					'is_orientdb': data.isOrientDB,
 					'user': data.username,
 					'password': data.password,
 					'port': port,

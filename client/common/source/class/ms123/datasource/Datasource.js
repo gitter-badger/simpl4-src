@@ -49,16 +49,23 @@ qx.Class.define( "ms123.datasource.Datasource", {
 	members: {
 		_createEditForm: function() {
 			var formData = {
+				"isOrientDB": {
+					'type': "Checkbox",
+					'label': "OrientDB",
+					'defaultValue': false,
+					'value': null
+				},
 				"name": {
 					'type': "SelectBox",
 					'label': this.tr( "datasource.database" ),
-					'exclude': 'url==null || url.length==0',
+					'exclude': 'url==null || url.length==0 || isOrientDB',
 					'value': "string",
 					'options': this._getDbList()
 				},
 				"url": {
 					'type': "TextField",
 					'label': this.tr( "datasource.url" ),
+					'exclude': 'isOrientDB',
 					'validation': {
 						required: false
 					},
@@ -67,7 +74,7 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"username": {
 					'type': "TextField",
 					'label': this.tr( "datasource.username" ),
-					'exclude': 'url==null || url.length==0',
+					'exclude': 'isOrientDB || (url==null || url.length==0)',
 					'validation': {
 						required: false
 					},
@@ -76,7 +83,7 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"password": {
 					'type': "TextField",
 					'label': this.tr( "datasource.password" ),
-					'exclude': 'url==null || url.length==0',
+					'exclude': 'isOrientDB || (url==null || url.length==0)',
 					'validation': {
 						required: false
 					},
@@ -85,7 +92,7 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"databasename": {
 					'type': "TextField",
 					'label': this.tr( "datasource.databasename" ),
-					'exclude': 'url==null || url.length==0 || name.startsWith("h2")',
+					'exclude': '!isOrientDB && (url==null || url.length==0 || name.startsWith("h2"))',
 					'validation': {
 						required: false
 					},
@@ -94,6 +101,7 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"datasourcename": {
 					'type': "TextField",
 					'label': this.tr( "datasource.datasourcename" ),
+					'exclude': 'isOrientDB',
 					'validation': {
 						required: true
 					},
@@ -111,53 +119,63 @@ qx.Class.define( "ms123.datasource.Datasource", {
 				"create_jooq_metadata": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.create_jooq_metadata" ),
+					'exclude': 'isOrientDB',
 					'defaultValue': true,
 					'value': null
 				},
 				"jooq_inputschema": {
 					'type': "TextField",
 					'label': this.tr( "datasource.jooq_inputschema" ),
+					'exclude': 'isOrientDB',
 					'value': null
 				},
 				"jooq_includes": {
 					'type': "TextField",
 					'label': this.tr( "datasource.jooq_includes" ),
+					'exclude': 'isOrientDB',
 					'value': null
 				},
 				"jooq_excludes": {
 					'type': "TextField",
 					'label': this.tr( "datasource.jooq_excludes" ),
+					'exclude': 'isOrientDB',
 					'value': null
 				},
 				"create_datanucleus_metadata": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.create_datanucleus_metadata" ),
+					'exclude': 'isOrientDB',
 					'defaultValue': true,
 					'value': null
 				},
 				"datanucleus_inputschema": {
 					'type': "TextField",
 					'label': this.tr( "datasource.datanucleus_inputschema" ),
+					'exclude': 'isOrientDB',
 					'value': null
 				},
 				"datanucleus_includes": {
 					'type': "TextField",
 					'label': this.tr( "datasource.datanucleus_includes" ),
+					'exclude': 'isOrientDB',
 					'value': null
 				},
 				"datanucleus_excludes": {
 					'type': "TextField",
 					'label': this.tr( "datasource.datanucleus_excludes" ),
+					'exclude': 'isOrientDB',
 					'value': null
 				},
 				"datasource_is_schema_readonly": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.is_schema_readonly" ),
+					'exclude': 'isOrientDB',
 					'value': false
 				},
 				"datasource_is_schema_validate": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.is_schema_validate" ),
+					'exclude': 'isOrientDB',
 					'defaultValue': true,
 					'value': null
 				}

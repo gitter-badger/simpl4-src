@@ -59,11 +59,15 @@ public class StoreDesc {
 
 	public static final String STORE_RDBMS = "rdbms";
 
+	public static final String STORE_GRAPH = "graph";
+
 	public static final String STORE_CASSANDRA = "cassandra";
 
 	public static final String VENDOR_PG = "pg";
 
 	public static final String VENDOR_H2 = "h2";
+
+	public static final String VENDOR_ORIENTDB = "orientdb";
 
 	public static final String VENDOR_HSQL = "hsql";
 	public static final String STORE_JDBC = "jdbc";
