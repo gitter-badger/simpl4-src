@@ -81,6 +81,12 @@ qx.Class.define("ms123.shell.ViewManager", {
 			this._page = new qx.ui.tabview.Page(title,icon).set({
 				showCloseButton: true
 			});
+
+			if(Array.isArray(clazz)){ //@@@MS a bit a hack 
+				var isOrientDB = ms123.StoreDesc.getNamespaceDataStoreDesc(model.getPack()).isOrientDB();
+				clazz = isOrientDB ? clazz[1] : clazz[0];
+			}
+
 			var c = new clazz( model,param, facade);
 			this._page.setUserData( "component",c);
 			this._page.addListener("close", function (e) {

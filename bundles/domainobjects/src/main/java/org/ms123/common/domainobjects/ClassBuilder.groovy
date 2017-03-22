@@ -22,90 +22,113 @@ import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.SourceUnit
 import java.io.FileOutputStream
+import groovy.transform.CompileStatic
 
+@CompileStatic
 class ClassBuilder {
 
-	GroovyClassLoader loader
-	String name
+	CollectorClassLoader loader
+	List<ClazzConfig> clazzConfigList = [];
+	ClazzConfig config;
+	List imports;
+  String pack;
 	Class cls
-	def imports
-	def fields
-	def methods
 
-	def ClassBuilder(GroovyClassLoader loader) {
-		this.loader = new MyGroovyClassLoader(loader)
-		imports = []
-		fields = [:]
-		methods = [:]
+	def ClassBuilder(ClassLoader parent) {
+		this.loader = new CollectorClassLoader(parent)
+		this.imports = [];
 	}
 
-	def setName(String name) {
-		this.name = name
+	def newClazz(String name) {
+		config = new ClazzConfig()
+		clazzConfigList.add( config );
+		config.name = name
+	}
+	def setPack(String p) {
+		pack = p
+	}
+	def setAnnotation(String ann) {
+		config.annotation = ann
 	}
 
 	def addImport(Class importClass) {
-		imports << "${importClass.getPackage().getName()}" +
-			".${importClass.getSimpleName()}"
+		this.imports << "${importClass.getPackage().getName()}" + ".${importClass.getSimpleName()}"
 	}
 
 	def addField(String name, Class type) {
-		fields[name] = type.simpleName
+		config.fields[name] = type.simpleName
+	}
+	def addField(String name, String type) {
+		config.fields[name] = type
 	}
 
-	def addMethod(String name, Closure closure) {
-		methods[name] = closure
-	}
+  def addMapping(String name, String m) {
+    config.mapping[name] = m
+  }
 
-	def writeClassFile( String file ) {
+	def writeClassFile( File file, name ) {
 		FileOutputStream fos = new FileOutputStream(file);
-		fos.write( this.loader.bytecodes[this.name] );
+		fos.write( this.loader.bytecodes[pack+"."+name] );
 		fos.close();
 	}
+	def getClazz( name ) {
+		return this.loader.classes[pack+"."+name ];
+	}
 
-	def getCreatedClass() {
+	def createClasses() {
 
 		def templateText = '''
-<%imports.each {%>import $it\n <% } %> 
-class $name
-{
-<%fields.each {%>    $it.value $it.key \n<% } %>
+package $pack
+<%imports.each {%>import $it\n<% } %> 
+<%clazzConfigList.each { clazz -> %>
+$clazz.annotation
+@CompileStatic
+class $clazz.name {
+<%clazz.fields.each {%>    $it.value $it.key \n<% } %>
+    static mapping = {
+<%clazz.mapping.each {%>      $it.key($it.value)\n<% } %>
+    }
 }
+<% } %>
 '''
-		def data = [name: name, imports: imports, fields: fields]
+		def data = [pack:pack,imports:imports,clazzConfigList:clazzConfigList]
 
 		def engine = new groovy.text.SimpleTemplateEngine()
 		def template = engine.createTemplate(templateText)
 		def result = template.make(data)
-		cls = loader.parseClass(result.toString())
-		methods.each {
-			cls.metaClass."$it.key" = it.value
-		}
-		return cls
+		println result.toString()
+		loader.parseClass(result.toString())
 	}
-	class MyGroovyClassLoader extends GroovyClassLoader {
-		MyGroovyClassLoader(ClassLoader parent) {
+	class ClazzConfig{
+		String name
+		String annotation
+		def fields = [:];
+		def mapping = [:];
+	}
+	class CollectorClassLoader extends GroovyClassLoader {
+		CollectorClassLoader(ClassLoader parent) {
 			super(parent)
 		}
-		Map bytecodes = [:]
+		Map<String,byte[]> bytecodes = [:]
+		Map<String,Class> classes = [:]
 
-
-		class MyClassCollector extends GroovyClassLoader.ClassCollector {
-			protected MyClassCollector(GroovyClassLoader.InnerLoader cl, CompilationUnit unit, SourceUnit su) {
+		class ClassCollector extends GroovyClassLoader.ClassCollector {
+			protected ClassCollector(GroovyClassLoader.InnerLoader cl, CompilationUnit unit, SourceUnit su) {
 				super(cl, unit, su)
 			}
-
 
 			@Override
 			protected Class createClass(byte[] code, ClassNode classNode) {
 				bytecodes[classNode.name] = code
-				super.createClass(code, classNode)
+				Class clazz = super.createClass(code, classNode)
+				classes[classNode.name] = clazz
+				return clazz;
 			}
 		}
 
-
 		@Override
 		protected GroovyClassLoader.ClassCollector createCollector(CompilationUnit unit, SourceUnit su) {
-			new MyClassCollector(new GroovyClassLoader.InnerLoader(this), unit, su)
+			new ClassCollector(new GroovyClassLoader.InnerLoader(this), unit, su)
 		}
 	}
 }

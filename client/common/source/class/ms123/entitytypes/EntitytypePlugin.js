@@ -142,7 +142,7 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 		getOnClickActions: function () {
 			var onclick = [{
 				nodetypes: ["sw.entitytype"],
-				clazz: ms123.entitytypes.FastEntitytypeCreate,
+				clazz: [ms123.entitytypes.RDBMSEntitytypeCreate,ms123.entitytypes.OrientDBEntitytypeCreate],
 				param: {
 					isNew: false,
 					mode: "entity"
@@ -153,7 +153,7 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 			},
 			{
 				nodetypes: ["sw.entitytypes"],
-				clazz: ms123.entitytypes.FastEntitytypeCreate,
+				clazz: [ms123.entitytypes.RDBMSEntitytypeCreate,ms123.entitytypes.OrientDBEntitytypeCreate],
 				param: {
 					isNew: true,
 					mode: "entity"

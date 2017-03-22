@@ -45,6 +45,7 @@ qx.Class.define("ms123.StoreDesc", {
 		if( !this.__storeId ){
 			this.__storeId = this.__namespace +"_"+this.__pack;
 		}
+		this.__store = context.store;
 	},
 
 	statics: {
@@ -84,6 +85,10 @@ qx.Class.define("ms123.StoreDesc", {
 		getNamespaceDataStoreDescForNS: function (ns,pack) {
 			if( pack == null) pack = "data";
 			return ms123.StoreDesc.__namespaceDataStoreDesc[ns+"_"+pack];
+		},
+		isOrientDB: function (ns,pack) {
+			if( pack == null) pack = "data";
+			return "graph:orientdb" == ms123.StoreDesc.__namespaceDataStoreDesc[ns+"_"+pack].__store;
 		},
 
 		getNamespaceDataStoreDesc: function (pack) {
@@ -138,6 +143,12 @@ qx.Class.define("ms123.StoreDesc", {
 		},
 		getStoreId: function () {
 			return this.__storeId;
+		},
+		getStore: function () {
+			return this.__store;
+		},
+		isOrientDB: function () {
+			return "graph:orientdb" ==  this.__store;
 		},
 
 		toString: function () {

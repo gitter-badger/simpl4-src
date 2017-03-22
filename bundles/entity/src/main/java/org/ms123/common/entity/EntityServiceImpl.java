@@ -70,6 +70,7 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 
 
 	public EntityServiceImpl() {
+		m_orientdbImpl = new OrientDBEntityServiceImpl();
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
@@ -289,12 +290,15 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 	public void setDataLayer(DataLayer dataLayer) {
 		info("EntityServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
+		m_orientdbImpl.setDataLayer( dataLayer );
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
 		info("EntityServiceImpl.setGitService:" + gitService);
 		m_gitMetaData = new GitMetaDataImpl(gitService);
+		m_orientdbImpl.setGitService( gitService );
+		m_orientdbImpl.setGitMetadata( m_gitMetaData );
 		this.m_gitService = gitService;
 	}
 
@@ -302,29 +306,34 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
 		info("EntityServiceImpl.setPermissionService:" + paramPermissionService);
+		m_orientdbImpl.setPermissionService( paramPermissionService );
 	}
 
 	@Reference(dynamic = true)
 	public void setAuthService(AuthService paramService) {
 		this.m_authService = paramService;
 		info("EntityServiceImpl.setAuthService:" + paramService);
+		m_orientdbImpl.setAuthService( paramService );
 	}
 
 	@Reference(dynamic = true)
 	public void setUtilsService(UtilsService paramUtilsService) {
 		this.m_utilsService = paramUtilsService;
 		info("EntityServiceImpl.setUtilsService:" + paramUtilsService);
+		m_orientdbImpl.setUtilsService( paramUtilsService );
 	}
 
 	@Reference(dynamic = true, optional=true)
 	public void setEnumerationService(EnumerationService param) {
 		this.m_enumerationService = param;
 		info("EntityServiceImpl.setEnumerationService:" + param);
+		m_orientdbImpl.setEnumerationService( param );
 	}
 
 	@Reference(dynamic = true)
 	public void setNucleusService(NucleusService paramService) {
 		this.m_nucleusService = paramService;
 		info("EntityServiceImpl.setNucleusService:" + paramService);
+		m_orientdbImpl.setNucleusService( paramService );
 	}
 }

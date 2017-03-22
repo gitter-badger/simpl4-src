@@ -195,6 +195,7 @@ qx.Class.define("ms123.Application", {
 					var sdescData = new ms123.StoreDesc({
 						namespace: sd["namespace"],
 						pack: sd["pack"],
+						store: sd["store"],
 						repository: sd["repository"],
 						storeId: sd["storeId"]
 					});

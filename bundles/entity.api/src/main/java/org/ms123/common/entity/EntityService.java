@@ -24,6 +24,7 @@ import org.ms123.common.store.StoreDesc;
 import org.ms123.common.rpc.RpcException;
 
 public interface EntityService {
+	/*Base*/
 	public Map getPermittedFields(StoreDesc sdesc, String entityName, String actions);
 	public Map getPermittedFields(StoreDesc sdesc, String entityName);
 	public List<Map> getPrimaryKeyFields(StoreDesc sdesc, String entityName);
@@ -31,15 +32,21 @@ public interface EntityService {
 	public Map getEntityTree( StoreDesc sdesc, String mainEntity, int maxlevel, Boolean pathid, String type, Boolean listResolved) throws Exception;
 	public List<Map> getFields( StoreDesc  sdesc, String entityName,Boolean withAutoGen) throws Exception;
 	public List<Map> getFields( StoreDesc  sdesc, String entityName,Boolean withAutoGen,Boolean withRelations) throws Exception;
-	public List<Map> getRelations(StoreDesc sdesc) throws Exception;
-	public void saveRelations(StoreDesc sdesc, List<Map> relations) throws Exception;
+
+	/*not needed in orientdb*/
 	public List<Map> getDefaultFields();
 	public List<Map> getTeamFields();
 	public List<Map> getStateFields();
+
+	/*gitMetaData*/
+	public List<Map> getRelations(StoreDesc sdesc) throws Exception;
+	public void saveRelations(StoreDesc sdesc, List<Map> relations) throws Exception;
 	public void saveEntitytype( String storeId, String name, Map<String, Object> data) throws RpcException;
 	public void deleteEntitytype( String storeId, String name) throws RpcException;
 	public void deleteEntitytypes( String storeId) throws RpcException;
 	public List<Map> getEntitytypes(String storeId) throws RpcException;
 	public Map<String, Object> getEntitytype(String storeId,  String name) throws RpcException;
+
+	/*GraphCreator*/
 	public Map createEntitytypes( String storeId, String dataMapperConfigName, Map dataMapperConfig, List<Map> strategy, String side,Boolean infoOnly) throws RpcException;
 }

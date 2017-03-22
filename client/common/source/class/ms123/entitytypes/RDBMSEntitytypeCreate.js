@@ -24,13 +24,14 @@
 
 /**
  */
-qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
+qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 	extend: ms123.util.TableEdit,
 
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
 	construct: function (model, param, facade) {
+    console.log("RDBMSEntitytypeCreate");
 		this._facade = facade;
 		this._model = model;
 		this._isNew = param.isNew;
@@ -38,6 +39,7 @@ qx.Class.define("ms123.entitytypes.FastEntitytypeCreate", {
 		var pack = model.getPack();
 		this._pack = model.getPack();
 		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
+		console.log("IsOrient:", this.storeDesc.isOrientDB());
 		if (!this._isNew) {
 			this._etdata = this._getEntitytype(this._model.getId());
 			var value = qx.lang.Json.stringify(this._etdata, null, 4);

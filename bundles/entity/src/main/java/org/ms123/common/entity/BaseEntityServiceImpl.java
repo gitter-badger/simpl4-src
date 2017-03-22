@@ -62,6 +62,8 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 
 	protected Inflector m_inflector = Inflector.getInstance();
 
+	protected OrientDBEntityServiceImpl m_orientdbImpl;
+
 	private static final String ENTITY = "entity";
 
 	private static final String FIELDS = "fields";
@@ -96,6 +98,9 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 	}
 
 	public List getEntities(StoreDesc sdesc, Boolean withChilds, Boolean withTeam, Map mapping, String filter, String sortField) throws Exception {
+		if( isOrientDB(sdesc)){
+			return m_orientdbImpl.getEntities( sdesc, withChilds, withTeam, mapping, filter, sortField);
+		}
 		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
 		String namespace = sdesc.getNamespace();
 		try {
@@ -190,7 +195,7 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 		}
 	}
 
-	protected List<Object[]> getSubEntityFromClass(StoreDesc sdesc, Class clazz) {
+	private List<Object[]> getSubEntityFromClass(StoreDesc sdesc, Class clazz) {
 		List<Object[]> list = new ArrayList<Object[]>();
 		if (clazz == null) {
 			return list;
@@ -236,6 +241,9 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 	}
 
 	public Map getEntityTree(StoreDesc sdesc, String mainEntity, int maxlevel, Boolean _pathid, String _type, Boolean _listResolved) throws Exception {
+		if( isOrientDB(sdesc)){
+			return m_orientdbImpl.getEntityTree( sdesc, mainEntity, maxlevel, _pathid, _type, _listResolved);
+		}
 		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
 		try {
 			Map userData = m_authService.getUserProperties(sc.getUserName());
@@ -258,7 +266,7 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 		}
 	}
 
-	protected Map _getEntitySubTree(StoreDesc sdesc, String path, Object[] member, int level, int maxlevel, boolean pathid, boolean listResolved, String type, Map userData) {
+	private Map _getEntitySubTree(StoreDesc sdesc, String path, Object[] member, int level, int maxlevel, boolean pathid, boolean listResolved, String type, Map userData) {
 		Class clazz = (Class) member[0];
 		String entityName = m_inflector.getEntityName(clazz.getName().substring(clazz.getName().lastIndexOf(".") + 1));
 		if (level == maxlevel) {
@@ -469,6 +477,9 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 	}
 
 	public List<Map> getFields(StoreDesc sdesc, String entityName, Boolean withAutoGen, Boolean withAllRelations) throws Exception {
+		if( isOrientDB(sdesc)){
+			return m_orientdbImpl.getFields(sdesc, entityName, withAutoGen, withAllRelations);
+		}
 		try {
 			List<Map> metaFields = m_gitMetaData.getFields(sdesc.getStoreId(), entityName);
 			if (metaFields == null) {
@@ -897,6 +908,10 @@ class BaseEntityServiceImpl implements org.ms123.common.entity.api.Constants {
 		} catch (Exception e) {
 		}
 		return _def;
+	}
+
+	protected boolean isOrientDB( StoreDesc desc ){
+		return "orientdb".equals( desc.getVendor());	
 	}
 
 	protected void debug(String msg) {

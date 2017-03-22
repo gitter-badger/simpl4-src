@@ -273,6 +273,7 @@ qx.Class.define("ms123.shell.Navigator", {
 				if (cme.nodetypes && cme.nodetypes.indexOf(type) < 0) {
 					continue;
 				}
+console.log("cme:",cme);
 				var tabicon = cme.tabicon || this._pluginManager.getNodeTypeIcon(type);
 				this.facade.raiseEvent({
 					clazz: cme.clazz,

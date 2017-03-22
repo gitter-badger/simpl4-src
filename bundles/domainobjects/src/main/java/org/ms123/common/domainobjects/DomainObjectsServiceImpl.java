@@ -67,6 +67,9 @@ import static org.apache.commons.io.FileUtils.moveDirectoryToDirectory;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 
 /** DomainObjectsServiceImpl implementation
  */
@@ -74,7 +77,6 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=domainobjects" })
 public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.api.DomainObjectsService, EventHandler {
 
-	private static final Logger m_logger = LoggerFactory.getLogger(DomainObjectsServiceImpl.class);
 	private ServiceRegistration m_serviceRegistration;
 
 	protected BundleContext m_bc;
@@ -83,9 +85,9 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 
 	protected CompileService m_compileService;
 
-	private ClassGenService m_classGenNucleusService;
+	private ClassGenService m_nucleusClassGenService;
 
-	private ClassGenService m_classGenOrientService;
+	private ClassGenService m_orientdbClassGenService;
 
 	private PermissionService m_permissionService;
 
@@ -116,14 +118,14 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 	private static String gitRepos = System.getProperty("git.repos");
 
 	public DomainObjectsServiceImpl() {
-		m_logger.info("DomainObjectsServiceImpl construct");
+		info(this,"DomainObjectsServiceImpl construct");
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		m_bc = bundleContext;
-		System.out.println("DomainObjectsServiceImpl.activate.props:" + props);
+		info(this,"DomainObjectsServiceImpl.activate.props:" + props);
 		try {
-			m_logger.info("DomainObjectsServiceImpl.activate -->");
+			info(this, "DomainObjectsServiceImpl.activate -->");
 			Bundle b = bundleContext.getBundle();
 			Dictionary d = new Hashtable();
 			d.put(EventConstants.EVENT_TOPIC, topics);
@@ -134,16 +136,16 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 	}
 
 	public void handleEvent(Event event) {
-		System.out.println("DomainObjectsServiceImpl.Event: " + event);
+		info(this, "DomainObjectsServiceImpl.Event: " + event);
 		try {
 			String ns = (String) event.getProperty("namespace");
 			StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
 			m_permissionService.loginInternal(ns);
 			ThreadContext.loadThreadContext(ns, "admin");
 			createClasses(sdesc);
-			System.out.println(">>>> End handleEvent:" + ThreadContext.getThreadContext().get(ThreadContext.SESSION_MANAGER));
+			info(this,">>>> End handleEvent:" + ThreadContext.getThreadContext().get(ThreadContext.SESSION_MANAGER));
 			ThreadContext.getThreadContext().finalize(null);
-			System.out.println(">>>> End handleEvent");
+			info(this,">>>> End handleEvent");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -154,7 +156,7 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 	}
 
 	protected void deactivate() throws Exception {
-		System.out.println("DomainObjectsServiceImpl.deactivate");
+		info(this,"DomainObjectsServiceImpl.deactivate");
 		m_serviceRegistration.unregister();
 	}
 
@@ -168,9 +170,14 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		try {
 			//BundleDelegatingClassLoader bdc = new BundleDelegatingClassLoader(m_bc.getBundle(), clParent);
 			//Thread.currentThread().setContextClassLoader(bdc);
-			classFiles = m_classGenNucleusService.generate(sdesc, entities, outDir.toString());
+			if( isOrientDB(sdesc)){
+				classFiles = m_orientdbClassGenService.generate(sdesc, entities, outDir.toString());
+				return;
+			}else{
+				classFiles = m_nucleusClassGenService.generate(sdesc, entities, outDir.toString());
+			}
 		} finally {
-			Thread.currentThread().setContextClassLoader(clParent);
+			//Thread.currentThread().setContextClassLoader(clParent);
 		}
 		enhance(sdesc, entities, classFiles);
 	}
@@ -182,7 +189,7 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		}
 		File[] locations = new File[1];
 		locations[0] = outDir1;
-		System.out.println("Enhancer.enhance:" + sdesc);
+		info(this,"Enhancer.enhance:" + sdesc);
 		FileSystemClassLoader fscl = new FileSystemClassLoader(this.getClass().getClassLoader(), locations);
 		JDOEnhancer enhancer = m_nucleusService.getEnhancer(sdesc);
 		enhancer.setClassLoader(fscl);
@@ -190,17 +197,17 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 			for (String className : classNames) {
 				File file = new File(outDir1, className.replace(".", "/"));
 				if (jdoStore(entities, className)) {
-					System.out.println("DomainObjectsServiceImpl.enhancer.add:" + file);
+					info(this,"DomainObjectsServiceImpl.enhancer.add:" + file);
 					enhancer.addClasses(file.toString() + ".class");
 				}
 			}
 			enhancer.enhance();
 		}
 		try {
-			System.out.println("Enhancer.close:" + sdesc);
+			info(this,"Enhancer.close:" + sdesc);
 			m_nucleusService.close(sdesc);
 		} catch (Exception e) {
-			System.out.println("Nucleus.close.ex:" + e);
+			error(this,"Nucleus.close:%[exception]s" , e);
 		}
 		return new HashMap();
 	}
@@ -213,8 +220,8 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		}
 		List entities = m_entityService.getEntities(sdesc, false, null);
 		//List entTypes = m_entityService.getEntitytypes(sdesc.getStoreId());
-		//System.out.println("entities:"+entities);
-		//System.out.println("entTypes:"+entTypes);
+		//info(this,"entities:"+entities);
+		//info(this,"entTypes:"+entTypes);
 		return entities;
 	}
 
@@ -234,16 +241,6 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		return ents;
 	}
 
-	private void printList(String header, List<Map> list) {
-		System.out.println("----->" + header);
-		if (list != null) {
-			for (Map m : list) {
-				System.out.println("\t" + m);
-			}
-		}
-		System.out.println("--------------------------------------------------------");
-	}
-
 	private boolean jdoStore(List<Map> entities, String className) {
 		int dot = className.lastIndexOf(".");
 		String entName = m_inflector.getEntityName(className.substring(dot + 1));
@@ -251,7 +248,7 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 			String mname = (String) entMap.get("name");
 			if (entName.equals(mname)) {
 				String store = (String) entMap.get(StoreDesc.STORE);
-				System.out.println("\tJdoStore:" + entName + "/" + store);
+				info(this,"\tJdoStore:" + entName + "/" + store);
 				if (!"jcr".equals(store)) {
 					return true;
 				}
@@ -279,33 +276,37 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		}
 	}
 
+	private boolean isOrientDB(StoreDesc sdesc){
+		return StoreDesc.STORE_GRAPH.equals( sdesc.getStore()) && StoreDesc.VENDOR_ORIENTDB.equals( sdesc.getVendor());
+	}
+
 	/*END JSON-RPC-API*/
 	@Reference(dynamic = true)
 	public void setEntityService(EntityService paramEntityService) {
 		m_entityService = paramEntityService;
-		System.out.println("DomainObjectsServiceImpl.setEntityService:" + paramEntityService);
+		info(this,"DomainObjectsServiceImpl.setEntityService:" + paramEntityService);
 	}
 
 	@Reference(target = "(kind=nucleus)", dynamic = true)
 	public void setClassGenNucleusService(ClassGenService sgs) {
-		m_classGenNucleusService = sgs;
-		System.out.println("DomainObjectsServiceImpl.setClassGenService:" + sgs);
+		m_nucleusClassGenService = sgs;
+		info(this,"DomainObjectsServiceImpl.setClassGenService:" + sgs);
 	}
 	@Reference(target = "(kind=orient)", dynamic = true)
 	public void setClassGenOrientService(ClassGenService sgs) {
-		m_classGenOrientService = sgs;
-		System.out.println("DomainObjectsServiceImpl.setClassGenOrientService:" + sgs);
+		m_orientdbClassGenService = sgs;
+		info(this,"DomainObjectsServiceImpl.setClassGenOrientService:" + sgs);
 	}
 
 	@Reference(dynamic = true)
 	public void setNucleusService(NucleusService paramNucleusService) {
 		this.m_nucleusService = paramNucleusService;
-		System.out.println("DomainObjectsServiceImpl.setNucleusService:" + paramNucleusService);
+		info(this,"DomainObjectsServiceImpl.setNucleusService:" + paramNucleusService);
 	}
 
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService shiroService) {
-		System.out.println("DomainObjectsServiceImpl:" + shiroService);
+		info(this,"DomainObjectsServiceImpl:" + shiroService);
 		this.m_permissionService = shiroService;
 	}
 }
