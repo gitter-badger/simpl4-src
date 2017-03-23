@@ -400,7 +400,7 @@ qx.Class.define("ms123.util.TableEdit", {
 			}];
 			return new ms123.widgets.Form(context);
 		},
-		_createPropertyEditWindow: function () {
+		_createPropertyEditWindow: function (height) {
 			var win = new qx.ui.window.Window("", "").set({
 				resizable: true,
 				useMoveFrame: true,
@@ -408,7 +408,7 @@ qx.Class.define("ms123.util.TableEdit", {
 			});
 			win.setLayout(new qx.ui.layout.Grow);
 			win.setWidth(600);
-			win.setHeight(300);
+			win.setHeight(height||300);
 			win.setAllowMaximize(false);
 			win.setAllowMinimize(false);
 			win.setModal(true);

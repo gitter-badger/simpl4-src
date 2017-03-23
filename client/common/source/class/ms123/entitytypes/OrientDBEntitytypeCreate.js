@@ -41,6 +41,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 	members: {
 		_createColumnModel: function() {
 			this._createEntitytypeList();
+			this._createVertexTypeList();
 			var columnmodel = [ {
 					name: "name",
 					type: "TextField",
@@ -66,6 +67,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					type: "SelectBox",
 					value: "string",
 					readonly: true, 
+					enabled: '!edgeconn',
 					options: this._dataTypeList,
 					label: this.tr( "Type" )
 				}, {
@@ -73,7 +75,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					type: "SelectBox",
 					value: "",
 					readonly: true, 
-					exclude: '(linkedclass!="" || (datatype!="10" && datatype!="12" && datatype!="11"))',
+					enabled: '!(edgeconn || linkedclass!="" || (datatype!="10" && datatype!="12" && datatype!="11"))',
 					options: this._linkedTypeList,
 					label: this.tr( "Linked Type" )
 				}, {
@@ -81,7 +83,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					type: "SelectBox",
 					value: "",
 					readonly: true, 
-					exclude: '(linkedtype!="" || (datatype!="10" && datatype!="12" && datatype!="11" && datatype!="13" && datatype!="14" && datatype!="15" && datatype!="16"))',
+					enabled: '!(edgeconn || linkedtype!="" || (datatype!="10" && datatype!="12" && datatype!="11" && datatype!="13" && datatype!="14" && datatype!="15" && datatype!="16"))',
 					options: this._entitytypeList,
 					label: this.tr( "Linked Class" )
 				}, {
@@ -89,15 +91,44 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					readonly: true, 
 					type: "SelectBox",
 					value: "",
-					exclude: 'linkedtype!="" || linkedclass!=""',
+					enabled: '!(edgeconn || linkedtype!="" || linkedclass!="")',
 					options: this._editTypeList,
 					label: this.tr( "aid.field.edittype" )
 				}, {
 					name: "primary_key",
 					type: "CheckBox",
 					value: false,
-					width: 30,
+					enabled: '!edgeconn',
 					label: this.tr( "aid.field.primary_key" )
+				}, {
+					name: "edgeconn",
+					type: "CheckBox",
+					value: false,
+					label: this.tr( "Edge Connection" )
+				}, {
+					name: "vertexclass",
+					type: "SelectBox",
+					value: "",
+					readonly: true, 
+					enabled: 'edgeconn',
+					options: this._vertexList,
+					label: this.tr( "Vertex Class" )
+				}, {
+					name: "vertextype",
+					type: "SelectBox",
+					value: "",
+					readonly: true, 
+					enabled: 'edgeconn',
+					options: this._vertexTypeList,
+					label: this.tr( "Vertex Type" )
+				}, {
+					name: "edgeclass",
+					type: "SelectBox",
+					value: "",
+					readonly: true, 
+					enabled: 'edgeconn',
+					options: this._edgeList,
+					label: this.tr( "Edge Class" )
 				}, {
 					name: "enabled",
 					type: "CheckBox",
@@ -136,21 +167,31 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					'label': this.tr( "Superclass" ),
 					'value': "vertex",
 					'options': this._superclassList
+				},
+				"from": {
+					'type': "SelectBox",
+					'label': this.tr( "From" ),
+					'enabled': 'superclass == "edge"',
+					'value': "",
+					'options': this._vertexList
+				},
+				"to": {
+					'type': "SelectBox",
+					'label': this.tr( "To" ),
+					'enabled': 'superclass == "edge"',
+					'value': "",
+					'options': this._vertexList
 				}
 			};
 
 			var self = this;
-			var form = new ms123.form.Form( {
-				"tabs": [ {
-					id: "tab1",
-					layout: "single"
-				} ],
-				"useScroll": false,
-				"formData": formData,
-				"buttons": [],
-				"inWindow": false,
-				"context": self
-			} );
+			var context = {};
+			context.formData = formData;
+			context.buttons = [];
+			context.formLayout = [{
+				id: "tab1"
+			}];
+			var form = new ms123.widgets.Form(context);
 			this._classForm = form;
 			if ( this._etdata ) {
 				this._classForm.setData( this._etdata );
@@ -255,6 +296,21 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				"label": "Computed"
 			} ];
 		},
+		_createVertexTypeList: function() {
+			this._vertexTypeList = [ {
+				"value": "single",
+				"label": "Single"
+			}, {
+				"value": "list",
+				"label": "List"
+			}, {
+				"value": "set",
+				"label": "Set"
+			}, {
+				"value": "map",
+				"label": "Map"
+			} ];
+		},
 		_createSuperClassList: function() {
 			this._superclassList = [ {
 				"value": "vertex",
@@ -293,6 +349,21 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 		},
 		_createEntitytypeList: function () {
 			this._entitytypeList = this._getEntitytypes();
+			this._vertexList = this._getEdgeVertexList("vertex");
+			this._edgeList = this._getEdgeVertexList("edge");
+		},
+		_getEdgeVertexList: function (edgeOrVertex) {
+			var ret = [{value:"",label:""}];
+			for( var i=0; i < this._rawEntityList.length;i++){
+				var e = this._rawEntityList[i];
+				if( e.superclass == edgeOrVertex){
+					var o = {};
+					o.value = e.name;
+					o.label = this._capitaliseFirstLetter(e.name);
+					ret.push(o );
+				}
+			}
+			return ret;
 		},
 		_getEntitytypes: function () {
 			var completed = (function (data) {}).bind(this);
@@ -306,10 +377,11 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					storeId: this.storeDesc.getStoreId()
 				});
 				completed.call(this, ret);
+				this._rawEntityList = ret;
 				var retList = [{value:"",label:""}];
 				for (var i = 0; i < ret.length; i++) {
 					var o = {};
-					o.value = this.storeDesc.getPack() + "." + ret[i].name;
+					o.value = ret[i].name;
 					o.label = this._capitaliseFirstLetter(ret[i].name);
 					retList.push(o);
 				}
@@ -418,6 +490,9 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				this._propertyEditWindow.setActive(true);
 				this._propertyEditWindow.open();
 		},
+		_createPropertyEdit: function (tableColumns) {
+			this._propertyEditWindow = this._createPropertyEditWindow(400);
+		},
 		_createOptionForm: function() {
 			var buttons = [ {
 				'label': this.tr( "entitytypes.generate_class" ),
@@ -432,25 +507,25 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				create_messages: {
 					name: "create_messages",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr( "entitytypes.create_messages" )
 				},
 				create_settings_form: {
 					name: "create_settings_form",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr( "entitytypes.create_form_settings" )
 				},
 				create_settings_table: {
 					name: "create_settings_table",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr( "entitytypes.create_table_settings" )
 				},
 				create_settings_search: {
 					name: "create_settings_search",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr( "entitytypes.create_search_settings" )
 				},
 				create_classes: {

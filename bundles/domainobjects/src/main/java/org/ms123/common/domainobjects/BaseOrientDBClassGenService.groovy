@@ -45,6 +45,7 @@ import groovy.transform.CompileStatic;
 import org.ms123.groovy.orient.graph.Vertex;
 import org.ms123.groovy.orient.graph.Edge;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.File;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
@@ -84,12 +85,18 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 			Map entMap = entities.get(i);
 			String name = (String) entMap.get("name");
 			String fqn = getFQN(sdesc, entMap);
-			String classname = getClassName(sdesc, entMap);
+			String classname = getClassName(entMap);
 			boolean isVertex = isVertex(entMap);
 			String  superclass = getSuperclass(entMap);
 
 			builder.newClazz(classname);
-			builder.setAnnotation("@"+superclass+"(initSchema = true, value = '"+classname+"')");
+			if( isVertex ){
+				builder.setAnnotation("@"+superclass+"(initSchema = true, value = '"+classname+"')");
+			}else{
+				String _from = getFrom(entMap);
+				String _to = getTo(entMap);
+				builder.setAnnotation("@"+superclass+"(initSchema = true, from="+_from+", to="+_to+", value = '"+classname+"')");
+			}
 			List<Map> fields = getEntityMetaData(sdesc, name);
 			for( int j=0; j< fields.size(); j++){
 				Map field = fields.get(j);
@@ -101,11 +108,24 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 				Class javaClazz = otype.getDefaultJavaType()
 				boolean isMulti = otype.isMultiValue();
 				boolean isLink = otype.isLink();
-				String linkedClass = getLinkedClassName(sdesc, field);
-				if( isMulti ){
+				String linkedClass = getLinkedClassName(field);
+				boolean isEdgeConn = isEdgeConnection(field);
+				info(this,"field:"+field);
+				info(this,"isEdgeConn:"+isEdgeConn);
+				info(this,"isLink:"+isLink);
+				info(this,"isMulti:"+isMulti);
+				info(this,"OType:"+otype+"/"+otype.toString());
+				if( isEdgeConn ){
+					String vertex = getVertexClassName(field);
+					String vtype = getVertexType(field);
+					String edge = getEdgeClassName(field);
+					builder.addField(fieldname, getVertexDeclaration(vertex,vtype));
+					builder.addMapping(fieldname, "edge: "+ edge )
+				}else if( isMulti ){
 					if( isLink ){
 						builder.addField(fieldname, linkedClass);
-						builder.addMapping(fieldname, "edge: "+ linkedClass )
+						builder.addField(fieldname, getDeclaration(linkedClass,otype.toString()));
+						builder.addMapping(fieldname, "type: OType."+ otype.toString() )
 					}else{
 						if( linkedClass != null ){
 							builder.addField(fieldname, linkedClass);
@@ -119,15 +139,10 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 				}
 			}
 
-//			builder.addMapping('field1', 'index: \'unique\'' )
-//			builder.addMapping('field2', 'edge: Lives' )*/
-
-
 			classnameList.add(classname);
 			List<String> pkNameList = (List) entMap.get("primaryKeys");
 			if (pkNameList != null && pkNameList.size() > 1) {
 				String classnamePK = classname + "_PK";
-				//classnameList.add(classnamePK);
 			}
 		}
 
@@ -142,9 +157,15 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		for( int i=0; i < classnameList.size();i++){
 			String cn = classnameList.get(i);
 			builder.writeClassFile( new File(_outDir, cn+ ".class"), cn );
+		}
+		for( int i=0; i < classnameList.size();i++){
+			String cn = classnameList.get(i);
 			Class clazz = builder.getClazz( cn );
-			info(this,"class("+cn+"):"+clazz);
 			callInit( db, clazz, "initSchema");
+		}
+		for( int i=0; i < classnameList.size();i++){
+			String cn = classnameList.get(i);
+			Class clazz = builder.getClazz( cn );
 			callInit( db, clazz, "initSchemaLinks");
 		}
 		info(this,"classnameList:"+classnameList);
@@ -178,6 +199,11 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 
 	private boolean isEdge( Map<String,String> m){
 		return "edge".equals(m.get("superclass"));
+	}
+	private boolean isEdgeConnection( Map<String,String> m){
+		def ret = m.get("edgeconn");
+		if( ret == null) return false;
+		return ret;
 	}
 
 	private String getSuperclass( Map<String,String> m){
@@ -214,17 +240,66 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		}
 		return _def;
 	}
-	private String getLinkedClassName(StoreDesc sdesc, Map entity) {
+	private String getLinkedClassName(Map entity) {
 		String name = (String)entity.get("linkedclass");
-		if( name == null) return null;
-		name = StoreDesc.getSimpleEntityName(name);
-		return m_inflector.getClassName((String) name);
+		if( isEmpty(name)) return null;
+		return firstToUpper((String) name);
 	}
-	private String getClassName(StoreDesc sdesc, Map entity) {
+	private String getClassName(Map entity) {
 		String name = (String)entity.get("name");
-		if( name == null) return null;
-		name = StoreDesc.getSimpleEntityName(name);
-		return m_inflector.getClassName((String) name);
+		if( isEmpty(name)) return null;
+		return firstToUpper((String) name);
+	}
+
+	private String getEdgeClassName(Map entity) {
+		String name = (String)entity.get("edgeclass");
+		if( isEmpty(name)) return null;
+		return firstToUpper((String) name);
+	}
+
+	private String getVertexClassName(Map entity) {
+		String name = (String)entity.get("vertexclass");
+		if( isEmpty(name)) return null;
+		return firstToUpper((String) name);
+	}
+	private String getVertexType(Map entity) {
+		String name = (String)entity.get("vertextype");
+		if( isEmpty(name)) return null;
+		return firstToUpper((String) name);
+	}
+	private String getVertexDeclaration(String name, String type) {
+		if( type.equals("single")){
+			return name;
+		}else if( type.equals("list")){
+			return "List<"+name+">";
+		}else if( type.equals("set")){
+			return "Set<"+name+">";
+		}else if( type.equals("map")){
+			return "Map<String,"+name+">";
+		}
+		return null;
+	}
+
+	private String getDeclaration(String name, String type) {
+		if( type.equals("LINKLIST")){
+			return "List<"+name+">";
+		}else if( type.equals("LINKSET")){
+			return "Set<"+name+">";
+		}else if( type.equals("LINKMAP")){
+			return "Map<String,"+name+">";
+		}
+		return name;
+	}
+
+	private String getFrom(Map entity) {
+		String name = (String)entity.get("from");
+		if( isEmpty(name)) return null;
+		return firstToUpper((String) name);
+	}
+	private String getTo(Map entity) {
+		String name = (String)entity.get("to");
+		if( isEmpty(name)) return null;
+		return firstToUpper((String) name);
 	}
 
 	private String getJavaPackage(StoreDesc sdesc, Map entity) {

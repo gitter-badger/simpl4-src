@@ -804,25 +804,25 @@ qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 				create_messages: {
 					name: "create_messages",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr("entitytypes.create_messages")
 				},
 				create_settings_form: {
 					name: "create_settings_form",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr("entitytypes.create_form_settings")
 				},
 				create_settings_table: {
 					name: "create_settings_table",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr("entitytypes.create_table_settings")
 				},
 				create_settings_search: {
 					name: "create_settings_search",
 					type: "CheckBox",
-					value: true,
+					value: false,
 					label: this.tr("entitytypes.create_search_settings")
 				},
 				create_classes: {
