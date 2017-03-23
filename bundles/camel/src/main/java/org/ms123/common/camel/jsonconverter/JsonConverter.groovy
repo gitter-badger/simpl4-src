@@ -288,10 +288,22 @@ abstract class JsonConverterImpl implements JsonConverter{
 			URLClassLoader classLoader = new URLClassLoader( urls, getClass().getClassLoader() )
 			def gs = new GroovyShell(classLoader);
 			def clazz  = (Class) gs.evaluate(code);
-			return clazz.newInstance();
+			def obj = clazz.newInstance();
+			injectField( clazz, obj, "orientdbFactory", getOrientDBService(namespace))
+			return obj;
 		} catch (Throwable e) {
 			String msg = Utils.formatGroovyException(e,code);
 			throw new RuntimeException(msg);
+		}
+	}
+
+	def injectField(clazz,obj, fieldname, value) {
+		try{
+			def field = clazz.getDeclaredField(fieldname);
+			field.setAccessible(true)
+			field.set(obj, value );
+		}catch(Exception e){
+			println("injectField:"+e);
 		}
 	}
 
@@ -444,6 +456,17 @@ abstract class JsonConverterImpl implements JsonConverter{
 			throw new RuntimeException("JsonConverter.Cannot resolve GitService");
 		}
 		return gitService.searchFile(namespace, name, type);
+	}
+	def getOrientDBService(namespace){
+		def oService=null;
+		def sr = bundleContext.getServiceReference("org.ms123.common.system.orientdb.OrientDBService");
+		if (sr != null) {
+			oService = bundleContext.getService(sr);
+		}
+		if (oService == null) {
+			throw new RuntimeException("JsonConverter.Cannot resolve OrientDBService");
+		}
+		return oService.getFactory(namespace);
 	}
 	def getScriptEngine(namespace, name){
 		def scriptEngineService=null;
