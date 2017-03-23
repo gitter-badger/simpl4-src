@@ -68,8 +68,6 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		String javaPackage=null;
 		for (int i = 0; i < entities.size(); i++) { //Make empty classes to resolve relations
 			Map m = entities.get(i);
-			String fqn = getFQN(sdesc, m);
-			info(this,"\tmakeClass:" + fqn);
 			if( i==0){
 				javaPackage = getJavaPackage(sdesc, m);
 			}
@@ -84,7 +82,6 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		for (int i = 0; i < entities.size(); i++) {
 			Map entMap = entities.get(i);
 			String name = (String) entMap.get("name");
-			String fqn = getFQN(sdesc, entMap);
 			String classname = getClassName(entMap);
 			boolean isVertex = isVertex(entMap);
 			String  superclass = getSuperclass(entMap);
@@ -322,14 +319,7 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 	private String getJavaPackage(StoreDesc sdesc, Map entity) {
 		String name = (String)entity.get("name");
 		String pack = StoreDesc.getPackName(name,sdesc.getPack());
-		return sdesc.getJavaPackage(pack);
-	}
-	private String getFQN(StoreDesc sdesc, Map entity) {
-		String name = (String)entity.get("name");
-		String pack = StoreDesc.getPackName(name,sdesc.getPack());
-		name = StoreDesc.getSimpleEntityName(name);
-		String className = m_inflector.getClassName((String) name);
-		return sdesc.getJavaPackage(pack) + "." + className;
+		return pack;
 	}
 }
 

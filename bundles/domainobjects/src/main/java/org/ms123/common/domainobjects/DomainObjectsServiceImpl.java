@@ -171,6 +171,7 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 			//BundleDelegatingClassLoader bdc = new BundleDelegatingClassLoader(m_bc.getBundle(), clParent);
 			//Thread.currentThread().setContextClassLoader(bdc);
 			if( isOrientDB(sdesc)){
+				outDir = new File(sdesc.getBaseDir(), sdesc.getNamespace());
 				classFiles = m_orientdbClassGenService.generate(sdesc, entities, outDir.toString());
 				return;
 			}else{
