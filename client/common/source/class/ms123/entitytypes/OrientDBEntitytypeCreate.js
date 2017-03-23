@@ -18,6 +18,7 @@
  */
 /**
 	@ignore($)
+	@ignore(jQuery.trim)
 	@asset(qx/icon/${qx.icontheme}/16/actions/*)
 	@asset(qx/icon/${qx.icontheme}/16/places/*)
 */
@@ -51,7 +52,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					width: 120,
 					validation: {
 						required: true,
-						filter: /[a-z0-9_]/,
+						filter: /[a-zA-Z0-9_]/,
 						validator: "/^[a-zA-Z][0-9a-z_A-Z]{3,64}$/"
 					},
 					'value': ""
@@ -65,7 +66,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				}, {
 					name: "datatype",
 					type: "SelectBox",
-					value: "string",
+					value: "7",
 					readonly: true, 
 					enabled: '!edgeconn',
 					options: this._dataTypeList,
@@ -116,7 +117,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				}, {
 					name: "vertextype",
 					type: "SelectBox",
-					value: "",
+					value: "single",
 					readonly: true, 
 					enabled: 'edgeconn',
 					options: this._vertexTypeList,
@@ -171,14 +172,14 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				"from": {
 					'type': "SelectBox",
 					'label': this.tr( "From" ),
-					'enabled': 'superclass == "edge"',
+					'exclude': 'superclass == "vertex"',
 					'value': "",
 					'options': this._vertexList
 				},
 				"to": {
 					'type': "SelectBox",
 					'label': this.tr( "To" ),
-					'enabled': 'superclass == "edge"',
+					'exclude': 'superclass == "vertex"',
 					'value': "",
 					'options': this._vertexList
 				}
@@ -203,6 +204,9 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 		_getRelations: function() {},
 		_createDatatypeList: function() {
 			this._dataTypeList = [ {
+				'value': "",
+				'label': ""
+			}, {
 				'value': "0",
 				'label': "BOOLEAN"
 			}, {
@@ -394,6 +398,10 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				return;
 			}
 		},
+		isEmpty: function (s) {
+			if (!s || jQuery.trim(s) == '') return true;
+			return false;
+		},
 		_createAddForm: function () {
 			var formData = {};
 			for (var i = 0; i < this._columnModel.length; i++) {
@@ -409,6 +417,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				'callback': function (m) {
 					var validate = self._addForm.validate();
 					console.error("validate:" + validate);
+					console.error("m:" , m);
 					if (!validate) {
 						var vm = self._addForm.getValidationManager();
 						var items = vm.getInvalidFormItems();
@@ -416,6 +425,10 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 							items[i].setValid(false);
 						}
 						ms123.form.Dialog.alert(self.tr("widgets.table.form_incomplete"));
+						return;
+					}
+					if( m.edgeconn === true && (self.isEmpty(m.edgeclass) || self.isEmpty(m.vertexclass))){
+						ms123.form.Dialog.alert(self.tr("Edge or Vertex is missing"));
 						return;
 					}
 					var map = {};
@@ -450,6 +463,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 			var m = form.getModel();
 			var props = qx.Class.getProperties(m.constructor);
 			var datatype = m.get("datatype");
+			var edgeconn = m.get("edgeconn");
 			var linkedtype = m.get("linkedtype");
 			var linkedclass = m.get("linkedclass");
 			var edittype = m.get("edittype");
@@ -462,6 +476,9 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				m.set("linkedclass", "");			
 			}else{
 				m.set("edittype", "");			
+			}
+			if( edgeconn ){
+				m.set("datatype", "");			
 			}
 		},
 		__removeChangeListener: function () {
@@ -492,6 +509,17 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 		},
 		_createPropertyEdit: function (tableColumns) {
 			this._propertyEditWindow = this._createPropertyEditWindow(400);
+		},
+		_createClasses:function(mess){
+			try {
+				ms123.util.Remote.rpcSync("domainobjects:createClasses", {
+					storeId: this.storeDesc.getStoreId()
+				});
+				if( mess ) ms123.form.Dialog.alert(this.tr("entitytypes.update_db_successfull"));
+			} catch (e) {
+				ms123.form.Dialog.alert(e);
+				return;
+			}
 		},
 		_createOptionForm: function() {
 			var buttons = [ {

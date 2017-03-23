@@ -104,21 +104,33 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 				if( "id".equals(fieldname)){
 					continue;
 				}
-				OType otype = getType(field);
-				Class javaClazz = otype.getDefaultJavaType()
-				boolean isMulti = otype.isMultiValue();
-				boolean isLink = otype.isLink();
-				String linkedClass = getLinkedClassName(field);
 				boolean isEdgeConn = isEdgeConnection(field);
+				OType otype = null;
+				boolean isMulti=false;
+				boolean isLink=false;
+				if( !isEdgeConn){
+					otype = getType(field);
+					isMulti = otype.isMultiValue();
+					isLink = otype.isLink();
+				}
+				String linkedClass = getLinkedClassName(field);
 				info(this,"field:"+field);
 				info(this,"isEdgeConn:"+isEdgeConn);
 				info(this,"isLink:"+isLink);
 				info(this,"isMulti:"+isMulti);
-				info(this,"OType:"+otype+"/"+otype.toString());
+				info(this,"OType:"+otype);
+				info(this,"linkedClass:"+linkedClass);
 				if( isEdgeConn ){
 					String vertex = getVertexClassName(field);
 					String vtype = getVertexType(field);
 					String edge = getEdgeClassName(field);
+					info(this,"vertex:"+vertex);
+					info(this,"vtype:"+vtype);
+					info(this,"edge:"+edge);
+					info(this,"VertexDecl:"+getVertexDeclaration(vertex,vtype));
+					if( isEmpty( vertex) || isEmpty(edge)){
+						throw new RuntimeException("Vertex or Edge missing:"+fieldname);
+					}
 					builder.addField(fieldname, getVertexDeclaration(vertex,vtype));
 					builder.addMapping(fieldname, "edge: "+ edge )
 				}else if( isMulti ){
@@ -128,13 +140,18 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 						builder.addMapping(fieldname, "type: OType."+ otype.toString() )
 					}else{
 						if( linkedClass != null ){
-							builder.addField(fieldname, linkedClass);
+							builder.addField(fieldname, getDeclaration(linkedClass,otype.toString()));
+							builder.addMapping(fieldname, "type: OType."+ otype.toString() )
 						}else{
-							builder.addField(fieldname, getLinkedType(field).getDefaultJavaType());
-							builder.addMapping(fieldname, "type: "+ getLinkedType(field).toString() )
+							builder.addField(fieldname, getDeclaration(getLinkedType(field).getDefaultJavaType().getSimpleName(),otype.toString()));
+							builder.addMapping(fieldname, "type: OType."+ otype.toString() )
 						}
 					}
+				}else if( isLink ){
+					builder.addField(fieldname, linkedClass);
+					builder.addMapping(fieldname, "type: OType."+  otype.toString())
 				}else{
+					Class javaClazz = otype.getDefaultJavaType()
 					builder.addField(fieldname, javaClazz)
 				}
 			}
@@ -200,7 +217,7 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 	private boolean isEdge( Map<String,String> m){
 		return "edge".equals(m.get("superclass"));
 	}
-	private boolean isEdgeConnection( Map<String,String> m){
+	private boolean isEdgeConnection( Map<String,Boolean> m){
 		def ret = m.get("edgeconn");
 		if( ret == null) return false;
 		return ret;
@@ -265,7 +282,7 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 	private String getVertexType(Map entity) {
 		String name = (String)entity.get("vertextype");
 		if( isEmpty(name)) return null;
-		return firstToUpper((String) name);
+		return name;
 	}
 	private String getVertexDeclaration(String name, String type) {
 		if( type.equals("single")){
@@ -281,11 +298,11 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 	}
 
 	private String getDeclaration(String name, String type) {
-		if( type.equals("LINKLIST")){
+		if( type.endsWith("LIST")){
 			return "List<"+name+">";
-		}else if( type.equals("LINKSET")){
+		}else if( type.endsWith("SET")){
 			return "Set<"+name+">";
-		}else if( type.equals("LINKMAP")){
+		}else if( type.endsWith("MAP")){
 			return "Map<String,"+name+">";
 		}
 		return name;
