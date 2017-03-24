@@ -105,10 +105,12 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 				OType otype = null;
 				boolean isMulti=false;
 				boolean isLink=false;
+				boolean isEmbedded=false;
 				if( !isEdgeConn){
 					otype = getType(field);
 					isMulti = otype.isMultiValue();
 					isLink = otype.isLink();
+					isEmbedded = otype.isEmbedded();
 				}
 				String linkedClass = getLinkedClassName(field);
 				info(this,"field:"+field);
@@ -132,7 +134,6 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 					builder.addMapping(fieldname, "edge: "+ edge )
 				}else if( isMulti ){
 					if( isLink ){
-						builder.addField(fieldname, linkedClass);
 						builder.addField(fieldname, getDeclaration(linkedClass,otype.toString()));
 						builder.addMapping(fieldname, "type: OType."+ otype.toString() )
 					}else{
@@ -144,6 +145,9 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 							builder.addMapping(fieldname, "type: OType."+ otype.toString() )
 						}
 					}
+				}else if( isEmbedded && !isMulti ){
+					builder.addField(fieldname, linkedClass);
+					builder.addMapping(fieldname, "type: OType."+ otype.toString() )
 				}else if( isLink ){
 					builder.addField(fieldname, linkedClass);
 					builder.addMapping(fieldname, "type: OType."+  otype.toString())

@@ -84,7 +84,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					type: "SelectBox",
 					value: "",
 					readonly: true, 
-					enabled: '!(edgeconn || linkedtype!="" || (datatype!="10" && datatype!="12" && datatype!="11" && datatype!="13" && datatype!="14" && datatype!="15" && datatype!="16"))',
+					enabled: '!(edgeconn || linkedtype!="" || (datatype!="9" && datatype!="10" && datatype!="12" && datatype!="11" && datatype!="13" && datatype!="14" && datatype!="15" && datatype!="16"))',
 					options: this._entitytypeList,
 					label: this.tr( "Linked Class" )
 				}, {
@@ -472,7 +472,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 			}else{
 				m.set("edittype", "");			
 			}
-			if( (linkedtype!="" || (datatype!="10" && datatype!="12" && datatype!="11" && datatype!="13" && datatype!="14" && datatype!="15" && datatype!="16"))){
+			if( (linkedtype!="" || (datatype!="9" && datatype!="10" && datatype!="12" && datatype!="11" && datatype!="13" && datatype!="14" && datatype!="15" && datatype!="16"))){
 				m.set("linkedclass", "");			
 			}else{
 				m.set("edittype", "");			
