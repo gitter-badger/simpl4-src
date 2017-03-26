@@ -100,6 +100,9 @@ public class ClassGenServiceImpl implements org.ms123.common.domainobjects.api.C
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 	}
+	public ClassLoader getClassLoader( StoreDesc sdesc){
+		return null;
+	}
 
 	public List<String> generate(StoreDesc sdesc, List<Map> entities, String outDir) throws Exception {
 		ClassPool cp = new ClassPool(true);

@@ -74,7 +74,9 @@ public class QueryBuilder {
 		m_entityName = entityName;
 		m_configName = configName;
 		m_teamSecurity = teamSecurity;
-		m_nucleusService = sessionContext.getNucleusService();
+		if (!type.equals("orientdb")) {
+			m_nucleusService = sessionContext.getNucleusService();
+		}
 		m_settingService = sessionContext.getSettingService();
 		m_filterParams = params != null ? (Map)params.get("filterParams") :null;
 		m_type = type;
@@ -90,6 +92,9 @@ public class QueryBuilder {
 			}
 			if (type.equals("mvel")) {
 				m_mainSelectBuilder = new MVELSelectBuilder(this, sdesc, entityName, joinFields, filters, fieldSets);
+			}
+			if (type.equals("orientdb")) {
+				m_mainSelectBuilder = new OrientDBSelectBuilder(this, sdesc, entityName, filters, fieldSets);
 			}
 		}
 		if (m_mainSelectBuilder == null) {

@@ -35,6 +35,8 @@ import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.nucleus.api.NucleusService;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.data.api.SessionContext;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class JPASelectBuilderPostgresql extends JPASelectBuilder implements SelectBuilder {
@@ -107,7 +109,7 @@ public class JPASelectBuilderPostgresql extends JPASelectBuilder implements Sele
 		}
 		String data = String.valueOf(_data);
 		String dt = c.get("datatype");
-		debug("field:" + field + ",op:" + op + ",data:" + data+",dt:"+dt);
+		debug(this,"field:" + field + ",op:" + op + ",data:" + data+",dt:"+dt);
 		if (!dt.equals("array/string") && dt.startsWith("array/")) {
 			field = field.replace('.', '$');
 			addSelector(field);

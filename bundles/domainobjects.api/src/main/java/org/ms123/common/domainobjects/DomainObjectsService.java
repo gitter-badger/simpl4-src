@@ -32,6 +32,7 @@ public interface DomainObjectsService {
 	public final String RELATION = "relation";
 
 	public void createClasses(StoreDesc sdesc) throws Exception;
+	public ClassLoader getClassLoader( StoreDesc sdesc);
 
 	//public void createClasses(StoreDesc sdesc, List<Map> entities) throws Exception;
 }

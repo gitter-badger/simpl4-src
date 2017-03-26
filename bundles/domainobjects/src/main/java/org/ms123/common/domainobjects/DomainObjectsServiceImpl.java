@@ -213,6 +213,13 @@ public class DomainObjectsServiceImpl implements org.ms123.common.domainobjects.
 		return new HashMap();
 	}
 
+	public ClassLoader getClassLoader( StoreDesc sdesc){
+		if( isOrientDB(sdesc)){
+			return m_orientdbClassGenService.getClassLoader(sdesc);
+		}
+		return null;
+	}
+
 	private List<Map> getEntities(StoreDesc sdesc) throws Exception {
 		String pack = sdesc.getPack();
 		boolean withInternal = false;

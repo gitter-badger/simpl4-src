@@ -37,6 +37,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Bundle;
 import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.system.orientdb.OrientDBService;
+import org.ms123.common.libhelper.FileSystemClassLoader;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 
@@ -61,6 +62,21 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 	protected Inflector m_inflector = Inflector.getInstance();
 	protected EntityService m_entityService;
 	protected OrientDBService m_orientdbService;
+	private Map<StoreDesc,ClassLoader> classLoaderMap = new HashMap<StoreDesc,ClassLoader>();
+
+	public ClassLoader getClassLoader( StoreDesc sdesc){
+		ClassLoader cl = this.classLoaderMap.get( sdesc );
+		if( cl == null){
+			File[] locations = new File[1];
+			locations[0] = new File(sdesc.getBaseDir(), sdesc.getNamespace());
+			cl = new FileSystemClassLoader(this.getClass().getClassLoader(), locations);
+			info(this,"BaseOrientDBClassGenService.getClassLoader("+sdesc+"):"+locations[0]);
+			classLoaderMap.put( sdesc, cl);
+		}else{
+			info(this,"BaseOrientDBClassGenService.getClassLoader("+sdesc+"):"+cl);
+		}
+		return cl;
+	}
 
 	public List<String> generate(StoreDesc sdesc, List<Map> entities, String outDir) throws Exception {
 		info(this,"--->generate:" + sdesc.getString());
@@ -73,6 +89,10 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 			}
 		}
 		info(this,"entities:"+entities);
+		File[] locations = new File[1];
+		locations[0] = new File( outDir);
+		FileSystemClassLoader fscl = new FileSystemClassLoader(this.getClass().getClassLoader(), locations);
+		classLoaderMap.put( sdesc, fscl);
 		ClassBuilder builder = new ClassBuilder(this.getClass().getClassLoader());
 		builder.setPack( javaPackage );
 		builder.addImport( OType);
@@ -164,7 +184,7 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 			}
 		}
 
-		File _outDir = new File(outDir,  javaPackage.replace(".","/"));
+		File _outDir = getOutDir( outDir, javaPackage );
 		if (!_outDir.exists()) {
 			_outDir.mkdirs();
 		}
@@ -189,6 +209,13 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		info(this,"classnameList:"+classnameList);
 		db.commit();
 		return classnameList;
+	}
+
+	protected File getOutDir( String out, String javaPackage ){
+		return new File(out,  javaPackage.replace(".","/"));
+	}
+	protected File getOutDir( File out, String javaPackage ){
+		return new File(out,  javaPackage.replace(".","/"));
 	}
 
 	protected List getEntityMetaData(StoreDesc sdesc, String entity) throws Exception {

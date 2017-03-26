@@ -36,13 +36,13 @@ import org.ms123.common.data.api.SessionContext;
 import static org.ms123.common.entity.api.Constants.STATE_OK;
 import static org.ms123.common.entity.api.Constants.STATE_NEW;
 import static org.ms123.common.entity.api.Constants.STATE_FIELD;
-import org.slf4j.Logger;
 import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
-import org.slf4j.LoggerFactory;
 import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
 import org.ms123.common.store.StoreDesc;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 
 @SuppressWarnings("unchecked")
 public abstract class BasicSelectBuilder {
@@ -78,7 +78,7 @@ public abstract class BasicSelectBuilder {
 	}
 
 	public String getWhere() {
-		debug("getWhere.filter:" + m_filters);
+		debug(this,"getWhere.filter:" + m_filters);
 		if (m_filters == null) {
 			return null;
 		}
@@ -88,7 +88,7 @@ public abstract class BasicSelectBuilder {
 		}
 		
 		String where = processFilterNode(m_filters);
-		debug("getWhere.where:" + where);
+		debug(this,"getWhere.where:" + where);
 		return where;
 	}
 
@@ -99,7 +99,7 @@ public abstract class BasicSelectBuilder {
 		String where = null;
 		String and = " and ";
 		for( String x : m_sortedUniqueList){
-			debug("getTeamSecurityWhere:"+x);
+			debug(this,"getTeamSecurityWhere:"+x);
 			if( hasTeamSecurity(x) ){
 				if( where == null){
 					where ="";
@@ -123,7 +123,7 @@ public abstract class BasicSelectBuilder {
 		List<String> uniqueList = uniqueList(m_selectorList);
 		String and = " and ";
 		for(String sel : uniqueList){
-			debug("getTeamUserWhere:"+sel);
+			debug(this,"getTeamUserWhere:"+sel);
 			if( sel.indexOf("$_team_list")!=-1){
 				if( where == null){
 				  where ="";
@@ -152,7 +152,7 @@ public abstract class BasicSelectBuilder {
 	private String processFilterNode(Map filter) {
 		String result = "";
 		Map cons = getConnector(filter.get("connector"));
-		debug("> processFilterNode.filter:" + filter + ":" + cons);
+		debug(this,"> processFilterNode.filter:" + filter + ":" + cons);
 		List children = (List) filter.get("children");
 		int csize = (children != null) ? children.size() : 0;
 		if (csize == 0) {
@@ -278,7 +278,7 @@ public abstract class BasicSelectBuilder {
 		String[] f = fullfieldname.split("\\.");
 		String entityName = (f.length == 2) ? f[0] : m_entityName;
 		String selector = entityName;
-		debug("getCondition:"+fullfieldname+"|"+selector);
+		debug(this,"getCondition:"+fullfieldname+"|"+selector);
 		addSelector(entityName);
 		entityName = m_queryBuilder.getEntityForPath(entityName);
 		Map configMap = m_queryBuilder.getPermittedFields(StoreDesc.getFqEntityName(entityName,m_pack));
@@ -311,7 +311,7 @@ public abstract class BasicSelectBuilder {
 			return exists + " (" + select + ")";
 		}
 		if (c == null) {
-			debug("configMap:"+configMap);
+			debug(this,"configMap:"+configMap);
 			throw new RuntimeException("Query:Field \"" + fieldname + "\" not found in " + m_sdesc + "/" + entityName);
 		}
 		Object data = rule.get("data");
@@ -378,7 +378,7 @@ public abstract class BasicSelectBuilder {
 				boolean isFunctional = isAnnotationPresent(prop,o, Functional.class);
 				boolean isNotPersistent = isAnnotationPresent(prop,o, NotPersistent.class);
 
-				debug("\tName:" + prop + " -> " + beanMap.getType(prop) + "," + isRelatedTo+"/isFunctional:"+isFunctional); 
+				debug(this,"\tName:" + prop + " -> " + beanMap.getType(prop) + "," + isRelatedTo+"/isFunctional:"+isFunctional); 
 				if (clazz.equals("Document") && prop.equals("text")) {
 					continue;
 				}
@@ -403,8 +403,8 @@ public abstract class BasicSelectBuilder {
 		if (alias != null && !alias.startsWith("v_")) {
 			m_selectorList.add(alias);
 		}
-		debug("Projection for " + clazz + ":" + list);
-		debug("Projection.m_selectorList:" + m_selectorList);
+		debug(this,"Projection for " + clazz + ":" + list);
+		debug(this,"Projection.m_selectorList:" + m_selectorList);
 		return list;
 	}
 
@@ -479,9 +479,9 @@ public abstract class BasicSelectBuilder {
 			}
 		}
 		for( String x : sortedUniqueList){
-			debug("From:"+x);
+			debug(this,"From:"+x);
 			if( hasTeamSecurity(x) ){
-				debug("BasicSelectBuilder.getFrom.selector:"+x);
+				debug(this,"BasicSelectBuilder.getFrom.selector:"+x);
 				if( from.indexOf(x+"$_team_list") == -1){
 					from += " left outer join "+x+"._team_list "+x+"$_team_list";
 				}
@@ -551,16 +551,7 @@ public abstract class BasicSelectBuilder {
 		SessionContext sc = m_queryBuilder.getSessionContext();
 		Map entityMap = sc.getEntitytype(StoreDesc.getFqEntityName(entityName,m_pack));
 		boolean hasTeamSecurity = getBoolean(entityMap, "team_security", false);
-		debug("hasTeamSecurity"+entityName+"):" + hasTeamSecurity);
+		debug(this,"hasTeamSecurity"+entityName+"):" + hasTeamSecurity);
 		return hasTeamSecurity;
 	}
-	protected void debug(String msg) {
-		//System.out.println(msg);
-		m_logger.debug(msg);
-	}
-	protected void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(BasicSelectBuilder.class);
 }

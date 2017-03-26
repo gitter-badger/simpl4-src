@@ -83,7 +83,8 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 	private NucleusService m_nucleusService;
 	private GitService m_gitService;
 
-	private DataLayer m_dataLayer;
+	private DataLayer m_dataLayerJDO;
+	private DataLayer m_dataLayerOrientDB;
 
 	protected EntityService m_entityService;
 	protected UtilsService m_utilsService;
@@ -183,7 +184,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 		Map ret = null;
 		StoreDesc sdesc = StoreDesc.get(storeId);
 		try {
-					ret = m_dataLayer.getObjectGraph(sdesc, entity, id);
+					ret = getDataLayer(sdesc).getObjectGraph(sdesc, entity, id);
 			return ret;
 		} catch (PermissionException e) {
 			throw new RpcException(ERROR_FROM_METHOD, PERMISSION_DENIED, "DataService.getOldTree", e);
@@ -227,7 +228,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 			params.put("luceneQuery", luceneQuery);
 			params.put("fields", fields);
 			params.put("orderby", orderby);
-			ret = m_dataLayer.query(params, sdesc, entity, id, entityChild);
+			ret = getDataLayer(sdesc).query(params, sdesc, entity, id, entityChild);
 			if (ret == null) {
 				Map emptyRet = new HashMap();
 				emptyRet.put("records", "0");
@@ -262,10 +263,10 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 		Map ret = null;
 		try {
 			if (getContent) {
-				ret = m_dataLayer.getObject(sdesc, entity, id, entityChild, fields, response);
+				ret = getDataLayer(sdesc).getObject(sdesc, entity, id, entityChild, fields, response);
 				return null;
 			} else {
-				ret = m_dataLayer.getObject(sdesc, entity, id, entityChild, fields);
+				ret = getDataLayer(sdesc).getObject(sdesc, entity, id, entityChild, fields);
 			}
 			if (ret == null) {
 				ret = new HashMap();
@@ -303,7 +304,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 				hints = new HashMap();
 			}
 			hints.put("state", state);
-			retMap = m_dataLayer.insertObject(data, filter, hints, sdesc, entity, entityParent, idParent);
+			retMap = getDataLayer(sdesc).insertObject(data, filter, hints, sdesc, entity, entityParent, idParent);
 			System.out.println("insert:" + retMap);
 			return retMap;
 		} catch (PermissionException e) {
@@ -339,7 +340,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 				hints = new HashMap();
 			}
 			hints.put("state", state);
-			retMap = m_dataLayer.updateObject(data, filter, hints, sdesc, entity, id, entityParent, idParent);
+			retMap = getDataLayer(sdesc).updateObject(data, filter, hints, sdesc, entity, id, entityParent, idParent);
 			System.out.println("update:" + retMap);
 			return retMap;
 		} catch (PermissionException e) {
@@ -366,7 +367,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 				entity = entityChild;
 				id = idChild;
 			}
-			retMap = m_dataLayer.deleteObject(data, sdesc, entity, id);
+			retMap = getDataLayer(sdesc).deleteObject(data, sdesc, entity, id);
 			System.out.println("delete:" + retMap);
 			return retMap;
 		} catch (PermissionException e) {
@@ -385,7 +386,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 		try {
 			System.out.println("upload:" + storeId + "/" + sdesc + "/" + fileMap);
 			fileMap.put("id",id);
-			return m_dataLayer.updateObject(fileMap, sdesc, entity, id);
+			return getDataLayer(sdesc).updateObject(fileMap, sdesc, entity, id);
 		} catch (PermissionException e) {
 			throw new RpcException(ERROR_FROM_METHOD, PERMISSION_DENIED, "DataService.upload:", e);
 		} catch (Throwable e) {
@@ -403,7 +404,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 			@PName("mapping")          @POptional Map mapping) throws RpcException {
 		StoreDesc sdesc = StoreDesc.get(storeId);
 		sdesc = StoreDesc.getNamespaceData( sdesc.getNamespace(), (String)filterDesc.get(StoreDesc.PACK));
-		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
+		SessionContext sc = getDataLayer(sdesc).getSessionContext(sdesc);
 		try {
 			if( params ==null) params = new HashMap();
 			Map options = new HashMap();
@@ -450,7 +451,7 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 		String filterJson = m_gitService.searchContent( sdesc.getNamespace(), name, "sw.filter" );
 		Map<String,String> filterMap = (Map) m_ds.deserialize(filterJson);
 		sdesc = StoreDesc.getNamespaceData( sdesc.getNamespace(), filterMap.get(StoreDesc.PACK));
-		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
+		SessionContext sc = getDataLayer(sdesc).getSessionContext(sdesc);
 		try {
 			Map options = new HashMap();
 			options.put(SessionContext.CHECK_PARAMS, checkParams);
@@ -491,14 +492,14 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 			@PName("sql")           @POptional String sql) throws RpcException {
 
 		StoreDesc sdesc = StoreDesc.get(storeId);
-		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
+		SessionContext sc = getDataLayer(sdesc).getSessionContext(sdesc);
 		try {
 			if (fileMap != null) {
 				Map map = (Map) fileMap.get("importfile");
 				sql = readFileToString(new File((String) map.get("storeLocation")));
 				System.out.println("SQL:"+sql);
 			}
-			Map ret = m_dataLayer.querySql(sc,sdesc, params, sql);
+			Map ret = getDataLayer(sdesc).querySql(sc,sdesc, params, sql);
 			return ret;
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DataService.executeQuery:", e);
@@ -562,6 +563,13 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 		throw new RuntimeException(msg);
 	}
 
+	private DataLayer getDataLayer(StoreDesc sdesc){
+		return isOrientDB(sdesc) ? m_dataLayerOrientDB : m_dataLayerJDO;
+	}
+
+	private boolean isOrientDB(StoreDesc sdesc){
+		return StoreDesc.STORE_GRAPH.equals( sdesc.getStore()) && StoreDesc.VENDOR_ORIENTDB.equals( sdesc.getVendor());
+	}
 	/************************************ C O N F I G ********************************************************/
 	@Reference(dynamic = true)
 	public void setReportingService(ReportingService paramReportingService) {
@@ -592,9 +600,14 @@ public class DataServiceImpl implements DataService, JavaDelegate {
 	}
 
 	@Reference(target = "(kind=jdo)", dynamic = true)
-	public void setDataLayer(DataLayer paramDataLayer) {
-		this.m_dataLayer = paramDataLayer;
-		System.out.println("DataServiceImpl.setDataLayer:" + paramDataLayer);
+	public void setDataLayerJDO(DataLayer paramDataLayer) {
+		this.m_dataLayerJDO = paramDataLayer;
+		System.out.println("DataServiceImpl.setDataLayerJDO:" + paramDataLayer);
+	}
+	@Reference(target = "(kind=orientdb)", dynamic = true)
+	public void setDataLayerOrientDB(DataLayer paramDataLayer) {
+		this.m_dataLayerOrientDB = paramDataLayer;
+		System.out.println("DataServiceImpl.setDataLayerOrientDB:" + paramDataLayer);
 	}
 
 }

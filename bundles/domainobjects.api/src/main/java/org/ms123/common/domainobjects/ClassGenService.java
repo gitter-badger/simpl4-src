@@ -25,4 +25,5 @@ import org.ms123.common.store.StoreDesc;
 public interface ClassGenService {
 
 	public List<String> generate(StoreDesc sdesc, List<Map> modules, String outDir) throws Exception;
+	public ClassLoader getClassLoader( StoreDesc sdesc);
 }

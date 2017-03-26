@@ -80,14 +80,41 @@ class ClassBuilder {
 		def templateText = '''
 package $pack
 <%imports.each {%>import $it\n<% } %> 
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph
+import com.tinkerpop.blueprints.impls.orient.OrientVertex
+import com.orientechnologies.orient.core.command.OCommandRequest
+import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+import com.orientechnologies.orient.core.sql.OCommandSQL
+import org.ms123.groovy.orient.graph.OrientGraphHelper
+import com.orientechnologies.orient.core.metadata.schema.OType
+
 <%clazzConfigList.each { clazz -> %>
 $clazz.annotation
 @CompileStatic
 class $clazz.name {
+ public final OrientVertex vertex;
 <%clazz.fields.each {%>    $it.value $it.key \n<% } %>
     static mapping = {
 <%clazz.mapping.each {%>      $it.key($it.value)\n<% } %>
     }
+  def insertJSON( String json ){
+    def sql = "insert into $clazz.name content "+json;
+    OCommandRequest update = new OCommandSQL(sql);
+    def graph = this.vertex.getGraph();
+    graph.command(update).execute(null);
+  }
+  public <T> T executeQuery2( String query, boolean singleResult=false,Object... args ){
+    def graph = this.vertex.getGraph();
+    def sqlQuery = new OSQLSynchQuery<com.tinkerpop.blueprints.Vertex>(query)
+    def result = graph.command(sqlQuery).execute(args)
+    def resultClass = ${clazz.name}.class
+    if (singleResult) {
+        return (T) OrientGraphHelper.transformVertexToEntity(resultClass, (OrientVertex) ((Iterable) result)[0])
+    } else {
+        return (T) OrientGraphHelper.transformVertexCollectionToEntity(resultClass, (Iterable) result, OType.LINKLIST)
+    }
+  }
+
 }
 <% } %>
 '''
