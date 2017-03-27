@@ -65,8 +65,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		}
 		info(this,"cleandata:"+cleanData);
 		def obj = clazz.newInstance( cleanData );
-		def ret = [ id : obj.getIdentity() ];
-		return ret;
+		return [ id : obj.getIdentity() ];
 	}
 
 	public Map executeUpdateObject(Class clazz,String id, Map data, Map fields){
@@ -79,8 +78,16 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				obj[k] = data[k];
 			}
 		}
-		def ret = [ id : id ];
-		return ret;
+		return [ id : id ];
+	}
+
+	public Map executeDeleteObject(Class clazz,String id){
+		def obj = clazz.graphQuery("select from "+id,true);
+		if( obj == null){
+			throw new RuntimeException("executeDeleteObject("+id+"):not found");
+		}
+		obj.remove();
+		return [ id : id ];
 	}
 
 	public Map executeGet(Class clazz,String id){

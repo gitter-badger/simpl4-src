@@ -111,7 +111,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map insertObject(Map dataMap, Map filterMap, Map hintsMap, StoreDesc sdesc, String entityName, String entityNameParent, String idParent) {
-		debug(this,"insertObject:" + dataMap + ",filterMap:" + filterMap + ",entity:" + entityName + "/entityNameParent:" + entityNameParent + "/idParent:" + idParent);
+		debug(this,"insertObject:" + dataMap + ",filterMap:" + filterMap + ",entity:" + entityName);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
 		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
@@ -120,9 +120,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 			orientGraph.begin();
 			retMap = insertObject(sessionContext, dataMap, filterMap, hintsMap, entityName, entityNameParent, idParent);
 			orientGraph.commit();
-			info(this,"insertObject:commit:"+retMap);
 			String id = String.valueOf(retMap.get("id"));
-			info(this,"insertObject:commit:"+id);
 			retMap.put("id",id);
 		} catch (Throwable e) {
 			error(this,"insertObject:%[exception]s", e);
@@ -219,9 +217,8 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 			orientGraph.begin();
 			retMap = updateObject(sessionContext, dataMap, filterMap, hintsMap, entityName, id, entityNameParent, idParent);
 			orientGraph.commit();
-			info(this,"insertObject:commit:"+retMap);
 		} catch (Throwable e) {
-			error(this,"insertObject:%[exception]s", e);
+			error(this,"updateObject:%[exception]s", e);
 			sessionContext.handleException(e);
 		} finally {
 			orientGraph.shutdown();
@@ -255,11 +252,30 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	//delete 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 	public Map deleteObject(Map dataMap, StoreDesc sdesc, String entityName, String id) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.deleteObject");
+		debug(this,"deleteObject:" + dataMap + ",module:" + entityName + ",id:" + id);
+		Map retMap = new HashMap();
+		SessionContext sessionContext = getSessionContext(sdesc);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraph orientGraph = factory.getTx();
+		try {
+			orientGraph.begin();
+			retMap = deleteObject(sessionContext, dataMap, entityName, id);
+			orientGraph.commit();
+		} catch (Throwable e) {
+			error(this,"deleteObject:%[exception]s", e);
+			sessionContext.handleException(e);
+		} finally {
+			orientGraph.shutdown();
+			sessionContext.handleFinally();
+		}
+		return retMap;
 	}
 
 	public Map deleteObject(SessionContext sessionContext, Map dataMap, String entityName, String id) throws Exception {
-		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.deleteObject");
+		StoreDesc sdesc = sessionContext.getStoreDesc();
+		entityName = this.inflector.getEntityName(entityName);
+		Class deleteClazz = getClass(sessionContext, entityName);
+		return executeDeleteObject( deleteClazz, id );
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -291,7 +307,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	public Map getObject(StoreDesc sdesc, String entityName, String id, String entityNameDetails, List fields, HttpServletResponse resp) {
 		SessionContext sessionContext = getSessionContext(sdesc);
 		checkPermissions(sdesc, sessionContext.getUserName(),entityName, null, "read");
-		debug(this, "getObject:fields:" + fields + ",entityName:" + entityName + ",entityNameDetails:" + entityNameDetails + ",id:" + id);
+		debug(this, "getObject:fields:" + fields + ",entityName:" + entityName + ",id:" + id);
 		Class clazz = getClass(sessionContext, entityName);
 		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
 		OrientGraph orientGraph = factory.getTx();
