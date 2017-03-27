@@ -115,11 +115,20 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
 		try {
+			OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+			OrientGraph orientGraph = factory.getTx();
+			orientGraph.begin();
 			retMap = insertObject(sessionContext, dataMap, filterMap, hintsMap, entityName, entityNameParent, idParent);
+			orientGraph.commit();
+			info(this,"insertObject:commit:"+retMap);
+			String id = String.valueOf(retMap.get("id"));
+			info(this,"insertObject:commit:"+id);
+			retMap.put("id",id);
 		} catch (Throwable e) {
-		//	sessionContext.handleException(ut, e);
+			error(this,"insertObject:%[exception]s", e);
+			sessionContext.handleException(e);
 		} finally {
-		//	sessionContext.handleFinally(ut);
+			sessionContext.handleFinally();
 		}
 		return retMap;
 	}
@@ -137,7 +146,16 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map insertObject(SessionContext sessionContext, Map dataMap, Map filterMap, Map hintsMap, String entityName, String entityNameParent, String idParent) throws Exception {
-		return null;
+		StoreDesc sdesc = sessionContext.getStoreDesc();
+		if (entityNameParent != null) {
+			entityName = constructEntityName(sessionContext, entityName, entityNameParent);
+		}
+		String user = sessionContext.getUserName();
+		checkPermissions(sdesc, user, entityName, dataMap, "write");
+		entityName = this.inflector.getEntityName(entityName);
+		Class insertClazz = getClass(sessionContext, entityName);
+		Map fields = sessionContext.getPermittedFields( entityName, "write");
+		return executeInsertObject( insertClazz, dataMap, fields );
 	}
 	
 
@@ -285,9 +303,8 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		try{
 			Map fieldSets = this.settingService.getFieldSets(config, sdesc.getNamespace(), entityName);
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
-			OrientGraphFactory factory = orientdbService.getFactory(sdesc.getNamespace(),false);
+			OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
 			OrientGraph orientGraph = factory.getTx();
-			info(this,"orientGraph:"+orientGraph);
 			String where = qb.getWhere();
 			Class clazz = getClass(sessionContext, entityName);
 			List<Map> rows = executeQuery(clazz, this.inflector.getClassName(entityName), where);

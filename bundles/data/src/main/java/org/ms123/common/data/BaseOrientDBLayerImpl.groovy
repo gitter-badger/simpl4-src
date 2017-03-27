@@ -50,8 +50,29 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	public List<Map> executeQuery(Class clazz,String className, String where){
 		info(this,"Where:"+where);
 		List list = clazz.graphQueryMap("select from "+className + " where "+ where,false);
-		info(this,"List:"+list);
+		list.each{ row -> 
+			row.id = row._id;
+			row.remove("_id");
+		}
 		return list;
+	}
+	public Map executeInsertObject(Class clazz,Map data, Map fields){
+		def cleanData = [:];
+		fields.each{ k, v -> 
+			def datatype = v.datatype;
+			if( isSimple( datatype )){
+				cleanData[k] = data[k];
+			}
+		}
+		info(this,"cleandata:"+cleanData);
+		def obj = clazz.newInstance( cleanData );
+		def ret = [ id : obj.getIdentity() ];
+		return ret;
+	}
+
+	def isSimple( def dt ){
+		def simpleList = ["1","2","3","4","5","6","7","17","19","21"]
+		return simpleList.contains( dt );
 	}
 }
 
