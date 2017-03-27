@@ -123,6 +123,7 @@ public class OrientDBServiceImpl implements OrientDBService {
 				dbCreate(name);
 			}
 			f = new OrientGraphFactory("remote:127.0.0.1/" + name, "root", passwd, true);
+			f.setupPool(1, 50);
 			f.setAutoStartTx(autoCommit);
 			factoryMap.put(name+"/"+autoCommit, f);
 		}
