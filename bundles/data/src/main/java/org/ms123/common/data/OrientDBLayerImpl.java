@@ -210,7 +210,24 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map updateObject(Map dataMap, Map filterMap, Map hintsMap, StoreDesc sdesc, String entityName, String id, String entityNameParent, String idParent) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.updateObject");
+		debug(this,"updateObject:" + dataMap + ",filterMap:" + filterMap + ",entityName:" + entityName);
+		Map retMap = new HashMap();
+		SessionContext sessionContext = getSessionContext(sdesc);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraph orientGraph = factory.getTx();
+		try {
+			orientGraph.begin();
+			retMap = updateObject(sessionContext, dataMap, filterMap, hintsMap, entityName, id, entityNameParent, idParent);
+			orientGraph.commit();
+			info(this,"insertObject:commit:"+retMap);
+		} catch (Throwable e) {
+			error(this,"insertObject:%[exception]s", e);
+			sessionContext.handleException(e);
+		} finally {
+			orientGraph.shutdown();
+			sessionContext.handleFinally();
+		}
+		return retMap;
 	}
 
 	public Map updateObject(SessionContext sessionContext, Map dataMap, String entityName, String id) throws Exception {
@@ -222,7 +239,16 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map updateObject(SessionContext sessionContext, Map dataMap, Map filterMap, Map hintsMap, String entityName, String id, String entityNameParent, String idParent) throws Exception {
-		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.updateObject");
+		StoreDesc sdesc = sessionContext.getStoreDesc();
+		if (entityNameParent != null) {
+			entityName = constructEntityName(sessionContext, entityName, entityNameParent);
+		}
+		String user = sessionContext.getUserName();
+		checkPermissions(sdesc, user, entityName, dataMap, "write");
+		entityName = this.inflector.getEntityName(entityName);
+		Class updateClazz = getClass(sessionContext, entityName);
+		Map fields = sessionContext.getPermittedFields( entityName, "write");
+		return executeUpdateObject( updateClazz, id, dataMap, fields );
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 

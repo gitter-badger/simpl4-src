@@ -59,14 +59,27 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	public Map executeInsertObject(Class clazz,Map data, Map fields){
 		def cleanData = [:];
 		fields.each{ k, v -> 
-			def datatype = v.datatype;
-			if( isSimple( datatype )){
+			if( isSimple( v.datatype )){
 				cleanData[k] = data[k];
 			}
 		}
 		info(this,"cleandata:"+cleanData);
 		def obj = clazz.newInstance( cleanData );
 		def ret = [ id : obj.getIdentity() ];
+		return ret;
+	}
+
+	public Map executeUpdateObject(Class clazz,String id, Map data, Map fields){
+		def obj = clazz.graphQuery("select from "+id,true);
+		if( obj == null){
+			throw new RuntimeException("executeUpdateObject("+id+"):not found");
+		}
+		fields.each{ k, v -> 
+			if( isSimple( v.datatype ) && data[k] != null){
+				obj[k] = data[k];
+			}
+		}
+		def ret = [ id : id ];
 		return ret;
 	}
 
