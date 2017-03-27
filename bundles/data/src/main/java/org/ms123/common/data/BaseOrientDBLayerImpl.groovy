@@ -70,6 +70,16 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		return ret;
 	}
 
+	public Map executeGet(Class clazz,String id){
+		info(this,"executeGet:"+id);
+		Map row = clazz.graphQueryMap("select from "+id,true);
+		if( row != null){
+			row.id = row._id;
+			row.remove("_id");
+		}
+		return row;
+	}
+
 	def isSimple( def dt ){
 		def simpleList = ["1","2","3","4","5","6","7","17","19","21"]
 		return simpleList.contains( dt );

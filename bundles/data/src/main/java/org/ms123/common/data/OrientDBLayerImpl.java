@@ -114,9 +114,9 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		debug(this,"insertObject:" + dataMap + ",filterMap:" + filterMap + ",entity:" + entityName + "/entityNameParent:" + entityNameParent + "/idParent:" + idParent);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraph orientGraph = factory.getTx();
 		try {
-			OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
-			OrientGraph orientGraph = factory.getTx();
 			orientGraph.begin();
 			retMap = insertObject(sessionContext, dataMap, filterMap, hintsMap, entityName, entityNameParent, idParent);
 			orientGraph.commit();
@@ -128,6 +128,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 			error(this,"insertObject:%[exception]s", e);
 			sessionContext.handleException(e);
 		} finally {
+			orientGraph.shutdown();
 			sessionContext.handleFinally();
 		}
 		return retMap;
@@ -262,7 +263,17 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map getObject(StoreDesc sdesc, String entityName, String id, String entityNameDetails, List fields, HttpServletResponse resp) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.getObject");
+		SessionContext sessionContext = getSessionContext(sdesc);
+		checkPermissions(sdesc, sessionContext.getUserName(),entityName, null, "read");
+		debug(this, "getObject:fields:" + fields + ",entityName:" + entityName + ",entityNameDetails:" + entityNameDetails + ",id:" + id);
+		Class clazz = getClass(sessionContext, entityName);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraph orientGraph = factory.getTx();
+		try{
+			return executeGet(clazz, id);
+		}finally{
+			orientGraph.shutdown();
+		}
 	}
 
 
@@ -300,17 +311,19 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		if (params.get("filter") != null) {
 			filtersMap = (Map) params.get("filter");
 		}
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraph orientGraph = factory.getTx();
 		try{
 			Map fieldSets = this.settingService.getFieldSets(config, sdesc.getNamespace(), entityName);
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
-			OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
-			OrientGraph orientGraph = factory.getTx();
 			String where = qb.getWhere();
 			Class clazz = getClass(sessionContext, entityName);
 			List<Map> rows = executeQuery(clazz, this.inflector.getClassName(entityName), where);
 			retMap.put("rows", rows);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			orientGraph.shutdown();
 		}
 		return retMap;
 	}
