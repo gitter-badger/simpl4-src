@@ -80,6 +80,7 @@ qx.Class.define("ms123.importing.ImportDatamapperDialog", {
 			return dm;
 		},
 		_saveSettings: function (settings) {
+			settings.database=this._database;
 			var ret = null;
 			try {
 				ret = ms123.util.Remote.rpcSync("importing:updateImporting", {
@@ -105,6 +106,7 @@ qx.Class.define("ms123.importing.ImportDatamapperDialog", {
 				ms123.form.Dialog.alert("ImportDatamapperDialog._loadSettings:" + e);
 				return null;
 			}
+			this._database = settings.database;
 			return settings;
 		}
 	}
