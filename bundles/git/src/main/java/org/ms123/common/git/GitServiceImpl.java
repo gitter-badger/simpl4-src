@@ -1328,6 +1328,9 @@ public class GitServiceImpl implements GitService {
 		fbc.setString("store", "data", "namespace", name);
 		fbc.setString("store", "data", "repository", getDataRepoName(name));
 		fbc.setString("store", "data", "database", "rdbms:h2");
+		fbc.setString("store", "odata", "pack", "odata");
+		fbc.setString("store", "odata", "namespace", name);
+		fbc.setString("store", "odata", "database", "graph:orientdb");
 		fbc.save();
 	}
 
