@@ -79,7 +79,6 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		System.out.println("ImportingServiceImpl.activate.props:" + m_dataLayer);
 	}
 
 	protected void deactivate() throws Exception {
@@ -127,10 +126,10 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 				data.put(JSON_BODY, jsonBody);
 			}
 			try {
-				m_dataLayer.deleteObject(null, sdesc, IMPORTING_ENTITY, importingid);
+				getDataLayer(sdesc).deleteObject(null, sdesc, IMPORTING_ENTITY, importingid);
 			} catch (Exception e) {
 			}
-			Map ret = m_dataLayer.insertObject(data, sdesc, IMPORTING_ENTITY, null, null);
+			Map ret = getDataLayer(sdesc).insertObject(data, sdesc, IMPORTING_ENTITY, null, null);
 			return ret;
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ImportingService.createImporting:", e);
@@ -152,7 +151,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 				String jsonBody = m_js.deepSerialize(settings);
 				data.put("jsonBody", jsonBody);
 			}
-			Map ret = m_dataLayer.updateObject(data, null, null, sdesc, IMPORTING_ENTITY, importingid, null, null);
+			Map ret = getDataLayer(sdesc).updateObject(data, null, null, sdesc, IMPORTING_ENTITY, importingid, null, null);
 			return ret;
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ImportingServiceImpl.updateImporting:", e);
@@ -166,7 +165,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 			@PName(IMPORTING_ID)       String importingid) throws RpcException {
 		try {
 			StoreDesc sdesc = getStoreDesc(namespace);
-			Map ret = m_dataLayer.deleteObject(null, sdesc, IMPORTING_ENTITY, importingid);
+			Map ret = getDataLayer(sdesc).deleteObject(null, sdesc, IMPORTING_ENTITY, importingid);
 			return ret;
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ImportingServiceImpl.deleteImporting:", e);
@@ -178,7 +177,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName(IMPORTING_ID)       @POptional String importingid) throws RpcException {
 		StoreDesc sdesc = getStoreDesc(namespace);
-		SessionContext sessionContext = m_dataLayer.getSessionContext(sdesc);
+		SessionContext sessionContext = getDataLayer(sdesc).getSessionContext(sdesc);
 		try {
 			String className = m_inflector.getClassName(IMPORTING_ENTITY);
 			Class clazz = sessionContext.getClass(className);
@@ -200,7 +199,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName(IMPORTING_ID)       @POptional String importingid) throws RpcException {
 		StoreDesc sdesc = getStoreDesc(namespace);
-		SessionContext sessionContext = m_dataLayer.getSessionContext(sdesc);
+		SessionContext sessionContext = getDataLayer(sdesc).getSessionContext(sdesc);
 		try {
 			String className = m_inflector.getClassName(IMPORTING_ENTITY);
 			Class clazz = sessionContext.getClass(className);
@@ -222,7 +221,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName(IMPORTING_ID)       @POptional String importingid) throws RpcException {
 		StoreDesc sdesc = getStoreDesc(namespace);
-		SessionContext sessionContext = m_dataLayer.getSessionContext(sdesc);
+		SessionContext sessionContext = getDataLayer(sdesc).getSessionContext(sdesc);
 		try {
 			String className = m_inflector.getClassName(IMPORTING_ENTITY);
 			Class clazz = sessionContext.getClass(className);
@@ -249,7 +248,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 					) throws RpcException {
 		StoreDesc data_sdesc = StoreDesc.get(storeId);
 		StoreDesc aid_sdesc = getStoreDesc(data_sdesc.getNamespace());
-		SessionContext sessionContext = m_dataLayer.getSessionContext(aid_sdesc);
+		SessionContext sessionContext = getDataLayer(data_sdesc).getSessionContext(aid_sdesc);
 		try {
 			String className = m_inflector.getClassName(IMPORTING_ENTITY);
 			Class clazz = sessionContext.getClass(className);
@@ -262,7 +261,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 			if( settings.get("input")!= null){
 				System.out.println("doImport:"+settings);
 				System.out.println("doImport:"+m_datamapper+"/"+data_sdesc+"/"+content);
-				sessionContext = m_dataLayer.getSessionContext(data_sdesc);
+				sessionContext = getDataLayer(data_sdesc).getSessionContext(data_sdesc);
 				BeanFactory bf = new BeanFactory(sessionContext, settings);
 				Object ret = m_datamapper.transform(data_sdesc.getNamespace(), settings, null, new String(content), bf);
 				if( withoutSave) return ret;
@@ -301,7 +300,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 		}
 		StoreDesc data_sdesc = StoreDesc.get(storeId);
 		StoreDesc aid_sdesc = getStoreDesc(data_sdesc.getNamespace());
-		SessionContext sessionContext = m_dataLayer.getSessionContext(aid_sdesc);
+		SessionContext sessionContext = getDataLayer(data_sdesc).getSessionContext(aid_sdesc);
 		PersistenceManager pm = sessionContext.getPM();
 		UserTransaction ut = sessionContext.getUserTransaction();
 		try {
@@ -359,11 +358,17 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 		return m_datamapper.getMetaData2(config,fileContent);
 	}
 
+
 	/* END JSON-RPC-API*/
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
-	public void setDataLayer(DataLayer dataLayer) {
+	public void setDataLayerNucleus(DataLayer dataLayer) {
 		System.out.println("ImportingServiceImpl.setDataLayer:" + dataLayer);
-		m_dataLayer = dataLayer;
+		m_dataLayerJDO = dataLayer;
+	}
+	@Reference(target = "(kind=orientdb)", dynamic = true)
+	public void setDataLayerOrientDB(DataLayer paramDataLayer) {
+		this.m_dataLayerOrientDB = paramDataLayer;
+		System.out.println("DataServiceImpl.setDataLayerOrientDB:" + paramDataLayer);
 	}
 	@Reference(dynamic = true, optional = true)
 	public void setDatamapper(DatamapperService datamapper) {

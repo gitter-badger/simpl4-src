@@ -76,7 +76,8 @@ public class BaseImportingServiceImpl implements Constants {
 	private Bean2Map m_b2m = new Bean2Map();
 
 	private String FIELDNAME_REGEX = "[a-zA-Z0-9_]{2,64}";
-	protected DataLayer m_dataLayer;
+	protected DataLayer m_dataLayerJDO;
+	protected DataLayer m_dataLayerOrientDB;
 	protected DatamapperService m_datamapper;
 
 	protected PermissionService m_permissionService;
@@ -178,9 +179,9 @@ public class BaseImportingServiceImpl implements Constants {
 				}
 				if( origObject == null && parentClazz != null){
 					Object parentObject = getObjectByFilter(groovyShell, pm,parentClazz,object,parentQuery);
-					m_dataLayer.insertIntoMaster(sc, object, mainEntity,parentObject, parentFieldName);
+					getDataLayer(sc.getStoreDesc()).insertIntoMaster(sc, object, mainEntity,parentObject, parentFieldName);
 				}
-				m_dataLayer.makePersistent(sc, object);
+				getDataLayer(sc.getStoreDesc()).makePersistent(sc, object);
 				System.out.println("\tpersist:"+m_js.serialize(object));
 				ut.commit();
 				num++;
@@ -482,7 +483,7 @@ public class BaseImportingServiceImpl implements Constants {
 		fields.add(DESCRIPTION);
 		fields.add(JSON_BODY);
 		data.put("fields", fields);
-		Map result = m_dataLayer.query(data, sdesc, IMPORTING_ENTITY);
+		Map result = getDataLayer(sdesc).query(data, sdesc, IMPORTING_ENTITY);
 		List<Map> resultList = (List) result.get("rows");
 		for (int i = 0; i < resultList.size(); i++) {
 			Map m = resultList.get(i);
@@ -490,6 +491,13 @@ public class BaseImportingServiceImpl implements Constants {
 			m.remove(JSON_BODY);
 		}
 		return m_utilsService.listToList(resultList, mapping, null);
+	}
+	protected DataLayer getDataLayer(StoreDesc sdesc){
+		return isOrientDB(sdesc) ? m_dataLayerOrientDB : m_dataLayerJDO;
+	}
+
+	protected boolean isOrientDB(StoreDesc sdesc){
+		return StoreDesc.STORE_GRAPH.equals( sdesc.getStore()) && StoreDesc.VENDOR_ORIENTDB.equals( sdesc.getVendor());
 	}
 
 	/*OLDIMPORT*/
@@ -504,7 +512,7 @@ public class BaseImportingServiceImpl implements Constants {
 			defaults = getListParameter(settings, DEFAULTS, true);
 			sourceSetup = getMapParameter(settings, SOURCE_SETUP, false);
 			mainEntity = getStringParameter(settings, MAIN_ENTITY, false);
-			SessionContext sessionContext = m_dataLayer.getSessionContext(data_sdesc);
+			SessionContext sessionContext = getDataLayer(data_sdesc).getSessionContext(data_sdesc);
 			UserTransaction ut = sessionContext.getUserTransaction();
 			try {
 				String ftype = detectFileType(content);
@@ -562,7 +570,7 @@ public class BaseImportingServiceImpl implements Constants {
 					if (cv == null && m.get("_duplicated_id_") == null) {
 						if (!withoutSave) {
 							ut.begin();
-							m_dataLayer.makePersistent(sessionContext, o);
+							getDataLayer(data_sdesc).makePersistent(sessionContext, o);
 							ut.commit();
 						}
 					} else {
