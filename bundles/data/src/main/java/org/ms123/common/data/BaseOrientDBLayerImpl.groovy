@@ -48,7 +48,7 @@ import static com.jcabi.log.Logger.debug;
 abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLayer{
 
 	public List<Map> executeQuery(Class clazz,String className, String where){
-		info(this,"Where:"+where);
+		info(this,"executeQuery.Where:"+where);
 		List list = clazz.graphQueryMap("select from "+className + " where "+ where,false);
 		list.each{ row -> 
 			row.id = row._id;

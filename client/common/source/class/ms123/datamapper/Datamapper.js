@@ -206,7 +206,8 @@ console.log("datamapper.importingid:"+this._facade.importingid);
 			new ms123.datamapper.plugins.ContextMenu(this._facade, context);
 			var edit = new ms123.datamapper.plugins.TreeEdit(this._facade, context);
 			new ms123.datamapper.plugins.MetadataEdit(this._facade,context);
-			new ms123.datamapper.plugins.EntityCreate(this._facade,context);
+			new ms123.datamapper.plugins.EntityCreate(this._facade,context,"nucleus");
+			new ms123.datamapper.plugins.EntityCreate(this._facade,context,"orient");
 			this._disposeList.push(edit);
 			toolbar.registryChanged(this.getPluginsData());
 			container.add(toolbar, {

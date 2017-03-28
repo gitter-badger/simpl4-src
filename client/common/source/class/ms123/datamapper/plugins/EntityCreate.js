@@ -26,12 +26,19 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 	/******************************************************************************
 	 CONSTRUCTOR
 	 ******************************************************************************/
-	construct: function (facade,context) {
+	construct: function (facade,context,dest) {
 		this.base(arguments);
 		this._facade = facade;
 		this._side = context.side;
 
-		var ec_msg = this.tr("datamapper.entitytypes_create");
+		var ec_msg = null;
+		this.isOrientDB = false;
+		if( "orient" == dest ){
+			ec_msg = this.tr("datamapper.entitytypes_create_orient");
+			this.isOrientDB = true;
+		}else{
+			ec_msg = this.tr("datamapper.entitytypes_create_nucleus");
+		}
 		var group = "4";
 		this._facade.offer({
 			name: ec_msg,
@@ -99,9 +106,13 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 			return stringList;
 		},
 		_getEntitytypes: function () {
+			var storeId = this._facade.storeDesc.getStoreId();
+			if( this.isOrientDB){
+				storeId = this._facade.storeDesc.getNamespace()+"_odata";
+			}
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:getEntitytypes", {
-					storeId: this._facade.storeDesc.getStoreId()
+					storeId: storeId
 				});
 				return ret;
 			} catch (e) {
@@ -122,12 +133,17 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 			}
 		},
 		_createEntitytypes: function (infoOnly,strategy) {
+			var storeId = this._facade.storeDesc.getStoreId();
+			if( this.isOrientDB){
+				storeId = this._facade.storeDesc.getNamespace()+"_odata";
+			}
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:createEntitytypes", {
-					storeId: this._facade.storeDesc.getStoreId(),
+					storeId: storeId,
 					datamapperConfig: this._facade.getConfig(),
 					side: this._side,
 					strategy: strategy,
+					isOrientDB: this.isOrientDB,
 					infoOnly: infoOnly
 				});
 				return ret;

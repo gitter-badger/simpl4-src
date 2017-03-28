@@ -139,7 +139,11 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 			@PName("infoOnly")           @POptional @PDefaultBool(false) Boolean infoOnly
 				) throws RpcException {
 		try {
-			GraphCreator gc = new GraphCreator(this);
+			info("storeId:"+storeId);
+			StoreDesc sdesc = StoreDesc.get(storeId);
+			info("StoreDesc:"+sdesc);
+			info("isOrientDB:"+isOrientDB(sdesc));
+			GraphCreator gc = isOrientDB(sdesc) ? new OrientDBGraphCreator(this) : new NucleusGraphCreator(this) ;
 			if( datamapperConfig == null && datamapperConfigName == null){
 				throw new RpcException(ERROR_FROM_METHOD, 100, "EntityService.createEntitytypes:no datamapperConfig");
 			}
