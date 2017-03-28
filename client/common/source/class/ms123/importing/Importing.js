@@ -112,6 +112,19 @@ qx.Class.define("ms123.importing.Importing", {
 								},
 								'value': ""
 							},
+							"database": {
+								'type': "SelectBox",
+								'label': self.tr("Database"),
+								'value': "default",
+								'options': [{
+									label: "Default",
+									value: "default"
+								},
+								{
+									label: "OrientDB",
+									value: "orientdb"
+								}]
+							},
 							"mainEntity": {
 								'type': "SelectBox",
 								'label': self.tr("importing.mainEntity"),
@@ -152,6 +165,7 @@ qx.Class.define("ms123.importing.Importing", {
 							"callback": function (m) {
 								if (m !== undefined) {
 									var val = m.get("importName");
+									var db = m.get("database");
 									var mm=self.__mainEntity;
 									var ft=self.__fileType;
 									if( self.__allUser){
@@ -164,7 +178,7 @@ qx.Class.define("ms123.importing.Importing", {
 										ms123.form.Dialog.alert(self.tr("importing.duplicated"));
 										return;
 									} else {
-										var meta = {};
+										var meta = {database:m.get("database")};
 										if( ! ms123.config.ConfigManager.isDatamapperImport()){
 											meta = { mainEntity: mm, fileType: ft }
 										}

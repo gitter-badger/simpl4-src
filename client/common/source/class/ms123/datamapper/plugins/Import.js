@@ -90,6 +90,7 @@ qx.Class.define("ms123.datamapper.plugins.Import", {
 			return new ms123.datamapper.edit.ImportUploadWindow(this._facade,{id:id}, this.tr("datamapper.upload_file"));
 		},
 		_execute: function (withoutSave) {
+			var storeId= this._facade.isOrientDB ? this._facade.storeDesc.getNamespace()+"_odata" : this._facade.storeDesc.getStoreId();
 			self = this;
 			var completed = function (ret) {
 				self._hideWait();
@@ -106,7 +107,7 @@ qx.Class.define("ms123.datamapper.plugins.Import", {
 				ms123.form.Dialog.alert("<b>Error</b>"+msg);
 			}
 			var rpcParams = {
-				storeId: this._facade.storeDesc.getStoreId(),
+				storeId: storeId,
 				withoutSave:withoutSave,
 				importingid: this._facade.importingid
 			};

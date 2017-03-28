@@ -76,7 +76,7 @@ qx.Class.define("ms123.importing.ImportDatamapperDialog", {
 				this._saveSettings(settings);
 			}, this);
 			var setting = this._loadSettings();
-			dm.init(setting.input ? setting : null );
+			dm.init(setting );
 			return dm;
 		},
 		_saveSettings: function (settings) {

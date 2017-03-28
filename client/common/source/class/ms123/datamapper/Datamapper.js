@@ -29,7 +29,6 @@ qx.Class.define('ms123.datamapper.Datamapper', {
 		this._facade.importingid = context.importingid;
 		this._facade.mainEntity = context.mainEntity;
 
-console.log("datamapper.importingid:"+this._facade.importingid);
 		var deco = new ms123.util.RoundSingleBorder(1, "solid", "white", 1);
 		this.setLayout(new qx.ui.layout.Dock(0, 1, null, deco));
 		this._disposeList = [];
@@ -46,6 +45,11 @@ console.log("datamapper.importingid:"+this._facade.importingid);
 			this._facade.update = this._update.bind(this);
 			this._facade.save = this._save.bind(this);
 			this._facade.getConfig = this._getConfig.bind(this);
+			this._facade.isOrientDB = (content != null && content.database == "orientdb") ? true : false;
+			console.log("isOrientDB:", this._facade.isOrientDB);
+			if( !content.input){
+				content = null;
+			}
 			if (this._isEmpty(content)) {
 				var mc = new ms123.datamapper.MappingCreator(this._facade);
 				this.add(mc, {
