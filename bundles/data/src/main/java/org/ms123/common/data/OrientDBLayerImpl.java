@@ -408,6 +408,9 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 
 	public Class getClass(SessionContext sessionContext, String entityName) {
 		StoreDesc sdesc = sessionContext.getStoreDesc();
+		return getClass(sdesc, entityName);
+	}
+	public Class getClass(StoreDesc sdesc, String entityName) {
 		ClassLoader cl = this.domainObjectsService.getClassLoader( sdesc );
 		String fqCN = sdesc.getPack()+"."+this.inflector.getClassName(entityName);
 		info(this,"getClass("+cl+"):"+fqCN);
@@ -416,6 +419,9 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		}catch(ClassNotFoundException c){
 			throw new RuntimeException("OrientDBLayer.getClass("+fqCN+") not found");
 		}
+	}
+	public ClassLoader getClassLoader(StoreDesc sdesc) {
+		return this.domainObjectsService.getClassLoader( sdesc );
 	}
 
 	public String constructEntityName(SessionContext sessionContext, String entityName, String entityNameParent){

@@ -207,8 +207,13 @@ public class DatamapperServiceImpl extends BaseDatamapperServiceImpl implements 
 		m_gitService = gitService;
 	}
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
-	public void setDataLayer(DataLayer dataLayer) {
+	public void setDataLayerJDO(DataLayer dataLayer) {
 		System.out.println("DatamapperServiceImpl.setDataLayer:" + dataLayer);
-		m_dataLayer = dataLayer;
+		m_dataLayerJDO = dataLayer;
+	}
+	@Reference(target = "(kind=orientdb)", dynamic = true, optional = true)
+	public void setDataLayerOrientDB(DataLayer dataLayer) {
+		System.out.println("DatamapperServiceImpl.setDataLayer:" + dataLayer);
+		m_dataLayerOrientDB = dataLayer;
 	}
 }

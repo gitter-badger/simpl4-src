@@ -50,7 +50,7 @@ import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings("unchecked")
-public class OrientDBSessionContextImpl implements org.ms123.common.data.api.SessionContext{
+public class OrientDBSessionContextImpl extends BaseOrientDBSessionContextImpl implements org.ms123.common.data.api.SessionContext{
 
 	protected Inflector inflector = Inflector.getInstance();
 
@@ -378,19 +378,23 @@ public class OrientDBSessionContextImpl implements org.ms123.common.data.api.Ses
 	}
 
 	public UserTransaction getUserTransaction(){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getUserTransaction");
+		return null;
 	}
 
 	public ClassLoader getClassLoader(){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getClassLoader");
+		return this.dataLayer.getClassLoader(this.sdesc);
+	}
+
+	public ClassLoader getClassLoader( StoreDesc sdesc){
+		return this.dataLayer.getClassLoader(sdesc);
 	}
 
 	public Class getClass(StoreDesc sdesc, String className){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getClass");
+		return this.dataLayer.getClass(sdesc,className);
 	}
 
 	public Class getClass(String className){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getClass");
+		return this.dataLayer.getClass(this,className);
 	}
 
 	public Object createObject(String entityName){
@@ -430,12 +434,9 @@ public class OrientDBSessionContextImpl implements org.ms123.common.data.api.Ses
 	}
 
 	public Object getObjectById(Class clazz, Object id){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getObjectById");
+		return getObjectById(this.sdesc, clazz, id);
 	}
 
-	public Object getObjectById(StoreDesc sdesc, Class clazz, Object id){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getObjectById");
-	}
 	public Object getObjectByAttr(Class clazz, String attr, Object value){
 		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getObjectByAttr");
 	}
@@ -472,7 +473,6 @@ public class OrientDBSessionContextImpl implements org.ms123.common.data.api.Ses
 	}
 
 	public void handleFinally(UserTransaction ut){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.handleFinally");
 	}
 
 	public void handleException(Throwable e){
@@ -480,7 +480,7 @@ public class OrientDBSessionContextImpl implements org.ms123.common.data.api.Ses
 	}
 
 	public void handleException(UserTransaction ut, Throwable e){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.handleException");
+		throw new RuntimeException("OrientDBSessionContext:",e);
 	}
 
 
@@ -508,11 +508,16 @@ public class OrientDBSessionContextImpl implements org.ms123.common.data.api.Ses
 	}
 
 	public boolean isFieldPermitted(String fieldName, String entityName){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.isFieldPermitted");
+		return isFieldPermitted(fieldName, entityName, "read");
 	}
 
 	public boolean isFieldPermitted(String fieldName, String entityName,String actions){
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.isFieldPermitted");
+		Map permittedFields = permittedFieldsMap.get(entityName.toLowerCase()+"/"+actions);
+		if (permittedFields == null) {
+			permittedFields = this.entityService.getPermittedFields(getStoreDesc(), entityName.toLowerCase(), actions);
+			permittedFieldsMap.put(entityName.toLowerCase()+"/"+actions, permittedFields);
+		}
+		return permittedFields.get(fieldName) == null ? false : true;
 	}
 
 	public PersistenceManager getPM(){

@@ -2124,8 +2124,12 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		return getClass(sessionContext.getStoreDesc(), m_inflector.getClassName(entityName));
 	}
 
-	private Class getClass(StoreDesc sdesc, String className) {
+	public Class getClass(StoreDesc sdesc, String className) {
 		return m_nucleusService.getClass(sdesc, className);
+	}
+
+	public ClassLoader getClassLoader(StoreDesc sdesc) {
+		return m_nucleusService.getClassLoader( sdesc );
 	}
 
 	protected Object newInstance(StoreDesc sdesc, String entity) {

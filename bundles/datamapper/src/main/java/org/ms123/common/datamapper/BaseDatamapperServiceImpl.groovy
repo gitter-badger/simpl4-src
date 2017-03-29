@@ -77,7 +77,8 @@ abstract class BaseDatamapperServiceImpl implements Constants,DatamapperService 
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	private JSONSerializer m_js = new JSONSerializer();
 
-	protected DataLayer m_dataLayer;
+	protected DataLayer m_dataLayerJDO;
+	protected DataLayer m_dataLayerOrientDB;
 
 	protected GitService m_gitService;
 	private ObjectUtil m_objUtils = new ObjectUtil();
@@ -108,11 +109,19 @@ abstract class BaseDatamapperServiceImpl implements Constants,DatamapperService 
 	}
 	public Object transform( String namespace, Map config, String configName, Object data, BeanFactory bf) throws Exception {
 		Map mconfig = config;
+		println("config:"+config);
+		boolean isOrientDB = false;
+		if( config != null){
+			String db = (String)config.get("database");
+			isOrientDB = "orientdb".equals(db);
+		}
+		println("isOrientDB:"+isOrientDB);
 		if( namespace != null && configName != null){
 			String json = m_gitService.searchContent(namespace, configName, "sw.datamapper");
 			mconfig = (Map) m_ds.deserialize(json);
 		}
-		Transformer t = new Transformer(namespace,configName,m_nucleusService,m_dataLayer, bf);
+		StoreDesc sdesc = StoreDesc.get(namespace+(isOrientDB ? "_odata" : "data"));
+		Transformer t = new Transformer(namespace,configName,sdesc,getDataLayer(sdesc), isOrientDB ? null : bf);
 		if( true){
 			m_js.prettyPrint(true);
 			Object ret = t.transform(mconfig,data);		
@@ -154,7 +163,7 @@ abstract class BaseDatamapperServiceImpl implements Constants,DatamapperService 
 	}
 	private String toPOJO(String namespace,Object data, Map config){
 		StoreDesc data_sdesc = StoreDesc.getNamespaceData(namespace);
-		SessionContext sessionContext = m_dataLayer.getSessionContext(data_sdesc);
+		SessionContext sessionContext = getDataLayer(data_sdesc).getSessionContext(data_sdesc);
 		Set<Map> tmpList;
 		if( data instanceof Map){
 			tmpList = new HashSet();
@@ -238,5 +247,12 @@ abstract class BaseDatamapperServiceImpl implements Constants,DatamapperService 
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		m_reportingService.createCSV(data, fieldList, null, datatypes,options,bos);
 		return bos.toString();
+	}
+	protected DataLayer getDataLayer(StoreDesc sdesc){
+		return isOrientDB(sdesc) ? m_dataLayerOrientDB : m_dataLayerJDO;
+	}
+
+	protected boolean isOrientDB(StoreDesc sdesc){
+		return StoreDesc.STORE_GRAPH.equals( sdesc.getStore()) && StoreDesc.VENDOR_ORIENTDB.equals( sdesc.getVendor());
 	}
 }

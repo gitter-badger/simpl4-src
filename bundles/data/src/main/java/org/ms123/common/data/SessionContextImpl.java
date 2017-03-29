@@ -170,6 +170,10 @@ public class SessionContextImpl implements org.ms123.common.data.api.SessionCont
 		return m_nucleusService.getClassLoader(m_sdesc);
 	}
 
+	public ClassLoader getClassLoader(StoreDesc sdesc) {
+		return m_nucleusService.getClassLoader(sdesc);
+	}
+
 	public Class getClass(StoreDesc sdesc, String className) {
 		return m_nucleusService.getClass(sdesc, className);
 	}

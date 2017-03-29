@@ -72,7 +72,6 @@ public class Transformer implements Constants{
 	private static final Log m_logger = LogFactory.getLog(Transformer.class);
 	private static JSONSerializer m_js = new JSONSerializer();
 	private  JSONDeserializer m_ds = new JSONDeserializer();
-	protected NucleusService m_nucleusService;
 	private String m_configName;
 	private StoreDesc m_storeDesc;
 	private BeanFactory m_beanFactory;
@@ -81,18 +80,17 @@ public class Transformer implements Constants{
 	private GroovyShell m_groovyShell;
 	private SessionContext m_sessionContext;
 
-	public Transformer(String namespace,String configName, NucleusService ns){
-		this( namespace, configName, ns, null,null);
-	}
-	public Transformer(String namespace,String configName, NucleusService ns, BeanFactory bf){
-		this( namespace, configName, ns, null,bf);
-	}
-	public Transformer(String namespace,String configName, NucleusService ns, DataLayer dl, BeanFactory bf){
+//	public Transformer(String namespace,String configName, NucleusService ns){
+//		this( namespace, configName, ns, null,null);
+//	}
+//	public Transformer(String namespace,String configName, NucleusService ns, BeanFactory bf){
+//		this( namespace, configName, ns, null,bf);
+//	}
+	public Transformer(String namespace,String configName, StoreDesc sdesc, DataLayer dl, BeanFactory bf){
 		m_configName = configName == null ? "-" : configName;
-		m_nucleusService = ns;
 		m_dataLayer = dl;
 		m_beanFactory = bf;
-		m_storeDesc = StoreDesc.getNamespaceData(namespace);
+		m_storeDesc = sdesc;
 		m_js.prettyPrint(true);
 		m_groovyShell = new GroovyShell();
 	}
@@ -527,7 +525,7 @@ public class Transformer implements Constants{
 
 	protected ClassLoader _setContextClassLoader() {
 		ClassLoader saveCl = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(m_nucleusService.getClassLoader(m_storeDesc));
+		Thread.currentThread().setContextClassLoader(m_dataLayer.getClassLoader(m_storeDesc));
 		return saveCl;
 	}
 	private Class getListClass(Context context){
@@ -541,7 +539,7 @@ public class Transformer implements Constants{
 		if( context.outputTree.format != FORMAT_POJO ){
 			return HashMap.class;
 		}
-		Class clazz = m_nucleusService.getClass(m_storeDesc,node.name as String);
+		Class clazz = m_dataLayer.getClass(m_storeDesc,node.name as String);
 		debug("getClass.name:"+node.name+"/"+clazz);
 		return clazz;
 	}
@@ -1036,6 +1034,7 @@ public class Transformer implements Constants{
 			if( beanFactory != null){
 				return beanFactory.create(clazz);
 			}else{
+				print("LocalBeanFactory.create:"+clazz);
 				return clazz.newInstance();
 			}
 		}

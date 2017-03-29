@@ -43,6 +43,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import com.Ostermiller.util.*;
+import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.datamapper.DatamapperService;
 import org.ms123.common.data.api.SessionContext;
@@ -78,6 +79,7 @@ public class BaseImportingServiceImpl implements Constants {
 	private String FIELDNAME_REGEX = "[a-zA-Z0-9_]{2,64}";
 	protected DataLayer m_dataLayerJDO;
 	protected DataLayer m_dataLayerOrientDB;
+	protected OrientDBService  m_orientdbService;
 	protected DatamapperService m_datamapper;
 
 	protected PermissionService m_permissionService;

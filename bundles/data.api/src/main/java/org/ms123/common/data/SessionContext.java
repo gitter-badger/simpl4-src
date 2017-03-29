@@ -83,6 +83,8 @@ public interface SessionContext {
 
 	public ClassLoader getClassLoader();
 
+	public ClassLoader getClassLoader(StoreDesc sdesc);
+
 	public Class getClass(StoreDesc sdesc, String className);
 
 	public Class getClass(String className);

@@ -59,6 +59,9 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.ms123.common.libhelper.Bean2Map;
 import org.milyn.SmooksFactory;
 import org.ms123.common.libhelper.Base64;
+import org.ms123.common.system.orientdb.OrientDBService;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import static org.ms123.common.utils.IOUtils.toByteArray;
 import static org.apache.commons.beanutils.PropertyUtils.setProperty;
 import static org.apache.commons.beanutils.PropertyUtils.getProperty;
@@ -248,7 +251,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 					) throws RpcException {
 		StoreDesc data_sdesc = StoreDesc.get(storeId);
 		StoreDesc aid_sdesc = getStoreDesc(data_sdesc.getNamespace());
-		SessionContext sessionContext = getDataLayer(data_sdesc).getSessionContext(aid_sdesc);
+		SessionContext sessionContext = getDataLayer(aid_sdesc).getSessionContext(aid_sdesc);
 		try {
 			String className = m_inflector.getClassName(IMPORTING_ENTITY);
 			Class clazz = sessionContext.getClass(className);
@@ -263,20 +266,49 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 				System.out.println("doImport:"+m_datamapper+"/"+data_sdesc+"/"+content);
 				sessionContext = getDataLayer(data_sdesc).getSessionContext(data_sdesc);
 				BeanFactory bf = new BeanFactory(sessionContext, settings);
+				settings.put("database", "default");
+				if( isOrientDB(data_sdesc)){
+					settings.put("database", "orientdb");
+				}
+				UserTransaction ut = sessionContext.getUserTransaction();
+				OrientGraphFactory factory=null;
+				OrientGraph orientGraph=null;
+				if( ut == null){
+					factory = this.m_orientdbService.getFactory(data_sdesc.getNamespace(),false);
+					orientGraph = factory.getTx();
+				}
 				Object ret = m_datamapper.transform(data_sdesc.getNamespace(), settings, null, new String(content), bf);
 				if( withoutSave) return ret;
-				UserTransaction ut = sessionContext.getUserTransaction();
 				try{
-					ut.begin();
+					if( ut != null){
+						ut.begin();
+					}else{
+						orientGraph.begin();
+					}
 					Map outputTree = (Map)settings.get("output");
 					Map<String,Object> persistenceSpecification = (Map)outputTree.get("persistenceSpecification");
-					Object o = org.ms123.common.data.MultiOperations.persistObjects(sessionContext,ret,persistenceSpecification, -1);
-					ut.commit();
+					Object o = null;
+					if( ut != null){
+						o = org.ms123.common.data.MultiOperations.persistObjects(sessionContext,ret,persistenceSpecification, -1);
+						ut.commit();
+					}else{
+						o = new HashMap();
+						orientGraph.commit();
+					}
 					return o;
 				}catch(Exception e){
-					ut.rollback();
+					if( ut != null){
+						ut.rollback();
+					}else{
+						orientGraph.rollback();
+					}
 					throw e;
+				} finally{
+					if( orientGraph != null){
+						orientGraph.shutdown();
+					}
 				}
+			
 			}else{
 				return doImport(data_sdesc, settings, content, withoutSave, max);
 			}
@@ -300,7 +332,7 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 		}
 		StoreDesc data_sdesc = StoreDesc.get(storeId);
 		StoreDesc aid_sdesc = getStoreDesc(data_sdesc.getNamespace());
-		SessionContext sessionContext = getDataLayer(data_sdesc).getSessionContext(aid_sdesc);
+		SessionContext sessionContext = getDataLayer(aid_sdesc).getSessionContext(aid_sdesc);
 		PersistenceManager pm = sessionContext.getPM();
 		UserTransaction ut = sessionContext.getUserTransaction();
 		try {
@@ -392,6 +424,12 @@ public class ImportingServiceImpl extends BaseImportingServiceImpl implements Im
 	public void setSmooksFactory(SmooksFactory paramSmooksFactory) {
 		m_smooksFactory = paramSmooksFactory;
 		System.out.println("ImportingServiceImpl.setSmooksFactory:" + paramSmooksFactory);
+	}
+
+	@Reference
+	public void setOrientDBService(OrientDBService paramEntityService) {
+		m_orientdbService = paramEntityService;
+		System.out.println("ImportingServiceImpl.setOrientDBService:" + paramEntityService);
 	}
 
 	@Reference(dynamic = true)

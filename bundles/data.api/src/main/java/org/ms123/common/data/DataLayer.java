@@ -98,6 +98,8 @@ public interface DataLayer {
 	public String constructEntityName(SessionContext sessionContext, String entityName, String entityNameParent);
 
 	public Class getClass(SessionContext sessionContext, String entityName);
+	public Class getClass(StoreDesc sdesc, String entityName);
+	public ClassLoader getClassLoader(StoreDesc sdesc);
 
 	public void evaluteFormulas(SessionContext sessionContext, String entityName, Map<String, Object> map, String direction);
 

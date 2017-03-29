@@ -26,5 +26,6 @@ dependencies {
 	compile files("${repository}/sojo-1.0.0.bar")
 	compile files("${repository}/tika-core-1.5-SNAPSHOT.jar")
 	compile files("${repository}/tika-bundle-1.5-SNAPSHOT.jar")
+	compile files("${repository}/OrientDBService-1.0.0.jar")
 	compile files("build/classes/main")
 }
