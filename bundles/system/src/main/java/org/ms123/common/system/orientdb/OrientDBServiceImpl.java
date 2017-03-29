@@ -38,6 +38,14 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
+import org.ms123.common.rpc.PName;
+import org.ms123.common.rpc.POptional;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
+import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
+import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.ms123.common.rpc.RpcException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -111,6 +119,23 @@ public class OrientDBServiceImpl implements OrientDBService {
 		server.shutdown();
 	}
 
+	@RequiresRoles("admin")
+	public void dropVertices(
+			@PName("databaseName") String databaseName, 
+			@PName("vertexList")           List<String> vertexList) throws RpcException {
+		OrientGraphFactory f = getFactory(databaseName);
+		OrientGraph graph = f.getTx();
+		try {
+			for( String v : vertexList){
+				executeUpdate(graph, "delete vertex "+v);
+				graph.dropVertexType(v);
+			}
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "OrientDBServiceImpl.dropVertices:", e);
+		}finally{
+			graph.shutdown();
+		}
+	}
 	public synchronized OrientGraphFactory getFactory(String name) {
 		return getFactory( name, false);
 	}

@@ -174,10 +174,23 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 
 			var namespace= this._facade.storeDesc.getNamespace();
 				ms123.util.Remote.rpcSync("domainobjects:createClasses", {
-					storeId: namespace+"_data"//this._facade.storeDesc.getStoreId()
+					storeId: namespace+(this.isOrientDB ? "_odata" : "_data")//this._facade.storeDesc.getStoreId()
 				});
 			} catch (e) {
-				ms123.form.Dialog.alert("EntityCreate.updateDb:" + e);
+				ms123.form.Dialog.alert("EntityCreate.createClasses:" + e);
+				return;
+			}
+		},
+		_dropVertices: function () {
+			if( this._existsList.length==0) return;
+			try {
+				var namespace= this._facade.storeDesc.getNamespace();
+				var result = ms123.util.Remote.rpcSync("orientdb:dropVertices", {
+					databaseName: namespace,
+					vertexList: this._existsList
+				});
+			} catch (e) {
+				ms123.form.Dialog.alert("EntityCreate.dropVertices:" + e);
 				return;
 			}
 		},
@@ -200,7 +213,11 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 			var kind = options.get("kind");
 			var createSettings = options.get("createSettings");
 			if (kind == "overwrite") {
-				this._cleanTables();
+				if( this.isOrientDB){
+					this._dropVertices();
+				}else{
+					this._cleanTables();
+				}
 			}
 			var ret = this._createEntitytypes(false,options.get("entities"));
 			if (createSettings) {
