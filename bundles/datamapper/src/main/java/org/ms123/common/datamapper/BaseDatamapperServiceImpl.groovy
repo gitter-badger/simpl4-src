@@ -120,7 +120,7 @@ abstract class BaseDatamapperServiceImpl implements Constants,DatamapperService 
 			String json = m_gitService.searchContent(namespace, configName, "sw.datamapper");
 			mconfig = (Map) m_ds.deserialize(json);
 		}
-		StoreDesc sdesc = StoreDesc.get(namespace+(isOrientDB ? "_odata" : "data"));
+		StoreDesc sdesc = StoreDesc.get(namespace+(isOrientDB ? "_odata" : "_data"));
 		Transformer t = new Transformer(namespace,configName,sdesc,getDataLayer(sdesc), isOrientDB ? null : bf);
 		if( true){
 			m_js.prettyPrint(true);

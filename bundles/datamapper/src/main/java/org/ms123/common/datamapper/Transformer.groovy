@@ -30,6 +30,7 @@ import javax.jdo.spi.PersistenceCapable;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import java.lang.reflect.Method;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
@@ -207,6 +208,7 @@ public class Transformer implements Constants{
 		context.transformer= this;
 		context.configName= configName;
 		context.beanValues = new HashMap();
+		context.beans = new HashMap();
 		context.scriptCache = new HashMap();
 		context.lookupCache = new HashMap();
 		context.beanUtilsBean = BeanUtilsBean.newInstance();
@@ -529,7 +531,7 @@ public class Transformer implements Constants{
 		return saveCl;
 	}
 	private Class getListClass(Context context){
-		if( context.outputTree.format == FORMAT_POJO ){
+		if( context.outputTree.format == FORMAT_POJO && m_beanFactory != null){
 			return HashSet.class;
 		}
 		return ArrayList.class;
@@ -631,6 +633,7 @@ public class Transformer implements Constants{
 		long level=0;
 		String configName;
 		Map<String,Map<String,Map<String,Object>>>  beanValues;
+		Map<String,Object>  beans;
 		Map<String,Map<String,Script>>  scriptCache;
 		Map<String,Map<String,Map>>  lookupCache;
 		BeanUtilsBean beanUtilsBean;
@@ -666,6 +669,9 @@ public class Transformer implements Constants{
 				if( event.getLifecycle() == BeanLifecycle.START_FRAGMENT){
 					if( isMap){
 						context.beanValues.put(beanNode.path as String,new HashMap<String,Map<String,Object>>());
+						if( m_beanFactory == null){ //@@@MS Orientdb
+							context.beans.put(beanNode.path as String,event.getBean());
+						}
 						if(context.scriptCache.get(beanNode.path as String) == null){
 							context.scriptCache.put(beanNode.path as String,new HashMap<String,Script>());
 						}
@@ -678,7 +684,13 @@ public class Transformer implements Constants{
 					}
 				}else if(event.getLifecycle() == BeanLifecycle.END_FRAGMENT){
 					if( isList){
-						//debug(tabs+"\tEndPathList:"+beanNode.path+"|"+list+"/"+list.getClass());
+						if( m_beanFactory==null){ //@@@MS OrientDB
+							def b = context.beans.get(removeLastSegment(beanNode.path as String));
+							debug(tabs+"\tEndPathList("+b+"):"+beanNode.path+"|"+event.getBean()+"/"+event.getBean().getClass());
+							if( b != null){
+								context.beanUtilsBean.getPropertyUtils().setProperty(b,getLastSegment(beanNode.path as String),event.getBean());
+							}
+						}
 					}else{
 						Map<String,Map<String,Object>> values = context.beanValues.get(beanNode.path);
 						if( values == null) return;
@@ -687,7 +699,7 @@ public class Transformer implements Constants{
 						BeanContext beanContext = event.getExecutionContext().getBeanContext();
 						String wireId = context.listBeanMap.get(beanId);
 						tabs="";
-						debug(tabs+">>>>END_FRAGMENT:"+beanNode.path+"\t|values:"+values+"/"+beanId+"/"+wireId);
+						debug(tabs+">>>>END_FRAGMENT("+event.getBean()+"):"+beanNode.path+"\t|values:"+values+"/"+beanId+"/"+wireId);
 						Object beanList = beanContext.getBean(wireId);
 						//debug("ListBean---------------------------------------");
 						//debug(Transformer.m_js.deepSerialize(beanList));
@@ -819,6 +831,12 @@ public class Transformer implements Constants{
 				}
 			}
 			return null;
+		}
+		private String removeLastSegment(String path){
+			return path.substring(0,path.lastIndexOf("/"));
+		}
+		private String getLastSegment(String path){
+			return path.substring(path.lastIndexOf("/")+1);
 		}
 		private String getLookupByMappingId(List<Map> lookups,String mappingId){
 			if( lookups == null) return null;
@@ -997,6 +1015,20 @@ public class Transformer implements Constants{
 		return null;
 	}
 
+	private void callMethod( Object obj, String meth ){ //Only for debugging
+		Class[] cargs = new Class[0];
+		try {
+			Method _meth = obj.getClass().getDeclaredMethod(meth, cargs);
+			if( _meth == null){
+				return;
+			}
+			Object[] args = new Object[0];
+			Object ret = _meth.invoke(obj, args);
+			info("Result("+obj+","+meth+"):" + ret+"/"+ret.getClass());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	private void handleRelatedTo(String propertyName, Class propertyType, String filterString, Object destinationObj){
 		if( filterString == null || filterString.isEmpty()) return;
 		Object relatedObject = getObjectByFilter(propertyType, filterString);
