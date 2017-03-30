@@ -34,6 +34,9 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 	construct: function( model, param, facade ) {
 		this.base( arguments, model, param, facade );
 		console.log( "OrientDBEntitytypeCreate" );
+		var pack = model.getPack();
+		this._pack = model.getPack();
+		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
 	},
 
 	/******************************************************************************
