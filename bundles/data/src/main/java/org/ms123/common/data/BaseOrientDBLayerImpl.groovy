@@ -49,11 +49,13 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 
 	public List<Map> executeQuery(Class clazz,String className, String where){
 		info(this,"executeQuery.Where:"+where);
+		info(this,"executeQuery.sql:"+"select from "+className + " where "+ where);
 		List list = clazz.graphQueryMap("select from "+className + " where "+ where,false);
 		list.each{ row -> 
 			row.id = row._id;
 			row.remove("_id");
 		}
+		info(this,"List:"+list);
 		return list;
 	}
 	public Map executeInsertObject(Class clazz,Map data, Map fields){

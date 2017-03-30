@@ -111,19 +111,19 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map insertObject(Map dataMap, Map filterMap, Map hintsMap, StoreDesc sdesc, String entityName, String entityNameParent, String idParent) {
-		debug(this,"insertObject:" + dataMap + ",filterMap:" + filterMap + ",entity:" + entityName);
+		debug(this, "insertObject:" + dataMap + ",filterMap:" + filterMap + ",entity:" + entityName);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
 		OrientGraph orientGraph = factory.getTx();
 		try {
 			orientGraph.begin();
 			retMap = insertObject(sessionContext, dataMap, filterMap, hintsMap, entityName, entityNameParent, idParent);
 			orientGraph.commit();
 			String id = String.valueOf(retMap.get("id"));
-			retMap.put("id",id);
+			retMap.put("id", id);
 		} catch (Throwable e) {
-			error(this,"insertObject:%[exception]s", e);
+			error(this, "insertObject:%[exception]s", e);
 			sessionContext.handleException(e);
 		} finally {
 			orientGraph.shutdown();
@@ -153,10 +153,9 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		checkPermissions(sdesc, user, entityName, dataMap, "write");
 		entityName = this.inflector.getEntityName(entityName);
 		Class insertClazz = getClass(sessionContext, entityName);
-		Map fields = sessionContext.getPermittedFields( entityName, "write");
-		return executeInsertObject( insertClazz, dataMap, fields );
+		Map fields = sessionContext.getPermittedFields(entityName, "write");
+		return executeInsertObject(insertClazz, dataMap, fields);
 	}
-	
 
 	public void makePersistent(Object objectInsert) {
 		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.makePersistent");
@@ -173,13 +172,15 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	public List validateObject(SessionContext sessionContext, Object objectInsert) {
 		return validateObject(sessionContext, objectInsert, null, true);
 	}
+
 	public List validateObject(SessionContext sessionContext, Object objectInsert, String entityName) {
 		return validateObject(sessionContext, objectInsert, entityName, true);
 	}
 
 	public List validateObject(SessionContext sessionContext, Object objectInsert, String entityName, boolean bInsert) {
-		return validateObject(sessionContext,objectInsert, null, entityName, bInsert);
+		return validateObject(sessionContext, objectInsert, null, entityName, bInsert);
 	}
+
 	public List validateObject(SessionContext sessionContext, Object objectInsert, Object objectUpdatePre, String entityName, boolean bInsert) {
 		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.validateObject");
 	}
@@ -208,17 +209,17 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map updateObject(Map dataMap, Map filterMap, Map hintsMap, StoreDesc sdesc, String entityName, String id, String entityNameParent, String idParent) {
-		debug(this,"updateObject:" + dataMap + ",filterMap:" + filterMap + ",entityName:" + entityName);
+		debug(this, "updateObject:" + dataMap + ",filterMap:" + filterMap + ",entityName:" + entityName);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
 		OrientGraph orientGraph = factory.getTx();
 		try {
 			orientGraph.begin();
 			retMap = updateObject(sessionContext, dataMap, filterMap, hintsMap, entityName, id, entityNameParent, idParent);
 			orientGraph.commit();
 		} catch (Throwable e) {
-			error(this,"updateObject:%[exception]s", e);
+			error(this, "updateObject:%[exception]s", e);
 			sessionContext.handleException(e);
 		} finally {
 			orientGraph.shutdown();
@@ -244,25 +245,25 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		checkPermissions(sdesc, user, entityName, dataMap, "write");
 		entityName = this.inflector.getEntityName(entityName);
 		Class updateClazz = getClass(sessionContext, entityName);
-		Map fields = sessionContext.getPermittedFields( entityName, "write");
-		return executeUpdateObject( updateClazz, id, dataMap, fields );
+		Map fields = sessionContext.getPermittedFields(entityName, "write");
+		return executeUpdateObject(updateClazz, id, dataMap, fields);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 	//delete 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 	public Map deleteObject(Map dataMap, StoreDesc sdesc, String entityName, String id) {
-		debug(this,"deleteObject:" + dataMap + ",module:" + entityName + ",id:" + id);
+		debug(this, "deleteObject:" + dataMap + ",module:" + entityName + ",id:" + id);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
 		OrientGraph orientGraph = factory.getTx();
 		try {
 			orientGraph.begin();
 			retMap = deleteObject(sessionContext, dataMap, entityName, id);
 			orientGraph.commit();
 		} catch (Throwable e) {
-			error(this,"deleteObject:%[exception]s", e);
+			error(this, "deleteObject:%[exception]s", e);
 			sessionContext.handleException(e);
 		} finally {
 			orientGraph.shutdown();
@@ -275,7 +276,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		StoreDesc sdesc = sessionContext.getStoreDesc();
 		entityName = this.inflector.getEntityName(entityName);
 		Class deleteClazz = getClass(sessionContext, entityName);
-		return executeDeleteObject( deleteClazz, id );
+		return executeDeleteObject(deleteClazz, id);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -306,18 +307,17 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 
 	public Map getObject(StoreDesc sdesc, String entityName, String id, String entityNameDetails, List fields, HttpServletResponse resp) {
 		SessionContext sessionContext = getSessionContext(sdesc);
-		checkPermissions(sdesc, sessionContext.getUserName(),entityName, null, "read");
+		checkPermissions(sdesc, sessionContext.getUserName(), entityName, null, "read");
 		debug(this, "getObject:fields:" + fields + ",entityName:" + entityName + ",id:" + id);
 		Class clazz = getClass(sessionContext, entityName);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
 		OrientGraph orientGraph = factory.getTx();
-		try{
+		try {
 			return executeGet(clazz, id);
-		}finally{
+		} finally {
 			orientGraph.shutdown();
 		}
 	}
-
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 	//query 
@@ -343,24 +343,25 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map query(SessionContext sessionContext, Map params, StoreDesc sdesc, String entityName, String idParent, String entityNameDetails) {
-		debug(this,"query:" + params + ",entityName:" + entityName + ",entityNameDetails:" + entityNameDetails + ",idParent:" + idParent ); 
+		debug(this, "query:" + params + ",entityName:" + entityName + ",entityNameDetails:" + entityNameDetails + ",idParent:" + idParent);
 		String config = sessionContext.getConfigName();
-		checkPermissions(sdesc, sessionContext.getUserName(),entityName, null, "read");
-		checkPermissions(sdesc, sessionContext.getUserName(),entityNameDetails, null, "read");
+		checkPermissions(sdesc, sessionContext.getUserName(), entityName, null, "read");
+		checkPermissions(sdesc, sessionContext.getUserName(), entityNameDetails, null, "read");
 		entityName = this.inflector.getEntityName(entityName);
 		Map retMap = new HashMap();
 		Map filtersMap = null;
 		if (params.get("filter") != null) {
 			filtersMap = (Map) params.get("filter");
 		}
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(),false);
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
 		OrientGraph orientGraph = factory.getTx();
-		try{
+		try {
 			Map fieldSets = this.settingService.getFieldSets(config, sdesc.getNamespace(), entityName);
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
 			String where = qb.getWhere();
 			Class clazz = getClass(sessionContext, entityName);
-			List<Map> rows = executeQuery(clazz, this.inflector.getClassName(entityName), where);
+			List<Map> rows = executeQuery(clazz, this.inflector.getClassName(StoreDesc.getSimpleEntityName(entityName)), where);
+			info(this, "layer.rows:" + rows);
 			retMap.put("rows", rows);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -374,8 +375,6 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.querySql");
 	}
 
-
-
 	public Map getObjectGraph(StoreDesc sdesc, String entityName, String id) {
 		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.getObjectGraph");
 	}
@@ -385,11 +384,11 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public synchronized SessionContext getSessionContext(String namespace) {
-		return getSessionContext( StoreDesc.getNamespaceData(namespace));
+		return getSessionContext(StoreDesc.getNamespaceData(namespace));
 	}
 
 	public synchronized SessionContext getSessionContext(StoreDesc sdesc) {
-		SessionContext sc = new OrientDBSessionContextImpl(this,sdesc,this.orientdbService);
+		SessionContext sc = new OrientDBSessionContextImpl(this, sdesc, this.orientdbService);
 		sc.setGitService(this.gitService);
 		sc.setPermissionService(this.permissionService);
 		sc.setSettingService(this.settingService);
@@ -397,109 +396,116 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		return sc;
 	}
 
-	private void checkPermissions(StoreDesc sdesc, String user, String entityName, Map<String,Object> dataMap, String action) {
-		if( entityName == null) return;
+	private void checkPermissions(StoreDesc sdesc, String user, String entityName, Map<String, Object> dataMap, String action) {
+		if (entityName == null)
+			return;
 		entityName = this.inflector.getEntityName(entityName);
-		debug(this,"checkPermissions:"+entityName+"/"+action+"/"+dataMap);
+		debug(this, "checkPermissions:" + entityName + "/" + action + "/" + dataMap);
 		boolean b = this.permissionService.hasEntityPermissions(sdesc, entityName, action);
-		if( b ) return;
-		throw new PermissionException("OrientDBLayer.checkPermissions(" + sdesc+"/entityName:"+entityName+"/action:"+action + ") not allowed");
+		if (b)
+			return;
+		throw new PermissionException("OrientDBLayer.checkPermissions(" + sdesc + "/entityName:" + entityName + "/action:" + action + ") not allowed");
 	}
 
 	public Class getClass(SessionContext sessionContext, String entityName) {
 		StoreDesc sdesc = sessionContext.getStoreDesc();
 		return getClass(sdesc, entityName);
 	}
+
 	public Class getClass(StoreDesc sdesc, String entityName) {
-		ClassLoader cl = this.domainObjectsService.getClassLoader( sdesc );
-		String fqCN = sdesc.getPack()+"."+this.inflector.getClassName(entityName);
-		info(this,"getClass("+cl+"):"+fqCN);
-		try{
-			return cl.loadClass( fqCN );
-		}catch(ClassNotFoundException c){
-			throw new RuntimeException("OrientDBLayer.getClass("+fqCN+") not found");
+		ClassLoader cl = this.domainObjectsService.getClassLoader(sdesc);
+		String fqCN = sdesc.getPack() + "." + this.inflector.getClassName(StoreDesc.getSimpleEntityName(entityName));
+		info(this, "getClass(" + cl + "):" + fqCN);
+		try {
+			return cl.loadClass(fqCN);
+		} catch (ClassNotFoundException c) {
+			throw new RuntimeException("OrientDBLayer.getClass(" + fqCN + ") not found");
 		}
 	}
+
 	public ClassLoader getClassLoader(StoreDesc sdesc) {
-		return this.domainObjectsService.getClassLoader( sdesc );
+		return this.domainObjectsService.getClassLoader(sdesc);
 	}
 
-	public String constructEntityName(SessionContext sessionContext, String entityName, String entityNameParent){
+	public String constructEntityName(SessionContext sessionContext, String entityName, String entityNameParent) {
 		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.constructEntityName");
 	}
 
 	/************************************ C O N V I N I E N T *************************************************/
-	public Object getObjectById(String namespace, String entity, Object id){
+	public Object getObjectById(String namespace, String entity, Object id) {
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		SessionContext sessionContext = getSessionContext(sdesc);
-	  Class clazz = sessionContext.getClass(sdesc, entity);
-		return sessionContext.getObjectById( clazz, id );
+		Class clazz = sessionContext.getClass(sdesc, entity);
+		return sessionContext.getObjectById(clazz, id);
 	}
 
-	public Object getObjectByFilter(String namespace, String entity, String filter){
+	public Object getObjectByFilter(String namespace, String entity, String filter) {
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		SessionContext sessionContext = getSessionContext(sdesc);
-	  Class clazz = sessionContext.getClass(sdesc, entity);
-		return sessionContext.getObjectByFilter( clazz, filter );
+		Class clazz = sessionContext.getClass(sdesc, entity);
+		return sessionContext.getObjectByFilter(clazz, filter);
 	}
-	public List<Object> getObjectsByFilter(String namespace, String entity, String filter){
+
+	public List<Object> getObjectsByFilter(String namespace, String entity, String filter) {
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		SessionContext sessionContext = getSessionContext(sdesc);
-	  Class clazz = sessionContext.getClass(sdesc, entity);
-		return sessionContext.getObjectsByFilter( clazz, filter );
+		Class clazz = sessionContext.getClass(sdesc, entity);
+		return sessionContext.getObjectsByFilter(clazz, filter);
 	}
-	public Object getObjectByNamedFilter(String namespace, String name, Map<String, Object> fparams){
+
+	public Object getObjectByNamedFilter(String namespace, String name, Map<String, Object> fparams) {
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		SessionContext sessionContext = getSessionContext(sdesc);
-		return sessionContext.getObjectByNamedFilter( name, fparams );
+		return sessionContext.getObjectByNamedFilter(name, fparams);
 	}
-	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams){
+
+	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams) {
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
 		SessionContext sessionContext = getSessionContext(sdesc);
-		return sessionContext.getObjectsByNamedFilter( name, fparams );
+		return sessionContext.getObjectsByNamedFilter(name, fparams);
 	}
 
 	/************************************ C O N F I G ********************************************************/
 	@Reference(dynamic = true, optional = true)
 	public void setEntityService(EntityService paramEntityService) {
 		this.entityService = paramEntityService;
-		info(this,"OrientDBLayer.setEntityService:" + paramEntityService);
+		info(this, "OrientDBLayer.setEntityService:" + paramEntityService);
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService paramGitService) {
 		this.gitService = paramGitService;
-		info(this,"OrientDBLayer.setGitService:" + paramGitService);
+		info(this, "OrientDBLayer.setGitService:" + paramGitService);
 	}
 
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.permissionService = paramPermissionService;
-		info(this,"OrientDBLayer.setPermissionService:" + paramPermissionService);
+		info(this, "OrientDBLayer.setPermissionService:" + paramPermissionService);
 	}
-
 
 	@Reference(dynamic = true, optional = true)
 	public void setSettingService(SettingService paramSettingService) {
 		this.settingService = paramSettingService;
-		info(this,"OrientDBLayer.setSettingService:" + paramSettingService);
+		info(this, "OrientDBLayer.setSettingService:" + paramSettingService);
 	}
 
 	@Reference
 	public void setOrientDBService(OrientDBService paramEntityService) {
 		orientdbService = paramEntityService;
-		info(this,"OrientDBLayer.setOrientDBService:" + paramEntityService);
+		info(this, "OrientDBLayer.setOrientDBService:" + paramEntityService);
 	}
 
 	@Reference
-	public void setDomainObjectsService(DomainObjectsService  paramService) {
+	public void setDomainObjectsService(DomainObjectsService paramService) {
 		domainObjectsService = paramService;
-		info(this,"OrientDBLayer.setDomainObjectsService:" + paramService);
+		info(this, "OrientDBLayer.setDomainObjectsService:" + paramService);
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setAuthService(AuthService paramAuthService) {
 		this.authService = paramAuthService;
-		info(this,"OrientDBLayer.setAuthService:" + paramAuthService);
+		info(this, "OrientDBLayer.setAuthService:" + paramAuthService);
 	}
 }
+

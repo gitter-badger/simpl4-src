@@ -28,12 +28,41 @@ import static com.jcabi.log.Logger.debug;
 public class OrientDBQueryBuilder extends QueryBuilder {
 
 	public OrientDBQueryBuilder(StoreDesc sdesc, String entityName, String configName, SessionContext sessionContext, Map filters, Map params, Map fieldSets) {
-		super("orientdb",sdesc,entityName,false,configName,sessionContext,new ArrayList<String>(),filters,params,fieldSets);
+		super("orientdb", sdesc, entityName, false, configName, sessionContext, new ArrayList<String>(), filters, params, fieldSets);
 	}
 
-	public String getEntityForPath(String entityName) {
-		info(this,"OrientDBQueryBuilder.getEntityForPath:"+entityName);
-		return entityName;
+	public String getEntityForPath(String _path) {
+		info(this, "OrientDBQueryBuilder.getEntityForPath:" + _path);
+		String clazz = null;
+		try {
+			int dollar = _path.lastIndexOf("$");
+			if (dollar != -1) {
+				String[] path = _path.split("\\$");
+				clazz = path[0];
+				for (int i = 1; i < path.length; i++) {
+					clazz = getLinkedClass(clazz, path[i]);
+					info(this, "getLinkedClass(" + clazz + "," + path[i] + "):" + clazz);
+				}
+				int dot = clazz.lastIndexOf(".");
+				String entityname = m_inflector.getEntityName(clazz.substring(dot + 1));
+				info(this, "entityname:" + entityname);
+				return entityname;
+			} else {
+				return _path;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("getEntityForPath(" + _path + "):" + e);
+		}
+	}
+
+	private String getLinkedClass(String entityname, String fieldname) {
+		Map<String, Map> fields = m_sessionContext.getPermittedFields(entityname);
+		Map<String, String> field = fields.get(fieldname);
+		if (field != null) {
+			return field.get("linkedclass");
+		}
+		throw new RuntimeException("OrientDBQueryBuilder.getLinkedClass:field(" + fieldname + "):not found");
 	}
 
 	public Class getClass(String className) {
@@ -41,3 +70,4 @@ public class OrientDBQueryBuilder extends QueryBuilder {
 	}
 
 }
+

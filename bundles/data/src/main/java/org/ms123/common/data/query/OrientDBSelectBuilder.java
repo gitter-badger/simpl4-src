@@ -60,7 +60,8 @@ public class OrientDBSelectBuilder extends JPASelectBuilder implements SelectBui
 		entityName = m_queryBuilder.getEntityForPath(entityName);
 		Map configMap = m_queryBuilder.getPermittedFields(StoreDesc.getFqEntityName(entityName,m_pack));
 		String fieldname = (f.length == 2) ? f[1] : fullfieldname;
-		Map c = (Map) configMap.get(fieldname);
+		fieldname = fullfieldname.substring( fullfieldname.indexOf("$")+1 ).replace("$",".");;
+		Map c = (Map) configMap.get(fieldname.substring(fieldname.lastIndexOf(".")+1));
 		if (fieldname.equals("id")) {
 			c = new HashMap();
 			c.put("datatype", "string");
