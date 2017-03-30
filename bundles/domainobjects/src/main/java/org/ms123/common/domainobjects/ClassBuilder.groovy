@@ -97,23 +97,6 @@ class $clazz.name {
     static mapping = {
 <%clazz.mapping.each {%>      $it.key($it.value)\n<% } %>
     }
-  def insertJSON( String json ){
-    def sql = "insert into $clazz.name content "+json;
-    OCommandRequest update = new OCommandSQL(sql);
-    def graph = this.vertex.getGraph();
-    graph.command(update).execute(null);
-  }
-  public <T> T executeQuery2( String query, boolean singleResult=false,Object... args ){
-    def graph = this.vertex.getGraph();
-    def sqlQuery = new OSQLSynchQuery<com.tinkerpop.blueprints.Vertex>(query)
-    def result = graph.command(sqlQuery).execute(args)
-    def resultClass = ${clazz.name}.class
-    if (singleResult) {
-        return (T) OrientGraphHelper.transformVertexToEntity(resultClass, (OrientVertex) ((Iterable) result)[0])
-    } else {
-        return (T) OrientGraphHelper.transformVertexCollectionToEntity(resultClass, (Iterable) result, OType.LINKLIST)
-    }
-  }
 
 }
 <% } %>
@@ -160,3 +143,35 @@ class $clazz.name {
 	}
 }
 
+/* Some examples
+<%clazz.methodAdd.each { it -> %>
+  def $it.key ( $it.value.type	val ){
+    Collection coll = (Collection)((OrientVertex)this.vertex).getProperty("$it.value.property")
+		if( coll == null){
+			coll = new ArrayList();
+		}
+		coll.add( val );
+    ((OrientVertex)this.vertex).setProperty("$it.value.property", coll)
+  }
+<% } %>
+
+
+
+  def insertJSON( String json ){
+    def sql = "insert into $clazz.name content "+json;
+    OCommandRequest update = new OCommandSQL(sql);
+    def graph = this.vertex.getGraph();
+    graph.command(update).execute(null);
+  }
+  public <T> T executeQuery2( String query, boolean singleResult=false,Object... args ){
+    def graph = this.vertex.getGraph();
+    def sqlQuery = new OSQLSynchQuery<com.tinkerpop.blueprints.Vertex>(query)
+    def result = graph.command(sqlQuery).execute(args)
+    def resultClass = ${clazz.name}.class
+    if (singleResult) {
+        return (T) OrientGraphHelper.transformVertexToEntity(resultClass, (OrientVertex) ((Iterable) result)[0])
+    } else {
+        return (T) OrientGraphHelper.transformVertexCollectionToEntity(resultClass, (Iterable) result, OType.LINKLIST)
+    }
+  }
+*/
