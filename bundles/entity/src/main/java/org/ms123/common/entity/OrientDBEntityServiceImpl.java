@@ -20,6 +20,7 @@ package org.ms123.common.entity;
 
 import flexjson.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,6 +41,10 @@ import org.ms123.common.enumeration.EnumerationService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.utils.ParameterParser;
+import org.ms123.common.utils.TypeUtils;
+import org.apache.commons.beanutils.BeanMap;
+import org.ms123.common.data.api.SessionContext;
+import com.orientechnologies.orient.core.metadata.schema.OType;
 import flexjson.JSONDeserializer;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -71,17 +76,19 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 
 	protected MetaData m_gitMetaData;
 
+	private static final String ENTITY = "entity";
+
 	public List getEntities(StoreDesc sdesc, Boolean withChilds, Boolean withTeam, Map mapping, String filter, String sortField) throws Exception {
 		List<Map> entTypes = m_gitMetaData.getEntitytypes(sdesc.getStoreId());
-		info(this,"entTypes:"+entTypes);
+		info(this, "entTypes:" + entTypes);
 		Map<String, Map> modMaps = toMap(entTypes, "name");
 		List<Map> retList = new ArrayList();
 		for (Map map : entTypes) {
 			Object enabled = map.get("enabled");
 			String mn = m_inflector.getEntityName(map.get("name"));
-			info(this,"sdesc:"+sdesc);
-			info(this,"map:"+map);
-			info(this,"Permission:"+m_permissionService.hasEntityPermissions(sdesc, mn, "read"));
+			info(this, "sdesc:" + sdesc);
+			info(this, "map:" + map);
+			info(this, "Permission:" + m_permissionService.hasEntityPermissions(sdesc, mn, "read"));
 			if (enabled != null && ((Boolean) enabled) == true && m_permissionService.hasEntityPermissions(sdesc, mn, "read")) {
 				retList.add(map);
 			}
@@ -90,7 +97,145 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 	}
 
 	public Map getEntityTree(StoreDesc sdesc, String mainEntity, int maxlevel, Boolean _pathid, String _type, Boolean _listResolved) throws Exception {
-		return new HashMap();
+		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
+		try {
+			Map userData = m_authService.getUserProperties(sc.getUserName());
+			boolean pathid = _pathid != null && _pathid;
+			boolean listResolved = _listResolved != null && _listResolved;
+			String type = _type != null ? _type : "all";
+			Object[] member = new Object[3];
+			member[0] = mainEntity;
+			member[1] = m_inflector.getEntityName(mainEntity);
+			member[2] = mainEntity;
+			Map tree = _getEntitySubTree(sdesc, (String) member[1], member, 0, maxlevel, pathid, listResolved, type, userData);
+			return tree;
+		} catch (Exception e) {
+			sc.handleException(e);
+			throw e;
+		} finally {
+			sc.handleFinally();
+		}
+	}
+
+	private Map _getEntitySubTree(StoreDesc sdesc, String path, Object[] member, int level, int maxlevel, boolean pathid, boolean listResolved, String type, Map userData) throws Exception {
+		String entityName = (String) member[0];
+		if (level == maxlevel) {
+			return null;
+		}
+		info(this, "_getEntitySubTree:" + entityName);
+		if (!m_permissionService.hasEntityPermissions(sdesc, entityName, "read")) {
+			info(this, "no read:" + entityName);
+			return null;
+		}
+		Map node = new HashMap();
+		node.put("level", level);
+		List<Object[]> childs = getSubEntity(sdesc, entityName);
+		Object t = member[2];
+		boolean collection = ("list".equals(t) || "set".equals(t) || "map".equals(t));
+		if (type.equals("one") && collection) {
+			return null;
+		}
+		if (type.equals("collection") && !collection && level > 0) {
+			return null;
+		}
+		if (pathid) {
+			node.put("id", path);
+		} else {
+			node.put("id", member[1]);
+		}
+		node.put("datatype", (collection || (level == 20 && listResolved)) ? "list" : "object");
+		node.put(ENTITY, entityName);
+		node.put("name", StoreDesc.getSimpleEntityName((String) member[1]));
+		node.put("write", m_permissionService.hasEntityPermissions(sdesc, entityName, "write"));
+		node.put("title", (sdesc.getPack() + "." + m_inflector.getEntityName(StoreDesc.getSimpleEntityName((String) member[1]))));
+		Map objNode = null;
+		if ((collection || level == 20) && listResolved) {
+			objNode = getNodeWithSingularNames(node, entityName, path, pathid);
+		}
+		for (int i = 0; i < childs.size(); i++) {
+			Object[] cmem = childs.get(i);
+			Map m = _getEntitySubTree(sdesc, path + "/" + cmem[1], cmem, level + 1, maxlevel, pathid, listResolved, type, userData);
+			if (m != null) {
+				List<Map> childList = (objNode != null) ? (List) objNode.get("children") : (List) node.get("children");
+				if (childList == null) {
+					childList = new ArrayList<Map>();
+					if (objNode != null) {
+						objNode.put("children", childList);
+					} else {
+						node.put("children", childList);
+					}
+				}
+				childList.add(m);
+			}
+		}
+		return node;
+	}
+
+	private List<Object[]> getSubEntity(StoreDesc sdesc, String entity) throws Exception {
+		List<Map> fields = getFields(sdesc, entity);
+		List<Object[]> list = new ArrayList<Object[]>();
+		for (Map<String, String> field : fields) {
+			String datatype = field.get("datatype");
+			if (isSimpleType(datatype)) {
+				continue;
+			}
+			String fieldname = getName(field);
+			boolean isEdgeConn = isEdgeConnection(field);
+			if (isEdgeConn) {
+				continue;
+			}
+			if ("id".equals(fieldname)) {
+				continue;
+			}
+			OType otype = getType(field);
+			boolean isMulti = otype.isMultiValue();
+			boolean isLink = otype.isLink();
+			boolean isEmbedded = otype.isEmbedded();
+			String linkedClass = getLinkedClassName(field);
+			String collectionType = null;
+			Object[] s = new Object[4];
+			s[1] = fieldname;
+			if (isMulti) {
+				if (isLink) { //Collection
+					collectionType = getCollectionType(otype.toString());
+				} else { //Embedded Collection
+					if (linkedClass != null) { //Object type
+						collectionType = getCollectionType(otype.toString());
+					} else { //simple collection type(eg.List<String>) not handled
+						continue;
+					}
+				}
+			}
+			info(this, "field(" + fieldname + "):linkedClass:" + linkedClass + "/collectionType" + collectionType);
+
+			s[0] = linkedClass;
+			s[2] = collectionType;
+			s[3] = false;
+			list.add(s);
+		}
+		return list;
+	}
+
+	private Map getNodeWithSingularNames(Map node, String entityName, String path, boolean pathid) {
+		Map objNode = new HashMap();
+		objNode.put("datatype", "object");
+		objNode.put(ENTITY, m_inflector.singularize(entityName));
+		objNode.put("name", m_inflector.singularize(entityName));
+		if (pathid) {
+			path = path + "/" + m_inflector.singularize(entityName);
+			objNode.put("id", path);
+		} else {
+			objNode.put("id", m_inflector.singularize(entityName));
+		}
+		objNode.put("title", ("data." + m_inflector.singularize(entityName)));
+		List<Map> childList = new ArrayList<Map>();
+		childList.add(objNode);
+		node.put("children", childList);
+		return objNode;
+	}
+
+	private List<Map> getFields(StoreDesc sdesc, String entityName) throws Exception {
+		return getFields(sdesc, entityName, false, false);
 	}
 
 	public List<Map> getFields(StoreDesc sdesc, String entityName, Boolean withAutoGen, Boolean withAllRelations) throws Exception {
@@ -127,8 +272,56 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 		}
 	}
 
-	private class ListSortByName implements Comparator<Map> {
+	private String getName(Map<String, String> m) {
+		return m.get("name");
+	}
 
+	private boolean isEdgeConnection(Map m) {
+		Boolean ret = (Boolean) m.get("edgeconn");
+		if (ret == null)
+			return false;
+		return ret;
+	}
+
+	private String getLinkedClassName(Map entity) {
+		String name = (String) entity.get("linkedclass");
+		if (isEmpty(name))
+			return null;
+		return name;
+	}
+
+	private OType getType(Map<String, String> m) {
+		return OType.getById(Byte.parseByte(m.get("datatype")));
+	}
+
+	private OType getLinkedType(Map<String, String> m) {
+		return OType.getById(Byte.parseByte(m.get("linkedtype")));
+	}
+
+	private List<String> internalList = Arrays.asList("class", "propertyKeys", "record", "locked", "elementType", "vertexInstance", "metaClass", "baseClassName", "graph");
+
+	boolean isInternal(String name) {
+		return internalList.contains(name);
+	}
+
+	private List<String> simpleTypeList = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "17", "19", "21");
+
+	boolean isSimpleType(String type) {
+		return simpleTypeList.contains(type);
+	}
+
+	private String getCollectionType(String type) {
+		if (type.endsWith("LIST")) {
+			return "list";
+		} else if (type.endsWith("SET")) {
+			return "set";
+		} else if (type.endsWith("MAP")) {
+			return "map";
+		}
+		return "Unknown";
+	}
+
+	private class ListSortByName implements Comparator<Map> {
 		public int compare(Map o1, Map o2) {
 			if (o1.get("name") == null || o2.get("name") == null) {
 				return 0;
@@ -160,8 +353,9 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 		return retMap;
 	}
 
-	private boolean isEmpty(String s){
-		if( s == null|| s.trim().length()==0) return true;
+	private boolean isEmpty(String s) {
+		if (s == null || s.trim().length() == 0)
+			return true;
 		return false;
 	}
 
@@ -176,42 +370,43 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 	}
 
 	public void setDataLayer(DataLayer dataLayer) {
-		info(this,"OrientDBEntityServiceImpl.setDataLayer:" + dataLayer);
+		info(this, "OrientDBEntityServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
 	}
 
 	public void setGitService(GitService gitService) {
-		info(this,"OrientDBEntityServiceImpl.setGitService:" + gitService);
+		info(this, "OrientDBEntityServiceImpl.setGitService:" + gitService);
 		this.m_gitService = gitService;
 	}
 
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
-		info(this,"OrientDBEntityServiceImpl.setPermissionService:" + paramPermissionService);
+		info(this, "OrientDBEntityServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 
 	public void setAuthService(AuthService paramService) {
 		this.m_authService = paramService;
-		info(this,"OrientDBEntityServiceImpl.setAuthService:" + paramService);
+		info(this, "OrientDBEntityServiceImpl.setAuthService:" + paramService);
 	}
 
 	public void setUtilsService(UtilsService paramUtilsService) {
 		this.m_utilsService = paramUtilsService;
-		info(this,"OrientDBEntityServiceImpl.setUtilsService:" + paramUtilsService);
+		info(this, "OrientDBEntityServiceImpl.setUtilsService:" + paramUtilsService);
 	}
 
 	public void setEnumerationService(EnumerationService param) {
 		this.m_enumerationService = param;
-		info(this,"OrientDBEntityServiceImpl.setEnumerationService:" + param);
+		info(this, "OrientDBEntityServiceImpl.setEnumerationService:" + param);
 	}
 
 	public void setNucleusService(NucleusService paramService) {
 		this.m_nucleusService = paramService;
-		info(this,"OrientDBEntityServiceImpl.setNucleusService:" + paramService);
+		info(this, "OrientDBEntityServiceImpl.setNucleusService:" + paramService);
 	}
 
-	public void setGitMetadata( MetaData md){
+	public void setGitMetadata(MetaData md) {
 		this.m_gitMetaData = md;
 	}
 
 }
+

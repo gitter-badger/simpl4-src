@@ -294,6 +294,11 @@ public class EntityServiceImpl extends BaseEntityServiceImpl implements org.ms12
 	public void setDataLayer(DataLayer dataLayer) {
 		info("EntityServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayer = dataLayer;
+	}
+
+	@Reference(target = "(kind=orientdb)", dynamic = true, optional = true)
+	public void setDataLayerOrientDB(DataLayer dataLayer) {
+		info("EntityServiceImpl.setDataLayer:" + dataLayer);
 		m_orientdbImpl.setDataLayer( dataLayer );
 	}
 
