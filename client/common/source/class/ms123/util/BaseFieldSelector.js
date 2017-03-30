@@ -473,7 +473,7 @@ qx.Class.define("ms123.util.BaseFieldSelector", {
 			console.log("treeModel:" + f);
 			console.log("path:" + treePath);
 			var path = treePath.join("$");
-			var treeSelector = treeModel.getEntity();
+			var treeSelector = ms123.settings.Config.getEntityName(treeModel.getEntity())
 			var title = treeModel.getTitle();
 
 			var content = new qx.ui.core.Widget().set({
