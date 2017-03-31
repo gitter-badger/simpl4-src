@@ -39,6 +39,7 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 		}else{
 			ec_msg = this.tr("datamapper.entitytypes_create_nucleus");
 		}
+		this._pack = this.isOrientDB ? "odata" : this._facade.storeDesc.getPack();;
 		var group = "4";
 		this._facade.offer({
 			name: ec_msg,
@@ -108,7 +109,7 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 		_getEntitytypes: function () {
 			var storeId = this._facade.storeDesc.getStoreId();
 			if( this.isOrientDB){
-				storeId = this._facade.storeDesc.getNamespace()+"_odata";
+				storeId = this._facade.storeDesc.getNamespace()+"_"+ this._pack;
 			}
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:getEntitytypes", {
@@ -135,7 +136,7 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 		_createEntitytypes: function (infoOnly,strategy) {
 			var storeId = this._facade.storeDesc.getStoreId();
 			if( this.isOrientDB){
-				storeId = this._facade.storeDesc.getNamespace()+"_odata";
+				storeId = this._facade.storeDesc.getNamespace()+"_"+ this._pack;
 			}
 			try {
 				var ret = ms123.util.Remote.rpcSync("entity:createEntitytypes", {
@@ -155,17 +156,15 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 		_removeSettings: function () {
 			var etList = this._getEntitytypeInfo(this._existsList);
 			var namespace= this._facade.storeDesc.getNamespace();
-			var pack= this._facade.storeDesc.getNamespace();
 			var lang= ms123.config.ConfigManager.getLanguage();
-			var ds = new ms123.entitytypes.DefaultSettings(namespace,pack, lang);
+			var ds = new ms123.entitytypes.DefaultSettings(namespace,this._pack, lang);
 			ds.deleteMessages(etList);
 			ds.deleteResources(etList);	
 		},
 		_createSettings: function (etList) {
 			var namespace= this._facade.storeDesc.getNamespace();
 			var lang= ms123.config.ConfigManager.getLanguage();
-			var pack= this._facade.storeDesc.getNamespace();
-			var ds = new ms123.entitytypes.DefaultSettings(namespace,pack, lang);
+			var ds = new ms123.entitytypes.DefaultSettings(namespace,this._pack, lang);
 			ds.createMessages(etList);
 			ds.createResources(etList);	
 		},
@@ -174,7 +173,7 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 
 			var namespace= this._facade.storeDesc.getNamespace();
 				ms123.util.Remote.rpcSync("domainobjects:createClasses", {
-					storeId: namespace+(this.isOrientDB ? "_odata" : "_data")//this._facade.storeDesc.getStoreId()
+					storeId: namespace+ "_"+ this._pack 
 				});
 			} catch (e) {
 				ms123.form.Dialog.alert("EntityCreate.createClasses:" + e);
