@@ -72,7 +72,7 @@ qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 				validation: {
 					required: true,
 					filter: /[a-z0-9_]/,
-					validator: "/^[a-zA-Z][0-9a-z_A-Z]{3,64}$/"
+					validator: "/^[a-zA-Z][0-9a-z_A-Z]{2,64}$/"
 				},
 				'value': ""
 			},
