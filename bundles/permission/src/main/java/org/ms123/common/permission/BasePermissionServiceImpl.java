@@ -148,6 +148,7 @@ class BasePermissionServiceImpl implements Constants {
 		if (hasRole(ADMIN_ROLE)) {
 			return true;
 		}
+		info("hasEntityPermissions|"+sdesc.getNamespace() + ":entities:" + sdesc.getPack() + ":" + entity);
 		WildcardPermission wp = new WildcardPermission(sdesc.getNamespace() + ":entities:" + sdesc.getPack() + ":" + entity, actions);
 		return isPermitted(wp);
 	}
