@@ -205,8 +205,10 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 						continue;
 					}
 				}
+			}else{
+				continue;
 			}
-			info(this, "field(" + fieldname + "):linkedClass:" + linkedClass + "/collectionType" + collectionType);
+			info(this, "field(" + fieldname + "):linkedClass:" + linkedClass + "/collectionType:" + collectionType);
 
 			s[0] = linkedClass;
 			s[2] = collectionType;
