@@ -64,7 +64,7 @@ qx.Class.define("ms123.form.ResourceSelectorWindow", {
 		if( resourceTypes.indexOf(  "sw.entitytype") != -1){
 			excludePathList = null;
 			includePathList = null;
-			path = "data_description/data/entitytypes";
+			path = "data_description";
 		}else if( resourceTypes.indexOf( "sw.enum") != -1){
 			excludePathList = null;
 			includePathList = null;
