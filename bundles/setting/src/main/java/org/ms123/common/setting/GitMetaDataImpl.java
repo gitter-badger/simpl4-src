@@ -146,7 +146,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 			}
 		}
 		retList = m_ssi.m_permissionService.permissionFieldListFilter(sdesc, StoreDesc.getSimpleEntityName(entity), retList, "name", "read");
-		SessionContext sc = m_ssi.m_dataLayer.getSessionContext(sdesc);
+		SessionContext sc = m_ssi.getDatalayer(sdesc).getSessionContext(sdesc);
 		for (Map m : retList) {
 			boolean rd = getBoolean(m,"readonly",false);
 			boolean readonly = !sc.isFieldPermitted((String) m.get("name"), StoreDesc.getSimpleEntityName(entity), "write");
@@ -187,7 +187,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 
 	private List<Map> filterFieldSetFields(List<Map> fsList, String namespace,String entity){
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
-		SessionContext sc = m_ssi.m_dataLayer.getSessionContext(sdesc);
+		SessionContext sc = m_ssi.getDatalayer(sdesc).getSessionContext(sdesc);
 		for(Map fs : fsList){
 			List<String> fList = (List<String>)fs.get(FIELDS);
 			List<String> nList = new ArrayList();

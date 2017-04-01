@@ -71,7 +71,8 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 	private static final Logger m_logger = LoggerFactory.getLogger(SettingServiceImpl.class);
 
 	protected GitService m_gitService;
-	protected DataLayer m_dataLayer;
+	protected DataLayer m_dataLayerOrientDB;
+	protected DataLayer m_dataLayerJDO;
 
 	public SettingServiceImpl() {
 	}
@@ -84,6 +85,16 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 
 	private StoreDesc getStoreDesc(String namespace){
 		return StoreDesc.getNamespaceData(namespace);
+	}
+	private boolean isOrientDB( StoreDesc desc ){
+		return "orientdb".equals( desc.getVendor());	
+	}
+	protected DataLayer getDatalayer(StoreDesc sdesc){
+		if( isOrientDB(sdesc)){
+			return m_dataLayerOrientDB;
+		}else{
+			return m_dataLayerJDO;
+		}
 	}
 
 	/* BEGIN JSON-RPC-API*/
@@ -237,9 +248,15 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 
 	/* END JSON-RPC-API*/
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
-	public void setDataLayer(DataLayer dataLayer) {
+	public void setDataLayerJDO(DataLayer dataLayer) {
 		info("SettingServiceImpl.setDataLayer:" + dataLayer);
-		m_dataLayer = dataLayer;
+		m_dataLayerJDO = dataLayer;
+	}
+
+	@Reference(target = "(kind=orientdb)", dynamic = true, optional = true)
+	public void setDataLayerOrientDB(DataLayer dataLayer) {
+		info("SettingServiceImpl.setDataLayer:" + dataLayer);
+		m_dataLayerOrientDB = dataLayer;
 	}
 
 	@Reference(dynamic = true, optional = true)
