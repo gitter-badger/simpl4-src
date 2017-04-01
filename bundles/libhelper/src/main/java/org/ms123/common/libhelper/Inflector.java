@@ -71,9 +71,18 @@ public class Inflector {
 		String className = capitalize(singularize(word));
 		return pack != null ? getFqEntityName(className, pack ) : className;
 	}
+	public String  getClassNameCamelCase(Object word) {
+		String pack = getPackName((String)word,null);
+		word = getSimpleEntityName((String)word);
+		String className = capitalizeFirst(singularize(word));
+		return pack != null ? getFqEntityName(className, pack ) : className;
+	}
 
 	public String  getEntityName(Object word) {
 		return singularize(word).toLowerCase();
+	}
+	public String  getEntityNameCamelCase(Object word) {
+		return singularize(word);
 	}
 	public String  getModuleName(Object word) {
 		return singularize(word).toLowerCase();

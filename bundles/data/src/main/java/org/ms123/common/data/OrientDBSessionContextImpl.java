@@ -468,10 +468,10 @@ public class OrientDBSessionContextImpl extends BaseOrientDBSessionContextImpl i
 	private Map<String, Map> permittedFieldsMap = new HashMap<String, Map>();
 
 	public Map getPermittedFields(String entityName, String actions) {
-		Map permittedFields = permittedFieldsMap.get(entityName.toLowerCase() + "/" + actions);
+		Map permittedFields = permittedFieldsMap.get(entityName + "/" + actions);
 		if (permittedFields == null) {
-			permittedFields = this.entityService.getPermittedFields(getStoreDesc(), entityName.toLowerCase(), actions);
-			permittedFieldsMap.put(entityName.toLowerCase() + "/" + actions, permittedFields);
+			permittedFields = this.entityService.getPermittedFields(getStoreDesc(), entityName, actions);
+			permittedFieldsMap.put(entityName + "/" + actions, permittedFields);
 		}
 		return permittedFields;
 	}
@@ -481,10 +481,10 @@ public class OrientDBSessionContextImpl extends BaseOrientDBSessionContextImpl i
 	}
 
 	public boolean isFieldPermitted(String fieldName, String entityName, String actions) {
-		Map permittedFields = permittedFieldsMap.get(entityName.toLowerCase() + "/" + actions);
+		Map permittedFields = permittedFieldsMap.get(entityName + "/" + actions);
 		if (permittedFields == null) {
-			permittedFields = this.entityService.getPermittedFields(getStoreDesc(), entityName.toLowerCase(), actions);
-			permittedFieldsMap.put(entityName.toLowerCase() + "/" + actions, permittedFields);
+			permittedFields = this.entityService.getPermittedFields(getStoreDesc(), entityName, actions);
+			permittedFieldsMap.put(entityName + "/" + actions, permittedFields);
 		}
 		return permittedFields.get(fieldName) == null ? false : true;
 	}

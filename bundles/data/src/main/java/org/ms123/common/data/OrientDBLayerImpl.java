@@ -151,7 +151,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		}
 		String user = sessionContext.getUserName();
 		checkPermissions(sdesc, user, entityName, dataMap, "write");
-		entityName = this.inflector.getEntityName(entityName);
+		entityName = this.inflector.getEntityNameCamelCase(entityName);
 		Class insertClazz = getClass(sessionContext, entityName);
 		Map fields = sessionContext.getPermittedFields(entityName, "write");
 		return executeInsertObject(insertClazz, dataMap, fields);
@@ -243,7 +243,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		}
 		String user = sessionContext.getUserName();
 		checkPermissions(sdesc, user, entityName, dataMap, "write");
-		entityName = this.inflector.getEntityName(entityName);
+		entityName = this.inflector.getEntityNameCamelCase(entityName);
 		Class updateClazz = getClass(sessionContext, entityName);
 		Map fields = sessionContext.getPermittedFields(entityName, "write");
 		return executeUpdateObject(updateClazz, id, dataMap, fields);
@@ -274,7 +274,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 
 	public Map deleteObject(SessionContext sessionContext, Map dataMap, String entityName, String id) throws Exception {
 		StoreDesc sdesc = sessionContext.getStoreDesc();
-		entityName = this.inflector.getEntityName(entityName);
+		entityName = this.inflector.getEntityNameCamelCase(entityName);
 		Class deleteClazz = getClass(sessionContext, entityName);
 		return executeDeleteObject(deleteClazz, id);
 	}
@@ -347,7 +347,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		String config = sessionContext.getConfigName();
 		checkPermissions(sdesc, sessionContext.getUserName(), entityName, null, "read");
 		checkPermissions(sdesc, sessionContext.getUserName(), entityNameDetails, null, "read");
-		entityName = this.inflector.getEntityName(entityName);
+		entityName = this.inflector.getEntityNameCamelCase(entityName);
 		Map retMap = new HashMap();
 		Map filtersMap = null;
 		if (params.get("filter") != null) {
@@ -360,7 +360,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
 			String where = qb.getWhere();
 			Class clazz = getClass(sessionContext, entityName);
-			List<Map> rows = executeQuery(clazz, this.inflector.getClassName(StoreDesc.getSimpleEntityName(entityName)), where);
+			List<Map> rows = executeQuery(clazz, this.inflector.getClassNameCamelCase(StoreDesc.getSimpleEntityName(entityName)), where);
 			info(this, "layer.rows:" + rows);
 			retMap.put("rows", rows);
 		} catch (Exception e) {
@@ -399,7 +399,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	private void checkPermissions(StoreDesc sdesc, String user, String entityName, Map<String, Object> dataMap, String action) {
 		if (entityName == null)
 			return;
-		entityName = this.inflector.getEntityName(entityName);
+		entityName = this.inflector.getEntityNameCamelCase(StoreDesc.getSimpleEntityName(entityName));
 		debug(this, "checkPermissions:" + entityName + "/" + action + "/" + dataMap);
 		boolean b = this.permissionService.hasEntityPermissions(sdesc, entityName, action);
 		if (b)
@@ -414,7 +414,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 
 	public Class getClass(StoreDesc sdesc, String entityName) {
 		ClassLoader cl = this.domainObjectsService.getClassLoader(sdesc);
-		String fqCN = sdesc.getPack() + "." + this.inflector.getClassName(StoreDesc.getSimpleEntityName(entityName));
+		String fqCN = sdesc.getPack() + "." + this.inflector.getClassNameCamelCase(StoreDesc.getSimpleEntityName(entityName));
 		info(this, "getClass(" + cl + "):" + fqCN);
 		try {
 			return cl.loadClass(fqCN);
