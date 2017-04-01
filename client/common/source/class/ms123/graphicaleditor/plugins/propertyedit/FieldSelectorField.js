@@ -211,6 +211,9 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.FieldSelectorField",
 					var cm = new ms123.config.ConfigManager();
 					var data = cm.getEntityViewFields(entity,this.facade.storeDesc,"report",false);
 					colModel = cm.buildColModel(data, entity, this.facade.storeDesc, "data", "search");
+					if( colModel == null){
+						colModel = cm.buildColModel(data, entity, this.facade.storeDesc, "odata", "search");
+					}
 					this._fieldmap[entity] = colModel;
 				} catch (e) {
 					ms123.form.Dialog.alert("FieldSelectorField._getSelectableFields:" + e);
@@ -274,14 +277,23 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.FieldSelectorField",
 			this._fieldSelector.addListener("treeClicked", function (e) {
 				var model = e.getData().selectionModel;
 				var path = e.getData().treePath;
-				var fields = this._getSelectableFields(model.getEntity());
+				var entity = ms123.settings.Config.getFqEntityName(model.getEntity(), this.facade.storeDesc);
+				var fields = this._getSelectableFields(entity);
 				this._fieldSelector.createFieldsWindow(path, model, fields);
 			}, this);
 
 			this._mainEntity = mainEntity;
 			var treeModel = null;
 			var cm = new ms123.config.ConfigManager();
-			var treeModel = cm.getEntityTree(this.facade.storeDesc,this._mainEntity,5);
+			var	treeModel = cm.getEntityTree(this.facade.storeDesc,this._mainEntity,5,null,null,null,true);
+			if( treeModel.length!= null && treeModel.length==0){
+				var sdesc = new ms123.StoreDesc({namespace:this.facade.storeDesc.getNamespace(), pack:'odata'});
+				treeModel = cm.getEntityTree(sdesc,this._mainEntity,5);
+				if( treeModel.length== null){
+					this.facade.storeDesc=sdesc;
+				}
+			}
+			
 			this._fieldSelector.setTreeModel(this._translateModel(treeModel));
 			this._fieldSelector.createTable(fscontext.tableColumns);
 			if(this.data && this.data.items){

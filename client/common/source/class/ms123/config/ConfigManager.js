@@ -285,7 +285,7 @@ qx.Class.define("ms123.config.ConfigManager", {
 			}
 			return entities;
 		},
-		getEntityTree: function (storeDesc,main,maxlevel,listResolved,pathid,type) {
+		getEntityTree: function (storeDesc,main,maxlevel,listResolved,pathid,type,silent) {
 			var storeId = storeDesc.getStoreId();
 			listResolved = listResolved===true;
 			pathid = pathid===true;
@@ -302,7 +302,9 @@ qx.Class.define("ms123.config.ConfigManager", {
 					});
 					ms123.config.ConfigManager.__entitycache["entitytree-" + main+"-"+maxlevel+"-"+storeDesc.toString()+"-"+listResolved+"-"+pathid+"-"+type] = tree;
 				} catch (e) {
-					ms123.form.Dialog.alert("ConfigManager.getEntityTree:" + e);
+					if( silent !== true){
+						ms123.form.Dialog.alert("ConfigManager.getEntityTree:" + e);
+					}
 					return [];
 				}
 			}
