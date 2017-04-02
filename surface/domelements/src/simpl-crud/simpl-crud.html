@@ -134,7 +134,7 @@ CRUD operations for simpl4
 							<iron-icon icon="image:navigate-next"></iron-icon>
 						</paper-button>
 					</div>
-					<simpl-form id="formid" mode="{{mode}}" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
+					<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
 				<!--/simpl-panel-->
 				<paper-dialog id="error" class="scrolling">
 					<!--action-dialog-->
@@ -279,6 +279,7 @@ CRUD operations for simpl4
 				this.mainEntityName = this.entity;
 
 				var ep = this.getPack( this.mainEntityName );
+				this._pack = ep.pack;
 				this.panelHeaderCrudTable = tr( ep.pack + "." + ep.entityName + "_list" );
 				this.pageStack = new Array();
 				this.pageSelected = 0;
