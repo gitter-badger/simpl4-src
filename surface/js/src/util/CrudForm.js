@@ -74,6 +74,22 @@ clazz.construct.extend( "simpl4.util.CrudForm", {
 	},
 	getFieldShape: function( f ) {
 		var shape = {};
+		if( !isNaN( f.datatype)){ //OrientDB
+		  shape.id = 	this.convertOrientId(f.datatype);
+			shape.xf_id = f.name;
+		  shape.xf_type = 	this.convertOrientType(f.datatype);
+			shape.xf_default = f.default_value !== '' ? f.default_value : null;
+			var p = "odata";
+			var e = this.entityname;
+			if( this.entityname.indexOf(":") >=0){
+				p = this.entityname.split(":")[0];
+				e = this.entityname.split(":")[1];
+			}
+			shape.label = tr( p+"." + e + "." + f.name );
+			shape.xf_namespace = this.namespace;
+			console.log("OrientDB:",shape);
+			return shape;
+		}
 		shape.id = "Input";
 		if ( f.edittype == "select" ) {
 			shape.id = "Enumselect";
@@ -202,7 +218,46 @@ clazz.construct.extend( "simpl4.util.CrudForm", {
 			return formLayout;
 		}
 	},
-
+	convertOrientId:function(type){
+	 if( type == "17") type = "Input";
+   if( type == "5") type = "Input";
+   if( type == "1") type = "Input";
+   if( type == "3") type = "Input";
+   if( type == "7") type = "Input";
+   if( type == "0") type = "Input";
+   if( type == "21") type = "Input";
+   if( type == "19") type = "Input";
+   if( type == "6") type = "Input";
+   if( type == "9") type = "Form";
+   if( type == "10") type = "Crud";
+   if( type == "11") type = "Crud";
+   if( type == "12") type = "Crud";
+   if( type == "13") type = "Form";
+   if( type == "14") type = "Crud";
+   if( type == "15") type = "Crud";
+   if( type == "16") type = "Crud";
+	 return type;
+	},
+	convertOrientType:function(type){
+	 if( type == "17") type = "integer";
+   if( type == "5") type = "double";
+   if( type == "1") type = "integer";
+   if( type == "3") type = "integer";
+   if( type == "7") type = "string";
+   if( type == "0") type = "boolean";
+   if( type == "21") type = "double";
+   if( type == "19") type = "date";
+   if( type == "6") type = "datetime";
+   if( type == "9") type = "Form";
+   if( type == "10") type = "Crud";
+   if( type == "11") type = "Crud";
+   if( type == "12") type = "Crud";
+   if( type == "13") type = "Form";
+   if( type == "14") type = "Crud";
+   if( type == "15") type = "Crud";
+   if( type == "16") type = "Crud";
+	 return type;
+	},
 	getSpec: function() {
 		return this._form;
 	},
