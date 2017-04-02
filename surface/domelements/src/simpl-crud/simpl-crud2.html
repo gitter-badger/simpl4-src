@@ -1,0 +1,436 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014-2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+
+<!--
+CRUD operations for simpl4
+-->
+<dom-module id="simpl-crud2" flex relative>
+	<template>
+		<style>
+			:host {
+				min-height: 400px;
+				display: inherit;
+			}
+			:host /deep/ #searchDialog {
+				position:fixed;
+				top: 5vh;
+				min-width: 70%;
+				max-width: 70%;
+				max-height:90%;
+				border-radius: 4px;
+			}
+			@media screen and (max-width: 767px) {
+				:host /deep/ #searchDialog {
+					left: 0vw;
+					min-width: 100%;
+					margin: 0px;
+				}
+			}
+			paper-toast#toast {
+				z-index: 10;
+			}
+			simpl-toast /deep/ paper-toast {
+				white-space: nowrap;
+				padding-top: 10px;
+				padding-bottom: 10px;
+			}
+			simpl-toast /deep/ span {
+				min-width: 450px;
+				padding-right: 25px;
+				font-size: 30px;
+				vertical-align: middle;
+			}
+			simpl-toast /deep/ iron-icon {
+				width: 48px;
+				height: 48px;
+				vertical-align: middle;
+			}
+		</style>
+		<div class="layout horizontal" style="margin-bottom:10px;">
+			<template is="dom-repeat" items="{{buttonList}}">
+				<paper-button class="button button_secondary ripple flex" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
+					<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
+			</template>
+		</div>
+		<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
+		<paper-dialog id="searchDialog" no-cancel-on-outside-click with-backdrop="">
+			<paper-dialog-scrollable>
+				<div class="lyaout vertical flex">
+					<simpl-filter style="margin-bottom:10px;" namespace="{{namespace}}" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
+					<div style="height:20px;"></div>
+					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" collapsable="">
+						<simpl-crudtable id="crudtableId" disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+					</simpl-panel>
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+		<simpl-toast id="toastId"></simpl-toast>
+		<delete-dialog on-delete-ok="onDeleteOk" id="dialogOkId"></delete-dialog>
+	</template>
+	<script>
+		Polymer( {
+			is: 'simpl-crud2',
+			behaviors: [
+				Polymer.IronA11yKeysBehavior,
+				TranslationsBehavior
+			],
+			properties: {
+				namespace: {
+					type: String
+				},
+				mode: {
+					value: "add",
+					type: String
+				},
+				buttons: {
+					value: 'save,add,del,search',
+					type: String
+				},
+				entity: {
+					type: String
+				},
+				buttonList: {
+					type: String
+				}
+			},
+			observers: [
+				'buttonsChanged(buttons)',
+				'entityChanged(entity)'
+			],
+			buttonsChanged: function(){
+				var buttons = {
+					add: {
+						action: this.addAction,
+						icon: "add",
+						text: tr( 'button.new' ),
+						disabled: false
+					},
+					del: {
+						action: this.delAction,
+						icon: "delete",
+						text: tr( 'button.del' ),
+						disabled: true
+					},
+					save: {
+						action: this.saveAction,
+						icon: "save",
+						text: tr( 'button.save' ),
+						disabled: false
+					},
+					search: {
+						action: this.searchAction,
+						icon: "search",
+						text: tr( 'button.select' ),
+						disabled: false
+					}
+				}
+				this.buttonDef = buttons;
+				var bList = [];
+				this.buttons.split( "," ).forEach( ( function( name ) {
+					var b = buttons[ name ];
+					b.name = name;
+					bList.push( b );
+				} ).bind( this ) );
+				this.buttonList = bList;
+			},
+			setButtonState: function(name,enabled) {
+				if ( this.buttonDef == null ) return;
+				this.buttonDef[ name ].disabled = !enabled;
+				for ( var i = 0; i < this.buttonList.length; i++ ) {
+					if ( this.buttonList[ i ].name == name ) {
+						this.set( "buttonList." + i + ".disabled", !enabled );
+					}
+				}
+			},
+			onTap: function( e ) {
+				var src = e.srcElement || e.target;
+				var name = null;
+				while ( src ) {
+					name = src.getAttribute( "name" );
+					if ( name ) break;
+					src = src.parentElement;
+				}
+				if ( name == null ) return;
+				this.buttonDef[ name ].action.call( this );
+			},
+			addAction: function() {
+				this.mode = "add";
+				this.setButtonState("save", true);
+				this.setButtonState("del", false);
+				this.$.formid.setData( {} );
+				this.fire( "add-action", {
+					entity: this.entity,
+					namespace: this.namespace
+				} );
+			},
+			searchAction: function() {
+				this.entityName = this.entity;
+				this.querySelector("#crudtableId").refresh();
+				this.async( function() {
+					this.$.searchDialog.open();
+				},50 );
+				this.fire( "search-action", {
+					entity: this.entity,
+					namespace: this.namespace
+				} );
+			},
+			delAction: function() {
+				this.setButtonState("del", false);
+				this.mode = 'del';
+				this.$.dialogOkId.open( this.currentData );
+				this.fire( "del-action", {
+					entity: this.entity,
+					namespace: this.namespace
+				} );
+			},
+			onDeleteOk: function( e ) {
+				console.log( "deleteok:", e );
+				try {
+					this.deleteData( e.detail );
+					this.getToast().show( tr("entitytypes.deleted"), "success", "5000" );
+				} catch ( e ) {
+					console.error( "delAction:", e );
+					var msg = null;
+					if ( e.message ) {
+						msg = e.message;
+					} else {
+						msg = e.toString();
+					}
+					this.getToast().show( msg, "error", "10000" );
+					return;
+				}
+			},
+			selectCancelAction: function() {
+				this.async( function() {
+					this.$.searchDialog.close();
+				},50 );
+			},
+			selectAction: function( e ) {
+				this.setButtonState("del", true);
+				this.mode = "edit";
+				var data = e.detail.data;
+				console.log("selectAction:",e);
+				this.$.searchDialog.close();
+				this.currentData = clone(data);
+				this.$.formid.setData( this.currentData );
+			},
+			saveAction: function() {
+				var postServiceData = this.$.formid._postProcessService();
+				var data = this.$.formid.getData();
+				if ( postServiceData != null ) {
+					this.$.formid._setFieldData( postServiceData );
+					data = simpl4.util.Merge.merge( true, data, postServiceData );
+				}
+
+				var postLocalService = this.$.formid._postProcessLocal();
+				if ( postLocalService != null ) {
+					this.$.formid._setFieldData( postLocalService );
+					data = simpl4.util.Merge.merge( true, data, postLocalService );
+				}
+
+				var valid = this.$.formid.validate();
+				console.log( "saveAction.valid(" + valid + "):", data );
+				if ( !valid ) {
+					var msg = tr( "widgets.table.form_incomplete" );
+					this.getToast().show( msg, "error", "10000" );
+					return;
+				} else {
+					try {
+						if ( this.mode == 'edit' ) {
+							data = simpl4.util.Merge.merge( true, this.currentRowData, data );
+						}
+						console.log( "saveAction.storeData:", data );
+						var ret = this.storeData( data );
+						var content = ret;
+						var cv = ret[ "constraintViolations" ];
+						if ( cv ) {
+							var message = "";
+							for ( var i = 0; i < cv.length; i++ ) {
+								var c = cv[ i ];
+								message += this.$.formid._getLabel( c.path ) + " : " + c.message + "<br />";
+							}
+							this.alert( message );
+						} else {
+							var msg = "";
+							if ( this.mode == 'add' ) {
+								msg = tr( "data.form.created" );
+							} else {
+								msg = tr( "data.form.saved" );
+							}
+							this.getToast().show( msg, "success", "10000" );
+						}
+					} catch ( e ) {
+						console.error( "saveAction:", e.stack );
+						var msg = null;
+						if ( e.message ) {
+							msg = e.message;
+						} else {
+							var m = e.toString();
+							msg = m.substring( m.indexOf( "entityName:" ) + 11 );
+							msg = tr( "data.form.save" ) + ": (" + msg + ")";
+						}
+						this.getToast().show( msg, "error", "10000" );
+						return;
+					}
+				}
+				this.fire( "save-action", {
+					entity: this.entity,
+					namespace: this.namespace
+				} );
+			},
+			storeData: function( data ) {
+				var props = simpl4.util.EntityManager.getPropertiesForEntity( this.entity, {
+					namespace: this.namespace
+				} );
+				var customServiceUpdate = props.customServiceUpdate;
+				var customServiceInsert = props.customServiceInsert;
+				var mode = this.mode;
+				if ( mode == "add" && customServiceInsert ) {
+					return this._storeDataCustom( data, customServiceInsert );
+				} else if ( mode == "edit" && customServiceUpdate ) {
+					return this._storeDataCustom( data, customServiceUpdate );
+				} else {
+					return this._storeData( data );
+				}
+			},
+			_storeData: function( data ) {
+				var idValue = this.getIdValue( this.entity, this.namespace, data );
+				console.log( "storeData.idValue:", idValue );
+				var rpc = {
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + this.getPackFromEntity(this.entity),
+					entity: this.entity,
+					id: idValue,
+					data: data
+				}
+				console.log( "rpc:", rpc );
+				console.log( "mode:", this.mode );
+				var ret = simpl4.util.Rpc.rpcSync( "data:" + ( this.mode == 'add' ? "insert" : "update" ), rpc );
+				return ret;
+			},
+			deleteData: function( data ) {
+				var rpc = {
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + this.getPackFromEntity(this.entity),
+					entity: this.entity,
+					id: this.getIdValue( this.entity, this.namespace, data )
+				}
+				console.log( "rpc.delete:", rpc );
+				var ret = simpl4.util.Rpc.rpcSync( "data:delete" , rpc );
+				return ret;
+			},
+			getIdValue: function( entityName, namespace, data ) {
+				if( this.mode == "add") return null;
+				console.log( "getIdValue:", entityName + "/", data );
+				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
+				if ( pkList == null || pkList.length === 0 ) {
+					pkList = [ "id" ];
+				}
+				var idValue = "";
+				var colon = "";
+				for ( var i = 0; i < pkList.length; i++ ) {
+					idValue += colon + data[ pkList[ i ] ];
+					colon = ":";
+				}
+				return idValue;
+			},
+			entityChanged:function(){
+				this.getColumns( this.entity );
+				var ep = this.getPackFromEntity( this.entity );
+				this._pack = ep.pack;
+				this.setFormSpec( this.namespace, this.entity );
+			},
+			setFormSpec: function( namespace, entity ) {
+				if ( namespace === this.prevNamespace && entity === this.prevEntityName ) return;
+				this.currentNamespace = namespace;
+				var formSpec = simpl4FormManager.getCrudForm( entity, namespace );
+				console.debug( "setFormSpec:", formSpec );
+				this.prevEntityName = entity;
+				this.prevNamespace = namespace;
+				if ( typeof formSpec === 'string' ) {
+					this.formName = formSpec;
+				} else {
+					this.formSpec = [ formSpec ];
+				}
+			},
+			getFormSpec: function( item ) {
+				return [ simpl4FormManager.getCrudForm( item.entity, item.namespace || this.namespace ) ];
+			},
+			getEditMode: function() {
+				return "edit";
+			},
+			getColumns: function( entity ) {
+				try {
+					var em = simpl4.util.EntityManager;
+					var data = em.getEntityViewFields( entity, this.namespace, "report", false );
+					colModel = em.buildColModel( data, this.namespace, entity, "search" );
+					this._buildMeta( colModel, entity );
+				} catch ( e ) {
+					console.error( "getSelectableFields:", e );
+					return;
+				}
+				return colModel;
+			},
+			_buildMeta: function( colMode, entity ) {
+				simpl4.util.MessageManager.installMessages( this.namespace );
+				this.fieldmap = {};
+				var columns = new Array();
+				for ( var f = 0; f < colModel.length; f++ ) {
+					var col = colModel[ f ];
+
+					if ( true || col.display === true ) {
+						var fd = {};
+						fd.label = tr( this.getPackFromEntity( entity ) + "." + this.getSimpleEntityName( entity ) + "." + col.id );
+						fd.title = fd.label;
+						fd[ "data" ] = col.name;
+						columns.push( fd );
+					}
+				}
+				console.debug( "meta:", columns );
+				this.meta = columns;
+				this.data = [ {
+					articleId: "ABC"
+				} ]
+			},
+			getHeader:function(entityName){
+				return tr(this.getPackFromEntity(this.entity)+'.'+this.getSimpleEntityName(entityName));
+			},
+			getPackFromEntity: function( entity ) {
+				if ( entity.indexOf( ':' ) >= 0 ) {
+					return entity.split( ':' )[ 0 ];
+				}
+				return "data";
+			},
+			getSimpleEntityName: function( entity ) {
+				if ( entity.indexOf( ':' ) >= 0 ) {
+					return entity.split( ':' )[ 1 ];
+				}
+				return entity;
+			},
+			getToast:function(){
+				var t = document.querySelector("#toastGlobal");
+				if( t == null){
+					t = this.querySelector("#toastId");
+				}
+				return t;
+			}
+		} );
+
+	</script>
+</dom-module>
