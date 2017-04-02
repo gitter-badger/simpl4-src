@@ -1,0 +1,349 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014-2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+
+<!--
+CRUD operations for simpl4
+-->
+<dom-module id="simpl-minicrud" flex relative>
+	<template>
+		<style>
+			:host {
+				min-height: 400px;
+				display: inherit;
+			}
+			:host /deep/ #formDialog {
+				position: fixed;
+				top: 5vh;
+				min-width: 70%;
+				max-width: 70%;
+				max-height: 90%;
+				border-radius: 4px;
+			}
+			@media screen and (max-width: 767px) {
+				:host /deep/ #formDialog {
+					left: 0vw;
+					min-width: 100%;
+					margin: 0px;
+				}
+			}
+			paper-toast#toast {
+				z-index: 10;
+			}
+			simpl-toast /deep/ paper-toast {
+				white-space: nowrap;
+				padding-top: 10px;
+				padding-bottom: 10px;
+			}
+			simpl-toast /deep/ span {
+				min-width: 450px;
+				padding-right: 25px;
+				font-size: 30px;
+				vertical-align: middle;
+			}
+			simpl-toast /deep/ iron-icon {
+				width: 48px;
+				height: 48px;
+				vertical-align: middle;
+			}
+
+		</style>
+		<div class="layout horizontal" style="margin-bottom:10px;">
+			<template is="dom-repeat" items="{{buttonList}}" filter="isGlobalButton">
+				<paper-button class="button button_secondary ripple flex" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
+					<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
+			</template>
+		</div>
+		<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTablesId" on-rows-selected="onRowSelected" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[data]]"> </simpl-datatables>
+		<paper-dialog id="formDialog" no-cancel-on-outside-click with-backdrop="">
+			<paper-dialog-scrollable>
+				<template is="dom-repeat" items="{{buttonList}}" filter="isFormButton">
+					<paper-button class="button button_secondary ripple flex" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
+						<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
+				</template>
+				<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+		<simpl-toast id="toastId"></simpl-toast>
+		<delete-dialog on-delete-ok="onDeleteOk" id="dialogOkId"></delete-dialog>
+	</template>
+	<script>
+		Polymer( {
+			is: 'simpl-minicrud',
+			behaviors: [
+				Polymer.IronA11yKeysBehavior,
+				TranslationsBehavior
+			],
+			properties: {
+				namespace: {
+					type: String
+				},
+				mode: {
+					value: "add",
+					type: String
+				},
+				buttons: {
+					value: 'save,add,del,edit,cancel',
+					type: String
+				},
+				entity: {
+					type: String
+				},
+				buttonList: {
+					type: String
+				}
+			},
+			observers: [
+				'buttonsChanged(buttons)',
+				'entityChanged(entity)'
+			],
+			buttonsChanged: function() {
+				var buttons = {
+					add: {
+						action: this.addAction,
+						icon: "add",
+						position: "global",
+						text: tr( 'button.new' ),
+						disabled: false
+					},
+					edit: {
+						action: this.editAction,
+						icon: "create",
+						position: "global",
+						text: tr( 'button.edit' ),
+						disabled: true
+					},
+					del: {
+						action: this.delAction,
+						icon: "delete",
+						position: "global",
+						text: tr( 'button.del' ),
+						disabled: true
+					},
+					save: {
+						action: this.saveAction,
+						icon: "save",
+						position: "form",
+						text: tr( 'button.save' ),
+						disabled: false
+					},
+					cancel: {
+						action: this.cancelAction,
+						icon: "cancel",
+						position: "form",
+						text: tr( 'button.cancel' ),
+						disabled: false
+					}
+				}
+				this.buttonDef = buttons;
+				var bList = [];
+				this.buttons.split( "," ).forEach( ( function( name ) {
+					var b = buttons[ name ];
+					b.name = name;
+					bList.push( b );
+				} ).bind( this ) );
+				this.buttonList = bList;
+			},
+			getData: function() {
+				return this.data;
+			},
+			setData: function( data ) {
+				this.data = data;
+			},
+			setButtonState: function( name, enabled ) {
+				if ( this.buttonDef == null ) return;
+				this.buttonDef[ name ].disabled = !enabled;
+				for ( var i = 0; i < this.buttonList.length; i++ ) {
+					if ( this.buttonList[ i ].name == name ) {
+						this.set( "buttonList." + i + ".disabled", !enabled );
+					}
+				}
+			},
+			isGlobalButton: function( b ) {
+				console.log( "isGlobalButton:", b.position );
+				return b.position == "global";
+			},
+			isFormButton: function( b ) {
+				console.log( "isFormButton:", b.position );
+				return b.position == "form";
+			},
+			onTap: function( e ) {
+				var src = e.srcElement || e.target;
+				var name = null;
+				while ( src ) {
+					name = src.getAttribute( "name" );
+					if ( name ) break;
+					src = src.parentElement;
+				}
+				if ( name == null ) return;
+				this.buttonDef[ name ].action.call( this );
+			},
+			onRowSelected: function( e ) {
+				this.currentData = e.detail.rows[ 0 ];
+				this.setButtonState( "edit", true );
+				this.setButtonState( "del", true );
+			},
+			addAction: function() {
+				this.entityName = this.entity;
+				this.mode = "add";
+				this.$.formid.setData( {} );
+				this.async( function() {
+					this.$.formDialog.open();
+				}, 50 );
+			},
+			editAction: function() {
+				this.mode = "edit";
+				this.$.formid.setData( this.currentData );
+				this.async( function() {
+					this.$.formDialog.open();
+				}, 50 );
+			},
+			delAction: function() {
+				this.setButtonState( "del", false );
+				this.mode = 'del';
+				this.$.dialogOkId.open( this.currentData );
+			},
+			onDeleteOk: function( e ) {
+				console.log( "deleteok:", e );
+				try {
+					this.saveAction();
+					this.getToast().show( tr( "entitytypes.deleted" ), "success", "5000" );
+				} catch ( e ) {
+					console.error( "delAction:", e );
+					var msg = null;
+					if ( e.message ) {
+						msg = e.message;
+					} else {
+						msg = e.toString();
+					}
+					this.getToast().show( msg, "error", "10000" );
+					return;
+				}
+			},
+			cancelAction: function( e ) {
+				this.setButtonState( "del", false );
+				this.setButtonState( "edit", false );
+				this.querySelector( "#dataTablesId" ).unselectAll();
+				this.$.formDialog.close();
+			},
+			saveAction: function() {
+				this.cancelAction();
+				var chgData = this.querySelector( "#formid" ).getData();
+				var oldData = clone( this.data ) || [];
+				this.data = [];
+				if ( this.mode == "add" ) {
+					chgData.id = this.guid();
+					oldData.push( chgData );
+				} else if ( this.mode == "del" ) {
+					chgData = this.currentData;
+					var index = _.findIndex( oldData, function( o ) {
+						return o.id == chgData.id;
+					} );
+					oldData.splice( index, 1 );
+				} else {
+					var index = _.findIndex( oldData, function( o ) {
+						return o.id == chgData.id;
+					} );
+					simpl4.util.Merge.merge( false, oldData[ index ], chgData );
+				}
+				this.async( function() {
+					this.data = oldData;
+					this.fire( "changed", {
+						data: this.data
+					} );
+				}, 150 );
+			},
+			entityChanged: function() {
+				this.getColumns( this.entity );
+				this._pack = this.getPackFromEntity( this.entity );
+				this.setFormSpec( this.namespace, this.entity );
+			},
+			setFormSpec: function( namespace, entity ) {
+				if ( namespace === this.prevNamespace && entity === this.prevEntityName ) return;
+				this.currentNamespace = namespace;
+				var formSpec = simpl4FormManager.getCrudForm( entity, namespace );
+				this.prevEntityName = entity;
+				this.prevNamespace = namespace;
+				if ( typeof formSpec === 'string' ) {
+					this.formName = formSpec;
+				} else {
+					this.formSpec = [ formSpec ];
+				}
+			},
+			getColumns: function( entity ) {
+				try {
+					var em = simpl4.util.EntityManager;
+					var data = em.getEntityViewFields( entity, this.namespace, "main-grid", false );
+					colModel = em.buildColModel( data, this.namespace, entity, "search" );
+					this._buildMeta( colModel, entity );
+				} catch ( e ) {
+					console.error( "getSelectableFields:", e );
+					return;
+				}
+				return colModel;
+			},
+			_buildMeta: function( colMode, entity ) {
+				simpl4.util.MessageManager.installMessages( this.namespace );
+				this.fieldmap = {};
+				var columns = new Array();
+				for ( var f = 0; f < colModel.length; f++ ) {
+					var col = colModel[ f ];
+
+					if ( true || col.display === true ) {
+						var fd = {};
+						fd.label = tr( this.getPackFromEntity( entity ) + "." + this.getSimpleEntityName( entity ) + "." + col.id );
+						fd.title = fd.label;
+						fd[ "data" ] = col.name;
+						columns.push( fd );
+					}
+				}
+				console.debug( "meta:", columns );
+				this.meta = columns;
+			},
+			getPackFromEntity: function( entity ) {
+				if ( entity.indexOf( ':' ) >= 0 ) {
+					return entity.split( ':' )[ 0 ];
+				}
+				return "data";
+			},
+			getSimpleEntityName: function( entity ) {
+				if ( entity.indexOf( ':' ) >= 0 ) {
+					return entity.split( ':' )[ 1 ];
+				}
+				return entity;
+			},
+			guid: function() {
+				var firstPart = ( Math.random() * 46656 ) | 0;
+				var secondPart = ( Math.random() * 46656 ) | 0;
+				firstPart = ( "000" + firstPart.toString( 36 ) ).slice( -3 );
+				secondPart = ( "000" + secondPart.toString( 36 ) ).slice( -3 );
+				return firstPart + secondPart;
+			},
+			getToast: function() {
+				var t = document.querySelector( "#toastGlobal" );
+				if ( t == null ) {
+					t = this.querySelector( "#toastId" );
+				}
+				return t;
+			}
+		} );
+
+	</script>
+</dom-module>
