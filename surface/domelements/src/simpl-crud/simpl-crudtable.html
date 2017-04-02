@@ -83,6 +83,10 @@
 				StyleScopeBehavior
 			],
 			properties: {
+				disableSpinner: {
+					type: Boolean,
+					value: false
+				},
 				dtOptions: {
 					type: String,
 					value: ""
@@ -284,6 +288,7 @@
 				this.getData( this.filter, firsttime );
 			},
 			showSpinner: function( table ) {
+				if( this.disableSpinner) return;
 				this.async( function() {
 					var sel = this.querySelector( ".spinner" );
 					if ( sel ) {
