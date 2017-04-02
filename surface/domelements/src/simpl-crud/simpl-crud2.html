@@ -352,8 +352,7 @@ CRUD operations for simpl4
 			},
 			entityChanged:function(){
 				this.getColumns( this.entity );
-				var ep = this.getPackFromEntity( this.entity );
-				this._pack = ep.pack;
+				this._pack = this.getPackFromEntity( this.entity );
 				this.setFormSpec( this.namespace, this.entity );
 			},
 			setFormSpec: function( namespace, entity ) {
