@@ -67,6 +67,10 @@
 		setForm: function( form ) {
 			this.form = form;
 		},
+		getPack:function(){
+			var pack = this.form.pack;
+			return pack;
+		},
 		setValue: function( v ) {
 			this.value = v;
 		},
@@ -2720,9 +2724,12 @@
 				simpl4.util.MessageManager.installMessages( this.namespace );
 			},
 			entityChanged: function() {
-			  //console.log("Field.relatedto.entityChanged:",this.entity+"/"+this.namespace);
-				if( this.entity==null) return;
-				this.entityName = this.entity;
+				this.async( function() {
+					console.log("Field("+this.name+"):entityChanged:"+this.getPack() + "/"+ this.entity+"/"+this.namespace);
+					if( this.entity==null) return;
+					var pack = this.getPack();
+					this.entityName = pack ? (pack +":"+ this.entity) : this.entity;
+				},10 );
 			},
 			getHeader:function(entityName){
 				return tr('data.'+entityName);
