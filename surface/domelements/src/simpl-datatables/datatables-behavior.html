@@ -314,10 +314,12 @@ r - processing display element<br/>
 				this._createTable( this.preparedMeta, this.data, this.options );
 			} else {
 				this._api.clear();
-				this.data.forEach( ( function( row, idx ) {
-					row.__control = "";
-					this._api.row.add( row );
-				} ).bind( this ) );
+				if( this.data != null ) {
+					this.data.forEach( ( function( row, idx ) {
+						row.__control = "";
+						this._api.row.add( row );
+					} ).bind( this ) );
+				}
 				this._api.draw();
 				this._createRowListener();
 			}
@@ -379,8 +381,8 @@ r - processing display element<br/>
 					done();
 					return;
 				}
-				if ( counter++ < 50 ) {
-					setTimeout( waitForTable, 20 );
+				if ( counter++ < 5000 ) {
+					setTimeout( waitForTable, 800 );
 				}
 			}
 			waitForTable();
