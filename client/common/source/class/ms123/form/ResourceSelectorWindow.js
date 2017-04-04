@@ -179,7 +179,16 @@ qx.Class.define("ms123.form.ResourceSelectorWindow", {
 			this._buttonSelect.addListener("execute", function () {
 				var sel = this._tree.getSelection().getItem(0);
 				var map = {};
-				map.value = sel.getValue();	
+				var path = sel.getPath();
+				var ind = path.indexOf("/entitytypes");
+				if( ind >= 0 ){
+					var pack = path.substring(0,ind);
+					if( pack != "data"){
+						map.value = pack +":"+ sel.getValue();	
+					}
+				}else{
+					map.value = sel.getValue();	
+				}
 				//var varname = this._selectedTextField.getValue();
 				//if( varname && varname.length>0){
 				//	map.relpath+= ","+varname;
