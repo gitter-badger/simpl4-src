@@ -26,8 +26,6 @@ CRUD operations for simpl4
 	<template>
 		<style>
 			:host {
-				min-height: 400px;
-				display: inherit;
 			}
 			:host /deep/ #formDialog {
 				position: fixed;
@@ -65,13 +63,15 @@ CRUD operations for simpl4
 			}
 
 		</style>
-		<div class="layout horizontal" style="margin-bottom:10px;">
-			<template is="dom-repeat" items="{{buttonList}}" filter="isGlobalButton">
-				<paper-button class="button button_secondary ripple flex" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
-					<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
-			</template>
+		<div class="layout vertical" style="width:100%;">
+			<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTablesId" on-rows-selected="onRowSelected" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[data]]"> </simpl-datatables>
+			<div class="layout horizontal" style="max-height:24px;margin-bottom:10px;">
+				<template is="dom-repeat" items="{{buttonList}}" filter="isGlobalButton">
+					<paper-button class="button button_primary ripple" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
+						<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
+				</template>
+			</div>
 		</div>
-		<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTablesId" on-rows-selected="onRowSelected" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[data]]"> </simpl-datatables>
 		<paper-dialog id="formDialog" no-cancel-on-outside-click with-backdrop="">
 			<paper-dialog-scrollable>
 				<template is="dom-repeat" items="{{buttonList}}" filter="isFormButton">
@@ -93,17 +93,23 @@ CRUD operations for simpl4
 			],
 			properties: {
 				namespace: {
+					value: null,
+					type: String
+				},
+				entity: {
+					value: null,
 					type: String
 				},
 				mode: {
 					value: "add",
 					type: String
 				},
-				buttons: {
-					value: 'save,add,del,edit,cancel',
+				height: {
+					value: "150",
 					type: String
 				},
-				entity: {
+				buttons: {
+					value: 'save,add,del,edit,cancel',
 					type: String
 				},
 				buttonList: {
@@ -112,7 +118,8 @@ CRUD operations for simpl4
 			},
 			observers: [
 				'buttonsChanged(buttons)',
-				'entityChanged(entity)'
+				'heightChanged(height)',
+				'entityChanged(entity,namespace)'
 			],
 			buttonsChanged: function() {
 				var buttons = {
@@ -161,6 +168,15 @@ CRUD operations for simpl4
 				} ).bind( this ) );
 				this.buttonList = bList;
 			},
+			heightChanged: function() {
+				console.log("minicrud.height:"+this.height);
+				this.dataTablesOptions = {
+					paging: false,
+					dom: "ft",
+					scrollY: this.height+'px'
+				};
+				this.data=[];
+			},
 			getData: function() {
 				return this.data;
 			},
@@ -202,6 +218,7 @@ CRUD operations for simpl4
 			},
 			addAction: function() {
 				this.entityName = this.entity;
+				console.log( "minicrud.entity:", this.entity );
 				this.mode = "add";
 				this.$.formid.setData( {} );
 				this.async( function() {
@@ -288,6 +305,7 @@ CRUD operations for simpl4
 				}
 			},
 			getColumns: function( entity ) {
+				console.log( "getColumns:", entity + "/" + this.namespace );
 				try {
 					var em = simpl4.util.EntityManager;
 					var data = em.getEntityViewFields( entity, this.namespace, "main-grid", false );
@@ -314,7 +332,7 @@ CRUD operations for simpl4
 						columns.push( fd );
 					}
 				}
-				console.debug( "meta:", columns );
+				console.debug( "minicrud.meta:", columns );
 				this.meta = columns;
 			},
 			getPackFromEntity: function( entity ) {
