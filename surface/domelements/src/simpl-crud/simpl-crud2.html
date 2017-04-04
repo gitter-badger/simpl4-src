@@ -171,15 +171,17 @@ CRUD operations for simpl4
 				if ( name == null ) return;
 				this.buttonDef[ name ].action.call( this );
 			},
-			addAction: function() {
+			addAction: function(noEvent) {
 				this.mode = "add";
 				this.setButtonState("save", true);
 				this.setButtonState("del", false);
 				this.$.formid.setData( {} );
-				this.fire( "add-action", {
-					entity: this.entity,
-					namespace: this.namespace
-				} );
+				if( noEvent !== true){
+					this.fire( "add-action", {
+						entity: this.entity,
+						namespace: this.namespace
+					} );
+				}
 			},
 			searchAction: function() {
 				this.entityName = this.entity;
@@ -206,6 +208,7 @@ CRUD operations for simpl4
 				try {
 					this.deleteData( e.detail );
 					this.getToast().show( tr("entitytypes.deleted"), "success", "5000" );
+					this.addAction( true );
 				} catch ( e ) {
 					console.error( "delAction:", e );
 					var msg = null;
@@ -234,7 +237,7 @@ CRUD operations for simpl4
 			},
 			saveAction: function() {
 				this._saveAction();
-				this.mode = "edit";
+				this.addAction(true);
 			},
 			_saveAction: function() {
 				var postServiceData = this.$.formid._postProcessService();
@@ -259,11 +262,11 @@ CRUD operations for simpl4
 				} else {
 					try {
 						if ( this.mode == 'edit' ) {
-							data = simpl4.util.Merge.merge( true, this.currentRowData, data );
+							//data = simpl4.util.Merge.merge( true, this.currentRowData, data );
 						}
 						console.log( "saveAction.storeData:", data );
 						var ret = this.storeData( data );
-						var content = ret;
+console.log("ret:",ret);
 						var cv = ret[ "constraintViolations" ];
 						if ( cv ) {
 							var message = "";
@@ -279,6 +282,8 @@ CRUD operations for simpl4
 							} else {
 								msg = tr( "data.form.saved" );
 							}
+							data.id = ret.id;
+							this.$.formid.setData(data);
 							this.getToast().show( msg, "success", "10000" );
 						}
 					} catch ( e ) {
