@@ -89,8 +89,10 @@ r - processing display element<br/>
 		],
 		_createTable: function( dtMeta, dataSet, options ) {
 			this._whenTableReady( ( function() {
-				this.__createTable( dtMeta, dataSet, options );
+				//this.__createTable( dtMeta, dataSet, options );
+					this.recalc();
 			} ).bind( this ) );
+			this.__createTable( dtMeta, dataSet, options );
 		},
 		/**
 		 *  recalc and redraw the table
@@ -381,8 +383,8 @@ r - processing display element<br/>
 					done();
 					return;
 				}
-				if ( counter++ < 5000 ) {
-					setTimeout( waitForTable, 800 );
+				if ( counter++ < 50000 ) {
+					setTimeout( waitForTable, 500 );
 				}
 			}
 			waitForTable();
