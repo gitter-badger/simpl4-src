@@ -301,7 +301,7 @@
 					console.log("expressionIn("+field.name+"\t,"+field.expressionIn+"\t,"+oldValue+ ") -> ",fieldData);
 
 				}
-				field.setValue( fieldData || field.defaultvalue || "" );
+				field.setValue( fieldData || field.defaultvalue|| null );
 			}, this );
 			this._valueChanged();
 		},
@@ -646,6 +646,7 @@
 				shape.stencil.id.toLowerCase() == 'textarea' ||
 				shape.stencil.id.toLowerCase() == 'relatedto' ||
 				shape.stencil.id.toLowerCase() == 'upload' ||
+				shape.stencil.id.toLowerCase() == 'crud' ||
 				shape.stencil.id.toLowerCase() == 'moduleselector' ||
 				shape.stencil.id.toLowerCase() == 'enumselect' ||
 				shape.stencil.id.toLowerCase() == 'treeselect' ||
@@ -708,6 +709,11 @@
 				}
 				if ( shape.stencil.id.toLowerCase() == 'moduleselector' ) {
 					shape.properties.xf_namespace = this.namespace;
+				}
+				if ( shape.stencil.id.toLowerCase() == 'crud' ) {
+					shape.properties.xf_namespace = this.namespace;
+					var bounds = shape.bounds;
+					shape.properties.height = bounds.lowerRight.y - bounds.upperLeft.y;
 				}
 				if ( shape.stencil.id.toLowerCase() == 'gridinput' ) {
 					var props = shape.properties;
