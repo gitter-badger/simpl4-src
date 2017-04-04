@@ -233,6 +233,10 @@ CRUD operations for simpl4
 				this.$.formid.setData( this.currentData );
 			},
 			saveAction: function() {
+				this._saveAction();
+				this.mode = "edit";
+			},
+			_saveAction: function() {
 				var postServiceData = this.$.formid._postProcessService();
 				var data = this.$.formid.getData();
 				if ( postServiceData != null ) {
