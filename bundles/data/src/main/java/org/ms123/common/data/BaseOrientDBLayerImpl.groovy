@@ -53,10 +53,6 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	public List<Map> executeQuery(Class clazz,String className, String where){
 		info(this,"executeQuery.sql:"+"select from "+className + " where "+ where);
 		List list = clazz.graphQueryMap("select from "+className + " where "+ where,false);
-		list.each{ row -> 
-			row.id = row._id;
-			row.remove("_id");
-		}
 		info(this,"List:"+list);
 		return list;
 	}
@@ -67,16 +63,17 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	public Object _executeInsertObject(SessionContext sc, String entityName,Map data){
 		Map fields = sc.getPermittedFields(entityName, "write");
 		def cleanData = [:];
-		fields.each{ k, v -> 
+		fields.each{ k, v ->
 			if( isSimple( v.datatype ) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				cleanData[k] = data[k];
 			}else if( isLinkObj(v.datatype) && data[k] != null){
-        cleanData[k] = _executeInsertObject(sc, v.linkedclass, data[k] );
+				cleanData[k] = _executeInsertObject(sc, v.linkedclass, data[k] );
 			}else if( (isLinkSet(v.datatype) || isLinkList( v.datatype )) && data[k] != null){
 				info(this,"Multi("+entityName+":"+k+"):"+data[k]);
 				def cleanList = [];
 				for( Map map : data[k] ){
+					info(this,"map:"+map);
 					def ret = _executeInsertObject(sc, v.linkedclass, map );
 					cleanList.add(ret);
 				}
@@ -87,7 +84,6 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				}
 			}
 		}
-		info(this,"cleandata:"+cleanData);
 		Class clazz = getClass(sc, entityName);
 		return clazz.newInstance( cleanData );
 	}
@@ -103,24 +99,37 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	}
 
 	public Map _executeUpdateObject(SessionContext sc, Object obj, Map data){
-		if( obj == null) return;
+		if( obj == null){
+			info(this,"_executeUpdateObject is null:"+data);
+			return;
+		}
 		def entityName = obj.getClass().getSimpleName();
 		entityName = this.inflector.lowerFirst(entityName);
 		info(this,"_executeUpdateObject("+entityName+"):"+data);
 		Map fields = sc.getPermittedFields(entityName, "write");
-		fields.each{ k, v -> 
+		fields.each{ k, v ->
 			if( isSimple( v.datatype) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				obj[k] = data[k];
 			}else if( isLinkObj(v.datatype) && data[k] != null){
-        _executeInsertObject(sc, obj[k], data[k] );
+				_executeInsertObject(sc, obj[k], data[k] );
 			}else if( (isLinkSet(v.datatype) || isLinkList( v.datatype )) && data[k] != null){
 				info(this,"Multi("+entityName+":"+k+"):"+data[k]);
-				def i=0;
-				for( Object child : obj[k] ){
-					def childData = data[k][i++];
-					def ret = _executeUpdateObject(sc, child, childData );
+				def objList = [];
+				Class clazz = getClass(sc, v.linkedclass);
+				for( Map childData : data[k] ){
+					def child = null;
+					if( childData._id && childData._id.startsWith("#") ){
+						child = _getObject(clazz, childData._id);
+					}
+					if( child == null){
+						child = clazz.newInstance(  );
+					}
+					_executeUpdateObject(sc, child, childData );
+					objList.add( child );
 				}
+				info(this,"objList:"+objList);
+				obj[k] = objList;
 			}
 		}
 	}
@@ -143,6 +152,11 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		}
 		return row;
 	}
+	public Object _getObject(Class clazz,String id){
+		def obj = clazz.graphQuery("select from "+id,true);
+		info(this,"_getObject("+id+"):"+obj);
+		return obj;
+	}
 	def isLinkObj( def dt ){
 		def list = ["9", "13"]
 		return list.contains( dt );
@@ -157,8 +171,9 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	}
 
 	def isSimple( def dt ){
-		def simpleList = ["1","2","3","4","5","6","7","17","19","21"]
+		def simpleList = ["1", "2", "3", "4", "5", "6", "7", "17", "19", "21"]
 		return simpleList.contains( dt );
 	}
 }
+
 
