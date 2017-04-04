@@ -235,24 +235,12 @@ CRUD operations for simpl4
 			delAction: function() {
 				this.setButtonState( "del", false );
 				this.mode = 'del';
-				this.$.dialogOkId.open( this.currentData );
+				this.saveAction();
+				//this.$.dialogOkId.open( this.currentData );
 			},
 			onDeleteOk: function( e ) {
 				console.log( "deleteok:", e );
-				try {
-					this.saveAction();
-					this.getToast().show( tr( "entitytypes.deleted" ), "success", "5000" );
-				} catch ( e ) {
-					console.error( "delAction:", e );
-					var msg = null;
-					if ( e.message ) {
-						msg = e.message;
-					} else {
-						msg = e.toString();
-					}
-					this.getToast().show( msg, "error", "10000" );
-					return;
-				}
+				this.saveAction();
 			},
 			cancelAction: function( e ) {
 				this.setButtonState( "del", false );
@@ -266,17 +254,17 @@ CRUD operations for simpl4
 				var oldData = clone( this.data ) || [];
 				this.data = [];
 				if ( this.mode == "add" ) {
-					chgData.id = this.guid();
+					chgData._id = this.guid();
 					oldData.push( chgData );
 				} else if ( this.mode == "del" ) {
 					chgData = this.currentData;
 					var index = _.findIndex( oldData, function( o ) {
-						return o.id == chgData.id;
+						return o._id == chgData._id;
 					} );
 					oldData.splice( index, 1 );
 				} else {
 					var index = _.findIndex( oldData, function( o ) {
-						return o.id == chgData.id;
+						return o._id == chgData._id;
 					} );
 					simpl4.util.Merge.merge( false, oldData[ index ], chgData );
 				}
@@ -324,7 +312,7 @@ CRUD operations for simpl4
 				for ( var f = 0; f < colModel.length; f++ ) {
 					var col = colModel[ f ];
 
-					if ( true || col.display === true ) {
+					if ( col.id!="id" ) {
 						var fd = {};
 						fd.label = tr( this.getPackFromEntity( entity ) + "." + this.getSimpleEntityName( entity ) + "." + col.id );
 						fd.title = fd.label;
