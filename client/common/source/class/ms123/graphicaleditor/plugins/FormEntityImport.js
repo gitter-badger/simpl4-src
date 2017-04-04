@@ -192,9 +192,19 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			}
 			var edittype = col.edittype.toLowerCase();
 			if ( edittype == 'text' || edittype == 'textarea' || edittype == 'checkbox' || edittype=='select') {
-				props.xf_type = this.getType(col.datatype);
-				props.xf_id = col.id || col.name;
-				field.stencil.id = 'Input';
+        if( !isNaN( col.datatype)){ //OrientDB
+          props.xf_type =   this.convertOrientType(col.datatype);
+          if( props.xf_type.startsWith("stencil:")){
+            field.stencil.id = props.xf_type.substring(8);
+          }
+        }else{
+          props.xf_type = this.getType(col.datatype);
+        }
+        console.log("Name("+col.name+"):", props.xf_type);
+        props.xf_id = col.id || col.name;
+        if( field.stencil.id == null){
+          field.stencil.id = 'Input';
+				}
 				if ( edittype == 'checkbox' ) {
 					props.xf_type = 'boolean';
 				}
@@ -216,6 +226,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 						console.log("items:",props.xf_enum);
 					}
 				}
+				props.xf_default = col.default_value !== '' ? col.default_value : null;
 				field.childShapes[ 0 ].properties.xf_text = msgkeyPrefix + props.xf_id;
 				field.childShapes[ 0 ].resourceId = ms123.util.IdGen.id();
 				field.resourceId = ms123.util.IdGen.id();
@@ -233,6 +244,26 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			}
 			return dt;
 		},
+    convertOrientType:function(type){
+     if( type == "17") type = "integer";
+     if( type == "5") type = "double";
+     if( type == "1") type = "integer";
+     if( type == "3") type = "integer";
+     if( type == "7") type = "string";
+     if( type == "0") type = "boolean";
+     if( type == "21") type = "double";
+     if( type == "19") type = "date";
+     if( type == "6") type = "datetime";
+     if( type == "9") type = "stencil:Form";
+     if( type == "10") type = "stencil:Crud";
+     if( type == "11") type = "stencil:Crud";
+     if( type == "12") type = "stencil:Crud";
+     if( type == "13") type = "stencil:Form";
+     if( type == "14") type = "stencil:Crud";
+     if( type == "15") type = "stencil:Crud";
+     if( type == "16") type = "stencil:Crud";
+     return type;
+    },
 		__getResourceUrl: function( name ) {
 			var am = qx.util.AliasManager.getInstance();
 			return am.resolve( "resource/ms123/" + name );
