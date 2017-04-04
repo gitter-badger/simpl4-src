@@ -265,6 +265,20 @@ public class Inflector {
 		return "" + Character.toUpperCase(result.charAt(0)) + result.substring(1);
 	}
 
+	public String lowerFirst(String words) {
+		if (words == null) {
+			return null;
+		}
+		String result = words.trim();
+		if (result.length() == 0) {
+			return "";
+		}
+		if (result.length() == 1) {
+			return result.toLowerCase();
+		}
+		return "" + Character.toLowerCase(result.charAt(0)) + result.substring(1);
+	}
+
 	/**
 	 * Capitalizes the first word and turns underscores into spaces and strips trailing "_id" and any supplied removable tokens.
 	 * Like {@link #titleCase(String, String[])}, this is meant for creating pretty output.

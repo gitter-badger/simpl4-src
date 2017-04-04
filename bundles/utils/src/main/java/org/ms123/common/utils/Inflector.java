@@ -66,11 +66,23 @@ public class Inflector {
 	}
 
 	public String  getClassName(Object word) {
-		return capitalize(singularize(word));
+		String pack = getPackName((String)word,null);
+		word = getSimpleEntityName((String)word);
+		String className = capitalize(singularize(word));
+		return pack != null ? getFqEntityName(className, pack ) : className;
+	}
+	public String  getClassNameCamelCase(Object word) {
+		String pack = getPackName((String)word,null);
+		word = getSimpleEntityName((String)word);
+		String className = capitalizeFirst(singularize(word));
+		return pack != null ? getFqEntityName(className, pack ) : className;
 	}
 
 	public String  getEntityName(Object word) {
 		return singularize(word).toLowerCase();
+	}
+	public String  getEntityNameCamelCase(Object word) {
+		return singularize(word);
 	}
 	public String  getModuleName(Object word) {
 		return singularize(word).toLowerCase();
@@ -253,6 +265,20 @@ public class Inflector {
 		return "" + Character.toUpperCase(result.charAt(0)) + result.substring(1);
 	}
 
+	public String lowerFirst(String words) {
+		if (words == null) {
+			return null;
+		}
+		String result = words.trim();
+		if (result.length() == 0) {
+			return "";
+		}
+		if (result.length() == 1) {
+			return result.toLowerCase();
+		}
+		return "" + Character.toLowerCase(result.charAt(0)) + result.substring(1);
+	}
+
 	/**
 	 * Capitalizes the first word and turns underscores into spaces and strips trailing "_id" and any supplied removable tokens.
 	 * Like {@link #titleCase(String, String[])}, this is meant for creating pretty output.
@@ -339,5 +365,27 @@ public class Inflector {
 		}
 		matcher.appendTail(sb);
 		return sb.toString();
+	}
+	public static final String PACK_DELIM = ":";
+	public static String getPackName(String entity, String def){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity.substring(0,colon);
+		}
+		return def;
+	}
+	public static String getSimpleEntityName(String entity){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity.substring(colon+1);
+		}
+		return entity;
+	}
+	public static String getFqEntityName(String entity, String pack){
+		int colon = entity.indexOf(PACK_DELIM);
+		if( colon >= 0){
+			return entity;
+		}
+		return pack + PACK_DELIM +entity;
 	}
 }
