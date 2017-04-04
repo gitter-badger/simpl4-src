@@ -29,9 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Comparator;
 import java.util.Collections;
+import org.ms123.common.libhelper.Inflector;
 import java.lang.reflect.Method;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.utils.Inflector;
+import org.ms123.common.data.api.SessionContext;
 
 
 import groovy.transform.CompileStatic;
@@ -47,8 +49,8 @@ import static com.jcabi.log.Logger.debug;
 //@groovy.transform.CompileStatic
 abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLayer{
 
+	private Inflector inflector = Inflector.getInstance();
 	public List<Map> executeQuery(Class clazz,String className, String where){
-		info(this,"executeQuery.Where:"+where);
 		info(this,"executeQuery.sql:"+"select from "+className + " where "+ where);
 		List list = clazz.graphQueryMap("select from "+className + " where "+ where,false);
 		list.each{ row -> 
@@ -58,29 +60,69 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		info(this,"List:"+list);
 		return list;
 	}
-	public Map executeInsertObject(Class clazz,Map data, Map fields){
+	public Map executeInsertObject(SessionContext sc, String entityName,Map data){
+		def obj = _executeInsertObject(sc, entityName, data);
+		return [ id : obj.getIdentity() ];
+	}
+	public Object _executeInsertObject(SessionContext sc, String entityName,Map data){
+		Map fields = sc.getPermittedFields(entityName, "write");
 		def cleanData = [:];
 		fields.each{ k, v -> 
-			if( isSimple( v.datatype )){
+			if( isSimple( v.datatype ) && data[k] != null){
+				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				cleanData[k] = data[k];
+			}else if( isLinkObj(v.datatype) && data[k] != null){
+        cleanData[k] = _executeInsertObject(sc, v.linkedclass, data[k] );
+			}else if( (isLinkSet(v.datatype) || isLinkList( v.datatype )) && data[k] != null){
+				info(this,"Multi("+entityName+":"+k+"):"+data[k]);
+				def cleanList = [];
+				for( Map map : data[k] ){
+					def ret = _executeInsertObject(sc, v.linkedclass, map );
+					cleanList.add(ret);
+				}
+				if( isLinkSet( v.datatype )){
+					cleanData[k] = cleanList as Set;
+				}else{
+					cleanData[k] = cleanList;
+				}
 			}
 		}
 		info(this,"cleandata:"+cleanData);
-		def obj = clazz.newInstance( cleanData );
-		return [ id : obj.getIdentity() ];
+		Class clazz = getClass(sc, entityName);
+		return clazz.newInstance( cleanData );
 	}
 
-	public Map executeUpdateObject(Class clazz,String id, Map data, Map fields){
+	public Map executeUpdateObject(SessionContext sc, String entityName, String id, Map data){
+		Class clazz = getClass(sc, entityName);
 		def obj = clazz.graphQuery("select from "+id,true);
 		if( obj == null){
 			throw new RuntimeException("executeUpdateObject("+id+"):not found");
 		}
+		_executeUpdateObject( sc, obj, data);
+		return [ id : id ];
+	}
+
+	public Map _executeUpdateObject(SessionContext sc, Object obj, Map data){
+		if( obj == null) return;
+		def entityName = obj.getClass().getSimpleName();
+		entityName = this.inflector.lowerFirst(entityName);
+		info(this,"_executeUpdateObject("+entityName+"):"+data);
+		Map fields = sc.getPermittedFields(entityName, "write");
 		fields.each{ k, v -> 
-			if( isSimple( v.datatype ) && data[k] != null){
+			if( isSimple( v.datatype) && data[k] != null){
+				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				obj[k] = data[k];
+			}else if( isLinkObj(v.datatype) && data[k] != null){
+        _executeInsertObject(sc, obj[k], data[k] );
+			}else if( (isLinkSet(v.datatype) || isLinkList( v.datatype )) && data[k] != null){
+				info(this,"Multi("+entityName+":"+k+"):"+data[k]);
+				def i=0;
+				for( Object child : obj[k] ){
+					def childData = data[k][i++];
+					def ret = _executeUpdateObject(sc, child, childData );
+				}
 			}
 		}
-		return [ id : id ];
 	}
 
 	public Map executeDeleteObject(Class clazz,String id){
@@ -100,6 +142,18 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 			row.remove("_id");
 		}
 		return row;
+	}
+	def isLinkObj( def dt ){
+		def list = ["9", "13"]
+		return list.contains( dt );
+	}
+	def isLinkList( def dt ){
+		def list = ["10", "14"]
+		return list.contains( dt );
+	}
+	def isLinkSet( def dt ){
+		def list = ["11", "15"]
+		return list.contains( dt );
 	}
 
 	def isSimple( def dt ){

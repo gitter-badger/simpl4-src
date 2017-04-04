@@ -152,9 +152,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		String user = sessionContext.getUserName();
 		checkPermissions(sdesc, user, entityName, dataMap, "write");
 		entityName = this.inflector.getEntityNameCamelCase(entityName);
-		Class insertClazz = getClass(sessionContext, entityName);
-		Map fields = sessionContext.getPermittedFields(entityName, "write");
-		return executeInsertObject(insertClazz, dataMap, fields);
+		return executeInsertObject(sessionContext, entityName, dataMap);
 	}
 
 	public void makePersistent(Object objectInsert) {
@@ -244,9 +242,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		String user = sessionContext.getUserName();
 		checkPermissions(sdesc, user, entityName, dataMap, "write");
 		entityName = this.inflector.getEntityNameCamelCase(entityName);
-		Class updateClazz = getClass(sessionContext, entityName);
-		Map fields = sessionContext.getPermittedFields(entityName, "write");
-		return executeUpdateObject(updateClazz, id, dataMap, fields);
+		return executeUpdateObject(sessionContext, entityName, id, dataMap);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
