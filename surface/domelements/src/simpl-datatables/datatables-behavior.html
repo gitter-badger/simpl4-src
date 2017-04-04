@@ -88,16 +88,19 @@ r - processing display element<br/>
 			'_dataChanged(data,meta)'
 		],
 		_createTable: function( dtMeta, dataSet, options ) {
-			this._whenTableReady( ( function() {
-				//this.__createTable( dtMeta, dataSet, options );
-					this.recalc();
-			} ).bind( this ) );
+			console.log( "_createTable:", dtMeta );
+			if ( this.asyncRunning == null ) {
+				this._tableRecalcJob( ( function() {} ).bind( this ) );
+			} else {
+				this.asyncRunning = true;
+			}
 			this.__createTable( dtMeta, dataSet, options );
 		},
 		/**
 		 *  recalc and redraw the table
 		 */
 		recalc: function() {
+			console.log( "recalc:", this._api );
 			if ( this._api ) {
 				this._api.responsive.recalc();
 				this._api.columns.adjust()
@@ -316,7 +319,7 @@ r - processing display element<br/>
 				this._createTable( this.preparedMeta, this.data, this.options );
 			} else {
 				this._api.clear();
-				if( this.data != null ) {
+				if ( this.data != null ) {
 					this.data.forEach( ( function( row, idx ) {
 						row.__control = "";
 						this._api.row.add( row );
@@ -372,20 +375,17 @@ r - processing display element<br/>
 			}, this );
 			return ret;
 		},
-		_whenTableReady: function( done ) {
+		_tableRecalcJob: function( done ) {
 			var self = this;
-			var counter = 0;
-
+			var lastWidth = -1;
 			function waitForTable() {
 				var width = self.$.dataTablesId.offsetWidth;
-				//console.log( "xxx.waitForTable.Width:", width );
-				if ( width > 0 ) {
-					done();
-					return;
+				//console.log( "_tableRecalcJob.width:", width+"/"+lastWidth );
+				if ( width > 0 && width != lastWidth ) {
+					self.recalc();
 				}
-				if ( counter++ < 50000 ) {
-					setTimeout( waitForTable, 500 );
-				}
+				lastWidth = width;
+				setTimeout( waitForTable, 30 );
 			}
 			waitForTable();
 		},
