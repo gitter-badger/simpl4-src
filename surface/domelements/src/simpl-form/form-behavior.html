@@ -970,6 +970,11 @@
 						if ( params.length > 1 ) {
 							var pkey = params[ 1 ];
 							var val = values[ 2 ];
+							if( val == null || val == ""){
+								if( "Size" == key || "Length" == key){
+									val = "512";
+								}	
+							}
 							ret += ',' + pkey + '=' + val;
 						}
 					}
