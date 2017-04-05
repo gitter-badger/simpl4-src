@@ -69,12 +69,14 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				cleanData[k] = data[k];
 			}else if( isLinkedObj(v.datatype) && data[k] != null){
+				info(this,"LinkedObj("+entityName+":"+k+"):"+data[k]);
 				Class clazz = getClass(sc, v.linkedclass);
 				def id = data[k]._id;
 				if( id && id.startsWith("#") ){
 					cleanData[k] = _getObject(clazz, id);
 				}
 			}else if( isEmbeddedObj(v.datatype) && data[k] != null){
+				info(this,"EmbeddedObj("+entityName+":"+k+"):"+data[k]);
 				cleanData[k] = _executeInsertObject(sc, v.linkedclass, data[k] );
 			}else if( (isLinkedSet(v.datatype) || isLinkedList( v.datatype )) && data[k] != null){
 				info(this,"LinkedMulti("+entityName+":"+k+"):"+data[k]);
@@ -122,17 +124,22 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		info(this,"_executeUpdateObject("+entityName+"):"+data);
 		Map fields = sc.getPermittedFields(entityName, "write");
 		fields.each{ k, v ->
+			info(this,"K:"+k+"/"+v.datatype);
 			if( isSimple( v.datatype) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				obj[k] = data[k];
 			}else if( isLinkedObj(v.datatype) && data[k] != null){
+				info(this,"LinkedObj("+entityName+":"+k+"):"+data[k]);
 				Class clazz = getClass(sc, v.linkedclass);
 				def id = data[k]._id;
 				if( id && id.startsWith("#") ){
 					obj[k] = _getObject(clazz, id);
 				}
 			}else if( isEmbeddedObj(v.datatype) && data[k] != null){
-				_executeUpdateObject(sc, obj[k], data[k] );
+				info(this,"EmbeddedObj("+entityName+":"+k+"):"+data[k]);
+				def child = clazz.newInstance(  );
+				_executeUpdateObject(sc, child, data[k] );
+				obj[k] = child;
 			}else if( (isLinkedSet(v.datatype) || isLinkedList( v.datatype )) && data[k] != null){
 				info(this,"LinkedMulti("+entityName+":"+k+"):"+data[k]);
 				def objList = [];

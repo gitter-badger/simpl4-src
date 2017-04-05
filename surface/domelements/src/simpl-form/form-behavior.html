@@ -139,7 +139,7 @@
 					} );
 				}
 			}
-			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,tree-field,select-field" ), true );
+			var elements = this._filterToArray( this.$.formdiv.querySelectorAll( "gridinput-field,tableselect-field,upload-field,linkedobj-field,linkedlist-field,embeddedobj-field,embeddedlist-field,tree-field,select-field" ), true );
 			for ( var i = 0; i < elements.length; i++ ) {
 				var saveInvalid = elements[ i ].isInvalid;
 				elements[ i ].checkConstraints();
@@ -644,10 +644,12 @@
 		_cleanShape: function( shape ) {
 			if ( shape.stencil.id.toLowerCase() == "input" ||
 				shape.stencil.id.toLowerCase() == 'textarea' ||
-				shape.stencil.id.toLowerCase() == 'relatedto' ||
+				shape.stencil.id.toLowerCase() == 'linkedobj' ||
 				shape.stencil.id.toLowerCase() == 'upload' ||
 				shape.stencil.id.toLowerCase() == 'embeddedlist' ||
 				shape.stencil.id.toLowerCase() == 'linkedlist' ||
+				shape.stencil.id.toLowerCase() == 'linkedobj' ||
+				shape.stencil.id.toLowerCase() == 'embeddedobj' ||
 				shape.stencil.id.toLowerCase() == 'moduleselector' ||
 				shape.stencil.id.toLowerCase() == 'enumselect' ||
 				shape.stencil.id.toLowerCase() == 'treeselect' ||
@@ -711,7 +713,11 @@
 				if ( shape.stencil.id.toLowerCase() == 'moduleselector' ) {
 					shape.properties.xf_namespace = this.namespace;
 				}
-				if ( shape.stencil.id.toLowerCase() == 'embeddedlist' || shape.stencil.id.toLowerCase() == 'linkedlist' ) {
+				if ( shape.stencil.id.toLowerCase() == 'embeddedlist' || 
+						 shape.stencil.id.toLowerCase() == 'linkedlist' ||
+						 shape.stencil.id.toLowerCase() == 'linkedobj' ||
+						 shape.stencil.id.toLowerCase() == 'linkedobj' 
+					) {
 					shape.properties.xf_namespace = this.namespace;
 					var bounds = shape.bounds;
 					shape.properties.height = bounds.lowerRight.y - bounds.upperLeft.y;
