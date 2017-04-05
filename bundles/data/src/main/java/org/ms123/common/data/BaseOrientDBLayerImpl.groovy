@@ -68,6 +68,12 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 			if( isSimple( v.datatype ) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				cleanData[k] = data[k];
+			}else if( isLinkedObj(v.datatype) && data[k] != null){
+				Class clazz = getClass(sc, v.linkedclass);
+				def id = data[k]._id;
+				if( id && id.startsWith("#") ){
+					cleanData[k] = _getObject(clazz, id);
+				}
 			}else if( isEmbeddedObj(v.datatype) && data[k] != null){
 				cleanData[k] = _executeInsertObject(sc, v.linkedclass, data[k] );
 			}else if( (isLinkedSet(v.datatype) || isLinkedList( v.datatype )) && data[k] != null){
@@ -119,6 +125,12 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 			if( isSimple( v.datatype) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				obj[k] = data[k];
+			}else if( isLinkedObj(v.datatype) && data[k] != null){
+				Class clazz = getClass(sc, v.linkedclass);
+				def id = data[k]._id;
+				if( id && id.startsWith("#") ){
+					obj[k] = _getObject(clazz, id);
+				}
 			}else if( isEmbeddedObj(v.datatype) && data[k] != null){
 				_executeUpdateObject(sc, obj[k], data[k] );
 			}else if( (isLinkedSet(v.datatype) || isLinkedList( v.datatype )) && data[k] != null){
@@ -138,13 +150,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				def objList = [];
 				Class clazz = getClass(sc, v.linkedclass);
 				for( Map childData : data[k] ){
-					def child = null;
-					if( childData._id && childData._id.startsWith("#") ){
-						child = _getObject(clazz, childData._id);
-					}
-					if( child == null){
-						child = clazz.newInstance(  );
-					}
+					def child = clazz.newInstance(  );
 					_executeUpdateObject(sc, child, childData );
 					objList.add( child );
 				}
