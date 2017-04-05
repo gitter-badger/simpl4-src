@@ -2394,7 +2394,6 @@
 				}
 			},
 			observers: [
-//				'editValueChanged(editValue)',
 				'entityChanged(entity,namespace)'
 			],
 			onChanged:function(e){
@@ -2406,7 +2405,6 @@
 				this.setInvalid( false );
 			},
 			checkConstraints: function() {
-console.log("crud.checkConstraints");
 				this.setInvalid( false );
 				if ( !this.isRequired() ) return;
 				if ( this.value && this.value.length > 0 ) {
@@ -2416,12 +2414,10 @@ console.log("crud.checkConstraints");
 				this.setErrorMessage( tr( "This field is required" ) );
 			},
 			setValue: function( v ) {
-console.log("crud.setValue:",v);
 				this.value = v;
 				this.querySelector( "#miniId" ).setData(v);
 			},
 			getValue: function() {
-console.log("crud.getValue:",this.value);
 				return this.value;
 			},
 			setErrorMessage: function( message ) {
@@ -2431,7 +2427,6 @@ console.log("crud.getValue:",this.value);
 				this.isInvalid = b;
 			},
 			heightChanged: function() {
-				console.log("heightChanged:",this.height);
 				this.setInvalid(false);;
 			},
 			isRequired: function() {
