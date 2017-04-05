@@ -646,7 +646,7 @@
 				shape.stencil.id.toLowerCase() == 'textarea' ||
 				shape.stencil.id.toLowerCase() == 'relatedto' ||
 				shape.stencil.id.toLowerCase() == 'upload' ||
-				shape.stencil.id.toLowerCase() == 'crud' ||
+				shape.stencil.id.toLowerCase() == 'embeddedlist' ||
 				shape.stencil.id.toLowerCase() == 'moduleselector' ||
 				shape.stencil.id.toLowerCase() == 'enumselect' ||
 				shape.stencil.id.toLowerCase() == 'treeselect' ||
@@ -710,7 +710,7 @@
 				if ( shape.stencil.id.toLowerCase() == 'moduleselector' ) {
 					shape.properties.xf_namespace = this.namespace;
 				}
-				if ( shape.stencil.id.toLowerCase() == 'crud' ) {
+				if ( shape.stencil.id.toLowerCase() == 'embeddedlist' ) {
 					shape.properties.xf_namespace = this.namespace;
 					var bounds = shape.bounds;
 					shape.properties.height = bounds.lowerRight.y - bounds.upperLeft.y;

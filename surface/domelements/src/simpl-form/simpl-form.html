@@ -210,8 +210,8 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 		isTableSelect: function( id ) {
 			return id == 'Tableselect';
 		},
-		isCrud: function( id ) {
-			return id == 'Crud';
+		isEmbeddedList: function( id ) {
+			return id == 'EmbeddedList';
 		},
 		isGridInput: function( id ) {
 			return id == 'Gridinput';
@@ -237,7 +237,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			return r;
 		},
 		isField: function( id ) {
-			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id== "Crud" || id == 'Enumselect' || id == 'Treeselect' || id == 'Upload' || id == 'Custom' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
+			var r = id == 'Input' || id == 'Tableselect' || id == 'Gridinput' || id== "EmbeddedList" || id == 'Enumselect' || id == 'Treeselect' || id == 'Upload' || id == 'Custom' || id == 'Textarea' || id == 'RelatedTo' || id == 'Moduleselector' || id == 'Alert' || id == 'break';
 			return r;
 		},
 		isInputAndBoolean: function( id, xf_type ) {
@@ -359,9 +359,9 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			<tableselect-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" multi-select="[[item.xf_multiselection]]" required="[[item.xf_required]]" height="[[item.height]]" items="[[item.items]]" meta="[[item.meta]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
 			</tableselect-field>
 		</template>
-		<template is="dom-if" if="{{isCrud(item.id)}}">
-			<crud-field field class="flex" entity="{{item.xf_module}}" namespace="[[item.xf_namespace]]" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" multi-select="[[item.xf_multiselection]]" required="[[item.xf_required]]" height="[[item.height]]" items="[[item.items]]" meta="[[item.meta]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
-			</crud-field>
+		<template is="dom-if" if="{{isEmbeddedList(item.id)}}">
+			<embeddedlist-field field class="flex" entity="{{item.xf_module}}" namespace="[[item.xf_namespace]]" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" multi-select="[[item.xf_multiselection]]" required="[[item.xf_required]]" height="[[item.height]]" items="[[item.items]]" meta="[[item.meta]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
+			</embeddedlist-field>
 		</template>
 		<template is="dom-if" if="{{isGridInput(item.id)}}">
 			<gridinput-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" height="[[item.height]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>

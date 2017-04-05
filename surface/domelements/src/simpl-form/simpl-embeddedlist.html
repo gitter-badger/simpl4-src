@@ -22,7 +22,7 @@
 <!--
 CRUD operations for simpl4
 -->
-<dom-module id="simpl-minicrud" flex relative>
+<dom-module id="simpl-embeddedlist" flex relative>
 	<template>
 		<style>
 			:host {
@@ -86,7 +86,7 @@ CRUD operations for simpl4
 	</template>
 	<script>
 		Polymer( {
-			is: 'simpl-minicrud',
+			is: 'simpl-embeddedlist',
 			behaviors: [
 				Polymer.IronA11yKeysBehavior,
 				TranslationsBehavior
@@ -169,7 +169,7 @@ CRUD operations for simpl4
 				this.buttonList = bList;
 			},
 			heightChanged: function() {
-				console.log("minicrud.height:"+this.height);
+				console.log("embeddedlist.height:"+this.height);
 				this.dataTablesOptions = {
 					paging: false,
 					dom: "ft",
@@ -218,7 +218,7 @@ CRUD operations for simpl4
 			},
 			addAction: function() {
 				this.entityName = this.entity;
-				console.log( "minicrud.entity:", this.entity );
+				console.log( "embeddedlist.entity:", this.entity );
 				this.mode = "add";
 				this.$.formid.setData( {} );
 				this.async( function() {
@@ -320,7 +320,7 @@ CRUD operations for simpl4
 						columns.push( fd );
 					}
 				}
-				console.debug( "minicrud.meta:", columns );
+				console.debug( "embeddedlist.meta:", columns );
 				this.meta = columns;
 			},
 			getPackFromEntity: function( entity ) {

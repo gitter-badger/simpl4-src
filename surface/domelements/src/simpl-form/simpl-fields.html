@@ -2318,7 +2318,7 @@
 	</script>
 </dom-module>
 
-<dom-module id="crud-field">
+<dom-module id="embeddedlist-field">
 	<style>
 		.error {
 			color: #d34336;
@@ -2353,7 +2353,7 @@
 	</style>
 	<template>
 		<div class="vertical layout">
-			<simpl-minicrud id="miniId" on-changed="onChanged" height="[[height]]" namespace="[[namespace]]" entity="[[entity]]"></simpl-minicrud>
+			<simpl-embeddedlist id="miniId" on-changed="onChanged" height="[[height]]" namespace="[[namespace]]" entity="[[entity]]"></simpl-embeddedlist>
 			<div class="error layout horizontal center" hidden$="[[!isInvalid]]">
 				<div class="error-text flex auto" role="alert" aria-hidden$="[[!isInvalid]]"></div>
 				<div class="error-text" role="alert" aria-hidden$="[[!isInvalid]]">{{error}}<span>&nbsp;&nbsp;</span></div>
@@ -2363,7 +2363,7 @@
 	</template>
 	<script>
 		Polymer( {
-			is: "crud-field",
+			is: "embeddedlist-field",
 			behaviors: [
 				Polymer.IronFormElementBehavior,
 				Polymer.PaperInputBehavior,
@@ -2401,7 +2401,7 @@
 				this.value = e.detail.data;
 			},
 			entityChanged:function(){
-			  console.log("Field.crud-field.entityChanged:",this.entity+"/"+this.namespace);
+			  console.log("Field.embeddedlist-field.entityChanged:",this.entity+"/"+this.namespace);
 				this.setInvalid( false );
 			},
 			checkConstraints: function() {
