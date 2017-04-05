@@ -36,7 +36,7 @@
 			};
 			env = simpl4.util.Merge.merge( true, data, env );
 			this.saveDisabled = this._isSaveDisabled( env );
-			this._errorMessage=null;
+			this._errorMessage = null;
 			for ( var i = 0, l = this.fields.length; i < l; i++ ) {
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
@@ -79,12 +79,12 @@
 				}
 			}
 			var abuttons = this.$.formdiv.parentNode.querySelectorAll( "xaction-button" );
-			for( var i=0;i< abuttons.length;i++){
-				var ab = abuttons[i];
-				if( ab.xaction == "execute"){
-					if( this.saveDisabled){
-						ab.setAttribute( "disabled", "");
-					}else{
+			for ( var i = 0; i < abuttons.length; i++ ) {
+				var ab = abuttons[ i ];
+				if ( ab.xaction == "execute" ) {
+					if ( this.saveDisabled ) {
+						ab.setAttribute( "disabled", "" );
+					} else {
 						ab.removeAttribute( "disabled" );
 					}
 				}
@@ -113,8 +113,8 @@
 			this._valueChanged();
 		},
 		/**
-		 * validate the form data 
-     *
+		 * validate the form data
+		 *
 		 * @param {Boolean} dontInvalidate   don't invalidate the fields
 		 */
 		validate: function( dontInvalidate ) {
@@ -130,7 +130,7 @@
 				errorList = regula.validate( {
 					elements: elements
 				} );
-				if( dontInvalidate !== true){
+				if ( dontInvalidate !== true ) {
 					errorList.forEach( function( err ) {
 						err.failingElements.forEach( function( elem ) {
 							elem.setInvalid( true );
@@ -146,17 +146,17 @@
 				if ( elements[ i ].isInvalid ) {
 					errorList.push( "Error" );
 				}
-				if( dontInvalidate === true){
-					elements[i].setInvalid(saveInvalid);
+				if ( dontInvalidate === true ) {
+					elements[ i ].setInvalid( saveInvalid );
 				}
 			}
 			if ( errorList && errorList.length > 0 ) {
 				console.log( "form.validate.errorList:", errorList );
 			}
-			this._validateLocal(errorList);
+			this._validateLocal( errorList );
 			return errorList.length == 0;
 		},
-		_validateLocal: function(errorListGlobal) {
+		_validateLocal: function( errorListGlobal ) {
 			var validateExprs = this._form.xf_validate_local;
 			if ( this._isEmpty( validateExprs ) ) return null;
 			var data = this._getData();
@@ -168,31 +168,31 @@
 			env = simpl4.util.Merge.merge( true, data, env );
 			var items = validateExprs.items;
 			var errorListLocal = [];
-			for( var i=0; i< items.length;i++){
-				var item = items[i];
+			for ( var i = 0; i < items.length; i++ ) {
+				var item = items[ i ];
 				var valid = this._maskedEval( item.expr, env ) === false;
-				if( valid == false){
+				if ( valid == false ) {
 					var errormsg = item.errormsg;
 					if ( errormsg && errormsg.match( /^[@%]/ ) ) {
 						errormsg = tr( errormsg.substring( 1 ) );
 					}
-					errorListGlobal.push(errormsg);
-					errorListLocal.push(errormsg);
+					errorListGlobal.push( errormsg );
+					errorListLocal.push( errormsg );
 				}
 			}
 			var e = "";
-			var br="";
-			for( var i=0; i< errorListLocal.length;i++){
-				e += br + errorListLocal[i];	
-				br="<br/>";
+			var br = "";
+			for ( var i = 0; i < errorListLocal.length; i++ ) {
+				e += br + errorListLocal[ i ];
+				br = "<br/>";
 			}
-			this._setGlobalErrorMessage(e);
+			this._setGlobalErrorMessage( e );
 		},
-		_setGlobalErrorMessage:function(msg){
-			this._errorMessage=msg;
+		_setGlobalErrorMessage: function( msg ) {
+			this._errorMessage = msg;
 			this.async( function() {
-				var error = this.querySelector("#globalErrorId");
-				error.innerHTML=msg;
+				var error = this.querySelector( "#globalErrorId" );
+				error.innerHTML = msg;
 			}, 10 );
 		},
 		_filterToArray: function( nodeList, all ) {
@@ -241,13 +241,13 @@
 		},
 		_dataChanged: function() {
 			console.log( "\n-->form._dataChanged.internal:", this.internal );
-			if(this.internal !== true){
+			if ( this.internal !== true ) {
 				this.__dataChanged();
 			}
-			this.internal=false;
+			this.internal = false;
 		},
 		__dataChanged: function() {
-			console.error( "\n-->form._dataChanged:", JSON.stringify(this.data,null,2) );
+			console.trace( "\n-->form._dataChanged:", JSON.stringify( this.data, null, 2 ) );
 			this._whenFieldsReady( ( function() {
 				if ( this.preProcessData ) {
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
@@ -257,7 +257,7 @@
 					simpl4.util.Merge.merge( false, this.data, this.preProcessData );
 					this.preProcessData = null;
 				}
-				console.log( "form._dataChanged.afterPre:", JSON.stringify(this.data,null,2) );
+				console.log( "form._dataChanged.afterPre:", JSON.stringify( this.data, null, 2 ) );
 				this._setData( this.data );
 			} ).bind( this ) );
 		},
@@ -271,7 +271,7 @@
 			}, this );
 		},
 		/**
-		 * set the form data 
+		 * set the form data
 		 */
 		setData: function( data ) {
 			this.resetData = jQuery.extend( {}, data );;
@@ -284,9 +284,9 @@
 			this.fields.forEach( function( field ) {
 				if ( field.setValue == null ) return;
 				field.withoutCheck = true;
-				if ( field.setInvalid ){
-					 field.setInvalid( false );
-					 field.setErrorMessage( null );
+				if ( field.setInvalid ) {
+					field.setInvalid( false );
+					field.setErrorMessage( null );
 				}
 				var fieldData = data[ field.name ];
 				var oldValue = fieldData;
@@ -298,15 +298,15 @@
 					};
 					env = simpl4.util.Merge.merge( true, data, env );
 					fieldData = this._maskedEval( field.expressionIn, env );
-					console.log("expressionIn("+field.name+"\t,"+field.expressionIn+"\t,"+oldValue+ ") -> ",fieldData);
+					console.log( "expressionIn(" + field.name + "\t," + field.expressionIn + "\t," + oldValue + ") -> ", fieldData );
 
 				}
-				field.setValue( fieldData || field.defaultvalue|| null );
+				field.setValue( fieldData || field.defaultvalue || null );
 			}, this );
 			this._valueChanged();
 		},
 		/**
-		 * clear the form data 
+		 * clear the form data
 		 */
 		clearData: function() {
 			this.fields.forEach( function( field ) {
@@ -317,14 +317,14 @@
 			}, this );
 		},
 		/**
-		 * update the form data 
+		 * update the form data
 		 */
 		updateData: function( data ) {
 			this.internal = true;
 			this.data = this.data || {};
 			var keys = Object.keys( data );
 			keys.forEach( ( function( key ) {
-				this.data[key] = data[key];
+				this.data[ key ] = data[ key ];
 				var field = this.fieldsMap[ key ];
 				if ( field ) {
 					field.withoutCheck = true;
@@ -343,7 +343,7 @@
 			return data;
 		},
 		/**
-		 * get the form data 
+		 * get the form data
 		 */
 		getData: function() {
 			var data = simpl4.util.Merge.merge( true, this.data );
@@ -362,7 +362,7 @@
 				env = simpl4.util.Merge.merge( true, data, env );
 				data[ field.name ] = this._maskedEval( field.expressionOut, env );
 
-				console.log("expressionOut("+field.name+"\t,"+field.expressionOut+"\t,"+oldValue+ ") -> ",data[field.name]);
+				console.log( "expressionOut(" + field.name + "\t," + field.expressionOut + "\t," + oldValue + ") -> ", data[ field.name ] );
 			}, this );
 			return data;
 		},
@@ -526,7 +526,7 @@
 			this._preProcessLocal();
 			var dataLoc = this._preData;
 			this.preProcessData = simpl4.util.Merge.merge( true, dataSer, dataLoc );
-			this._preData=null;
+			this._preData = null;
 		},
 		_formNameChanged: function() {
 			this.async( function() {
@@ -557,7 +557,7 @@
 						field.setForm( this );
 					}, this );
 					this.fieldsMap = this._toMap( this.fields );
-					this.fire("form-ready", this );
+					this.fire( "form-ready", this );
 					this._valueChanged();
 					if ( this.resetData == null ) {
 						this.resetData = this._getData();
@@ -566,7 +566,7 @@
 			}, 1 );
 		},
 		/*----------------------------------*/
-		_specChanged: function(  ) {
+		_specChanged: function() {
 			this.fields = [];
 			this.fieldsMap = {};
 			this.shapes = [];
@@ -583,7 +583,7 @@
 					}, this );
 					this.fieldsMap = this._toMap( this.fields );
 					this._valueChanged();
-					this.fire("form-ready", this );
+					this.fire( "form-ready", this );
 					if ( this.resetData == null ) {
 						this.resetData = this._getData();
 					}
@@ -699,8 +699,8 @@
 						}
 					}
 				}
-				if ( _.isEmpty(shape.properties.xf_required)){
-					shape.properties.xf_required="false";
+				if ( _.isEmpty( shape.properties.xf_required ) ) {
+					shape.properties.xf_required = "false";
 				}
 				if ( shape.stencil.id.toLowerCase() == 'textarea' ) {
 					if ( shape.properties.xf_rows == null ) {
@@ -735,13 +735,10 @@
 				if ( shape.stencil.id.toLowerCase() == 'page' ) {
 					var label = shape.properties.xf_label;
 					if ( label && label.match( /^[@%]/ ) ) {
-						shape.properties.label  = tr( label.substring( 1 ) );
+						shape.properties.label = tr( label.substring( 1 ) );
 					}
 				}
-				if ( shape.stencil.id.toLowerCase() == "enumselect" 
-						|| shape.stencil.id.toLowerCase() == "tableselect" 
-						|| shape.stencil.id.toLowerCase() == "treeselect" 
-					) {
+				if ( shape.stencil.id.toLowerCase() == "enumselect" || shape.stencil.id.toLowerCase() == "tableselect" || shape.stencil.id.toLowerCase() == "treeselect" ) {
 					var isTableSelect = shape.stencil.id.toLowerCase() == "tableselect";
 					var isTreeSelect = shape.stencil.id.toLowerCase() == "treeselect";
 					var props = shape.properties;
@@ -755,7 +752,7 @@
 					var varname = props.xf_varname;
 					if ( !this._isEmpty( varname ) ) {
 						props.items = this.variables[ varname ];
-						if( !isTreeSelect){
+						if ( !isTreeSelect ) {
 							props.items = this._doResultMapping( props.items, resultmapping );
 						}
 					} else if ( !this._isEmpty( jsonpath ) ) {
@@ -845,7 +842,7 @@
 				if ( icon == null || icon == "" ) {
 					shape.properties.xf_iconname = ( action == "execute" ) ? "check" : "clear";
 				}
-				if ( this.enterAction==null && enter === true ) {
+				if ( this.enterAction == null && enter === true ) {
 					this.enterAction = action;
 				}
 				var label = shape.properties.xf_label;
@@ -959,6 +956,14 @@
 					} else {
 						msg = tr( "validation." + self._mapKeys( key ) );
 					}
+					for ( var i = 0; params && i < params.length; i++ ) {
+						var param = params[ i ];
+						var val = values[ i + 1 ];
+						if ( ( "Size" == key || "Length" == key ) && i == 1 ) {
+							val = val || "512";
+						}
+						msg = msg.replace( "{" + param + "}", val );
+					}
 					ret += '(message="' + msg + '"';
 					if ( params && params.length > 0 ) {
 						var pkey = params[ 0 ];
@@ -970,10 +975,10 @@
 						if ( params.length > 1 ) {
 							var pkey = params[ 1 ];
 							var val = values[ 2 ];
-							if( val == null || val == ""){
-								if( "Size" == key || "Length" == key){
+							if ( val == null || val == "" ) {
+								if ( "Size" == key || "Length" == key ) {
 									val = "512";
-								}	
+								}
 							}
 							ret += ',' + pkey + '=' + val;
 						}
