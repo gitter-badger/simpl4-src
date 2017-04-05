@@ -197,9 +197,8 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
           if( props.xf_type.startsWith("stencil:")){
             field.stencil.id = props.xf_type.substring(8);
           }
-        }else{
-          props.xf_type = this.getType(col.datatype);
         }
+        props.xf_type = this.getType(col.datatype);
         console.log("Name("+col.name+"):", props.xf_type);
         props.xf_id = col.id || col.name;
         if( field.stencil.id == null){
@@ -212,11 +211,11 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					props.xf_type = 'datetime';
 				}
 				if ( edittype == 'textarea' ) {
-					props.xf_type = 'string';
+					props.xf_type = 'text';
 					field.stencil.id = 'TextArea';
 				}
 				if ( edittype == 'select' ) {
-					props.xf_type = 'string';
+					props.xf_type = 'text';
 					field.stencil.id = 'Enumselect';
 					if( col.selectable_items){
 						try{
