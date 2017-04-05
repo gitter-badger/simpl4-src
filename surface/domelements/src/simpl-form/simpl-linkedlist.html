@@ -1,0 +1,277 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014-2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+
+<!--
+CRUD operations for simpl4
+-->
+<dom-module id="simpl-linkedlist" flex relative>
+	<template>
+		<style>
+			:host {
+			}
+			:host /deep/ #selectDialog {
+				position: fixed;
+				top: 5vh;
+				min-width: 70%;
+				max-width: 70%;
+				max-height: 90%;
+				border-radius: 4px;
+			}
+			@media screen and (max-width: 767px) {
+				:host /deep/ #selectDialog {
+					left: 0vw;
+					min-width: 100%;
+					margin: 0px;
+				}
+			}
+			paper-toast#toast {
+				z-index: 10;
+			}
+			simpl-toast /deep/ paper-toast {
+				white-space: nowrap;
+				padding-top: 10px;
+				padding-bottom: 10px;
+			}
+			simpl-toast /deep/ span {
+				min-width: 450px;
+				padding-right: 25px;
+				font-size: 30px;
+				vertical-align: middle;
+			}
+			simpl-toast /deep/ iron-icon {
+				width: 48px;
+				height: 48px;
+				vertical-align: middle;
+			}
+
+		</style>
+		<div class="layout vertical" style="width:100%;">
+			<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTablesId" on-rows-selected="onRowSelected" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[data]]"> </simpl-datatables>
+			<div class="layout horizontal" style="max-height:24px;margin-bottom:10px;">
+				<template is="dom-repeat" items="{{buttonList}}">
+					<paper-button class="button button_primary ripple" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
+						<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
+				</template>
+			</div>
+		</div>
+		<paper-dialog id="selectDialog" no-cancel-on-outside-click with-backdrop="">
+			<paper-dialog-scrollable>
+				<div class="lyaout vertical flex">
+					<simpl-filter style="margin-bottom:10px;" namespace="{{namespace}}" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
+					<div style="height:20px;"></div>
+					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" collapsable="">
+						<simpl-crudtable id="crudtableId" disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+					</simpl-panel>
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+	</template>
+	<script>
+		Polymer( {
+			is: 'simpl-linkedlist',
+			behaviors: [
+				Polymer.IronA11yKeysBehavior,
+				TranslationsBehavior
+			],
+			properties: {
+				namespace: {
+					value: null,
+					type: String
+				},
+				entity: {
+					value: null,
+					type: String
+				},
+				height: {
+					value: "150",
+					type: String
+				},
+				buttons: {
+					value: 'select,del',
+					type: String
+				},
+				buttonList: {
+					type: String
+				}
+			},
+			observers: [
+				'buttonsChanged(buttons)',
+				'heightChanged(height)',
+				'entityChanged(entity,namespace)'
+			],
+			buttonsChanged: function() {
+				var buttons = {
+					select: {
+						action: this.openSelectDialog,
+						icon: "add",
+						text: tr( 'button.select' ),
+						disabled: false
+					},
+					del: {
+						action: this.delAction,
+						icon: "delete",
+						text: tr( 'button.del' ),
+						disabled: true
+					}
+				}
+				this.buttonDef = buttons;
+				var bList = [];
+				this.buttons.split( "," ).forEach( ( function( name ) {
+					var b = buttons[ name ];
+					b.name = name;
+					bList.push( b );
+				} ).bind( this ) );
+				this.buttonList = bList;
+			},
+			heightChanged: function() {
+				console.log("linkedlist.height:"+this.height);
+				this.dataTablesOptions = {
+					paging: false,
+					dom: "ft",
+					scrollY: this.height+'px'
+				};
+				this.data=[];
+			},
+			getData: function() {
+				return this.data;
+			},
+			setData: function( data ) {
+				this.data = data;
+			},
+			setButtonState: function( name, enabled ) {
+				if ( this.buttonDef == null ) return;
+				this.buttonDef[ name ].disabled = !enabled;
+				for ( var i = 0; i < this.buttonList.length; i++ ) {
+					if ( this.buttonList[ i ].name == name ) {
+						this.set( "buttonList." + i + ".disabled", !enabled );
+					}
+				}
+			},
+			onTap: function( e ) {
+				var src = e.srcElement || e.target;
+				var name = null;
+				while ( src ) {
+					name = src.getAttribute( "name" );
+					if ( name ) break;
+					src = src.parentElement;
+				}
+				if ( name == null ) return;
+				this.buttonDef[ name ].action.call( this );
+			},
+			onRowSelected: function( e ) {
+				this.currentData = e.detail.rows[ 0 ];
+				this.setButtonState( "del", true );
+			},
+			openSelectDialog: function() {
+				this.entityName = this.entity;
+				console.log( "linkedlist.selectOpenAction:", this.entity );
+				this.async( function() {
+					this.$.selectDialog.open();
+				}, 50 );
+			},
+			selectAction: function(e) {
+				this.setButtonState( "del", false );
+				console.log( "linkedlist.selectAction:", e.detail );
+				this.mode = "select";
+				this.changeData("select", e.detail.data);
+			},
+			delAction: function() {
+				this.setButtonState( "del", false );
+				this.changeData("del",this.currentData);
+			},
+			changeData: function(mode, chgData) {
+				this.$.selectDialog.close();
+				var oldData = clone( this.data ) || [];
+				this.data = [];
+
+				if ( mode == "select" ) {
+					oldData.push( chgData );
+				} else if ( mode == "del" ) {
+					var index = _.findIndex( oldData, function( o ) {
+						return o._id == chgData._id;
+					} );
+					oldData.splice( index, 1 );
+				}
+				this.async( function() {
+					this.data = oldData;
+					this.fire( "changed", {
+						data: this.data
+					} );
+				}, 150 );
+			},
+			selectCancelAction: function( e ) {
+				this.setButtonState( "del", false );
+				this.$.formDialog.close();
+			},
+			entityChanged: function() {
+				this.getColumns( this.entity );
+				this._pack = this.getPackFromEntity( this.entity );
+			},
+			getColumns: function( entity ) {
+				console.log( "getColumns:", entity + "/" + this.namespace );
+				try {
+					var em = simpl4.util.EntityManager;
+					var data = em.getEntityViewFields( entity, this.namespace, "main-grid", false );
+					colModel = em.buildColModel( data, this.namespace, entity, "search" );
+					this._buildMeta( colModel, entity );
+				} catch ( e ) {
+					console.error( "getSelectableFields:", e );
+					return;
+				}
+				return colModel;
+			},
+			_buildMeta: function( colMode, entity ) {
+				simpl4.util.MessageManager.installMessages( this.namespace );
+				this.fieldmap = {};
+				var columns = new Array();
+				for ( var f = 0; f < colModel.length; f++ ) {
+					var col = colModel[ f ];
+
+					if ( col.id!="id" ) {
+						var fd = {};
+						fd.label = tr( this.getPackFromEntity( entity ) + "." + this.getSimpleEntityName( entity ) + "." + col.id );
+						fd.title = fd.label;
+						fd[ "data" ] = col.name;
+						columns.push( fd );
+					}
+				}
+				console.debug( "linkedlist.meta:", columns );
+				this.meta = columns;
+			},
+			getHeader:function(entityName){
+				return tr(this.getPackFromEntity(this.entity)+'.'+this.getSimpleEntityName(entityName));
+			},
+			getPackFromEntity: function( entity ) {
+				if ( entity.indexOf( ':' ) >= 0 ) {
+					return entity.split( ':' )[ 0 ];
+				}
+				return "data";
+			},
+			getSimpleEntityName: function( entity ) {
+				if ( entity.indexOf( ':' ) >= 0 ) {
+					return entity.split( ':' )[ 1 ];
+				}
+				return entity;
+			}
+		} );
+
+	</script>
+</dom-module>
