@@ -236,8 +236,9 @@ CRUD operations for simpl4
 				this.$.formid.setData( this.currentData );
 			},
 			saveAction: function() {
-				this._saveAction();
-				this.addAction(true);
+				if(this._saveAction()){
+					this.addAction(true);
+				}
 			},
 			_saveAction: function() {
 				var postServiceData = this.$.formid._postProcessService();
@@ -258,7 +259,7 @@ CRUD operations for simpl4
 				if ( !valid ) {
 					var msg = tr( "widgets.table.form_incomplete" );
 					this.getToast().show( msg, "error", "10000" );
-					return;
+					return false;
 				} else {
 					try {
 						if ( this.mode == 'edit' ) {
@@ -283,7 +284,7 @@ console.log("ret:",ret);
 								msg = tr( "data.form.saved" );
 							}
 							data.id = ret.id;
-							this.$.formid.setData(data);
+							this.$.formid.updateData(data);
 							this.getToast().show( msg, "success", "10000" );
 						}
 					} catch ( e ) {
@@ -297,9 +298,10 @@ console.log("ret:",ret);
 							msg = tr( "data.form.save" ) + ": (" + msg + ")";
 						}
 						this.getToast().show( msg, "error", "10000" );
-						return;
+						return false;
 					}
 				}
+				return true;
 				this.fire( "save-action", {
 					entity: this.entity,
 					namespace: this.namespace
