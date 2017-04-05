@@ -77,7 +77,7 @@ CRUD operations for simpl4
 					<simpl-filter style="margin-bottom:10px;" namespace="{{namespace}}" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
 					<div style="height:20px;"></div>
 					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" collapsable="">
-						<simpl-crudtable id="crudtableId" disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable id="crud2TableId" disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
 			</paper-dialog-scrollable>
@@ -185,7 +185,7 @@ CRUD operations for simpl4
 			},
 			searchAction: function() {
 				this.entityName = this.entity;
-				this.querySelector("#crudtableId").refresh();
+				this.querySelector("#crud2TableId").refresh();
 				this.async( function() {
 					this.$.searchDialog.open();
 				},50 );
@@ -351,7 +351,11 @@ console.log("ret:",ret);
 				console.log( "getIdValue:", entityName + "/", data );
 				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
 				if ( pkList == null || pkList.length === 0 ) {
-					pkList = [ "id" ];
+					if( data["_id"] != null){
+						pkList = [ "_id" ];
+					}else{
+						pkList = [ "id" ];
+					}
 				}
 				var idValue = "";
 				var colon = "";
