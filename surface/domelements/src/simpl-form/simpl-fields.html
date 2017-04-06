@@ -2683,7 +2683,7 @@
 				this.$.linkedObjDialog.close();
 				var t = this._maskedEval( this.props.title_expression, this.data );
 				this.id = this.data.id || this.data._id;
-				this.editValue = t || this.id;
+				this.editValue = t || this.id ||  ".";
 			},
 			cancelAction: function() {
 				this.async( function() {
@@ -2711,8 +2711,9 @@
 						this.editValue = s[ 0 ];
 						this.id = s[ 1 ];
 					}else{
-						this.editValue = v._id;
 						this.data = v;
+						var t = this._maskedEval( this.props.title_expression, this.data );
+						this.editValue = t || this.data._id || this.data.id| ".";
 					}
 				} else {
 					this.editValue = null;
@@ -2843,6 +2844,9 @@
 			],
 			id: null,
 			ready: function() {
+				this.props = simpl4.util.EntityManager.getPropertiesForEntity( this.entity, {
+					namespace: this.namespace
+				} );
 				this.buttonsave= {
 					icon: "undo",
 					position: "form",
@@ -2866,6 +2870,7 @@
 				}
 			},
 			actionCallback: function() {
+				this.$.formid.setData(this.data);
 				this.async( function() {
 					this.$.embeddedObjDialog.open();
 				},50 );
@@ -2877,7 +2882,8 @@
 			takeOverAction: function( e ) {
 				this.data = this.$.formid.getData();
 				this.$.embeddedObjDialog.close();
-				this.editValue =  "XXX";
+				var t = this._maskedEval( this.props.title_expression, this.data );
+				this.editValue = t || this.data._id ||  ".";
 			},
 			cancelAction: function() {
 				this.async( function() {
@@ -2896,8 +2902,9 @@
 			setValue: function( v ) {
 				console.log("setValue("+this.name+"):",v);
 				if ( v != null ) {
-					this.editValue = v._id;
 					this.data = v;
+					var t = this._maskedEval( this.props.title_expression, this.data );
+					this.editValue = t || this.data._id ||  ".";
 				} else {
 					this.editValue = null;
 				}

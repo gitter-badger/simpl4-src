@@ -137,6 +137,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				}
 			}else if( isEmbeddedObj(v.datatype) && data[k] != null){
 				info(this,"EmbeddedObj("+entityName+":"+k+"):"+data[k]);
+				Class clazz = getClass(sc, v.linkedclass);
 				def child = clazz.newInstance(  );
 				_executeUpdateObject(sc, child, data[k] );
 				obj[k] = child;
