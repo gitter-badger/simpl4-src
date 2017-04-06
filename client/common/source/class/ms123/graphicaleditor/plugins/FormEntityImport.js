@@ -112,7 +112,6 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			var cm = new ms123.config.ConfigManager();
 			var model = cm.getEntityModel( entityName, this.facade.storeDesc, "main-form" );
 			var cols = model.attr( "colModel" );
-			console.log( "entities:", cols );
 			var fields = [];
 			this.currentBounds = {
 				lowerRight: {
@@ -125,13 +124,11 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 				}
 			}
 			var shapes = this.getShapes( true );
-			console.log( "sel1:", shapes );
-			console.log( "cols:", cols );
 			for ( var i = 0; i < cols.length; i++ ) {
 				if ( this._hasField( shapes, cols[ i ].name ) ) {
 					continue;
 				}
-				var f = this._createField( cols[ i ], entityName, msgkeyPrefix );
+				var f = this._createField( (i%2)==0 , cols[ i ], entityName, msgkeyPrefix );
 				if ( f ) {
 					fields.push( f );
 				}
@@ -148,7 +145,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			}, this ) );
 			return found;
 		},
-		_createField: function( col, entityName,msgkeyPrefix ) {
+		_createField: function( even, col, entityName,msgkeyPrefix ) {
 			var field = {
 				stencil: {},
 				resourceId: "xxx",
@@ -236,8 +233,13 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 				field.childShapes[ 0 ].resourceId = ms123.util.IdGen.id();
 				field.resourceId = ms123.util.IdGen.id();
 				jQuery.extend( true, field.bounds, this.currentBounds );
-				this.currentBounds.lowerRight.y += 40;
-				this.currentBounds.upperLeft.y += 40;
+				if( !even){
+					field.bounds.lowerRight.x += 200;
+					field.bounds.upperLeft.x += 200;
+				}else{
+					this.currentBounds.lowerRight.y += 50;
+					this.currentBounds.upperLeft.y += 50;
+				}
 
 				return field;
 			}
