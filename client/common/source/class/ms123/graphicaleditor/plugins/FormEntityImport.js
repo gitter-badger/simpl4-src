@@ -117,20 +117,18 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			this.currentBounds = {
 				lowerRight: {
 					"x": 180,
-					"y":54 
+					"y": 54
 				},
 				upperLeft: {
 					x: 30,
 					y: 30
 				}
 			}
-	 		var shapes = this.facade.getSelection();
-			console.log("sel1:",shapes);
-			shapes = this.facade.edit.getAllShapesToConsider(shapes)
-			console.log("sel2:",shapes);
-				console.log("cols:",cols);
+			var shapes = this.getShapes( true );
+			console.log( "sel1:", shapes );
+			console.log( "cols:", cols );
 			for ( var i = 0; i < cols.length; i++ ) {
-				if( this._hasField( shapes, cols[i].name )){
+				if ( this._hasField( shapes, cols[ i ].name ) ) {
 					continue;
 				}
 				var f = this._createField( cols[ i ], msgkeyPrefix );
@@ -138,16 +136,16 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					fields.push( f );
 				}
 			}
-			console.log( "fields:", JSON.stringify( fields, null, 2 ) );
+			//console.log( "fields:", JSON.stringify( fields, null, 2 ) );
 
 			this.facade.edit.editPaste( fields );
 		},
-		_hasField: function(shapes, name){
+		_hasField: function( shapes, name ) {
 			var found = false;
-			shapes.each(qx.lang.Function.bind(function (shape) {
-				var n = shape.properties["oryx-xf_id"];
-				if( n == name) found = true;
-			}, this));
+			shapes.each( qx.lang.Function.bind( function( shape ) {
+				var n = shape.properties[ "xf_id" ];
+				if ( n == name ) found = true;
+			}, this ) );
 			return found;
 		},
 		_createField: function( col, msgkeyPrefix ) {
@@ -187,22 +185,24 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 				}
 			};
 			var props = field.properties;
-			if( col.hidden===true){
+			if ( col.hidden === true ) {
 				return null;
 			}
 			var edittype = col.edittype.toLowerCase();
-			if ( edittype == 'text' || edittype == 'textarea' || edittype == 'checkbox' || edittype=='select') {
-        if( !isNaN( col.datatype)){ //OrientDB
-          props.xf_type =   this.convertOrientType(col.datatype);
-          if( props.xf_type.startsWith("stencil:")){
-            field.stencil.id = props.xf_type.substring(8);
-          }
-        }
-        props.xf_type = this.getType(col.datatype);
-        console.log("Name("+col.name+"):", props.xf_type);
-        props.xf_id = col.id || col.name;
-        if( field.stencil.id == null){
-          field.stencil.id = 'Input';
+			var isOrient = !isNaN( col.datatype );
+			if ( isOrient || edittype == 'text' || edittype == 'textarea' || edittype == 'checkbox' || edittype == 'select' ) {
+				if ( isOrient ) {
+					props.xf_type = this.convertOrientType( col.datatype );
+					if ( props.xf_type.startsWith( "stencil:" ) ) {
+						field.stencil.id = props.xf_type.substring( 8 );
+						props.xf_module = "odata:" + col.linkedclass;
+					}
+				}
+				props.xf_type = this.getType( col.datatype );
+				console.log( "Name(" + col.name + "):", props.xf_type );
+				props.xf_id = col.id || col.name;
+				if ( field.stencil.id == null ) {
+					field.stencil.id = 'Input';
 				}
 				if ( edittype == 'checkbox' ) {
 					props.xf_type = 'boolean';
@@ -217,12 +217,11 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 				if ( edittype == 'select' ) {
 					props.xf_type = 'text';
 					field.stencil.id = 'Enumselect';
-					if( col.selectable_items){
-						try{
-							props.xf_enum = JSON.parse(col.selectable_items._url);
-						}catch(e){
-						}
-						console.log("items:",props.xf_enum);
+					if ( col.selectable_items ) {
+						try {
+							props.xf_enum = JSON.parse( col.selectable_items._url );
+						} catch ( e ) {}
+						console.log( "items:", props.xf_enum );
 					}
 				}
 				props.xf_default = col.default_value !== '' ? col.default_value : null;
@@ -237,32 +236,40 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			}
 			return null;
 		},
-		getType:function(dt){
-			if( dt == "string"){
+		getShapes: function( all ) {
+			if ( all ) {
+				var shape = this.facade.getJSON();
+				return shape.childShapes;
+			} else {
+				return this.facade.getSelection();
+			}
+		},
+		getType: function( dt ) {
+			if ( dt == "string" ) {
 				return "text";
 			}
 			return dt;
 		},
-    convertOrientType:function(type){
-     if( type == "17") type = "integer";
-     if( type == "5") type = "double";
-     if( type == "1") type = "integer";
-     if( type == "3") type = "integer";
-     if( type == "7") type = "string";
-     if( type == "0") type = "boolean";
-     if( type == "21") type = "double";
-     if( type == "19") type = "date";
-     if( type == "6") type = "datetime";
-     if( type == "9") type = "stencil:Form";
-     if( type == "10") type = "stencil:Crud";
-     if( type == "11") type = "stencil:Crud";
-     if( type == "12") type = "stencil:Crud";
-     if( type == "13") type = "stencil:Form";
-     if( type == "14") type = "stencil:Crud";
-     if( type == "15") type = "stencil:Crud";
-     if( type == "16") type = "stencil:Crud";
-     return type;
-    },
+		convertOrientType: function( type ) {
+			if ( type == "17" ) type = "integer";
+			if ( type == "5" ) type = "double";
+			if ( type == "1" ) type = "integer";
+			if ( type == "3" ) type = "integer";
+			if ( type == "7" ) type = "string";
+			if ( type == "0" ) type = "boolean";
+			if ( type == "21" ) type = "double";
+			if ( type == "19" ) type = "date";
+			if ( type == "6" ) type = "datetime";
+			if ( type == "9" ) type = "stencil:EmbeddedObj";
+			if ( type == "10" ) type = "stencil:EmbeddedList";
+			if ( type == "11" ) type = "stencil:EmbeddedList";
+			if ( type == "12" ) type = "string";
+			if ( type == "13" ) type = "stencil:LinkedObj";
+			if ( type == "14" ) type = "stencil:LinkedList";
+			if ( type == "15" ) type = "stencil:LinkedList";
+			if ( type == "16" ) type = "string";
+			return type;
+		},
 		__getResourceUrl: function( name ) {
 			var am = qx.util.AliasManager.getInstance();
 			return am.resolve( "resource/ms123/" + name );
