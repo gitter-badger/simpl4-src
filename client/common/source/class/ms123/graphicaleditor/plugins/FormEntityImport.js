@@ -131,7 +131,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 				if ( this._hasField( shapes, cols[ i ].name ) ) {
 					continue;
 				}
-				var f = this._createField( cols[ i ], msgkeyPrefix );
+				var f = this._createField( cols[ i ], entityName, msgkeyPrefix );
 				if ( f ) {
 					fields.push( f );
 				}
@@ -148,7 +148,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			}, this ) );
 			return found;
 		},
-		_createField: function( col, msgkeyPrefix ) {
+		_createField: function( col, entityName,msgkeyPrefix ) {
 			var field = {
 				stencil: {},
 				resourceId: "xxx",
@@ -191,14 +191,15 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			var edittype = col.edittype.toLowerCase();
 			var isOrient = !isNaN( col.datatype );
 			if ( isOrient || edittype == 'text' || edittype == 'textarea' || edittype == 'checkbox' || edittype == 'select' ) {
+				var datatype = col.datatype;
 				if ( isOrient ) {
-					props.xf_type = this.convertOrientType( col.datatype );
-					if ( props.xf_type.startsWith( "stencil:" ) ) {
+					datatype= this.convertOrientType( col.datatype );
+					if ( datatype.startsWith( "stencil:" ) ) {
 						field.stencil.id = props.xf_type.substring( 8 );
 						props.xf_module = "odata:" + col.linkedclass;
 					}
 				}
-				props.xf_type = this.getType( col.datatype );
+				props.xf_type = this.getType( datatype );
 				console.log( "Name(" + col.name + "):", props.xf_type );
 				props.xf_id = col.id || col.name;
 				if ( field.stencil.id == null ) {
@@ -225,7 +226,13 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					}
 				}
 				props.xf_default = col.default_value !== '' ? col.default_value : null;
-				field.childShapes[ 0 ].properties.xf_text = msgkeyPrefix + props.xf_id;
+				if( msgkeyPrefix =="@" ){
+					var p = ms123.settings.Config.getPackName( entityName);
+					var e = ms123.settings.Config.getEntityName( entityName);
+					field.childShapes[ 0 ].properties.xf_text = "@" + p +"."+ e + "." + props.xf_id;
+				}else{
+					field.childShapes[ 0 ].properties.xf_text = msgkeyPrefix + props.xf_id;
+				}
 				field.childShapes[ 0 ].resourceId = ms123.util.IdGen.id();
 				field.resourceId = ms123.util.IdGen.id();
 				jQuery.extend( true, field.bounds, this.currentBounds );
@@ -255,7 +262,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			if ( type == "5" ) type = "double";
 			if ( type == "1" ) type = "integer";
 			if ( type == "3" ) type = "integer";
-			if ( type == "7" ) type = "string";
+			if ( type == "7" ) type = "text";
 			if ( type == "0" ) type = "boolean";
 			if ( type == "21" ) type = "double";
 			if ( type == "19" ) type = "date";
