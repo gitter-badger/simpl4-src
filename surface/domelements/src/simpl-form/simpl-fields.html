@@ -2937,6 +2937,104 @@
 	</script>
 </dom-module>
 
+<dom-module id="embeddedobj-inline-field">
+	<style>
+		:host {
+			--paper-input-container: {
+				padding: 0px;
+			};
+		}
+		#formid {
+			position:relative;
+			width:100%;
+		}
+
+	</style>
+	<template>
+		<div class="layout horizontal center">
+			<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
+	</template>
+	<script>
+		Polymer( {
+			is: "embeddedobj-inline-field",
+			behaviors: [
+				Polymer.IronFormElementBehavior,
+				Polymer.PaperInputBehavior,
+				Polymer.IronControlState,
+				TranslationsBehavior,
+				FieldBehavior
+			],
+			properties: {
+				namespace: {
+					type: String
+				},
+				entity: {
+					type: String
+				}
+			},
+			observers: [
+				'entityChanged(entity,namespace)'
+			],
+			setFormSpec: function( namespace, entity ) {
+				var formSpec = simpl4FormManager.getCrudForm( entity, namespace );
+				console.log("setFormSpec("+this.name+"):",formSpec);
+				if ( typeof formSpec === 'string' ) {
+					this.formName = formSpec;
+				} else {
+					this.formSpec = [ formSpec ];
+				}
+			},
+			checkConstraints: function() {
+				var valid = this.$.formid.validate();
+				this.setInvalid( !valid );
+			},
+			setInvalid: function( b ) {
+				this.isInvalid = b;
+			},
+			getValue: function( v ) {
+				var val=null;
+				try{
+					val = 	this.$.formid.getData();
+				}catch(e){
+					return null;
+				}
+				console.log("getValue("+this.name+"):",val);
+				return val;
+			},
+			setValue: function( v ) {
+				console.log("setValue("+this.name+"):",v);
+				if ( v != null ) {
+					this.$.formid.setData(v);
+				}else{
+					this.$.formid.setData({});
+				}
+			},
+			namespaceChanged: function() {
+				simpl4.util.MessageManager.installMessages( this.namespace );
+			},
+			entityChanged: function() {
+				console.log("entityChanged("+this.name+"):",this.entity);
+				this.async( function() {
+					if( this.entity == null){
+					  return;
+					}
+					this.setFormSpec( this.namespace, this.entity );
+					this._pack = this.getPack();
+				},10 );
+			},
+			_maskedEval: function( scr, env, def ) {
+				try {
+					return ( new Function( "with(this) { return " + scr + "}" ) ).call( env );
+				} catch ( e ) {
+					console.log( "EmbeddedObjFieldField._maskedEval:" + scr );
+					console.error( "error:" + e );
+				}
+				return def;
+			}
+		} );
+
+	</script>
+</dom-module>
 <!-- ---------------------------------------------------------------- -->
 <dom-module id="db-selector-field">
 	<style>

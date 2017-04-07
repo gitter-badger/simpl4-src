@@ -216,8 +216,11 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 		isLinkedList: function( id ) {
 			return id == 'LinkedList';
 		},
-		isEmbeddedObj: function( id ) {
-			return id == 'EmbeddedObj';
+		isEmbeddedObj: function( item ) {
+			return item.id == 'EmbeddedObj' && (!item.xf_inline || item.xf_inline===false);
+		},
+		isEmbeddedObjInline: function( item ) {
+			return item.id == 'EmbeddedObj' && item.xf_inline;
 		},
 		isGridInput: function( id ) {
 			return id == 'Gridinput';
@@ -383,8 +386,11 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isLinkedObj(item.id)}}">
 			<linkedobj-field field class="flex" name$="{{item.xf_id}}" namespace="{{item.xf_namespace}}" tabindex$="[[item.xf_tabindex]]" entity="{{item.xf_module}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" help$="{{item.help}}" label="{{item.label}}"></linkedobj-field>
 		</template>
-		<template name="{{item.xf_id}}" is="dom-if" if="{{isEmbeddedObj(item.id)}}">
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isEmbeddedObj(item)}}">
 			<embeddedobj-field field class="flex" name$="{{item.xf_id}}" namespace="{{item.xf_namespace}}" tabindex$="[[item.xf_tabindex]]" entity="{{item.xf_module}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" help$="{{item.help}}" label="{{item.label}}"></embeddedobj-field>
+		</template>
+		<template name="{{item.xf_id}}" is="dom-if" if="{{isEmbeddedObjInline(item)}}">
+			<embeddedobj-inline-field field class="flex" name$="{{item.xf_id}}" namespace="{{item.xf_namespace}}" tabindex$="[[item.xf_tabindex]]" entity="{{item.xf_module}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" help$="{{item.help}}" label="{{item.label}}"></embeddedobj-inline-field>
 		</template>
 		<template is="dom-if" if="{{isModuleSelector(item.id)}}">
 			<db-selector-field field class="flex" name$="{{item.xf_id}}" namespace="{{item.xf_namespace}}" tabindex$="[[item.xf_tabindex]]" fieldlist="{{item.xf_fieldlist}}" entity="{{item.xf_module}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" help$="{{item.help}}" label="{{item.label}}"></db-selector-field>
