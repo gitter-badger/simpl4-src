@@ -138,6 +138,7 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			this.facade.edit.editPaste( fields );
 		},
 		_hasField: function( shape, name ) {
+			if( !shape) return false;
 			var n = shape.properties[ "xf_id" ];
 			if ( n == name ) {
 				return true;
