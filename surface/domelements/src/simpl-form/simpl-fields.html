@@ -68,6 +68,7 @@
 			this.form = form;
 		},
 		getPack:function(){
+      if( this.form == null) return null;
 			var pack = this.form.pack;
 			return pack;
 		},
@@ -2625,7 +2626,7 @@
 				<div class="lyaout vertical flex">
 					<simpl-filter style="margin-bottom:10px;" namespace="{{namespace}}" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
 					<div style="height:20px;"></div>
-					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" collapsable="">
+					<simpl-panel bgcolor="black" heading="[[getHeader(_entityName)]]" collapsable="">
 						<simpl-crudtable disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="cancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
@@ -2669,6 +2670,7 @@
 				} );
 			},
 			actionCallback: function() {
+				this._entityName = this.entityName;
 				this.async( function() {
 					this.$.linkedObjDialog.open();
 				},50 );
@@ -2869,6 +2871,7 @@
 				}
 			},
 			actionCallback: function() {
+				this._pack = this.getPack();
 				this.$.formid.setData(this.data);
 				this.async( function() {
 					this.$.embeddedObjDialog.open();
