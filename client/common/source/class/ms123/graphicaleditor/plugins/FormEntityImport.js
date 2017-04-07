@@ -123,12 +123,12 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					y: 30
 				}
 			}
-			var shapes = this.getShapes( true );
+			var shapes = this.getShapes();
 			for ( var i = 0; i < cols.length; i++ ) {
-				if ( this._hasField( shapes, cols[ i ].name ) ) {
+				if ( this._hasField( shapes[ 0 ], cols[ i ].name ) ) {
 					continue;
 				}
-				var f = this._createField( (i%2)==0 , cols[ i ], entityName, msgkeyPrefix );
+				var f = this._createField( ( i % 2 ) == 0, cols[ i ], entityName, msgkeyPrefix );
 				if ( f ) {
 					fields.push( f );
 				}
@@ -137,15 +137,19 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 
 			this.facade.edit.editPaste( fields );
 		},
-		_hasField: function( shapes, name ) {
-			var found = false;
-			shapes.each( qx.lang.Function.bind( function( shape ) {
-				var n = shape.properties[ "xf_id" ];
-				if ( n == name ) found = true;
-			}, this ) );
-			return found;
+		_hasField: function( shape, name ) {
+			var n = shape.properties[ "xf_id" ];
+			if ( n == name ) {
+				return true;
+			}
+			var childShapes = shape.childShapes;
+			for ( var i = 0; i < childShapes.length; i++ ) {
+				var ret = this._hasField( childShapes[ i ], name );
+				if ( ret === true ) return true;
+			}
+			return false;
 		},
-		_createField: function( even, col, entityName,msgkeyPrefix ) {
+		_createField: function( even, col, entityName, msgkeyPrefix ) {
 			var field = {
 				stencil: {},
 				resourceId: "xxx",
@@ -190,9 +194,9 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			if ( isOrient || edittype == 'text' || edittype == 'textarea' || edittype == 'checkbox' || edittype == 'select' ) {
 				var datatype = col.datatype;
 				if ( isOrient ) {
-					datatype= this.convertOrientType( col.datatype );
+					datatype = this.convertOrientType( col.datatype );
 					if ( datatype.startsWith( "stencil:" ) ) {
-						field.stencil.id = props.xf_type.substring( 8 );
+						field.stencil.id = datatype.substring( 8 );
 						props.xf_module = "odata:" + col.linkedclass;
 					}
 				}
@@ -223,20 +227,20 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 					}
 				}
 				props.xf_default = col.default_value !== '' ? col.default_value : null;
-				if( msgkeyPrefix =="@" ){
-					var p = ms123.settings.Config.getPackName( entityName);
-					var e = ms123.settings.Config.getEntityName( entityName);
-					field.childShapes[ 0 ].properties.xf_text = "@" + p +"."+ e + "." + props.xf_id;
-				}else{
+				if ( msgkeyPrefix == "@" ) {
+					var p = ms123.settings.Config.getPackName( entityName );
+					var e = ms123.settings.Config.getEntityName( entityName );
+					field.childShapes[ 0 ].properties.xf_text = "@" + p + "." + e + "." + props.xf_id;
+				} else {
 					field.childShapes[ 0 ].properties.xf_text = msgkeyPrefix + props.xf_id;
 				}
 				field.childShapes[ 0 ].resourceId = ms123.util.IdGen.id();
 				field.resourceId = ms123.util.IdGen.id();
 				jQuery.extend( true, field.bounds, this.currentBounds );
-				if( !even){
+				if ( !even ) {
 					field.bounds.lowerRight.x += 200;
 					field.bounds.upperLeft.x += 200;
-				}else{
+				} else {
 					this.currentBounds.lowerRight.y += 50;
 					this.currentBounds.upperLeft.y += 50;
 				}
@@ -245,13 +249,9 @@ qx.Class.define( "ms123.graphicaleditor.plugins.FormEntityImport", {
 			}
 			return null;
 		},
-		getShapes: function( all ) {
-			if ( all ) {
-				var shape = this.facade.getJSON();
-				return shape.childShapes;
-			} else {
-				return this.facade.getSelection();
-			}
+		getShapes: function( ) {
+			var shape = this.facade.getJSON();
+			return shape.childShapes;
 		},
 		getType: function( dt ) {
 			if ( dt == "string" ) {
