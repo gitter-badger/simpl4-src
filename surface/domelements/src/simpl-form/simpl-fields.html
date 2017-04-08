@@ -2536,9 +2536,11 @@
 			},
 			setValue: function( v ) {
 				this.value = v;
+				console.log("setValue("+this.entity+","+this.name+"):",this.value);
 				this.querySelector( "#miniId" ).setData(v);
 			},
 			getValue: function() {
+				console.log("getValue("+this.entity+","+this.name+"):",this.value);
 				return this.value;
 			},
 			setErrorMessage: function( message ) {
@@ -2565,6 +2567,7 @@
 		:host /deep/ #linkedObjDialog {
 			position:fixed;
 			top: 5vh;
+			left: 15%;
 			min-width: 70%;
 			max-width: 70%;
 			max-height:90%;
@@ -2693,7 +2696,7 @@
 			},
 			editValueChanged: function() {
 				if ( this.editValue ) {
-					if( "odata" == this.pack){
+					if( "odata" == this.getPack()){
 						this.value = this.data;
 					}else{
 						this.value = this.editValue + "/" + this.id;
@@ -2701,11 +2704,15 @@
 				} else {
 					this.value = null;
 				}
-				console.log("editValueChanged:",this.value);
+				console.log("editValueChanged("+this.getPack()+","+this.entityName+","+this.name+"):",this.value);
 				this.fire( 'value-changed', this );
 			},
+			getValue: function( v ) {
+				console.log("getValue("+this.entityName+","+this.name+"):",this.value);
+				return this.value;
+			},
 			setValue: function( v ) {
-				console.log("setValue("+this.name+"):",v);
+				console.log("setValue("+this.entityName+","+this.name+"):",v);
 				if ( v != null ) {
 					if( _.isString(v)){
 						var s = v.split( "/" );
