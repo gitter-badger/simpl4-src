@@ -85,7 +85,7 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 		List<Map> retList = new ArrayList();
 		for (Map map : entTypes) {
 			Object enabled = map.get("enabled");
-			String mn = m_inflector.getEntityName(map.get("name"));
+			String mn = m_inflector.getEntityNameCamelCase(map.get("name"));
 			info(this, "sdesc:" + sdesc);
 			info(this, "map:" + map);
 			info(this, "Permission:" + m_permissionService.hasEntityPermissions(sdesc, mn, "read"));
@@ -105,7 +105,7 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 			String type = _type != null ? _type : "all";
 			Object[] member = new Object[3];
 			member[0] = mainEntity;
-			member[1] = m_inflector.getEntityName(mainEntity);
+			member[1] = m_inflector.getEntityNameCamelCase(mainEntity);
 			member[2] = mainEntity;
 			Map tree = _getEntitySubTree(sdesc, (String) member[1], member, 0, maxlevel, pathid, listResolved, type, userData);
 			return tree;
@@ -147,7 +147,7 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 		node.put(ENTITY, entityName);
 		node.put("name", StoreDesc.getSimpleEntityName((String) member[1]));
 		node.put("write", m_permissionService.hasEntityPermissions(sdesc, entityName, "write"));
-		node.put("title", (sdesc.getPack() + "." + m_inflector.getEntityName(StoreDesc.getSimpleEntityName((String) member[1]))));
+		node.put("title", (sdesc.getPack() + "." + m_inflector.getEntityNameCamelCase(StoreDesc.getSimpleEntityName((String) member[1]))));
 		Map objNode = null;
 		if ((collection || level == 20) && listResolved) {
 			objNode = getNodeWithSingularNames(node, entityName, path, pathid);
