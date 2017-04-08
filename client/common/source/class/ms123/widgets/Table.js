@@ -760,6 +760,9 @@ qx.Class.define('ms123.widgets.Table', {
 			this._setPrevNextButtons(true);
 			if (this._loadBeforeEdit) {
 				var completed = function (map) {
+					if( map ){
+						map.id = map.id || map._id;
+					}
 					this._editForm.beforeEdit({
 						storeDesc: this.__storeDesc,
 						parentData: this._parentData,
@@ -808,6 +811,11 @@ qx.Class.define('ms123.widgets.Table', {
 				var crows = 0;
 				//var data = e.getContent();
 				var data = e;
+				if( data && data.rows && data.rows.length > 0){
+					for(var k=0; k < data.rows.length;k++){
+						data.rows[k].id = data.rows[k].id || data.rows[k]._id;
+					}
+				}
 				this.tableModel.removeRows(0, this.tableModel.getRowCount());
 				this.records = data.records;
 				if (this.records == 0) {
@@ -1139,6 +1147,9 @@ qx.Class.define('ms123.widgets.Table', {
 		__fillForm: function (form, map) {
 			var self = this;
 			var completed = function (data) {
+				if( data ){
+					data.id = data.id || data._id;
+				}
 				form.beforeEdit({
 					storeDesc: self.__storeDesc,
 					parentData: self._parentData,
