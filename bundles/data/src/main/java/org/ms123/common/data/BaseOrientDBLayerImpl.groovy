@@ -70,10 +70,10 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				//info(this,"Simple("+entityName+":"+k+"):"+obj[k]);
 				cleanData[k] = obj[k];
 			}else if( isObj(v.datatype) && obj[k] != null){
-				info(this,"Obj("+entityName+":"+k+"):"+data[k]);
+				info(this,"Obj("+entityName+":"+k+"):"+obj[k]);
 				cleanData[k] = _objToMap(sc, obj[k]);
 			}else if( isList( v.datatype ) && obj[k] != null){
-				info(this,"List("+entityName+":"+k+"):"+data[k]);
+				info(this,"List("+entityName+":"+k+"):"+obj[k]);
 				def mapList = [];
 				for( Object child : obj[k] ){
 					mapList.add( _objToMap(sc,child) );
