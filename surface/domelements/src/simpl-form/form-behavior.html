@@ -155,8 +155,7 @@
 			if ( errorList && errorList.length > 0 ) {
 				console.log( "form.validate.errorList:", errorList );
 			}
-//			this._validateLocal( errorList );
-				console.log( "form.validate:", (errorList.length==0) );
+			this._validateLocal( errorList );
 			return errorList.length == 0;
 		},
 		_validateLocal: function( errorListGlobal ) {
@@ -953,8 +952,8 @@
 			}
 			var mapping = resultmapping.items;
 			for ( var i = 0; i < items.length; i++ ) {
-				var selectionObject = {};
 				var item = items[ i ];
+				var selectionObject = clone(item);
 				for ( var j = 0; j < mapping.length; j++ ) {
 					var _mapping = mapping[ j ].mapping;
 					var resexpr = mapping[ j ].resultexpr;
