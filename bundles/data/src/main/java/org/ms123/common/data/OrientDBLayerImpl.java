@@ -356,7 +356,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
 			String where = qb.getWhere();
 			Class clazz = getClass(sessionContext, entityName);
-			List<Map> rows = executeQuery(clazz, this.inflector.getClassNameCamelCase(StoreDesc.getSimpleEntityName(entityName)), where);
+			List<Map> rows = executeQuery(sessionContext, clazz, this.inflector.getClassNameCamelCase(StoreDesc.getSimpleEntityName(entityName)), where);
 			info(this, "layer.rows:" + rows);
 			retMap.put("rows", rows);
 		} catch (Exception e) {

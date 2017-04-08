@@ -37,6 +37,7 @@ import org.ms123.common.data.api.SessionContext;
 
 
 import groovy.transform.CompileStatic;
+import groovy.transform.TypeCheckingMode
 
 import java.io.File;
 import static com.jcabi.log.Logger.info;
@@ -49,18 +50,47 @@ import static com.jcabi.log.Logger.debug;
 //@groovy.transform.CompileStatic
 abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLayer{
 
-	private Inflector inflector = Inflector.getInstance();
-	public List<Map> executeQuery(Class clazz,String className, String where){
+	protected Inflector inflector = Inflector.getInstance();
+	public List<Map> executeQuery(SessionContext sc, Class clazz,String className, String where){
 		info(this,"executeQuery.sql:"+"select from "+className + " where "+ where);
-		List list = clazz.graphQueryMap("select from "+className + " where "+ where,false);
-		info(this,"List:"+list);
-		return list;
+		List list = clazz.graphQuery("select from "+className + " where "+ where,false);
+		List result = [];
+		list.each{ obj ->
+			result.add( _objToMap( sc, obj));
+		}
+		info(this,"List:"+result);
+		return result;
 	}
+	protected Map _objToMap(SessionContext sc, Object obj ){
+		def entityName = this.inflector.lowerFirst(obj.getClass().getSimpleName());
+		Map fields = sc.getPermittedFields(entityName, "read");
+		def cleanData = [:];
+		fields.each{ k, v ->
+			if( isSimple( v.datatype ) && obj[k] != null){
+				//info(this,"Simple("+entityName+":"+k+"):"+obj[k]);
+				cleanData[k] = obj[k];
+			}else if( isObj(v.datatype) && obj[k] != null){
+				info(this,"Obj("+entityName+":"+k+"):"+data[k]);
+				cleanData[k] = _objToMap(sc, obj[k]);
+			}else if( isList( v.datatype ) && obj[k] != null){
+				info(this,"List("+entityName+":"+k+"):"+data[k]);
+				def mapList = [];
+				for( Object child : obj[k] ){
+					mapList.add( _objToMap(sc,child) );
+				}
+				cleanData[k] = mapList;
+			}
+		}
+		cleanData["_id"] = obj.getId().toString();
+		cleanData["@class"] = obj.vertex.getRecord().getClassName();
+		return cleanData;
+	}
+
 	public Map executeInsertObject(SessionContext sc, String entityName,Map data){
 		def obj = _executeInsertObject(sc, entityName, data);
 		return [ id : obj.getIdentity() ];
 	}
-	public Object _executeInsertObject(SessionContext sc, String entityName,Map data){
+	protected Object _executeInsertObject(SessionContext sc, String entityName,Map data){
 		Map fields = sc.getPermittedFields(entityName, "write");
 		def cleanData = [:];
 		fields.each{ k, v ->
@@ -114,7 +144,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		return [ id : id ];
 	}
 
-	public Map _executeUpdateObject(SessionContext sc, Object obj, Map data){
+	protected Map _executeUpdateObject(SessionContext sc, Object obj, Map data){
 		if( obj == null){
 			info(this,"_executeUpdateObject is null:"+data);
 			return;
@@ -182,7 +212,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		Map row = clazz.graphQueryMap("select from "+id,true);
 		return row;
 	}
-	public Object _getObject(Class clazz,String id){
+	protected Object _getObject(Class clazz,String id){
 		def obj = clazz.graphQuery("select from "+id,true);
 		info(this,"_getObject("+id+"):"+obj);
 		return obj;
@@ -199,6 +229,10 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		def list = ["15"]
 		return list.contains( dt );
 	}
+	def isList ( dt ){
+		def list = ["10", "11", "14", "15"]
+		return list.contains( dt );
+	}
 
 	def isEmbeddedObj( def dt ){
 		def list = ["9"]
@@ -213,11 +247,17 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		return list.contains( dt );
 	}
 
+	def isObj ( dt ){
+		def list = ["9", "13"]
+		return list.contains( dt );
+	}
+
 	def isSimple( def dt ){
 		def simpleList = ["1", "2", "3", "4", "5", "6", "7", "17", "19", "21"]
 		return simpleList.contains( dt );
 	}
 }
+
 
 
 
