@@ -382,6 +382,9 @@ console.log("ret:",ret);
 				} else {
 					this.formSpec = [ formSpec ];
 				}
+				this.async( function() {
+					this.$.formid.setData( {} );
+				},5 );
 			},
 			getFormSpec: function( item ) {
 				return [ simpl4FormManager.getCrudForm( item.entity, item.namespace || this.namespace ) ];
