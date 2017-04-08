@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.store.StoreDesc;
+import static org.apache.commons.lang.StringUtils.countMatches;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -60,7 +61,13 @@ public class OrientDBSelectBuilder extends JPASelectBuilder implements SelectBui
 		entityName = m_queryBuilder.getEntityForPath(entityName);
 		Map configMap = m_queryBuilder.getPermittedFields(StoreDesc.getFqEntityName(entityName,m_pack));
 		String fieldname = (f.length == 2) ? f[1] : fullfieldname;
+		info(this,"fullfieldname:"+fullfieldname);
+		if( fullfieldname.indexOf("$") < 0 && countMatches(fullfieldname,".") == 1){
+			fullfieldname = fullfieldname.replace(".","$");	
+			info(this,"fullfieldname1:"+fullfieldname);
+		}
 		fieldname = fullfieldname.substring( fullfieldname.indexOf("$")+1 ).replace("$",".");;
+		info(this,"fieldname2:"+fieldname);
 		Map c = (Map) configMap.get(fieldname.substring(fieldname.lastIndexOf(".")+1));
 		if (fieldname.equals("id")) {
 			c = new HashMap();

@@ -44,7 +44,7 @@ public class OrientDBQueryBuilder extends QueryBuilder {
 					info(this, "getLinkedClass(" + clazz + "," + path[i] + "):" + clazz);
 				}
 				int dot = clazz.lastIndexOf(".");
-				String entityname = m_inflector.getEntityName(clazz.substring(dot + 1));
+				String entityname = m_inflector.getEntityNameCamelCase(clazz.substring(dot + 1));
 				info(this, "entityname:" + entityname);
 				return entityname;
 			} else {
