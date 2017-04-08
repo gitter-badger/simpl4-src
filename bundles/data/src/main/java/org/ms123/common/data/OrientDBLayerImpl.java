@@ -354,7 +354,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		try {
 			Map fieldSets = this.settingService.getFieldSets(config, sdesc.getNamespace(), entityName);
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
-			String where = qb.getWhere();
+			String where = qb.getWhere() + getOrderBy(params);
 			Class clazz = getClass(sessionContext, entityName);
 			List<Map> rows = executeQuery(sessionContext, clazz, this.inflector.getClassNameCamelCase(StoreDesc.getSimpleEntityName(entityName)), where);
 			info(this, "layer.rows:" + rows);
@@ -365,6 +365,19 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 			orientGraph.shutdown();
 		}
 		return retMap;
+	}
+
+	private String getOrderBy(Map params) {
+		String orderBy = "";
+		if (params.get("orderby") != null && !"".equals(params.get("orderby"))) {
+			String oby = (String)params.get("orderby");
+			if (oby.indexOf(".") == -1) {
+				orderBy = " order by " + oby;
+			} else {
+				orderBy = " order by " + oby.substring(oby.indexOf(".")+1);
+			}
+		}
+		return orderBy;
 	}
 
 	public Map querySql(SessionContext sessionContext, StoreDesc sdesc, Map params, String sql) {
