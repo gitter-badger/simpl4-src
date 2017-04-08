@@ -653,10 +653,19 @@
 			if (shouldValidate(this, params)) {
 				this.value = this.value ? this.value.toString() : "";
 				var value = this.value.replace(/\s/g, "");
-				var parts = value.split(/\./);
+				var parts = null;
+				if( value.indexOf(",") >= 0){
+					parts = value.split(/,/);
+				}else{
+					parts = value.split(/\./);
+				}
+				var error = false;
+				for( var i=0; i < parts.length;i++){
+					error = parts[i].match(/^[0-9]+$/) == null;
+					if( error) break;
+				}
 				result = false;
-
-				if (value.length > 0) {
+				if (!error && value.length > 0) {
 
 					if (parts.length == 1) {
 						parts[1] = "";
@@ -672,9 +681,7 @@
 						result = result && parts[1].length <= params["fraction"];
 					}
 				}
-
 			}
-
 			return result;
 		},
 
