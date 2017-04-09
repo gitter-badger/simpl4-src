@@ -318,6 +318,22 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 	//query 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+	public Map querySql(SessionContext sessionContext, StoreDesc sdesc, Map params, String sql){
+		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
+		OrientGraph orientGraph = factory.getTx();
+		try {
+			Class clazz = (Class)params.get("class");
+			List<Map> rows =  executeQuery(sessionContext,clazz,clazz.getSimpleName(),sql);
+			Map map = new HashMap();
+			map.put("rows",rows);
+			return map;
+		} finally {
+			orientGraph.shutdown();
+		}
+	}
+
+
 	public Map query(Map params, StoreDesc sdesc, String entityName) {
 		return query(params, sdesc, entityName, null, null);
 	}
@@ -380,10 +396,6 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		return orderBy;
 	}
 
-	public Map querySql(SessionContext sessionContext, StoreDesc sdesc, Map params, String sql) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.querySql");
-	}
-
 	public Map getObjectGraph(StoreDesc sdesc, String entityName, String id) {
 		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.getObjectGraph");
 	}
@@ -393,7 +405,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public synchronized SessionContext getSessionContext(String namespace) {
-		return getSessionContext(StoreDesc.getNamespaceData(namespace));
+		return getSessionContext(StoreDesc.getNamespaceData(namespace,"odata"));
 	}
 
 	public synchronized SessionContext getSessionContext(StoreDesc sdesc) {
@@ -442,34 +454,34 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 
 	/************************************ C O N V I N I E N T *************************************************/
 	public Object getObjectById(String namespace, String entity, Object id) {
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"odata");
 		SessionContext sessionContext = getSessionContext(sdesc);
 		Class clazz = sessionContext.getClass(sdesc, entity);
 		return sessionContext.getObjectById(clazz, id);
 	}
 
 	public Object getObjectByFilter(String namespace, String entity, String filter) {
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"odata");
 		SessionContext sessionContext = getSessionContext(sdesc);
 		Class clazz = sessionContext.getClass(sdesc, entity);
 		return sessionContext.getObjectByFilter(clazz, filter);
 	}
 
 	public List<Object> getObjectsByFilter(String namespace, String entity, String filter) {
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"odata");
 		SessionContext sessionContext = getSessionContext(sdesc);
 		Class clazz = sessionContext.getClass(sdesc, entity);
 		return sessionContext.getObjectsByFilter(clazz, filter);
 	}
 
 	public Object getObjectByNamedFilter(String namespace, String name, Map<String, Object> fparams) {
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"odata");
 		SessionContext sessionContext = getSessionContext(sdesc);
 		return sessionContext.getObjectByNamedFilter(name, fparams);
 	}
 
 	public List<Object> getObjectsByNamedFilter(String namespace, String name, Map<String, Object> fparams) {
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"odata");
 		SessionContext sessionContext = getSessionContext(sdesc);
 		return sessionContext.getObjectsByNamedFilter(name, fparams);
 	}

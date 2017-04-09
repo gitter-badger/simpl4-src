@@ -416,23 +416,28 @@ public class OrientDBSessionContextImpl extends BaseOrientDBSessionContextImpl i
 	}
 
 	public List getObjectsByFilter(Class clazz, String filter) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getObjectsByFilter");
+		Map map = new HashMap();
+		map.put("class", clazz);
+		Map res = this.dataLayer.querySql(this,this.sdesc,map,filter);
+		return (List)res.get("rows");
 	}
 
 	public Map deleteObjectById(String entityName, String id) throws Exception {
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.deleteObjectById");
+		return this.dataLayer.deleteObject(this, null, entityName, id);
 	}
 
 	public Map getObjectMapById(String entityName, String id) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getObjectMapById");
+		return this.dataLayer.getObject(this.sdesc, entityName, id);
 	}
 
 	public Map insertObjectMap(Map data, String entityName) throws Exception {
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.insertObjectMap");
+		return this.dataLayer.insertObject(this,data, entityName);
 	}
 
 	public Map updateObjectMap(Map data, String entityName, String id) throws Exception {
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.updateObjectMap");
+		Map hints = new HashMap();
+		hints.put("create", false);
+		return this.dataLayer.updateObject(this,data, hints, entityName,id);
 	}
 
 	public void retrieve(Object o) {
