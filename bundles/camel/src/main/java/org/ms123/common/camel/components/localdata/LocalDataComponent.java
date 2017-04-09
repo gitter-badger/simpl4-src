@@ -33,6 +33,7 @@ import org.apache.camel.CamelContext;
 public class LocalDataComponent extends DefaultComponent {
 
 	private DataLayer m_dataLayer;
+	private DataLayer m_dataLayerOrientDb;
 
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
 		Endpoint endpoint = new LocalDataEndpoint(uri, this);
@@ -44,13 +45,20 @@ public class LocalDataComponent extends DefaultComponent {
 	public void setCamelContext(CamelContext context) {
 		super.setCamelContext(context);
 		m_dataLayer = getByType(context, DataLayer.class);
+		m_dataLayerOrientDb = getByName( context, DataLayer.class, "dataLayerOrientdb");
 	}
 
 	private <T> T getByType(CamelContext ctx, Class<T> kls) {
 		return kls.cast(ctx.getRegistry().lookupByName(kls.getName()));
 	}
+	private <T> T getByName(CamelContext ctx, Class<T> kls, String name) {
+		return kls.cast(ctx.getRegistry().lookupByName( name ));
+	}
 
 	protected DataLayer getDataLayer() {
 		return m_dataLayer;
+	}
+	protected DataLayer getDataLayerOrientDB() {
+		return m_dataLayerOrientDb;
 	}
 }

@@ -329,8 +329,9 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 				if (isEmpty(objectId)) {
 					throw new RuntimeException("LocalDataProducer.doFindById:no \"objectId\" given");
 				}
-				info(this, "doFindById(" + objectId + ")");
+				info(this, "doFindById(" + objectId + "):"+sc);
 				Object res = sc.getObjectMapById(entityType, objectId);
+				info(this, "doFindById(" + objectId + "):"+res);
 				Message resultMessage = prepareResponseMessage(exchange, operation);
 				ExchangeUtils.setDestination(m_destination, res, exchange);
 				return;
@@ -384,6 +385,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			}
 		} catch (Exception e) {
 			ex = e;
+			processAndTransferResult(null, exchange, ex);
 		}
 	}
 
@@ -662,11 +664,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		} else {
 			namespace = ExchangeUtils.getParameter(m_namespace, exchange, String.class, NAMESPACE);
 		}
-		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
-		if (sdesc == null) {
-			throw new RuntimeException("LocalDataProducer.namespace:" + namespace + " not found");
-		}
-		SessionContext sc = m_dataLayer.getSessionContext(sdesc);
+		SessionContext sc = m_dataLayer.getSessionContext(namespace);
 		return sc;
 	}
 

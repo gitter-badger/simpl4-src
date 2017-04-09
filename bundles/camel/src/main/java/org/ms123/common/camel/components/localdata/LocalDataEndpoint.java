@@ -56,6 +56,7 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 
 	private String m_relation;
 	private Boolean m_noUpdate=false;
+	private Boolean m_orientdb=false;
 	private Boolean m_disableStateSelect=false;
 	private String m_lookupRelationObjectExpr;
 	private String m_lookupUpdateObjectExpr;
@@ -131,6 +132,12 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	}
 	public void setDisableStateSelect(boolean nou) {
 		m_disableStateSelect=nou;
+	}
+	public Boolean isOrientdb() {
+		return m_orientdb;
+	}
+	public void setOrientdb(boolean nou) {
+		m_orientdb=nou;
 	}
 	public Boolean isNoUpdate() {
 		return m_noUpdate;
@@ -230,7 +237,11 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	}
 
 	protected DataLayer getDataLayer() {
-		return m_component.getDataLayer();
+		if( isOrientdb()){
+			return m_component.getDataLayerOrientDB();
+		}else{
+			return m_component.getDataLayer();
+		}
 	}
 
 	public boolean isSingleton() {

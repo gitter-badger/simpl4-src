@@ -20,6 +20,7 @@ package org.ms123.common.camel;
 
 import java.util.EventObject;
 import java.util.Hashtable;
+import java.util.Collection;
 import org.apache.camel.builder.DefaultErrorHandlerBuilder;
 import org.apache.camel.CamelContext;
 import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
@@ -60,6 +61,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.system.tm.TransactionService;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import java.util.Map;
 import java.util.HashMap;
 import org.slf4j.Logger;
@@ -118,6 +120,19 @@ public class CamelContextBuilder {
 		sr.put("deepzoom", new DeepZoomComponent());
 		sr.put("scpevent", new ScpEventComponent());
 		sr.put("jndiContext", jndiContext);
+
+		Collection<ServiceReference<DataLayer>> srList	=	bc.getServiceReferences(DataLayer.class, "(kind=orientdb)");
+		info("dataLayerOrientdb.srList:"+srList);
+		DataLayer orient = null;
+		if (srList != null && srList.size()>=1) {
+			orient = bc.getService(srList.iterator().next());
+		}
+		info("dataLayerOrientdb:"+orient);
+		if (orient == null) {
+			throw new RuntimeException("CamelContextBuilder.Cannot resolve service:org.ms123.common.camel.api.DataLayer(Orientdb)");
+		}
+		sr.put("dataLayerOrientdb", orient);
+
 		TransactionService ts = (TransactionService) or.lookupByName(TransactionService.class.getName());
 		sr.put(org.springframework.transaction.PlatformTransactionManager.class.getName(), ts.getPlatformTransactionManager());
 		createTransactionPolicies(ts.getPlatformTransactionManager(), sr);
