@@ -67,7 +67,6 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		def cleanData = [:];
 		fields.each{ k, v ->
 			if( isSimple( v.datatype ) && obj[k] != null){
-				//info(this,"Simple("+entityName+":"+k+"):"+obj[k]);
 				cleanData[k] = obj[k];
 			}else if( isObj(v.datatype) && obj[k] != null){
 				info(this,"Obj("+entityName+":"+k+"):"+obj[k]);

@@ -329,7 +329,6 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 				if (isEmpty(objectId)) {
 					throw new RuntimeException("LocalDataProducer.doFindById:no \"objectId\" given");
 				}
-				info(this, "doFindById(" + objectId + "):"+sc);
 				Object res = sc.getObjectMapById(entityType, objectId);
 				info(this, "doFindById(" + objectId + "):"+res);
 				Message resultMessage = prepareResponseMessage(exchange, operation);
@@ -595,7 +594,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			boolean isAlpha = Character.isJavaLetter(op.charAt(0));
 			Boolean isString = "string".equals(dt);
 			b.append(and);
-			if ("string".equals(op)) {
+			if ("string".equals(op) || "7".equals(op) ) {
 				b.append("(");
 				b.append(val);
 				b.append(")");
