@@ -882,11 +882,13 @@
 				}
 				this.field  = this.querySelector(this.elementname);
 				this.field.setValue(this.value);
+				console.log("Custom("+this.name+").setValue:",this.value);
 				this.field.label = this.label;
 			},
 			setValue:function(v){
 				this.value = v;
 				if( this.field==null) return;
+				console.log("Custom("+this.name+").setValue:",this.value);
 				this.field.setValue(v);
 			},
 			getValue:function(){
@@ -895,6 +897,7 @@
 					 return null;
 				 }
 				this.value=this.field.getValue();
+				console.log("Custom("+this.name+").getValue:",this.value);
 				return this.value;
 			},
 			valueChanged: function( e ) {
