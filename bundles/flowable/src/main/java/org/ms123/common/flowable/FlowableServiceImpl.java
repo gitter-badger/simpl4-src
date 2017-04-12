@@ -56,6 +56,7 @@ public class FlowableServiceImpl extends BaseFlowableServiceImpl implements Flow
 
 
 	private static final String NAME = "name";
+	private static final String NAMESPACE = "namespace";
 
 	private PermissionService m_permissionService;
 
@@ -74,9 +75,9 @@ public class FlowableServiceImpl extends BaseFlowableServiceImpl implements Flow
 
 	/* BEGIN JSON-RPC-API*/
 //	@RequiresRoles("admin")
-	public Object deployDMN(
-			@PName("namespace")        String namespace, 
-			@PName("name")        String name, 
+	public Map deployDMN(
+			@PName(NAMESPACE)        String namespace, 
+			@PName(NAME)        String name, 
 			@PName("jsonString")             String jsonString) throws RpcException {
 		try {
 			return _deployDMN( namespace,name, jsonString );
@@ -85,16 +86,16 @@ public class FlowableServiceImpl extends BaseFlowableServiceImpl implements Flow
 		} finally {
 		}
 	}
-	public Map validateXorm(
-			@PName("namespace")        String namespace, 
+
+	public Map executeDecision(
+			@PName(NAMESPACE)        String namespace, 
 			@PName(NAME)               String name, 
-			@PName("data")             Map data,
-			@PName("cleanData")        Boolean cleanData
+			@PName("variables")             Map variables
 				) throws RpcException {
 		try {
-			return null;
+			return _executeDecision( namespace, name, variables);
 		} catch (Throwable e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "FlowableServiceImpl.validateXorm:", e);
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "FlowableServiceImpl.executeDecision:", e);
 		} finally {
 		}
 	}

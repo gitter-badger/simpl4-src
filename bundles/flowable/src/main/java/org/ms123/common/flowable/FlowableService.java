@@ -21,5 +21,4 @@ package org.ms123.common.flowable;
 import java.util.*;
 
 public interface FlowableService {
-	public Map validateXorm(String namespace, String name, Map data, Boolean cleanData);
 }

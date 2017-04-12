@@ -61,18 +61,16 @@ import org.flowable.dmn.model.DecisionTable;
 import org.flowable.dmn.model.DecisionTableOrientation;
 import org.flowable.dmn.model.DmnDefinition;
 import org.flowable.editor.dmn.converter.DmnJsonConverter;
-//import liquibase.servicelocator.CustomResolverServiceLocator;
-//import liquibase.servicelocator.PackageScanClassResolver;
-//import liquibase.servicelocator.ServiceLocator;
+import org.flowable.dmn.api.RuleEngineExecutionResult;
+import org.flowable.dmn.api.DmnDeployment;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
-
 /**
  *
  */
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 class BaseFlowableServiceImpl {
 
 	protected BundleContext bc;
@@ -84,25 +82,22 @@ class BaseFlowableServiceImpl {
 	protected JSONDeserializer ds = new JSONDeserializer();
 
 	protected JSONSerializer js = new JSONSerializer();
-  private Map<String, DmnEngine> dmnEngines = new HashMap<String, DmnEngine>();
+	private Map<String, DmnEngine> dmnEngines = new HashMap<String, DmnEngine>();
 
-  protected DmnEngine cachedDmnEngine;
-  protected DmnEngineConfiguration dmnEngineConfiguration;
-  protected DmnRepositoryService repositoryService;
-  protected DmnRuleService ruleService;
-  protected DmnManagementService managementService;
-    private ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	protected DmnEngine cachedDmnEngine;
+	protected DmnEngineConfiguration dmnEngineConfiguration;
+	protected DmnRepositoryService repositoryService;
+	protected DmnRuleService ruleService;
+	protected DmnManagementService managementService;
+	private ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-	private  DmnEngine getDmnEngine(String configurationResource) {
+	private DmnEngine getDmnEngine(String configurationResource) {
 		DmnEngine dmnEngine = dmnEngines.get(configurationResource);
 		if (dmnEngine == null) {
-			info(this,"==== BUILDING DMN ENGINE ====");
+			info(this, "==== BUILDING DMN ENGINE ====");
 
 			String sh = System.getProperty("workspace");
-			dmnEngine = DmnEngineConfiguration.createStandaloneDmnEngineConfiguration()
-				.setDatabaseSchemaUpdate("true")
-				.setJdbcUrl("jdbc:h2:file:" + sh + "/flowable/h2;DB_CLOSE_DELAY=1000")
-				.buildDmnEngine();
+			dmnEngine = DmnEngineConfiguration.createStandaloneDmnEngineConfiguration().setDatabaseSchemaUpdate("true").setJdbcUrl("jdbc:h2:file:" + sh + "/flowable/h2;DB_CLOSE_DELAY=1000").buildDmnEngine();
 
 			info(this, "==== DMN ENGINE CREATED ====");
 			dmnEngines.put(configurationResource, dmnEngine);
@@ -116,8 +111,8 @@ class BaseFlowableServiceImpl {
 		}
 		dmnEngines.clear();
 	}
+
 	protected void initDmnEngine() {
-		//initLiquibase();
 		if (cachedDmnEngine == null) {
 			cachedDmnEngine = getDmnEngine("default");
 		}
@@ -125,36 +120,41 @@ class BaseFlowableServiceImpl {
 		this.repositoryService = cachedDmnEngine.getDmnRepositoryService();
 		this.ruleService = cachedDmnEngine.getDmnRuleService();
 		this.managementService = cachedDmnEngine.getDmnManagementService();
-		info(this, "Flowable.dmnEngineConfiguration:"+this.dmnEngineConfiguration);
-		info(this, "Flowable.repositoryService:"+this.repositoryService);
-		info(this, "Flowable.ruleService:"+this.ruleService);
+		info(this, "Flowable.dmnEngineConfiguration:" + this.dmnEngineConfiguration);
+		info(this, "Flowable.repositoryService:" + this.repositoryService);
+		info(this, "Flowable.ruleService:" + this.ruleService);
 	}
 
-	protected DmnDefinition _deployDMN( String namespace,String name, String jsonString ){
-		JsonNode node = parseJson( jsonString );
-		DmnDefinition dmnDefinition = new DmnJsonConverter().convertToDmn(node, "abc", 1, new Date());
-		info(this,"dmnDefinition:"+dmnDefinition);
-		this.repositoryService.createDeployment()
-			.name(name)
-			.category(namespace)
-			.addDmnModel(name, dmnDefinition)
-			.deploy();
-		return dmnDefinition;
-	}
-
-	protected String readJsonToString(String resource) {
-		InputStream is = null;
-		try {
-			is = this.getClass().getClassLoader().getResourceAsStream(resource);
-			return IOUtils.toString(is);
-		} catch (IOException e) {
-			throw new RuntimeException("Could not read " + resource + " : " + e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(is);
+	protected Map _executeDecision(String namespace, String name, Map variables) {
+		List<DmnDeployment> dmnDeployments = this.repositoryService.createDeploymentQuery().deploymentName(name).list();
+		for (DmnDeployment dep : dmnDeployments) {
+			info(this, "Flowable.dmnDeployments:" + dep.getId() + "/" + dep.getName());
 		}
+		RuleEngineExecutionResult result = this.ruleService.executeDecisionByKeyAndTenantId(name, variables, namespace);
+		info(this, "Flowable._executeDecision(" + name + ").input:" + variables);
+		Map resultVars = result.getResultVariables();
+		info(this, "Flowable._executeDecision(" + name + ").resultVars:" + resultVars);
+		return resultVars;
 	}
+
+	protected Map _deployDMN(String namespace, String name, String jsonString) {
+		List<DmnDeployment> dmnDeployments = this.repositoryService.createDeploymentQuery().deploymentName(name).list();
+		info(this, "Flowable.dmnDeployments:" + dmnDeployments);
+		for (DmnDeployment dep : dmnDeployments) {
+			this.repositoryService.deleteDeployment(dep.getId());
+		}
+
+		JsonNode node = parseJson(jsonString);
+		DmnDefinition dmnDefinition = new DmnJsonConverter().convertToDmn(node, "abc", 1, new Date());
+		info(this, "Flowable.dmnDefinition:" + dmnDefinition);
+		for (Decision dec : dmnDefinition.getDecisions()) {
+			info(this, "Flowable.Decision(" + dec.getId() + "):" + dec);
+		}
+		this.repositoryService.createDeployment().tenantId(namespace).name(name).addDmnModel(name + ".dmn", dmnDefinition).deploy();
+		return new HashMap();
+	}
+
 	protected JsonNode parseJson(String jsonString) {
-//		String jsonString = readJsonToString(resource);
 		try {
 			return OBJECT_MAPPER.readTree(jsonString);
 		} catch (IOException e) {
@@ -162,11 +162,5 @@ class BaseFlowableServiceImpl {
 		}
 	}
 
-	private void initLiquibase(){
-		//PackageScanClassResolver resolver = new OSGIPackageScanClassResolver(this.bc.getBundle());
-
-		//ServiceLocator.setInstance(new CustomResolverServiceLocator(resolver));
-		//ServiceLocator.reset();
-	}
-
 }
+
