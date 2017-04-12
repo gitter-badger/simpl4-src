@@ -263,7 +263,8 @@
         if (menu === undefined) {
             menu = contextMenufor(button);
         }
-        initContextMenu(menu, pos.left, pos.top + pos.height + 8);
+        //initContextMenu(menu, pos.left, pos.top + pos.height + 8);
+        initContextMenu(menu, pos.left, pos.top + 28);
         if (e) {
             e.preventDefault();
             e.stopPropagation();
