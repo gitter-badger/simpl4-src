@@ -227,6 +227,12 @@ do
 	scalabundles=${scalabundles}"scan-bundle:file:$i "
 done
 
+flowablebundles=""
+for i in $REPOSITORY/flowable/*[bj]ar
+do
+	flowablebundles=${flowablebundles}"scan-bundle:file:$i "
+done
+
 $SRCTOPDIR/bin/pax-run.sh \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.configadmin-1.8.0.jar \
 	scan-bundle:file:$REPOSITORY/org.osgi.compendium-5.0.0.jar \
@@ -261,6 +267,7 @@ ${vfsbundles} \
 ${activemqbundles} \
 ${pdfboxbundles} \
 ${scalabundles} \
+${flowablebundles} \
 	scan-bundle:file:$REPOSITORY/pax-web-jetty-bundle-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-spi-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-jsp-4.1.1.bar@3 \

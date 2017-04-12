@@ -1,0 +1,13 @@
+version=1.0.0
+Export-Package org.ms123.common.flowable
+Import-Package *
+Bundle-Version:${version}
+Bundle-Vendor: MS123, Org.
+Bundle-Description: Flowable Service
+Bundle-ManifestVersion: 2
+Bundle-Name: FlowableService Bundle
+Bundle-SymbolicName:org.ms123.common.flowable
+Bundle-ClassPath: .
+Include-Resource: =src/main/resources/messages
+Service-Component: *
+-metatype: *
