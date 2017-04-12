@@ -321,6 +321,7 @@ ${flowablebundles} \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.auth-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.auth.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.data-1.0.0.jar \
+  scan-bundle:file:$BUNDLESBUILD/org.ms123.common.flowable-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.data.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.form-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.libhelper-1.0.0.jar \

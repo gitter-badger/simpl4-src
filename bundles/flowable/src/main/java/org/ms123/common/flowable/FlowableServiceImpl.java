@@ -40,6 +40,11 @@ import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.permission.api.PermissionService;
 import org.osgi.framework.BundleContext;
+import org.flowable.dmn.api.DmnManagementService;
+import org.flowable.dmn.api.DmnRepositoryService;
+import org.flowable.dmn.api.DmnRuleService;
+import org.flowable.dmn.engine.DmnEngine;
+import org.flowable.dmn.engine.DmnEngineConfiguration;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
@@ -60,6 +65,7 @@ public class FlowableServiceImpl extends BaseFlowableServiceImpl implements Flow
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		this.bc = bundleContext;
+		this.initDmnEngine();
 	}
 
 	protected void deactivate() throws Exception {
@@ -67,6 +73,18 @@ public class FlowableServiceImpl extends BaseFlowableServiceImpl implements Flow
 	}
 
 	/* BEGIN JSON-RPC-API*/
+//	@RequiresRoles("admin")
+	public Object deployDMN(
+			@PName("namespace")        String namespace, 
+			@PName("name")        String name, 
+			@PName("jsonString")             String jsonString) throws RpcException {
+		try {
+			return _deployDMN( namespace,name, jsonString );
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "FlowableServiceImpl.deployDMN:", e);
+		} finally {
+		}
+	}
 	public Map validateXorm(
 			@PName("namespace")        String namespace, 
 			@PName(NAME)               String name, 
