@@ -126,31 +126,46 @@ class BaseFlowableServiceImpl {
 	}
 
 	protected Map _executeDecision(String namespace, String name, Map variables) {
-		List<DmnDeployment> dmnDeployments = this.repositoryService.createDeploymentQuery().deploymentName(name).list();
+		String cname = name.replace(".","_");
+		List<DmnDeployment> dmnDeployments = this.repositoryService.createDeploymentQuery().deploymentName(cname).list();
 		for (DmnDeployment dep : dmnDeployments) {
 			info(this, "Flowable.dmnDeployments:" + dep.getId() + "/" + dep.getName());
 		}
-		RuleEngineExecutionResult result = this.ruleService.executeDecisionByKeyAndTenantId(name, variables, namespace);
-		info(this, "Flowable._executeDecision(" + name + ").input:" + variables);
+		RuleEngineExecutionResult result = this.ruleService.executeDecisionByKeyAndTenantId(cname, variables, namespace);
+		info(this, "Flowable._executeDecision(" + cname + ").input:" + variables);
 		Map resultVars = result.getResultVariables();
-		info(this, "Flowable._executeDecision(" + name + ").resultVars:" + resultVars);
+		info(this, "Flowable._executeDecision(" + cname + ").resultVars:" + resultVars);
 		return resultVars;
 	}
 
-	protected Map _deployDMN(String namespace, String name, String jsonString) {
-		List<DmnDeployment> dmnDeployments = this.repositoryService.createDeploymentQuery().deploymentName(name).list();
+	private Map getRules(String namespace, String name) {
+		String filterJson = this.gitService.searchContent(namespace, name, "sw.rule");
+		Map contentMap = (Map) this.ds.deserialize(filterJson);
+		return contentMap;
+	}
+	protected Map _deployDMN(String namespace, String name, String jsonString) throws Exception{
+		String cname = name.replace(".","_");
+		List<DmnDeployment> dmnDeployments = this.repositoryService.createDeploymentQuery().deploymentName(cname).list();
 		info(this, "Flowable.dmnDeployments:" + dmnDeployments);
 		for (DmnDeployment dep : dmnDeployments) {
 			this.repositoryService.deleteDeployment(dep.getId());
 		}
 
-		JsonNode node = parseJson(jsonString);
-		DmnDefinition dmnDefinition = new DmnJsonConverter().convertToDmn(node, "abc", 1, new Date());
+		DmnDefinition dmnDefinition = null;
+		if( jsonString != null && !jsonString.trim().equals("")){
+			JsonNode node = parseJson(jsonString);
+			dmnDefinition = new DmnJsonConverter().convertToDmn(node, "abc", 1, new Date());
+		}else{
+			Map rulesMap = 	getRules(namespace,name);
+			RulesConverter rc = new RulesConverter( rulesMap);
+			dmnDefinition = rc.convert(cname);
+		}
+
 		info(this, "Flowable.dmnDefinition:" + dmnDefinition);
 		for (Decision dec : dmnDefinition.getDecisions()) {
 			info(this, "Flowable.Decision(" + dec.getId() + "):" + dec);
 		}
-		this.repositoryService.createDeployment().tenantId(namespace).name(name).addDmnModel(name + ".dmn", dmnDefinition).deploy();
+		this.repositoryService.createDeployment().tenantId(namespace).name(cname).addDmnModel(cname + ".dmn", dmnDefinition).deploy();
 		return new HashMap();
 	}
 

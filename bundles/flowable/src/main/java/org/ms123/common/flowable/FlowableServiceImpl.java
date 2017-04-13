@@ -76,9 +76,9 @@ public class FlowableServiceImpl extends BaseFlowableServiceImpl implements Flow
 	/* BEGIN JSON-RPC-API*/
 //	@RequiresRoles("admin")
 	public Map deployDMN(
-			@PName(NAMESPACE)        String namespace, 
-			@PName(NAME)        String name, 
-			@PName("jsonString")             String jsonString) throws RpcException {
+			@PName(NAMESPACE)               String namespace, 
+			@PName(NAME)                    String name, 
+			@PName("jsonString") @POptional String jsonString) throws RpcException {
 		try {
 			return _deployDMN( namespace,name, jsonString );
 		} catch (Throwable e) {
