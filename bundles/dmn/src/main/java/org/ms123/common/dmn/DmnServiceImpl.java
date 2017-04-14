@@ -22,8 +22,8 @@ import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
 import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
-import java.io.*;
-import java.util.*;
+import java.util.Map;
+import java.util.List;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.data.api.DataLayer;
@@ -38,8 +38,8 @@ import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
+import org.ms123.common.system.script.ScriptEngineService;
 import org.osgi.framework.BundleContext;
-
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
@@ -49,10 +49,8 @@ import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=dmn" })
 public class DmnServiceImpl extends BaseDmnServiceImpl implements DmnService {
 
-
 	private static final String NAME = "name";
 	private static final String NAMESPACE = "namespace";
-
 
 	public DmnServiceImpl() {
 		this.js.prettyPrint(true);
@@ -68,24 +66,19 @@ public class DmnServiceImpl extends BaseDmnServiceImpl implements DmnService {
 	}
 
 	/* BEGIN JSON-RPC-API*/
-//	@RequiresRoles("admin")
-	public Map deployDMN(
-			@PName(NAMESPACE)               String namespace, 
-			@PName(NAME)                    String name ) throws RpcException {
+	//	@RequiresRoles("admin")
+	public Map deployDMN(@PName(NAMESPACE) String namespace, @PName(NAME) String name) throws RpcException {
 		try {
-			return _deployDMN( namespace,name );
+			return _deployDMN(namespace, name);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DmnServiceImpl.deployDMN:", e);
 		} finally {
 		}
 	}
-	public List<Map> executeDecision(
-			@PName(NAMESPACE)        String namespace, 
-			@PName(NAME)               String name, 
-			@PName("variables")             Map variables
-				) throws RpcException {
+
+	public List<Map> executeDecision(@PName(NAMESPACE) String namespace, @PName(NAME) String name, @PName("variables") Map variables) throws RpcException {
 		try {
-			return _executeDecision( namespace, name, variables);
+			return _executeDecision(namespace, name, variables);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DmnServiceImpl.executeDecision:", e);
 		} finally {
@@ -98,9 +91,17 @@ public class DmnServiceImpl extends BaseDmnServiceImpl implements DmnService {
 		System.out.println("DmnServiceImpl.setDataLayer:" + dataLayer);
 		this.dataLayer = dataLayer;
 	}
+
+	@Reference(dynamic = true, optional = true)
+	public void setScriptEngineService(ScriptEngineService scriptEngine) {
+		System.out.println("DmnServiceImpl.setScriptEngineService:" + scriptEngine);
+		this.scriptEngineService = scriptEngine;
+	}
+
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
 		System.out.println("DmnServiceImpl.setGitService:" + gitService);
 		this.gitService = gitService;
 	}
 }
+

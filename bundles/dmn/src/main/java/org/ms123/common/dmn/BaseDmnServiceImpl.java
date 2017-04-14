@@ -18,45 +18,30 @@
  */
 package org.ms123.common.dmn;
 
+
 import flexjson.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.lang.reflect.*;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.apache.commons.io.IOUtils;
+import javax.script.ScriptEngine;
+import org.camunda.bpm.dmn.engine.DmnDecision;
+import org.camunda.bpm.dmn.engine.DmnDecisionResult;
+import org.camunda.bpm.dmn.engine.DmnDecisionTableResult;
+import org.camunda.bpm.dmn.engine.DmnEngine;
+import org.camunda.bpm.dmn.engine.DmnEngineConfiguration;
+import org.camunda.bpm.dmn.engine.impl.DefaultDmnEngineConfiguration;
+import org.camunda.bpm.dmn.engine.impl.spi.el.DmnScriptEngineResolver;
+import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.Variables;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.git.GitService;
 import org.ms123.common.stencil.api.StencilService;
 import org.ms123.common.store.StoreDesc;
+import org.ms123.common.system.script.ScriptEngineService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.*;
-
-import org.camunda.bpm.dmn.engine.DmnDecision;
-import org.camunda.bpm.dmn.engine.DmnDecisionTableResult;
-import org.camunda.bpm.dmn.engine.DmnEngine;
-import org.camunda.bpm.dmn.engine.DmnEngineConfiguration;
-import org.camunda.bpm.dmn.engine.DmnDecisionResult;
-import org.camunda.bpm.engine.variable.VariableMap;
-import org.camunda.bpm.engine.variable.Variables;
-
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -72,43 +57,53 @@ class BaseDmnServiceImpl {
 	protected DataLayer dataLayer;
 
 	protected GitService gitService;
+	protected ScriptEngineService scriptEngineService;
 
 	protected JSONDeserializer ds = new JSONDeserializer();
 
 	protected JSONSerializer js = new JSONSerializer();
 
-	private Map<String,DmnDecision> dmnCache = new HashMap<String,DmnDecision>();
+	private Map<String, DmnDecision> dmnCache = new HashMap<String, DmnDecision>();
 
 	private DmnEngine dmnEngine;
 
 	protected void initDmnEngine() {
-		this.dmnEngine = DmnEngineConfiguration.createDefaultDmnEngineConfiguration().buildEngine();
+		DefaultDmnEngineConfiguration config = new DefaultDmnEngineConfiguration();
+		DmnScriptEngineResolver scriptResolver = new DmnScriptEngineResolver() {
+			@Override
+			public ScriptEngine getScriptEngineForLanguage(String language) {
+				info(this, "getScriptEngineForLanguage:" + language);
+				return scriptEngineService.getEngineByName(language);
+			}
+		};
+		config.setScriptEngineResolver(scriptResolver);
+		this.dmnEngine = config.buildEngine();
 	}
 
-	protected Map _deployDMN( String namespace, String name ){
+	protected Map _deployDMN(String namespace, String name) {
 		String cname = getCleanName(name);
-		dmnCache.remove( cname );
+		dmnCache.remove(cname);
 		return null;
 	}
 
 	protected List<Map> _executeDecision(String namespace, String name, Map variables) throws Exception {
-		DmnDecision decision = getDecision( namespace, name );
+		DmnDecision decision = getDecision(namespace, name);
 		String cname = getCleanName(name);
 		info(this, "Dmn._executeDecision(" + cname + ").input:" + variables);
-		DmnDecisionResult	result = this.dmnEngine.evaluateDecision(decision, variables);
+		DmnDecisionResult result = this.dmnEngine.evaluateDecision(decision, variables);
 		info(this, "Dmn._executeDecision(" + cname + ").resultVars:" + result.getResultList());
 		return new ArrayList<Map>(result.getResultList());
 	}
 
-	private DmnDecision getDecision(String namespace, String name) throws Exception{
+	private DmnDecision getDecision(String namespace, String name) throws Exception {
 		String cname = getCleanName(name);
-		String fullName = getFullName(namespace,cname);
+		String fullName = getFullName(namespace, cname);
 		DmnDecision dmnDecision = this.dmnCache.get(fullName);
-		if( dmnDecision == null){
-			Map rulesMap = 	getRules(namespace,name);
-			RulesConverter rc = new RulesConverter( rulesMap);
+		if (dmnDecision == null) {
+			Map rulesMap = getRules(namespace, name);
+			RulesConverter rc = new RulesConverter(rulesMap);
 			dmnDecision = rc.convert(cname);
-			this.dmnCache.put( fullName, dmnDecision);
+			//			this.dmnCache.put( fullName, dmnDecision);
 		}
 		return dmnDecision;
 	}
@@ -119,11 +114,12 @@ class BaseDmnServiceImpl {
 		return contentMap;
 	}
 
-	private String getCleanName( String name){
-		String cname = name.replace(".","_");
+	private String getCleanName(String name) {
+		String cname = name.replace(".", "_");
 		return cname;
 	}
-	private String getFullName( String namespace, String name){
+
+	private String getFullName(String namespace, String name) {
 		return namespace + "." + name;
 	}
 }

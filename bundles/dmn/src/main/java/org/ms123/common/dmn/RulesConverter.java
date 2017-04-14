@@ -18,49 +18,38 @@
  */
 package org.ms123.common.dmn;
 
-
-import java.util.Map;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.List;
+import flexjson.*;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Iterator;
-import java.util.Collection;
 import java.util.Date;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.camunda.bpm.dmn.engine.DmnDecision;
 import org.camunda.bpm.dmn.engine.DmnDecisionLogic;
-import flexjson.*;
-import static com.jcabi.log.Logger.info;
-import static com.jcabi.log.Logger.debug;
-import static com.jcabi.log.Logger.error;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableImpl;
 import org.camunda.bpm.dmn.engine.impl.DmnDecisionImpl;
+import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableImpl;
 import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableInputImpl;
 import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableOutputImpl;
 import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableRuleImpl;
 import org.camunda.bpm.dmn.engine.impl.DmnExpressionImpl;
-import org.camunda.bpm.dmn.engine.impl.type.StringDataTypeTransformer;
+import org.camunda.bpm.dmn.engine.impl.hitpolicy.FirstHitPolicyHandler;
+import org.camunda.bpm.dmn.engine.impl.spi.type.DmnDataTypeTransformer;
 import org.camunda.bpm.dmn.engine.impl.type.BooleanDataTypeTransformer;
+import org.camunda.bpm.dmn.engine.impl.type.DateDataTypeTransformer;
+import org.camunda.bpm.dmn.engine.impl.type.DmnTypeDefinitionImpl;
+import org.camunda.bpm.dmn.engine.impl.type.DoubleDataTypeTransformer;
 import org.camunda.bpm.dmn.engine.impl.type.IntegerDataTypeTransformer;
 import org.camunda.bpm.dmn.engine.impl.type.LongDataTypeTransformer;
-import org.camunda.bpm.dmn.engine.impl.type.DateDataTypeTransformer;
-import org.camunda.bpm.dmn.engine.impl.type.DoubleDataTypeTransformer;
-import org.camunda.bpm.dmn.engine.impl.type.DmnTypeDefinitionImpl;
-import org.camunda.bpm.dmn.engine.impl.spi.type.DmnDataTypeTransformer;
-
+import org.camunda.bpm.dmn.engine.impl.type.StringDataTypeTransformer;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  *
  */
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class RulesConverter {
 
 	protected JSONSerializer js = new JSONSerializer();
@@ -73,9 +62,8 @@ public class RulesConverter {
 		this.js.prettyPrint(true);
 	}
 
-	public DmnDecision convert( String cname) throws Exception {
+	public DmnDecision convert(String cname) throws Exception {
 		Map ret = new HashMap();
-		System.out.println("RulesProcessor.execute:"+this.js.deepSerialize(rules));
 		Map variables = (Map) this.rules.get("variables");
 		List<Map> inputVars = (List) variables.get("input");
 		List<Map> outputVars = (List) variables.get("output");
@@ -84,17 +72,19 @@ public class RulesConverter {
 		List<Map> conditionColumns = (List) columns.get("conditions");
 		List<Map> actionColumns = (List) columns.get("actions");
 
-		DmnDecisionImpl decision = new DmnDecisionImpl() ;
-		DmnDecisionTableImpl decisionTable = new DmnDecisionTableImpl() ;
-		decision.setDecisionLogic( decisionTable);
+		DmnDecisionImpl decision = new DmnDecisionImpl();
+		decision.setKey(cname);
+		DmnDecisionTableImpl decisionTable = new DmnDecisionTableImpl();
+		decision.setDecisionLogic(decisionTable);
 
 		List<DmnDecisionTableInputImpl> inputList = new ArrayList<DmnDecisionTableInputImpl>();
 		List<DmnDecisionTableOutputImpl> outputList = new ArrayList<DmnDecisionTableOutputImpl>();
 		List<DmnDecisionTableRuleImpl> ruleList = new ArrayList<DmnDecisionTableRuleImpl>();
-		processDecisionTable( conditionColumns, actionColumns, inputList, outputList, ruleList);
-		decisionTable.setInputs( inputList);
-		decisionTable.setOutputs( outputList);
-		decisionTable.setRules( ruleList);
+		processDecisionTable(conditionColumns, actionColumns, inputList, outputList, ruleList);
+		decisionTable.setInputs(inputList);
+		decisionTable.setOutputs(outputList);
+		decisionTable.setRules(ruleList);
+		decisionTable.setHitPolicyHandler(new FirstHitPolicyHandler());
 		return decision;
 	}
 
@@ -107,41 +97,41 @@ public class RulesConverter {
 		return count;
 	}
 
-	private String getOp( String op, String data, String varType) {
+	private String getOp(String f, String op, String data, String varType) {
 		if ("ge".equals(op)) {
-			return ">= " + data;
+			return f + " >= " + data;
 		}
 		if ("le".equals(op)) {
-			return "<= " + data;
+			return f + " <= " + data;
 		}
 		if ("gt".equals(op)) {
-			return "> " + data;
+			return f + " > " + data;
 		}
 		if ("lt".equals(op)) {
-			return "< " + data;
+			return f + " < " + data;
 		}
 		if ("eq".equals(op)) {
-			if( "string".equals(varType)){
-				return "~= (\"(?i)" + data + "\")";
-			}else{
-				return "== " + data;
+			if ("string".equals(varType)) {
+				return f + ".equalsIgnoreCase(\"" + data + "\")";
+			} else {
+				return f + " == " + data;
 			}
 		}
 		if ("ceq".equals(op)) {
-			return " ~= (\"" + data + "\")";
+			return f + "== \"" + data + "\"";
 		}
 		if ("ne".equals(op)) {
-			if( "string".equals(varType)){
-				return "!= \"" + data+"\"";
-			}else{
-				return "!= " + data;
+			if ("string".equals(varType)) {
+				return f + " != \"" + data + "\"";
+			} else {
+				return f + " != " + data;
 			}
 		}
 		if ("bw".equals(op)) {
-			return "~= (\"(?i)" + data + ".*\")";
+			return f + ".startsWith(\"" + data + "\")";
 		}
 		if ("cn".equals(op)) {
-			return "~= \"(?i).*" + data + ".*\"";
+			return f + ".contains(\"" + data + "\")";
 		}
 		if ("in".equals(op)) {
 			return "is null";
@@ -152,59 +142,49 @@ public class RulesConverter {
 		return "op not found";
 	}
 
-	private String convertType( String in ){
-		if( "decimal".equals(in)){
-			return "double";
-		}
-		if( "integer".equals(in)){
-			return "number";
-		}
-		return in;
-	}
-
-	private DmnTypeDefinitionImpl getTypeDefinition( String type){
-		String typeName=type;
-		DmnDataTypeTransformer transformer=null;
-		if( "decimal".equals( type)){
+	private DmnTypeDefinitionImpl getTypeDefinition(String type) {
+		String typeName = type;
+		DmnDataTypeTransformer transformer = null;
+		if ("decimal".equals(type) || "double".equals(type)) {
 			typeName = "double";
 			transformer = new DoubleDataTypeTransformer();
-		}else if( "integer".equals( type)){
+		} else if ("integer".equals(type)) {
 			transformer = new IntegerDataTypeTransformer();
-		}else if( "boolean".equals( type)){
+		} else if ("boolean".equals(type)) {
 			transformer = new BooleanDataTypeTransformer();
-		}else if( "date".equals( type)){
+		} else if ("date".equals(type)) {
 			transformer = new DateDataTypeTransformer();
-		}else if( "string".equals( type)){
+		} else if ("string".equals(type)) {
 			transformer = new StringDataTypeTransformer();
 		}
 		return new DmnTypeDefinitionImpl(typeName, transformer);
 	}
 
-	protected void processDecisionTable(List<Map> conditionColumns, List<Map> actionColumns, List<DmnDecisionTableInputImpl> inputList, List<DmnDecisionTableOutputImpl> outputList,List<DmnDecisionTableRuleImpl> ruleList) {
+	protected void processDecisionTable(List<Map> conditionColumns, List<Map> actionColumns, List<DmnDecisionTableInputImpl> inputList, List<DmnDecisionTableOutputImpl> outputList, List<DmnDecisionTableRuleImpl> ruleList) {
 
-		for (Map<String,Object> conditionColumn : conditionColumns) {
+		for (Map<String, Object> conditionColumn : conditionColumns) {
 
 			DmnDecisionTableInputImpl inputClause = new DmnDecisionTableInputImpl();
-			String variableName = (String)conditionColumn.get("variableName");
-			String variableType = convertType((String)conditionColumn.get("variableType"));
+			String variableName = (String) conditionColumn.get("variableName");
+			String variableType = (String) conditionColumn.get("variableType");
 
 			inputClause.setId("input_" + variableName);
 			inputClause.setName(variableName);
 			inputClause.setInputVariable(variableName);
 			DmnExpressionImpl expr = new DmnExpressionImpl();
-			expr.setTypeDefinition( getTypeDefinition( variableName));
-			inputClause.setExpression( expr );
-			expr.setExpression( variableName );
+			expr.setTypeDefinition(getTypeDefinition(variableType));
+			inputClause.setExpression(expr);
+			expr.setExpression(variableName);
 
 			conditionColumn.put("inputClause", inputClause);
 			inputList.add(inputClause);
 		}
 
-		for (Map<String,Object> actionColumn : actionColumns) {
+		for (Map<String, Object> actionColumn : actionColumns) {
 
 			DmnDecisionTableOutputImpl outputClause = new DmnDecisionTableOutputImpl();
-			String variableName = (String)actionColumn.get("variableName");
-			String variableType = convertType((String)actionColumn.get("variableType"));
+			String variableName = (String) actionColumn.get("variableName");
+			String variableType = (String) actionColumn.get("variableType");
 
 			outputClause.setId("output_" + variableName);
 			outputClause.setTypeDefinition(getTypeDefinition(variableType));
@@ -217,53 +197,50 @@ public class RulesConverter {
 		int ruleCounter = 1;
 
 		int countRules = getCountRules(conditionColumns);
-		/*for( int i=0; i< countRules;i++){
-			DecisionRule rule = new DecisionRule();
+		for (int i = 0; i < countRules; i++) {
+			DmnDecisionTableRuleImpl rule = new DmnDecisionTableRuleImpl();
 			for (Map conditionColumn : conditionColumns) {
-				List<Object> dataList = (List)conditionColumn.get("data");
+				List<Object> dataList = (List) conditionColumn.get("data");
 				Object data = dataList.get(i);
-				RuleInputClauseContainer ruleInputClauseContainer = new RuleInputClauseContainer();
-				ruleInputClauseContainer.setInputClause((InputClause)conditionColumn.get("inputClause"));
 
-				String variableName = (String)conditionColumn.get("variableName");
-				String variableType = (String)conditionColumn.get("variableType");
-				String operation = (String)conditionColumn.get("operation");
-			  String text = data != null ? String.valueOf(data) : "";
-				if( !isEmpty(text) ){
-					if( "date".equals(variableType)){
-						text = "fn_date('"+text+"')";
-					}
-					text = getOp( operation, text, variableType);
+				String variableName = (String) conditionColumn.get("variableName");
+				String variableType = (String) conditionColumn.get("variableType");
+				String operation = (String) conditionColumn.get("operation");
+				String text = data != null ? String.valueOf(data) : "";
+				if (!isEmpty(text)) {
+					text = getOp(variableName, operation, text, variableType);
 				}
-				UnaryTests inputEntry = new UnaryTests();
-				inputEntry.setId("inputEntry_" + variableName + "_" + ruleCounter);
-				inputEntry.setText(text);
 
-				ruleInputClauseContainer.setInputEntry(inputEntry);
-
-				rule.addInputEntry(ruleInputClauseContainer);
+				DmnExpressionImpl cond = new DmnExpressionImpl();
+				cond.setId("input_" + variableName + "_" + ruleCounter);
+				info(this, "Rule.setExpression:" + text);
+				cond.setExpression(text);
+				cond.setExpressionLanguage("groovy");
+				List<DmnExpressionImpl> listCond = new ArrayList<DmnExpressionImpl>();
+				listCond.add(cond);
+				rule.setConditions(listCond);
 			}
 
 			for (Map actionColumn : actionColumns) {
-				List<Object> dataList = (List)actionColumn.get("data");
+				List<Object> dataList = (List) actionColumn.get("data");
 				Object data = dataList.get(i);
-				RuleOutputClauseContainer ruleOutputClauseContainer = new RuleOutputClauseContainer();
-				ruleOutputClauseContainer.setOutputClause((OutputClause)actionColumn.get("outputClause"));
 
-				String variableName = (String)actionColumn.get("variableName");
-				String variableType = (String)actionColumn.get("variableType");
-				LiteralExpression outputEntry = new LiteralExpression();
-				outputEntry.setId("outputEntry_" + variableName + "_" + ruleCounter);
-			  String text = data != null ? String.valueOf(data) : "";
+				String variableName = (String) actionColumn.get("variableName");
+				String variableType = (String) actionColumn.get("variableType");
+				String text = data != null ? String.valueOf(data) : "";
 				text = variableType.equals("string") ? ("\"" + text + "\"") : text;
-				outputEntry.setText(text);
 
-				ruleOutputClauseContainer.setOutputEntry(outputEntry);
+				DmnExpressionImpl conc = new DmnExpressionImpl();
+				conc.setId("output_" + variableName + "_" + ruleCounter);
+				conc.setExpression(text);
+				List<DmnExpressionImpl> listConc = new ArrayList<DmnExpressionImpl>();
+				listConc.add(conc);
+				rule.setConclusions(listConc);
 
-				rule.addOutputEntry(ruleOutputClauseContainer);
 			}
 			ruleCounter++;
-			decisionTable.addRule(rule);
-		}*/
+			ruleList.add(rule);
+		}
 	}
 }
+
