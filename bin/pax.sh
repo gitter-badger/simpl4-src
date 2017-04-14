@@ -233,6 +233,12 @@ do
 	flowablebundles=${flowablebundles}"scan-bundle:file:$i "
 done
 
+camundabundles=""
+for i in $REPOSITORY/camunda/*[bj]ar
+do
+	camundabundles=${camundabundles}"scan-bundle:file:$i "
+done
+
 $SRCTOPDIR/bin/pax-run.sh \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.configadmin-1.8.0.jar \
 	scan-bundle:file:$REPOSITORY/org.osgi.compendium-5.0.0.jar \
@@ -268,6 +274,7 @@ ${activemqbundles} \
 ${pdfboxbundles} \
 ${scalabundles} \
 ${flowablebundles} \
+${camundabundles} \
 	scan-bundle:file:$REPOSITORY/pax-web-jetty-bundle-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-spi-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-jsp-4.1.1.bar@3 \
@@ -322,6 +329,7 @@ ${flowablebundles} \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.auth.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.data-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.flowable-1.0.0.jar \
+  scan-bundle:file:$BUNDLESBUILD/org.ms123.common.dmn-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.data.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.form-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.libhelper-1.0.0.jar \
