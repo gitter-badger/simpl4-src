@@ -1,0 +1,124 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<link rel="import" type="css" href="../simpl-form/selectize.bootstrap3.css" />
+<script>
+	FieldBehavior = {
+		properties: {
+			name: {
+				value: null,
+				type: String
+			}
+		},
+		setValue: function( v ) {
+			this.value = v;
+		},
+		getValue: function() {
+			return this.value;
+		}
+	};
+
+</script>
+
+<dom-module id="dmn-string">
+	<style>
+		#select {
+			box-shadow: 0 0px 0 #000, 0 0px #fff inset;
+		}
+	</style>
+	<template>
+<div class="layout horizontal">
+		<select on-change="selectValueChanged" id="select" bind-value="{{selectValue}}" name="[[name]]"> </select>
+		<input is="iron-input" bind-value="{{inputValue}}">
+</div>
+	</template>
+	<script>
+		Polymer( {
+			is: "dmn-string",
+			behaviors: [
+				Polymer.IronFormElementBehavior,
+				Polymer.IronControlState,
+				FieldBehavior
+			],
+			properties: {
+			},
+			observers: [
+				'setValue(value)',
+				'inputValueChanged(inputValue)'
+			],
+			inputValueChanged: function() {
+				console.log("inputValueChanged:",this.inputValue);
+				if( !this.value ){
+					this.value = {};
+				}
+				this.value.input = this.inputValue;
+			},
+			selectValueChanged: function() {
+				var select = this.$.select;
+				this.selectValue = select.value;
+				console.log("selectValueChanged:",select.value);
+				if( !this.value ){
+					this.value = {};
+				}
+				this.value.select = this.selectValue;
+			},
+			setValue: function( v ) {
+				console.log("setValue:",v);
+				if( v){
+//this.async( function() {
+					var select = this.$.select;
+					select.value = v.select;
+					this.inputValue = v.input;
+//},10);
+				}
+			},
+			getValue: function() {
+				var v = {
+					select : this.selectValue,
+					input : this.inputValue
+				}
+				console.log("getValue:",v);
+				return v;
+			},
+			attached: function() {
+console.log("attach");
+				var select = this.$.select;
+				while (select.firstChild) {
+    			select.removeChild(select.firstChild);
+				}
+				var items = [ 
+					{value:"val1", label:"label1"	},
+					{value:"val2", label:"label2"	},
+					{value:"val3", label:"label3"	}
+				];
+				for( var i=0; i < items.length;i++){
+					var item = items[i];
+					var option = document.createElement("option");
+					var label = document.createTextNode(item.label);
+					option.value = item.value;
+					Polymer.dom( option ).appendChild( label );
+					Polymer.dom( select ).appendChild( option );
+				}
+			}
+		} );
+
+	</script>
+</dom-module>
+
