@@ -65,8 +65,6 @@ public class RulesConverter {
 	public DmnDecision convert(String cname) throws Exception {
 		Map ret = new HashMap();
 		Map variables = (Map) this.rules.get("variables");
-		List<Map> inputVars = (List) variables.get("input");
-		List<Map> outputVars = (List) variables.get("output");
 
 		Map columns = (Map) this.rules.get("columns");
 		List<Map> conditionColumns = (List) columns.get("conditions");
@@ -202,19 +200,25 @@ public class RulesConverter {
 			for (Map conditionColumn : conditionColumns) {
 				List<Object> dataList = (List) conditionColumn.get("data");
 				Object data = dataList.get(i);
+				info(this,"Data:"+data);
 
 				String variableName = (String) conditionColumn.get("variableName");
 				String variableType = (String) conditionColumn.get("variableType");
 				String operation = (String) conditionColumn.get("operation");
-				String text = data != null ? String.valueOf(data) : "";
-				if (!isEmpty(text)) {
-					text = getOp(variableName, operation, text, variableType);
+				String expr=null;
+				if( "expr".equals(operation) ){
+					expr = (String)data;
+				}else{
+					expr = data != null ? String.valueOf(data) : "";
+					if (!isEmpty(expr)) {
+						expr = getOp(variableName, operation, expr, variableType);
+					}
 				}
+				info(this, "Rule.setExpression:" + expr);
 
 				DmnExpressionImpl cond = new DmnExpressionImpl();
 				cond.setId("input_" + variableName + "_" + ruleCounter);
-				info(this, "Rule.setExpression:" + text);
-				cond.setExpression(text);
+				cond.setExpression(expr);
 				cond.setExpressionLanguage("groovy");
 				List<DmnExpressionImpl> listCond = new ArrayList<DmnExpressionImpl>();
 				listCond.add(cond);
