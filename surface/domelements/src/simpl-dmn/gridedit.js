@@ -309,7 +309,8 @@
         var activeCell;
         activeCell = table.firstActiveCell();
         if (!table.isDescendant(e.target || table.contextMenu.isVisible())) {
-          if (e.target !== (activeCell != null ? activeCell.control : void 0)) {
+					var inPath = activeCell != null && Polymer.dom(e).path.indexOf(activeCell.control)>=0;
+          if (inPath === false) {
             if (activeCell != null ? activeCell.isBeingEdited() : void 0) {
               if (activeCell != null) {
                 activeCell.edit(activeCell != null ? activeCell.control.value : void 0);
@@ -1132,7 +1133,7 @@
       this.element.style.zIndex = '1040';
       this.menu = document.createElement('ul');
       GridEdit.Utilities.prototype.setAttributes(this.menu, {
-        "class": 'dropdown-menu',
+        "class": 'dmn-dropdown-menu',
         role: 'menu',
         'aria-labelledby': 'aria-labelledby',
         style: 'display:block;position:static;margin-bottom:5px;'
@@ -1844,6 +1845,12 @@
         case 'string':
           cell = new GridEdit.StringCell(value, this);
           break;
+        case 'dmn-string':
+          cell = new GridEdit.DMNStringCell(value, this, 'dmn-string');
+          break;
+        case 'dmn-integer':
+          cell = new GridEdit.DMNStringCell(value, this,'dmn-integer');
+          break;
         case 'number':
           cell = new GridEdit.NumberCell(value, this);
           break;
@@ -2286,7 +2293,7 @@
         addToStack = true;
       }
       currentValue = this.source[this.valueKey];
-      if (newValue !== null && newValue !== currentValue) {
+      if (newValue !== null && (newValue !== currentValue || (typeof newValue === "object"))) {
         newValue = this.formatValue(newValue);
         oldValue = this.value();
         if (GridEdit.Hook.prototype.run(this, 'beforeEdit', this, oldValue, newValue)) {
@@ -2316,6 +2323,7 @@
     };
 
     Cell.prototype.formatValue = function(value) {
+console.trace("Cell.formatValue:",value);
       return value;
     };
 
@@ -3162,6 +3170,29 @@
     };
 
     return TextAreaCell;
+
+  })(GridEdit.Cell);
+
+  GridEdit.DMNStringCell = (function(superClass) {
+    extend(DMNStringCell, superClass);
+
+    function DMNStringCell(value, row1, type) {
+      this.row = row1;
+      DMNStringCell.__super__.constructor.apply(this, arguments);
+      this.type = type;
+      this.initialize();
+      this;
+    }
+
+    DMNStringCell.prototype.initControl = function() {
+      var cell, textarea;
+      cell = this;
+      textarea = document.createElement(this.type);
+      textarea.classList.add(this.table.theme.inputs.textarea.className);
+      return this.control = textarea;
+    };
+
+    return DMNStringCell;
 
   })(GridEdit.Cell);
 

@@ -2,7 +2,7 @@
 /**
  * This file is part of SIMPL4(http://simpl4.org).
  *
- * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
  *
  * SIMPL4 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,104 +21,162 @@
 <link rel="import" type="css" href="../simpl-form/selectize.bootstrap3.css" />
 <script>
 	FieldBehavior = {
-		properties: {
-			name: {
-				value: null,
-				type: String
+		behaviors: [
+			Polymer.IronFormElementBehavior,
+			Polymer.IronControlState,
+		],
+		observers: [
+			'setValue(value)',
+			'expressionValueChanged(expressionValue)'
+		],
+		attached: function() {
+			this.appendItems();
+		},
+		appendItems: function() {
+			var items = this.items;
+			var select = this.$.operationSelect;
+			while ( select.firstChild ) {
+				select.removeChild( select.firstChild );
+			}
+			for ( var i = 0; i < items.length; i++ ) {
+				var item = items[ i ];
+				var option = document.createElement( "option" );
+				var label = document.createTextNode( item.label );
+				option.value = item.value;
+				Polymer.dom( option ).appendChild( label );
+				Polymer.dom( select ).appendChild( option );
 			}
 		},
+		expressionValueChanged: function() {
+			console.log( "expressionValueChanged("+this.tagName+"):", this.expressionValue );
+			if ( !this.value ) {
+				this.value = {};
+			}
+			this.value.expr = this.expressionValue;
+		},
+		operationValueChanged: function() {
+			this.operationValue = this.$.operationSelect.value;
+			console.log( "operationValueChanged("+this.tagName+"):", this.operationValue );
+			if ( !this.value ) {
+				this.value = {};
+			}
+			this.value.op = this.operationValue;
+		},
 		setValue: function( v ) {
-			this.value = v;
+			console.log( "setValue("+this.tagName+"):", v );
+			if ( v ) {
+				this.async( function() {
+					this.$.operationSelect.value = this.getOp(v.op);
+					this.expressionValue = v.expr;
+				}, 10 );
+			}else{
+				this.async( function() {
+					this.$.operationSelect.value = this.getOp(null);
+				}, 10 );
+			}
 		},
 		getValue: function() {
-			return this.value;
+			var v = {
+				op: this.operationValue,
+				expr: this.expressionValue
+			}
+			console.log( "getValue("+this.tagName+"):", v );
+			return v;
+		},
+		getOp:function(op){
+			var ret = op || this.items[0].value;
+			console.log( "getOp("+this.tagName+"):", ret );
+			return ret;
 		}
 	};
 
 </script>
 
-<dom-module id="dmn-string">
-	<style>
-		#select {
-			box-shadow: 0 0px 0 #000, 0 0px #fff inset;
-		}
-	</style>
+<dom-module id="dmn-input-styles">
 	<template>
-<div class="layout horizontal">
-		<select on-change="selectValueChanged" id="select" bind-value="{{selectValue}}" name="[[name]]"> </select>
-		<input is="iron-input" bind-value="{{inputValue}}">
-</div>
+		<style>
+			#operationSelect {
+				box-shadow: 0 0px 0 #000, 0 0px #fff inset;
+				padding-right: 8px;
+				width: 70px;
+			}
+			#container {
+				width: 100%;
+				height: 100%;
+			}
+			#expressionInput {
+				width: 100%;
+				height: 100%;
+			}
+
+		</style>
+	</template>
+</dom-module>
+
+<dom-module id="dmn-string">
+	<template>
+		<style include="dmn-input-styles"></style>
+		<div id="container" class="layout horizontal">
+			<select on-change="operationValueChanged" id="operationSelect" bind-value="{{operationValue}}"> </select>
+			<input id="expressionInput" is="iron-input" bind-value="{{expressionValue}}">
+		</div>
 	</template>
 	<script>
 		Polymer( {
 			is: "dmn-string",
 			behaviors: [
-				Polymer.IronFormElementBehavior,
-				Polymer.IronControlState,
 				FieldBehavior
 			],
-			properties: {
-			},
-			observers: [
-				'setValue(value)',
-				'inputValueChanged(inputValue)'
-			],
-			inputValueChanged: function() {
-				console.log("inputValueChanged:",this.inputValue);
-				if( !this.value ){
-					this.value = {};
-				}
-				this.value.input = this.inputValue;
-			},
-			selectValueChanged: function() {
-				var select = this.$.select;
-				this.selectValue = select.value;
-				console.log("selectValueChanged:",select.value);
-				if( !this.value ){
-					this.value = {};
-				}
-				this.value.select = this.selectValue;
-			},
-			setValue: function( v ) {
-				console.log("setValue:",v);
-				if( v){
-//this.async( function() {
-					var select = this.$.select;
-					select.value = v.select;
-					this.inputValue = v.input;
-//},10);
-				}
-			},
-			getValue: function() {
-				var v = {
-					select : this.selectValue,
-					input : this.inputValue
-				}
-				console.log("getValue:",v);
-				return v;
-			},
-			attached: function() {
-console.log("attach");
-				var select = this.$.select;
-				while (select.firstChild) {
-    			select.removeChild(select.firstChild);
-				}
-				var items = [ 
-					{value:"val1", label:"label1"	},
-					{value:"val2", label:"label2"	},
-					{value:"val3", label:"label3"	}
-				];
-				for( var i=0; i < items.length;i++){
-					var item = items[i];
-					var option = document.createElement("option");
-					var label = document.createTextNode(item.label);
-					option.value = item.value;
-					Polymer.dom( option ).appendChild( label );
-					Polymer.dom( select ).appendChild( option );
-				}
+			ready: function() {
+				this.items = [ {
+					value: "eq",
+					label: "="
+				}, {
+					value: "bw",
+					label: "startsWith"
+				}, {
+					value: "cn",
+					label: "contains"
+				} ];
 			}
 		} );
 
 	</script>
 </dom-module>
 
+<dom-module id="dmn-integer">
+	<template>
+		<style include="dmn-input-styles"></style>
+		<div id="container" class="layout horizontal">
+			<select on-change="operationValueChanged" id="operationSelect" bind-value="{{operationValue}}"> </select>
+			<input id="expressionInput" is="iron-input" prevent-invalid-input allowed-pattern="[0-9]" bind-value="{{expressionValue}}">
+		</div>
+	</template>
+	<script>
+		Polymer( {
+			is: "dmn-integer",
+			behaviors: [
+				FieldBehavior
+			],
+			ready: function() {
+				this.items = [ {
+					value: "eq",
+					label: "="
+				}, {
+					value: "gt",
+					label: ">"
+				}, {
+					value: "lt",
+					label: "<"
+				}, {
+					value: "ge",
+					label: ">="
+				}, {
+					value: "le",
+					label: "<="
+				} ];
+			}
+		} );
+
+	</script>
+</dom-module>
