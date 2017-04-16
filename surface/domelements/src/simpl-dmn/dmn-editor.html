@@ -21,7 +21,7 @@
 <script src="gridedit.js"></script>
 <style>
 	.dmnTable {
-		width: 100%;
+		//width: 100%;
 		border-collapse: collapse;
 		table-layout: fixed;
 	}
@@ -35,6 +35,7 @@
 	.dmnTable td {
 		line-height: 2em;
 		padding: 3px;
+		width: 400px;
 	}
 	.dmnTable thead tr th:nth-child(1) {
 		width: 32px;
@@ -45,9 +46,6 @@
 	.dmnTable #contextMenu .disabled {
 		color: #C0C0C0;
 		background: none;
-	}
-	.dmnTable #contextMenu li a {
-		cursor: pointer;
 	}
 	.dmnTable div.subtotal-label {
 		width: 99%;
@@ -76,6 +74,9 @@
 		background-color: rgb(182, 182, 182);
 		margin: 3px;
 		margin-left: 5px;
+	}
+	.dmn-dropdown-menu li a {
+		cursor: pointer;
 	}
 	ul.dmn-dropdown-menu {
 		padding: 5px;
@@ -137,6 +138,8 @@
 				<iron-icon icon="add"></iron-icon>Input</paper-button>
 			<paper-button on-tap="addOutput">
 				<iron-icon icon="add"></iron-icon>Output</paper-button>
+			<paper-button on-tap="addRow">
+				<iron-icon icon="add"></iron-icon>Row</paper-button>
 		</paper-toolbar>
 		<div id="gridedit"></div>
 	</template>
@@ -171,45 +174,112 @@
 					editable: true
 				} ];
 
-				var years = 365 * 24 * 60 * 60000;
-				var chucksDOB = new Date( new Date().valueOf() - ( 200 * years ) );
-				var bensDOB = new Date( new Date().valueOf() - ( 20 * years ) );
-
-				this.rows = [ {
-					numProjects: {
-						op: "<",
-						expr: "10000"
-					},
-					jobTitle: null,
-					id: 1
-				}, {
-					numProjects: {
-						op: ">",
-						expr: "10000"
-					},
-					jobTitle: null,
-					id: 434
-				} ]
+				this.cols = [];
+				this.rows = [];
+				var ctrlOrCmd = /Mac/.test( navigator.platform ) ? 'Cmd' : 'Ctrl';
 				var ge = new GridEdit( {
 					initialize: true,
 					cols: this.cols,
 					rows: this.rows,
 					tableClass: 'dmnTable',
 					includeRowHandles: true,
-					includeContextMenu: true
+					includeContextMenu: true,
+					onCellClick: function( e ) {
+						console.log( "onCellClick:", e );
+					},
+					contextMenuOrder: [ "undo", "redo", "insertInput", "removeInput", "insertOutput", "removeOutput" ],
+					contextMenuItems: {
+						insertInput: {
+							name: 'Insert Input',
+							shortCut: ctrlOrCmd + '+I',
+							callback: this.insertInput.bind( this )
+						},
+						removeInput: {
+							name: 'Remove Input',
+							shortCut: ctrlOrCmd + '+R',
+							callback: this.insertInput.bind( this )
+						},
+						insertOutput: {
+							name: 'Insert Output',
+							shortCut: ctrlOrCmd + '+O',
+							callback: this.insertOutput.bind( this )
+						},
+						removeOutput: {
+							name: 'Remove Output',
+							shortCut: ctrlOrCmd + '+U',
+							callback: this.removeOutput.bind( this )
+						}
+					}
 				} )
 
-				ge.rebuild( {
-					cols: this.cols
-				} );
+				ge.addUndoAction( "insert-input", ( function( obj ) {
+					console.log( "UndoAction:insert-input:", obj );
+					_.remove( this.cols, ( function( col ) {
+						return col.valueKey === obj.col.valueKey && col.kind === obj.col.kind;
+					} ).bind( this ) );
+					this.gridRebuild();
+				} ).bind( this ) )
 
-				//				this.setStyleScope( this.$.gridedit, "style-scope", this.tagName.toLowerCase() );
+				ge.addRedoAction( "insert-input", ( function( obj ) {
+					console.log( "RedoAction:insert-input:", obj );
+					this.cols.splice( obj.index, 0, obj.col );
+					this.gridRebuild();
+				} ).bind( this ) )
+				this.gridedit = ge;
+			},
+			insertInput: function( e, a ) {
+				var menu = this.gridedit.contextMenu;
+				console.log( "insertInput", e );
+				console.log( "insertInput", a );
+				console.log( "insertInput", menu.getTargetPasteCell() );
+				console.log( "insertInput", menu.getUpperLeftPasteCell() );
+				/*				this.addToStack({
+									type: 'insert-input',
+									colObject: colObject
+								});*/
+			},
+			removeInput: function( e ) {
+				console.log( "removeInput", e );
+			},
+			insertOutput: function( e ) {
+				console.log( "insertOutput", e );
+			},
+			removeOutput: function( e ) {
+				console.log( "removeOutput", e );
 			},
 			addInput: function() {
-				console.log( "addInput" );
+				var col = {
+					defaultValue: {
+						op: "=",
+						expr: ""
+					},
+					kind: "input",
+					label: 'Label' + this.cols.length,
+					valueKey: 'name' + this.cols.length,
+					type: 'dmn-string',
+					editable: true
+				};
+				this.gridedit.addToStack( {
+					type: 'insert-input',
+					index: this.cols.length,
+					col: col
+				} );
+				this.cols.push( col );
+				this.gridRebuild();
 			},
 			addOutput: function() {
 				console.log( "addOutput" );
+			},
+			addRow: function() {
+				this.gridedit.addRow( this.rows.length, true );
+			},
+			gridRebuild: function() {
+				this.gridedit.repopulate();
+				this.gridedit.rebuild( {
+					cols: this.cols
+				} );
+				console.log( "gridRebuild.rows:", JSON.stringify( this.rows, null, 2 ) );
+				console.log( "gridRebuild.data:", JSON.stringify( this.gridedit.data(),null,2) );
 			},
 			ready: function() {}
 		} );

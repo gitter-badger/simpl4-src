@@ -494,7 +494,7 @@
         ref1 = row.cells;
         for (k = 0, len1 = ref1.length; k < len1; k++) {
           cell = ref1[k];
-          rowData.push(cell.cellTypeObject.value());
+          rowData.push(cell.value());
         }
         data.push(rowData);
       }
@@ -513,7 +513,7 @@
           results1 = [];
           for (k = 0, len1 = ref1.length; k < len1; k++) {
             cell = ref1[k];
-            results1.push(cell.value(cell.source[cell.valueKey]));
+            results1.push(cell.value(cell.source[cell.valueKey]|| cell.col.defaultValue));
           }
           return results1;
         })());
@@ -2292,7 +2292,7 @@
       if (addToStack == null) {
         addToStack = true;
       }
-			var v = this.source[this.valueKey];
+			var v = this.source[this.valueKey] || this.col.defaultValue;
       currentValue = (typeof v === "object") ? JSON.parse(JSON.stringify(v)) : v;
       if (newValue !== null && (newValue !== currentValue)) {
         newValue = this.formatValue(newValue);
@@ -2412,7 +2412,6 @@ console.trace("Cell.formatValue:",value);
     };
 
     Cell.prototype.setControlValue = function(value) {
-console.log("setControlValue:",value);
       return this.control.value = value;
     };
 
@@ -3195,8 +3194,11 @@ console.log("setControlValue:",value);
     };
 
 		DMNStringCell.prototype.format = function( v ) {
-			if ( v && v.expr ) return v.op + " " + v.expr;
-			return "";
+			if( !v){
+				v = this.col.defaultValue;
+			}
+			if ( v && v.op ) return v.op + " " + v.expr;
+			return null
 		};
 
     DMNStringCell.prototype.initNode = function() {
