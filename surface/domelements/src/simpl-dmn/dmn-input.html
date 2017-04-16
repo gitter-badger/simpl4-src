@@ -48,7 +48,7 @@
 			}
 		},
 		expressionValueChanged: function() {
-			console.log( "expressionValueChanged("+this.tagName+"):", this.expressionValue );
+			console.log( "expressionValueChanged(" + this.tagName + "):", this.expressionValue );
 			if ( !this.value ) {
 				this.value = {};
 			}
@@ -56,22 +56,22 @@
 		},
 		operationValueChanged: function() {
 			this.operationValue = this.$.operationSelect.value;
-			console.log( "operationValueChanged("+this.tagName+"):", this.operationValue );
+			console.log( "operationValueChanged(" + this.tagName + "):", this.operationValue );
 			if ( !this.value ) {
 				this.value = {};
 			}
 			this.value.op = this.operationValue;
 		},
 		setValue: function( v ) {
-			console.log( "setValue("+this.tagName+"):", v );
+			console.log( "setValue(" + this.tagName + "):", v );
 			if ( v ) {
 				this.async( function() {
-					this.$.operationSelect.value = this.getOp(v.op);
+					this.$.operationSelect.value = this.getOp( v.op );
 					this.expressionValue = v.expr;
 				}, 10 );
-			}else{
+			} else {
 				this.async( function() {
-					this.$.operationSelect.value = this.getOp(null);
+					this.$.operationSelect.value = this.getOp( null );
 				}, 10 );
 			}
 		},
@@ -80,12 +80,12 @@
 				op: this.operationValue,
 				expr: this.expressionValue
 			}
-			console.log( "getValue("+this.tagName+"):", v );
+			console.log( "getValue(" + this.tagName + "):", v );
 			return v;
 		},
-		getOp:function(op){
-			var ret = op || this.items[0].value;
-			console.log( "getOp("+this.tagName+"):", ret );
+		getOp: function( op ) {
+			var ret = op || this.items[ 0 ].value;
+			console.log( "getOp(" + this.tagName + "):", ret );
 			return ret;
 		}
 	};
@@ -129,13 +129,13 @@
 			],
 			ready: function() {
 				this.items = [ {
-					value: "eq",
+					value: "=",
 					label: "="
 				}, {
-					value: "bw",
+					value: "startsWith",
 					label: "startsWith"
 				}, {
-					value: "cn",
+					value: "contains",
 					label: "contains"
 				} ];
 			}
@@ -160,19 +160,19 @@
 			],
 			ready: function() {
 				this.items = [ {
-					value: "eq",
+					value: "=",
 					label: "="
 				}, {
-					value: "gt",
+					value: ">",
 					label: ">"
 				}, {
-					value: "lt",
+					value: "<",
 					label: "<"
 				}, {
-					value: "ge",
+					value: ">=",
 					label: ">="
 				}, {
-					value: "le",
+					value: "<=",
 					label: "<="
 				} ];
 			}

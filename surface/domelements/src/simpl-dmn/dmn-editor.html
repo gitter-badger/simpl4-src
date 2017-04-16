@@ -114,6 +114,7 @@
 		color: #333;
 		white-space: nowrap;
 	}
+
 </style>
 
 <dom-module id="dmn-editor">
@@ -121,8 +122,22 @@
 		:host {
 			position: relative;
 		}
+		:host paper-toolbar {
+			background: white;
+			color: black;
+		}
+		#gridedit {
+			position: relative;
+		}
+
 	</style>
 	<template>
+		<paper-toolbar class="blue">
+			<paper-button on-tap="addInput">
+				<iron-icon icon="add"></iron-icon>Input</paper-button>
+			<paper-button on-tap="addOutput">
+				<iron-icon icon="add"></iron-icon>Output</paper-button>
+		</paper-toolbar>
 		<div id="gridedit"></div>
 	</template>
 	<script>
@@ -145,10 +160,6 @@
 					label: 'Number of Projects',
 					valueKey: 'numProjects',
 					type: 'dmn-integer',
-					format: function( x ) {
-						if ( x && x.expr ) return x.op + " " + x.expr;
-						return "";
-					},
 					editable: true,
 					style: {
 						textAlign: 'left'
@@ -157,10 +168,6 @@
 					label: 'Job Title',
 					valueKey: 'jobTitle',
 					type: 'dmn-string',
-					format: function( x ) {
-						if ( x && x.expr ) return x.op + " " + x.expr;
-						return x;
-					},
 					editable: true
 				} ];
 
@@ -170,14 +177,14 @@
 
 				this.rows = [ {
 					numProjects: {
-						op: "eq",
+						op: "<",
 						expr: "10000"
 					},
 					jobTitle: null,
 					id: 1
 				}, {
 					numProjects: {
-						op: "gt",
+						op: ">",
 						expr: "10000"
 					},
 					jobTitle: null,
@@ -197,6 +204,12 @@
 				} );
 
 				//				this.setStyleScope( this.$.gridedit, "style-scope", this.tagName.toLowerCase() );
+			},
+			addInput: function() {
+				console.log( "addInput" );
+			},
+			addOutput: function() {
+				console.log( "addOutput" );
 			},
 			ready: function() {}
 		} );

@@ -2292,8 +2292,9 @@
       if (addToStack == null) {
         addToStack = true;
       }
-      currentValue = this.source[this.valueKey];
-      if (newValue !== null && (newValue !== currentValue || (typeof newValue === "object"))) {
+			var v = this.source[this.valueKey];
+      currentValue = (typeof v === "object") ? JSON.parse(JSON.stringify(v)) : v;
+      if (newValue !== null && (newValue !== currentValue)) {
         newValue = this.formatValue(newValue);
         oldValue = this.value();
         if (GridEdit.Hook.prototype.run(this, 'beforeEdit', this, oldValue, newValue)) {
@@ -2411,6 +2412,7 @@ console.trace("Cell.formatValue:",value);
     };
 
     Cell.prototype.setControlValue = function(value) {
+console.log("setControlValue:",value);
       return this.control.value = value;
     };
 
@@ -3192,6 +3194,23 @@ console.trace("Cell.formatValue:",value);
       return this.control = textarea;
     };
 
+		DMNStringCell.prototype.format = function( v ) {
+			if ( v && v.expr ) return v.op + " " + v.expr;
+			return "";
+		};
+
+    DMNStringCell.prototype.initNode = function() {
+      this.element.appendChild(document.createTextNode(this.format(this.originalValue)));
+    };
+
+    DMNStringCell.prototype.renderValue = function(value) {
+      this.element.style.color = this.originalColor || '';
+      return this.element.textContent = this.format(value);
+    };
+
+    DMNStringCell.prototype.setValue = function(newValue) {
+      return this.source[this.valueKey] = newValue;
+    };
     return DMNStringCell;
 
   })(GridEdit.Cell);
