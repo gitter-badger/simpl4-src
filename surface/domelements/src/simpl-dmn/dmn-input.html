@@ -20,7 +20,7 @@
 -->
 <link rel="import" type="css" href="../simpl-form/selectize.bootstrap3.css" />
 <script>
-	FieldBehavior = {
+	DmnFieldBehavior = {
 		behaviors: [
 			Polymer.IronFormElementBehavior,
 			Polymer.IronControlState,
@@ -125,7 +125,7 @@
 		Polymer( {
 			is: "dmn-string",
 			behaviors: [
-				FieldBehavior
+				DmnFieldBehavior
 			],
 			ready: function() {
 				this.items = [ {
@@ -156,7 +156,7 @@
 		Polymer( {
 			is: "dmn-integer",
 			behaviors: [
-				FieldBehavior
+				DmnFieldBehavior
 			],
 			ready: function() {
 				this.items = [ {

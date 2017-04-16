@@ -1,0 +1,71 @@
+<div>
+	<dom-module id="dmn-paramdialog">
+		<style>
+			:host {
+				pointer-events: all;
+			}
+			paper-button[dialog] {
+				color: black !important;
+			}
+			iron-icon.error-big {
+				color: #c00418;
+				height: 64px;
+				width: 64px;
+			}
+			paper-dialog {
+				min-height: 250px;
+				min-width: 300px;
+				max-width: 300px;
+				color: #727272 !important;
+				position: relative;
+			}
+
+		</style>
+		<template>
+			<paper-dialog with-backdrop id="dialogId">
+				<div class="layout vertical flex">
+					<iron-icon class="error-big" icon="[[icon]]"></iron-icon>
+					<simpl-form id="formId" namespace="global" on-xaction="onTap" data="[[data]]" form-name="dmnparam.form"></simpl-form>
+				</div>
+				<div class="buttons">
+					<paper-button raised dialog on-tap="onTap">
+						<iron-icon icon="check"></iron-icon>Ok</paper-button>
+				</div>
+			</paper-dialog>
+		</template>
+		<script>
+			Polymer( {
+				is: 'dmn-paramdialog',
+				behaviors: [
+					TranslationsBehavior
+				],
+				onTap: function() {
+					if ( this.$.formId.validate() ) {
+						console.log( "val" );
+						var data = this.$.formId.getData();
+						console.log("fire:"+this.type + "paramdialog-ok");
+						this.fire( this.type + "paramdialog-ok", {
+							index: this.index,
+							data: data
+						} )
+					}
+				},
+				close: function( msg ) {
+					this.$.dialogId.close();
+				},
+				open: function( type, index ) {
+					this.type = type;
+					this.index = index;
+					if ( "input" === this.type ) {
+						this.icon = "icons:file-download";
+					} else {
+						this.icon = "icons:file-upload";
+					}
+					this.$.formId.setData( {} );
+					this.$.dialogId.open();
+				}
+			} );
+
+		</script>
+	</dom-module>
+</div>

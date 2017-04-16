@@ -513,7 +513,7 @@
           results1 = [];
           for (k = 0, len1 = ref1.length; k < len1; k++) {
             cell = ref1[k];
-            results1.push(cell.value(cell.source[cell.valueKey]|| cell.col.defaultValue));
+            results1.push(cell.value(cell.source[cell.valueKey]|| cell.col.defaultValue, false));
           }
           return results1;
         })());
@@ -3598,7 +3598,7 @@ console.trace("Cell.formatValue:",value);
     Theme.prototype["default"] = {
       bootstrap: false,
       cells: {
-        activeColor: "#FFE16F",
+        activeColor: "#F1F1F1",
         uneditableColor: "#FFBBB3",
         handleClassName: 'handle',
         selectionBorderStyle: '2px dashed blue'
@@ -3623,10 +3623,10 @@ console.trace("Cell.formatValue:",value);
     Theme.prototype.bootstrap = {
       bootstrap: true,
       cells: {
-        activeColor: "#FFE16F",
+        activeColor: "#F1F1F1",
         uneditableColor: "#FFBBB3",
         handleClassName: 'handle',
-        selectionBorderStyle: '2px dashed blue'
+        selectionBorderStyle: '2px solid blue'
       },
       borders: {
         dragBorderStyle: '3px solid rgb(160, 195, 240)'
