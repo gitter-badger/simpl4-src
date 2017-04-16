@@ -1851,6 +1851,9 @@
         case 'dmn-integer':
           cell = new GridEdit.DMNStringCell(value, this,'dmn-integer');
           break;
+        case 'dmn-double':
+          cell = new GridEdit.DMNStringCell(value, this,'dmn-integer');
+          break;
         case 'number':
           cell = new GridEdit.NumberCell(value, this);
           break;
@@ -3601,7 +3604,7 @@ console.trace("Cell.formatValue:",value);
         activeColor: "#F1F1F1",
         uneditableColor: "#FFBBB3",
         handleClassName: 'handle',
-        selectionBorderStyle: '2px dashed blue'
+        selectionBorderStyle: '2px solid blue'
       },
       borders: {
         dragBorderStyle: '3px solid rgb(160, 195, 240)'

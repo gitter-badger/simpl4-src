@@ -35,7 +35,7 @@
 		width: 400px;
 	}
 	.dmnTable th {
-		font-weight:normal;
+		font-weight: normal;
 		border-bottom: 2px solid #303e45;
 	}
 	.dmnTable thead tr th:nth-child(1) {
@@ -121,13 +121,16 @@
 
 <dom-module id="dmn-editor">
 	<style>
+		:host /deep/:focus {
+			outline: none !important;
+		}
 		:host {
-    	color: #303e45;
+			color: #303e45;
 			position: relative;
 		}
 		:host paper-toolbar {
 			background: white;
-	    border-top: 8px solid #d32f2f;
+			border-top: 8px solid #d32f2f;
 			color: #303e45;
 		}
 		#gridedit {
@@ -148,7 +151,7 @@
 		</paper-toolbar>
 		<div id="gridedit"></div>
 		<dmn-paramdialog on-inputparamdialog-ok="onInputParamDialog" on-outputparamdialog-ok="onOutputParamDialog" id="dmnParamDialogId"></dmn-typedialog>
- 		<simpl-toast id="toastId"></simpl-toast>
+			<simpl-toast id="toastId"></simpl-toast>
 	</template>
 	<script>
 		Polymer( {
@@ -182,17 +185,17 @@
 					contextMenuOrder: [ "undo", "redo", "insertInput", "insertOutput", "removeColumn" ],
 					contextMenuItems: {
 						insertInput: {
-							name: tr('dmn.insertInput'),
+							name: tr( 'dmn.insertInput' ),
 							shortCut: ctrlOrCmd + '+I',
 							callback: this.insertInput.bind( this )
 						},
 						insertOutput: {
-							name: tr('dmn.insertOutput'),
+							name: tr( 'dmn.insertOutput' ),
 							shortCut: ctrlOrCmd + '+O',
 							callback: this.insertOutput.bind( this )
 						},
 						removeColumn: {
-							name: tr('dmn.removeColumn'),
+							name: tr( 'dmn.removeColumn' ),
 							shortCut: ctrlOrCmd + '+R',
 							callback: this.removeColumn.bind( this )
 						}
@@ -242,15 +245,21 @@
 			},
 			_insertInput: function( index, data ) {
 				console.log( "insertInput.index:", index + "/data:", data );
+				var type = 'dmn-' + data.type;
+				var defaultValue = {
+					op: "=",
+					expr: ""
+				};
+				if ( "boolean" == data.type ) {
+					type = "checkbox";
+					defaultValue = false;
+				}
 				var col = {
-					defaultValue: {
-						op: "=",
-						expr: ""
-					},
+					defaultValue: defaultValue,
 					kind: "input",
-					label: ( data.label || data.name ) + "(" + data.type + ")",
+					label: "Input -> " + ( data.label || data.name ) + ":" + data.type,
 					valueKey: data.name,
-					type: 'dmn-' + data.type,
+					type: type,
 					editable: true
 				};
 				this.gridedit.addToStack( {
@@ -289,7 +298,7 @@
 				var col = {
 					defaultValue: "",
 					kind: "output",
-					label: ( data.label || data.name ) + "(" + data.type + ")",
+					label: "Output -> " + ( data.label || data.name ) + ":" + data.type,
 					valueKey: data.name,
 					type: 'string',
 					editable: true
@@ -314,6 +323,7 @@
 			},
 			doSave: function() {
 				var data = this.gridedit.data();
+				console.log( "doSave.cols:", JSON.stringify( this.cols, null, 2 ) );
 				console.log( "doSave.data:", JSON.stringify( data, null, 2 ) );
 				return;
 				var params = {
@@ -322,7 +332,7 @@
 					parameter: {
 						namespace: "mdm",
 						name: "check.rule",
-						jsonString: JSON.stringify(data)
+						jsonString: JSON.stringify( data )
 					},
 					async: true,
 					context: this,
