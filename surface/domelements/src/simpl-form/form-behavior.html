@@ -990,7 +990,11 @@
 						if ( ( "Size" == key || "Length" == key ) && i == 1 ) {
 							val = val || "512";
 						}
-						msg = msg.replace( "{" + param + "}", val );
+						var replaceText = param;
+						if( param == 'regex'){
+							replaceText += 'p';
+						}
+						msg = msg.replace( "{" + replaceText + "}", val );
 					}
 					ret += '(message="' + msg + '"';
 					if ( params && params.length > 0 ) {
