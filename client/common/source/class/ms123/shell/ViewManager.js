@@ -83,7 +83,8 @@ qx.Class.define("ms123.shell.ViewManager", {
 			});
 
 			if(Array.isArray(clazz)){ //@@@MS a bit a hack 
-				var isOrientDB = ms123.StoreDesc.getNamespaceDataStoreDesc(model.getPack()).isOrientDB();
+				var sdesc = ms123.StoreDesc.getNamespaceDataStoreDesc(model.getPack());
+				var isOrientDB = sdesc ? sdesc.isOrientDB() : true;
 				clazz = isOrientDB ? clazz[1] : clazz[0];
 			}
 

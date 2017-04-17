@@ -254,6 +254,7 @@ if( _module == null) console.trace();
 			this._createProjectShellButton(extraButtons, this._me["form"], globalMetaStoreDesc, ["forms"], "Forms", true);
 			this._createExtraButton(extraButtons, this._me["pe"],  globalMetaStoreDesc);
 			this._createExtraButton(extraButtons, this._me["setting"],  globalMetaStoreDesc);
+			this._createProjectShellButton(extraButtons, this._me["shell"], globalMetaStoreDesc, null, null, false);
 			return extraButtons;
 		},
 
@@ -410,6 +411,9 @@ console.log("modules:",modules);
 				menu.addSeparator();
 				menu.add(extraButtons[this._me["user"].name]);
 				menu.add(extraButtons[this._me["manager"].name]);
+				if (this._user.admin) {
+					menu.add(extraButtons[this._me["shell"].name]);
+				}
 				if (!ms123.config.ConfigManager.isRuntime()) {
 					menu.add(extraButtons[this._me["message"].name]);
 					menu.add(extraButtons[this._me["camel"].name]);

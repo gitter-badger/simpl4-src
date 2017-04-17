@@ -39,7 +39,12 @@ qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 		var pack = model.getPack();
 		this._pack = model.getPack();
 		this.storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(pack);
-		console.log("IsOrient:", this.storeDesc.isOrientDB());
+		if( this.storeDesc == null){
+			this.storeDesc = new ms123.StoreDesc({
+				namespace:"global",
+				pack:"odata"
+			});
+		}
 		if (!this._isNew) {
 			this._etdata = this._getEntitytype(this._model.getId());
 			var value = qx.lang.Json.stringify(this._etdata, null, 4);

@@ -951,6 +951,12 @@ console.log("getName2:"+this.form.getName());
 console.log("setName2:"+name);
 			this.form.setName(name);
 		},
+		getFormElementByKey: function (key) {
+			return this.form.getItems()[key];
+		},
+		getFormElement: function (resourceId) {
+			return this.form._formElementMap[resourceId];
+		},
 		_createForm: function () {
 			var buttons = [{
 				'label': (this._mode == "select") ? this.tr("data.form.select") : this.tr("data.form.save"),
