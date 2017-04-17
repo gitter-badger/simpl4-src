@@ -38,6 +38,9 @@
 						<template is="dom-if" if="[[isString(item)]]">
 							<input-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
 						</template>
+						<template is="dom-if" if="[[isDate(item)]]">
+							<input-field type="date" id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
+						</template>
 					</template>
 				</div>
 				<div class="buttons">
@@ -60,7 +63,10 @@
 					return item.variableType == "boolean";
 				},
 				isString: function( item ) {
-					return item.variableType != "boolean";
+					return item.variableType != "boolean" && item.realType != "date";
+				},
+				isDate: function( item ) {
+					return item.realType == "date";
 				},
 				onTest: function() {
 					var variables = {};
@@ -75,7 +81,11 @@
 						if ( val == null ) {
 							val = def;
 						}
-						variables[ cond.variableName ] = val;
+						if( cond.realType == 'date'){
+							variables[ cond.variableName ] = moment(val).valueOf();
+						}else{
+							variables[ cond.variableName ] = val;
+						}
 					}
 					console.log( "variables:", variables );
 					this.doTest( variables );

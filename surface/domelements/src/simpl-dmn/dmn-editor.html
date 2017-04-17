@@ -383,6 +383,10 @@
 				}
 				var op = cell.op !== "=" ? cell.op : "==";
 				var expr = cell.expr;
+				if ( col.realType == 'date'){
+					console.log("Date.conv:", moment(expr).valueOf());
+					return col.variableName + " " + op + " " + moment(expr).valueOf();
+				}
 				if ( col.variableType == "string" ) {
 					expr = "'" + expr + "'";
 					if ( /^[a-z]/i.test( op ) ) {
@@ -406,6 +410,9 @@
 					c.operation = "expr";
 					if( col.type == "checkbox" ){
 						c.variableType = "boolean";
+					}else if( col.type == "dmn-date" ){
+						c.variableType = "long";
+						c.realType = "date";
 					}else{
 						c.variableType = col.kind == "input" ? col.type.substring( 4 ) : col.type;
 					}
