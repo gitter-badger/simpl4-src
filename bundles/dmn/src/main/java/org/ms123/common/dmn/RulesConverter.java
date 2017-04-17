@@ -149,6 +149,8 @@ public class RulesConverter {
 			transformer = new DoubleDataTypeTransformer();
 		} else if ("integer".equals(type)) {
 			transformer = new IntegerDataTypeTransformer();
+		} else if ("long".equals(type)) {
+			transformer = new LongDataTypeTransformer();
 		} else if ("boolean".equals(type)) {
 			transformer = new BooleanDataTypeTransformer();
 		} else if ("date".equals(type)) {
