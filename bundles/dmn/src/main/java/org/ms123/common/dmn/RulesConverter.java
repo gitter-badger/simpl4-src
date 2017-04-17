@@ -66,6 +66,7 @@ public class RulesConverter {
 		Map ret = new HashMap();
 		Map variables = (Map) this.rules.get("variables");
 
+		Map config = (Map) this.rules.get("config");
 		Map columns = (Map) this.rules.get("columns");
 		List<Map> conditionColumns = (List) columns.get("conditions");
 		List<Map> actionColumns = (List) columns.get("actions");
@@ -78,7 +79,7 @@ public class RulesConverter {
 		List<DmnDecisionTableInputImpl> inputList = new ArrayList<DmnDecisionTableInputImpl>();
 		List<DmnDecisionTableOutputImpl> outputList = new ArrayList<DmnDecisionTableOutputImpl>();
 		List<DmnDecisionTableRuleImpl> ruleList = new ArrayList<DmnDecisionTableRuleImpl>();
-		processDecisionTable(conditionColumns, actionColumns, inputList, outputList, ruleList);
+		processDecisionTable(config,conditionColumns, actionColumns, inputList, outputList, ruleList);
 		decisionTable.setInputs(inputList);
 		decisionTable.setOutputs(outputList);
 		decisionTable.setRules(ruleList);
@@ -158,7 +159,7 @@ public class RulesConverter {
 		return new DmnTypeDefinitionImpl(typeName, transformer);
 	}
 
-	protected void processDecisionTable(List<Map> conditionColumns, List<Map> actionColumns, List<DmnDecisionTableInputImpl> inputList, List<DmnDecisionTableOutputImpl> outputList, List<DmnDecisionTableRuleImpl> ruleList) {
+	protected void processDecisionTable(Map config, List<Map> conditionColumns, List<Map> actionColumns, List<DmnDecisionTableInputImpl> inputList, List<DmnDecisionTableOutputImpl> outputList, List<DmnDecisionTableRuleImpl> ruleList) {
 
 		for (Map<String, Object> conditionColumn : conditionColumns) {
 

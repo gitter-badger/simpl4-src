@@ -104,7 +104,7 @@ public class RulesConverter {
 		// decision table
 		//
 		DecisionTable decisionTable = new DecisionTable();
-		decisionTable.setId("decisionTable_1" );
+		decisionTable.setId("dt_"+cname );
 
 		decisionTable.setHitPolicy(HitPolicy.FIRST);
 
@@ -240,6 +240,9 @@ public class RulesConverter {
 				String operation = (String)conditionColumn.get("operation");
 			  String text = data != null ? String.valueOf(data) : "";
 				if( !isEmpty(text) ){
+					if( "date".equals(variableType)){
+						text = "fn_date('"+text+"')";
+					}
 					text = getOp( operation, text, variableType);
 				}
 				UnaryTests inputEntry = new UnaryTests();

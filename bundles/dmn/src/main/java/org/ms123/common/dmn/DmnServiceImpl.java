@@ -76,9 +76,13 @@ public class DmnServiceImpl extends BaseDmnServiceImpl implements DmnService {
 		}
 	}
 
-	public List<Map> executeDecision(@PName(NAMESPACE) String namespace, @PName(NAME) String name, @PName("variables") Map variables) throws RpcException {
+	public List<Map> executeDecision(
+			@PName(NAMESPACE) String namespace, 
+			@PName(NAME) String name, 
+			@PName("jsonString") @POptional String jsonString, 
+			@PName("variables") Map variables) throws RpcException {
 		try {
-			return _executeDecision(namespace, name, variables);
+			return _executeDecision(namespace, name, jsonString, variables);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DmnServiceImpl.executeDecision:", e);
 		} finally {

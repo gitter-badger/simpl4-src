@@ -45,6 +45,7 @@ import org.osgi.framework.wiring.*;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  *
@@ -86,8 +87,8 @@ class BaseDmnServiceImpl {
 		return null;
 	}
 
-	protected List<Map> _executeDecision(String namespace, String name, Map variables) throws Exception {
-		DmnDecision decision = getDecision(namespace, name);
+	protected List<Map> _executeDecision(String namespace, String name, String jsonString, Map variables) throws Exception {
+		DmnDecision decision = getDecision(namespace, name,jsonString);
 		String cname = getCleanName(name);
 		info(this, "Dmn._executeDecision(" + cname + ").input:" + variables);
 		DmnDecisionResult result = this.dmnEngine.evaluateDecision(decision, variables);
@@ -95,16 +96,22 @@ class BaseDmnServiceImpl {
 		return new ArrayList<Map>(result.getResultList());
 	}
 
-	private DmnDecision getDecision(String namespace, String name) throws Exception {
+	private DmnDecision getDecision(String namespace, String name, String jsonString) throws Exception {
 		String cname = getCleanName(name);
 		String fullName = getFullName(namespace, cname);
 		DmnDecision dmnDecision = this.dmnCache.get(fullName);
-		if (dmnDecision == null) {
-			Map rulesMap = getRules(namespace, name);
-			RulesConverter rc = new RulesConverter(rulesMap);
-			dmnDecision = rc.convert(cname);
-			//			this.dmnCache.put( fullName, dmnDecision);
+		if( dmnDecision != null){
+			return dmnDecision;
 		}
+		Map rulesMap = null;
+		if( !isEmpty(jsonString)){
+			rulesMap = (Map)ds.deserialize( jsonString);
+		}else{
+			rulesMap = getRules(namespace, name);
+		}
+		RulesConverter rc = new RulesConverter(rulesMap);
+		dmnDecision = rc.convert(cname);
+		//			this.dmnCache.put( fullName, dmnDecision);
 		return dmnDecision;
 	}
 
