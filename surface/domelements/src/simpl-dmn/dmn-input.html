@@ -149,7 +149,7 @@
 		<style include="dmn-input-styles"></style>
 		<div id="container" class="layout horizontal">
 			<select on-change="operationValueChanged" id="operationSelect" bind-value="{{operationValue}}"> </select>
-			<input id="expressionInput" is="iron-input" prevent-invalid-input allowed-pattern="[0-9]" bind-value="{{expressionValue}}">
+			<input id="expressionInput" is="iron-input" bind-value="{{expressionValue}}">
 		</div>
 	</template>
 	<script>

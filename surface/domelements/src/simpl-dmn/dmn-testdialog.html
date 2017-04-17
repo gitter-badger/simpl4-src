@@ -32,7 +32,12 @@
 				<div class="layout vertical flex">
 					<iron-icon class="error-big" icon="device:wifi-tethering"></iron-icon>
 					<template is="dom-repeat" items="[[decision.columns.conditions]]">
-						<input-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
+						<template is="dom-if" if="[[isBoolean(item)]]">
+							<checkbox-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></checkbox-field>
+						</template>
+						<template is="dom-if" if="[[isString(item)]]">
+							<input-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
+						</template>
 					</template>
 				</div>
 				<div class="buttons">
@@ -51,20 +56,29 @@
 				behaviors: [
 					TranslationsBehavior
 				],
+				isBoolean: function( item ) {
+					return item.variableType == "boolean";
+				},
+				isString: function( item ) {
+					return item.variableType != "boolean";
+				},
 				onTest: function() {
 					var variables = {};
 					for ( var i = 0; i < this.decision.columns.conditions.length; i++ ) {
 						var cond = this.decision.columns.conditions[ i ];
 						var f = this.querySelector( "#" + cond.variableName );
 						var val = f.getValue();
-						variables[ cond.variableName ] = val || null;
+						var def = null;
+						if ( cond.variableType == "string" ) {
+							def = "";
+						}
+						if ( val == null ) {
+							val = def;
+						}
+						variables[ cond.variableName ] = val;
 					}
 					console.log( "variables:", variables );
 					this.doTest( variables );
-					this.fire( "testdialog-ok", {
-						decision: this.decision,
-						variables: variables
-					} )
 				},
 				doTest: function( variables ) {
 					var decision = this.decision;
@@ -84,6 +98,13 @@
 							console.error( "executeDecision:", e );
 							if ( e == null ) return;
 							this.$.toastId.show( tr( "error" ), "error", "10000" );
+							try {
+								if ( e.message.indexOf( "MultipleCompilationErrors" ) > 0 ) {
+									this.testResult = e.message.substring( this.getPosition( e.message, ":", 5 )+1 ); //.split( ":" )[ 3 ];
+								} else {
+									this.testResult = e.message.split( ":" )[ 2 ];
+								}
+							} catch ( e ) {}
 						},
 						completed: function( ret ) {
 							console.log( "executeDecision.ret:", ret );
@@ -92,6 +113,9 @@
 						}
 					}
 					simpl4.util.Rpc.rpcAsync( params );
+				},
+				getPosition: function( s, sub, index ) {
+					return s.split( sub, index ).join( sub ).length;
 				},
 				onClose: function() {
 					this.$.dialogId.close();

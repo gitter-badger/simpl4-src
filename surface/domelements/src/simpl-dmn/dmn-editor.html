@@ -379,7 +379,7 @@
 					return cell;
 				}
 				if ( col.variableType == "boolean" ) {
-					return cell;
+					return col.variableName + " ==  " + cell;
 				}
 				var op = cell.op !== "=" ? cell.op : "==";
 				var expr = cell.expr;
@@ -404,7 +404,11 @@
 					var col = this.cols[ i ];
 					var c = {};
 					c.operation = "expr";
-					c.variableType = col.kind == "input" ? col.type.substring( 4 ) : col.type;
+					if( col.type == "checkbox" ){
+						c.variableType = "boolean";
+					}else{
+						c.variableType = col.kind == "input" ? col.type.substring( 4 ) : col.type;
+					}
 					c.variableName = col.valueKey;
 					c.data = [];
 					if ( col.kind == "input" ) {
