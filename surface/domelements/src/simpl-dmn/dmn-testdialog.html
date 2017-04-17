@@ -1,0 +1,107 @@
+<div>
+	<dom-module id="dmn-testdialog">
+		<style>
+			:host {
+				pointer-events: all;
+			}
+			paper-button[dialog] {
+				color: black !important;
+			}
+			iron-icon.error-big {
+				color: #c00418;
+				height: 64px;
+				width: 64px;
+			}
+			paper-dialog {
+				min-height: 250px;
+				min-width: 300px;
+				max-width: 300px;
+				color: #727272 !important;
+				position: relative;
+			}
+			simpl-toast /deep/ span {
+				min-width: 450px;
+				padding-right: 25px;
+				font-size: 30px;
+				vertical-align: middle;
+			}
+
+		</style>
+		<template>
+			<paper-dialog with-backdrop id="dialogId">
+				<div class="layout vertical flex">
+					<iron-icon class="error-big" icon="device:wifi-tethering"></iron-icon>
+					<template is="dom-repeat" items="[[decision.columns.conditions]]">
+						<input-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
+					</template>
+				</div>
+				<div class="buttons">
+					<paper-button raised dialog on-tap="onTest">
+						<iron-icon icon="device:wifi-tethering"></iron-icon>Test</paper-button>
+					<paper-button raised dialog on-tap="onClose">
+						<iron-icon icon="check"></iron-icon>Close</paper-button>
+				</div>
+				<span>[[testResult]]</span>
+			</paper-dialog>
+			<simpl-toast id="toastId"></simpl-toast>
+		</template>
+		<script>
+			Polymer( {
+				is: 'dmn-testdialog',
+				behaviors: [
+					TranslationsBehavior
+				],
+				onTest: function() {
+					var variables = {};
+					for ( var i = 0; i < this.decision.columns.conditions.length; i++ ) {
+						var cond = this.decision.columns.conditions[ i ];
+						var f = this.querySelector( "#" + cond.variableName );
+						var val = f.getValue();
+						variables[ cond.variableName ] = val || null;
+					}
+					console.log( "variables:", variables );
+					this.doTest( variables );
+					this.fire( "testdialog-ok", {
+						decision: this.decision,
+						variables: variables
+					} )
+				},
+				doTest: function( variables ) {
+					var decision = this.decision;
+					var variables = variables;
+					var params = {
+						service: "dmn",
+						method: "executeDecision",
+						parameter: {
+							namespace: "mdm",
+							name: "test",
+							variables: variables,
+							jsonString: JSON.stringify( decision )
+						},
+						async: true,
+						context: this,
+						failed: function( e ) {
+							console.error( "executeDecision:", e );
+							if ( e == null ) return;
+							this.$.toastId.show( tr( "error" ), "error", "10000" );
+						},
+						completed: function( ret ) {
+							console.log( "executeDecision.ret:", ret );
+							this.$.toastId.show( tr( "Test ok" ), "success", "10000" );
+							this.testResult = JSON.stringify( ret, null, 2 );
+						}
+					}
+					simpl4.util.Rpc.rpcAsync( params );
+				},
+				onClose: function() {
+					this.$.dialogId.close();
+				},
+				open: function( decision ) {
+					this.decision = decision;
+					this.$.dialogId.open();
+				}
+			} );
+
+		</script>
+	</dom-module>
+</div>

@@ -20,6 +20,7 @@
 -->
 <script src="gridedit.js"></script>
 <link rel="import" href="dmn-paramdialog.html">
+<link rel="import" href="dmn-testdialog.html">
 <style>
 	.dmnTable {
 		//width: 100%;
@@ -142,6 +143,8 @@
 		<paper-toolbar class="blue">
 			<paper-button style="color:#d32f2f;" on-tap="doSave">
 				<iron-icon icon="save"></iron-icon>[[tr("dmn.save")]]</paper-button>
+			<paper-button on-tap="doTest">
+				<iron-icon icon="device:wifi-tethering"></iron-icon>[[tr("Test")]]</paper-button>
 			<paper-button on-tap="addInput">
 				<iron-icon icon="icons:file-download"></iron-icon>[[tr("dmn.newInput")]]</paper-button>
 			<paper-button on-tap="addOutput">
@@ -150,8 +153,9 @@
 				<iron-icon icon="add"></iron-icon>[[tr("dmn.newRow")]]</paper-button>
 		</paper-toolbar>
 		<div id="gridedit"></div>
-		<dmn-paramdialog on-inputparamdialog-ok="onInputParamDialog" on-outputparamdialog-ok="onOutputParamDialog" id="dmnParamDialogId"></dmn-typedialog>
-			<simpl-toast id="toastId"></simpl-toast>
+		<dmn-paramdialog on-inputparamdialog-ok="onInputParamDialog" on-outputparamdialog-ok="onOutputParamDialog" id="dmnParamDialogId"></dmn-paramdialog>
+		<dmn-testdialog id="dmnTestDialogId"></dmn-testdialog>
+		<simpl-toast id="toastId"></simpl-toast>
 	</template>
 	<script>
 		Polymer( {
@@ -182,7 +186,7 @@
 					onCellClick: function( e ) {
 						console.log( "onCellClick:", e );
 					},
-					contextMenuOrder: [ "undo", "redo", "insertInput", "insertOutput", "removeColumn" ],
+					contextMenuOrder: [ "undo", "redo", "insertInput", "insertOutput", "removeColumn", "removeRow" ],
 					contextMenuItems: {
 						insertInput: {
 							name: tr( 'dmn.insertInput' ),
@@ -198,6 +202,11 @@
 							name: tr( 'dmn.removeColumn' ),
 							shortCut: ctrlOrCmd + '+R',
 							callback: this.removeColumn.bind( this )
+						},
+						removeRow: {
+							name: tr( 'dmn.removeRow' ),
+							shortCut: ctrlOrCmd + '+K',
+							callback: this.removeRow.bind( this )
 						}
 					}
 				} )
@@ -314,6 +323,17 @@
 			addRow: function() {
 				this.gridedit.addRow( this.rows.length, true );
 			},
+			removeRow: function() {
+				var rows = this.gridedit.activeCell();
+				if ( rows == null ) return;
+				if ( rows.length > 1 ) {
+					for ( var i = 0; i < rows.length; i++ ) {
+						this.gridedit.removeRow( rows[ i ].row.index, true );
+					}
+				} else {
+					this.gridedit.removeRow( rows.row.index, true );
+				}
+			},
 			gridRebuild: function() {
 				this.gridedit.repopulate();
 				this.gridedit.rebuild( {
@@ -321,10 +341,16 @@
 				} );
 				console.log( "gridRebuild.data:", JSON.stringify( this.gridedit.data(), null, 2 ) );
 			},
+			doTest: function() {
+				this.async( function() {
+					var decision = this.buildDecisionJson();
+					if ( decision.columns.conditions.length > 0 ) {
+						this.$.dmnTestDialogId.open( decision );
+					}
+				}, 50 )
+			},
 			doSave: function() {
-				var data = this.gridedit.data();
-				console.log( "doSave.cols:", JSON.stringify( this.cols, null, 2 ) );
-				console.log( "doSave.data:", JSON.stringify( data, null, 2 ) );
+				var decision = this.buildDecisionJson();
 				return;
 				var params = {
 					service: "dmn",
@@ -332,7 +358,7 @@
 					parameter: {
 						namespace: "mdm",
 						name: "check.rule",
-						jsonString: JSON.stringify( data )
+						jsonString: JSON.stringify( decision )
 					},
 					async: true,
 					context: this,
@@ -347,7 +373,54 @@
 					}
 				}
 				simpl4.util.Rpc.rpcAsync( params );
-
+			},
+			buildValue: function( kind, col, cell ) {
+				if ( kind == "output" ) {
+					return cell;
+				}
+				if ( col.variableType == "boolean" ) {
+					return cell;
+				}
+				var op = cell.op !== "=" ? cell.op : "==";
+				var expr = cell.expr;
+				if ( col.variableType == "string" ) {
+					expr = "'" + expr + "'";
+					if ( /^[a-z]/i.test( op ) ) {
+						return col.variableName + "." + op + "(" + expr + ")";
+					}
+				}
+				return col.variableName + " " + op + " " + expr;
+			},
+			buildDecisionJson: function() {
+				var rows = this.gridedit.data();
+				console.log( "doSave.cols:", JSON.stringify( this.cols, null, 2 ) );
+				console.log( "doSave.data:", JSON.stringify( rows, null, 2 ) );
+				var columns = {}
+				var conditions = [];
+				var actions = [];
+				columns.conditions = conditions;
+				columns.actions = actions;
+				for ( var i = 0; i < this.cols.length; i++ ) {
+					var col = this.cols[ i ];
+					var c = {};
+					c.operation = "expr";
+					c.variableType = col.kind == "input" ? col.type.substring( 4 ) : col.type;
+					c.variableName = col.valueKey;
+					c.data = [];
+					if ( col.kind == "input" ) {
+						conditions.push( c )
+					} else {
+						actions.push( c )
+					}
+					for ( var j = 0; j < rows.length; j++ ) {
+						var value = this.buildValue( col.kind, c, rows[ j ][ i ] );
+						c.data.push( value );
+					}
+				}
+				console.log( "doSave.result:", JSON.stringify( columns, null, 2 ) );
+				return {
+					columns: columns
+				};
 			},
 			ready: function() {}
 		} );
