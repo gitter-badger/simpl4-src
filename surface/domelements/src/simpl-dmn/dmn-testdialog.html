@@ -25,6 +25,12 @@
 				font-size: 30px;
 				vertical-align: middle;
 			}
+			pre {
+				border: 1px solid #607d8b;
+				display: flex;
+				height: 100%;
+				overflow: auto;
+			}
 
 		</style>
 		<template>
@@ -49,7 +55,10 @@
 					<paper-button raised dialog on-tap="onClose">
 						<iron-icon icon="check"></iron-icon>Close</paper-button>
 				</div>
-				<pre>[[testResult]]</pre>
+				<div id="viewer">
+					<pre>[[testResult]]</pre>
+				</div>
+				<br/>
 			</paper-dialog>
 			<simpl-toast id="toastId"></simpl-toast>
 		</template>
@@ -81,13 +90,13 @@
 						if ( val == null ) {
 							val = def;
 						}
-						if( cond.realType == 'date'){
-							variables[ cond.variableName ] = moment(val).valueOf();
-						}else if( cond.variableType == 'integer'){
-							variables[ cond.variableName ] = parseInt(val);
-						}else if( cond.variableType == 'double'){
-							variables[ cond.variableName ] = parseFloat(val);
-						}else{
+						if ( cond.realType == 'date' ) {
+							variables[ cond.variableName ] = moment( val ).valueOf();
+						} else if ( cond.variableType == 'integer' ) {
+							variables[ cond.variableName ] = parseInt( val );
+						} else if ( cond.variableType == 'double' ) {
+							variables[ cond.variableName ] = parseFloat( val );
+						} else {
 							variables[ cond.variableName ] = val;
 						}
 					}
@@ -114,7 +123,7 @@
 							this.$.toastId.show( tr( "error" ), "error", "10000" );
 							try {
 								if ( e.message.indexOf( "MultipleCompilationErrors" ) > 0 ) {
-									this.testResult = e.message.substring( this.getPosition( e.message, ":", 5 )+1 ); //.split( ":" )[ 3 ];
+									this.testResult = e.message.substring( this.getPosition( e.message, ":", 5 ) + 1 ); //.split( ":" )[ 3 ];
 								} else {
 									this.testResult = e.message.split( ":" )[ 2 ];
 								}
@@ -123,9 +132,12 @@
 						completed: function( ret ) {
 							console.log( "executeDecision.ret:", ret );
 							this.$.toastId.show( tr( "Test ok" ), "success", "10000" );
-							var res = { vars: variables, result:ret};
+							var res = {
+								vars: variables,
+								result: ret
+							};
 							var json = JSON.stringify( res, null, 2 );
-							this.testResult = json.substr(1,json.length-2);
+							this.testResult = json.substr( 2, json.length - 3 );
 						}
 					}
 					simpl4.util.Rpc.rpcAsync( params );
