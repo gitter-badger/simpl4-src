@@ -25,7 +25,7 @@
 			<paper-dialog with-backdrop id="dialogId">
 				<div class="layout vertical flex">
 					<iron-icon class="error-big" icon="[[icon]]"></iron-icon>
-					<simpl-form id="formId" namespace="global" on-xaction="onTap" data="[[data]]" form-name="dmnparam.form"></simpl-form>
+					<simpl-form id="formId" namespace="global" on-xaction="onTap" data="[[data]]" form-name="[[formname]]"></simpl-form>
 				</div>
 				<div class="buttons">
 					<paper-button raised dialog on-tap="onTap">
@@ -54,6 +54,7 @@
 					this.$.dialogId.close();
 				},
 				open: function( type, index ) {
+					this.formname= "dmn"+type+".form";
 					this.type = type;
 					this.index = index;
 					if ( "input" === this.type ) {

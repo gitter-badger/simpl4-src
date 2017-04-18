@@ -123,9 +123,10 @@
 							this.$.toastId.show( tr( "error" ), "error", "10000" );
 							try {
 								if ( e.message.indexOf( "MultipleCompilationErrors" ) > 0 ) {
-									this.testResult = e.message.substring( this.getPosition( e.message, ":", 5 ) + 1 ); //.split( ":" )[ 3 ];
+									this.testResult = e.message.substring( this.getPosition( e.message, ":", 5 ) + 1 );
 								} else {
-									this.testResult = e.message.split( ":" )[ 2 ];
+									//this.testResult = e.message.split( ":" )[ 2 ];
+									this.testResult = e.message.substring( this.getPosition( e.message, ":", 2 ) + 1 ); 
 								}
 							} catch ( e ) {}
 						},

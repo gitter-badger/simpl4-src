@@ -303,6 +303,12 @@
 			insertOutput: function( index ) {
 				var menu = this.gridedit.contextMenu;
 				var index = menu.getUpperLeftPasteCell().index + 1;
+				var len = _.filter( this.cols, function( col ) {
+					return col.kind == 'input'
+				} ).length || 0;
+				if( index < len){
+					index = len;	
+				}
 				this.$.dmnParamDialogId.open( "output", index );
 			},
 			_insertOutput: function( index, data ) {
@@ -313,6 +319,7 @@
 					label: "Output -> " + ( data.label || data.name ) + ":" + data.type,
 					valueKey: data.name,
 					type: 'string',
+					exprType: data.type.substring(4),
 					editable: true
 				};
 				this.gridedit.addToStack( {
@@ -471,6 +478,7 @@
 					if ( col.kind == "input" ) {
 						conditions.push( c )
 					} else {
+						c.variableType = col.exprType ? col.exprType : col.type;
 						actions.push( c )
 					}
 					for ( var j = 0; j < rows.length; j++ ) {
