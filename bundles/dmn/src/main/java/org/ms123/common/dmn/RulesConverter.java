@@ -157,6 +157,8 @@ public class RulesConverter {
 			transformer = new DateDataTypeTransformer();
 		} else if ("string".equals(type)) {
 			transformer = new StringDataTypeTransformer();
+		} else {
+			transformer = new StringDataTypeTransformer();
 		}
 		return new DmnTypeDefinitionImpl(typeName, transformer);
 	}
@@ -237,6 +239,7 @@ public class RulesConverter {
 				DmnExpressionImpl conc = new DmnExpressionImpl();
 				conc.setId("output_" + variableName + "_" + ruleCounter);
 				conc.setExpression(text);
+				conc.setExpressionLanguage("groovy");
 				listConc.add(conc);
 			}
 			rule.setConclusions(listConc);
