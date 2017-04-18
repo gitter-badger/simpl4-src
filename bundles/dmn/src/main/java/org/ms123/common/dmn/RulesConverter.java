@@ -176,8 +176,7 @@ public class RulesConverter {
 			expr.setTypeDefinition(getTypeDefinition(variableType));
 			inputClause.setExpression(expr);
 			expr.setExpression(variableName);
-
-			conditionColumn.put("inputClause", inputClause);
+			info(this,"Input("+variableName+","+variableType+"):"+inputClause);
 			inputList.add(inputClause);
 		}
 
@@ -192,7 +191,7 @@ public class RulesConverter {
 			outputClause.setName(variableName);
 			outputClause.setOutputName(variableName);
 
-			actionColumn.put("outputClause", outputClause);
+			info(this,"Output("+variableName+","+variableType+"):"+outputClause);
 			outputList.add(outputClause);
 		}
 		int ruleCounter = 1;
@@ -200,10 +199,10 @@ public class RulesConverter {
 		int countRules = getCountRules(conditionColumns);
 		for (int i = 0; i < countRules; i++) {
 			DmnDecisionTableRuleImpl rule = new DmnDecisionTableRuleImpl();
+			List<DmnExpressionImpl> listCond = new ArrayList<DmnExpressionImpl>();
 			for (Map conditionColumn : conditionColumns) {
 				List<Object> dataList = (List) conditionColumn.get("data");
 				Object data = dataList.get(i);
-				info(this,"Data:"+data);
 
 				String variableName = (String) conditionColumn.get("variableName");
 				String variableType = (String) conditionColumn.get("variableType");
@@ -217,17 +216,15 @@ public class RulesConverter {
 						expr = getOp(variableName, operation, expr, variableType);
 					}
 				}
-				info(this, "Rule.setExpression:" + expr);
-
 				DmnExpressionImpl cond = new DmnExpressionImpl();
 				cond.setId("input_" + variableName + "_" + ruleCounter);
 				cond.setExpression(expr);
 				cond.setExpressionLanguage("groovy");
-				List<DmnExpressionImpl> listCond = new ArrayList<DmnExpressionImpl>();
 				listCond.add(cond);
-				rule.setConditions(listCond);
 			}
+			rule.setConditions(listCond);
 
+			List<DmnExpressionImpl> listConc = new ArrayList<DmnExpressionImpl>();
 			for (Map actionColumn : actionColumns) {
 				List<Object> dataList = (List) actionColumn.get("data");
 				Object data = dataList.get(i);
@@ -240,12 +237,11 @@ public class RulesConverter {
 				DmnExpressionImpl conc = new DmnExpressionImpl();
 				conc.setId("output_" + variableName + "_" + ruleCounter);
 				conc.setExpression(text);
-				List<DmnExpressionImpl> listConc = new ArrayList<DmnExpressionImpl>();
 				listConc.add(conc);
-				rule.setConclusions(listConc);
-
 			}
+			rule.setConclusions(listConc);
 			ruleCounter++;
+			info(this,"Rule:"+rule);
 			ruleList.add(rule);
 		}
 	}
