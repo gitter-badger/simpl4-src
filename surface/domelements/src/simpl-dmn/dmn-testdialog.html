@@ -13,7 +13,7 @@
 				width: 64px;
 			}
 			paper-dialog {
-				min-height: 250px;
+				min-height: 350px;
 				min-width: 300px;
 				max-width: 300px;
 				color: #727272 !important;
@@ -49,7 +49,7 @@
 					<paper-button raised dialog on-tap="onClose">
 						<iron-icon icon="check"></iron-icon>Close</paper-button>
 				</div>
-				<span>[[testResult]]</span>
+				<pre>[[testResult]]</pre>
 			</paper-dialog>
 			<simpl-toast id="toastId"></simpl-toast>
 		</template>
@@ -83,6 +83,10 @@
 						}
 						if( cond.realType == 'date'){
 							variables[ cond.variableName ] = moment(val).valueOf();
+						}else if( cond.variableType == 'integer'){
+							variables[ cond.variableName ] = parseInt(val);
+						}else if( cond.variableType == 'double'){
+							variables[ cond.variableName ] = parseFloat(val);
 						}else{
 							variables[ cond.variableName ] = val;
 						}
@@ -119,7 +123,9 @@
 						completed: function( ret ) {
 							console.log( "executeDecision.ret:", ret );
 							this.$.toastId.show( tr( "Test ok" ), "success", "10000" );
-							this.testResult = JSON.stringify( ret, null, 2 );
+							var res = { vars: variables, result:ret};
+							var json = JSON.stringify( res, null, 2 );
+							this.testResult = json.substr(1,json.length-2);
 						}
 					}
 					simpl4.util.Rpc.rpcAsync( params );
