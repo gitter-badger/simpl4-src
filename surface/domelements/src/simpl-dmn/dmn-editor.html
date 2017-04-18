@@ -161,7 +161,7 @@
 		Polymer( {
 			is: "dmn-editor",
 			properties: {
-				name: {
+				key: {
 					type: String
 				}
 			},
@@ -235,6 +235,9 @@
 					this.gridRebuild();
 				} ).bind( this ) )
 				this.gridedit = ge;
+				this.async( function() {
+					this.load();
+				}, 50 )
 			},
 			onInputParamDialog: function( e ) {
 				this.$.dmnParamDialogId.close();
@@ -350,26 +353,73 @@
 				}, 50 )
 			},
 			doSave: function() {
+				this.async( function() {
+					this._doSave();
+				}, 50 )
+			},
+			_doSave: function() {
 				var decision = this.buildDecisionJson();
-				return;
+				var rows = this.gridedit.data();
+				var data = {
+					decision: decision,
+					meta: {
+						rows: rows,
+						cols: this.cols
+					}
+				}
 				var params = {
-					service: "dmn",
-					method: "deployDMN",
+					service: "registry",
+					method: "set",
 					parameter: {
-						namespace: "mdm",
-						name: "check.rule",
-						jsonString: JSON.stringify( decision )
+						namespace: this.namespace,
+						key: this.key,
+						value: JSON.stringify( data )
 					},
 					async: true,
 					context: this,
 					failed: function( e ) {
-						console.error( "saveDMN:", e );
+						console.error( "registry.set:", e );
 						if ( e == null ) return;
 						this.$.toastId.show( tr( "error" ), "error", "10000" );
 					},
 					completed: function( ret ) {
-						console.log( "decisionTableRule1.ret:", ret );
-						this.$.toastId.show( tr( "classification_saved" ), "success", "10000" );
+						this.$.toastId.show( tr( "Ok" ), "success", "10000" );
+					}
+				}
+				simpl4.util.Rpc.rpcAsync( params );
+			},
+			load: function() {
+				var params = {
+					service: "registry",
+					method: "get",
+					parameter: {
+						namespace: this.namespace,
+						key: this.key
+					},
+					async: true,
+					context: this,
+					failed: function( e ) {
+						console.error( "registry.get:", e );
+					},
+					completed: function( ret ) {
+						console.log( "ret:", JSON.stringify( ret, null, 2 ) );
+						if ( ret.meta == null ) return;
+						this.cols = ret.meta.cols;
+						var rows = ret.meta.rows;
+						var _rows = [];
+						for ( var i = 0; i < rows.length; i++ ) {
+							var _row = {}
+							for ( var j = 0; j < this.cols.length; j++ ) {
+								_row[ this.cols[ j ].valueKey ] = rows[ i ][ j ];
+							}
+							_rows.push( _row );
+						}
+						this.rows = _rows;
+						this.gridedit.rebuild( {
+							initialize: true,
+							cols: this.cols,
+							rows: this.rows
+						} );
 					}
 				}
 				simpl4.util.Rpc.rpcAsync( params );
@@ -383,9 +433,9 @@
 				}
 				var op = cell.op !== "=" ? cell.op : "==";
 				var expr = cell.expr;
-				if ( col.realType == 'date'){
-					console.log("Date.conv:", moment(expr).valueOf());
-					return col.variableName + " " + op + " " + moment(expr).valueOf();
+				if ( col.realType == 'date' ) {
+					console.log( "Date.conv:", moment( expr ).valueOf() );
+					return col.variableName + " " + op + " " + moment( expr ).valueOf();
 				}
 				if ( col.variableType == "string" ) {
 					expr = "'" + expr + "'";
@@ -408,12 +458,12 @@
 					var col = this.cols[ i ];
 					var c = {};
 					c.operation = "expr";
-					if( col.type == "checkbox" ){
+					if ( col.type == "checkbox" ) {
 						c.variableType = "boolean";
-					}else if( col.type == "dmn-date" ){
+					} else if ( col.type == "dmn-date" ) {
 						c.variableType = "long";
 						c.realType = "date";
-					}else{
+					} else {
 						c.variableType = col.kind == "input" ? col.type.substring( 4 ) : col.type;
 					}
 					c.variableName = col.valueKey;
@@ -428,7 +478,6 @@
 						c.data.push( value );
 					}
 				}
-				console.log( "doSave.result:", JSON.stringify( columns, null, 2 ) );
 				return {
 					columns: columns
 				};
