@@ -42,6 +42,7 @@ import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.script.ScriptEngineService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.*;
+import java.security.MessageDigest;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -82,52 +83,46 @@ class BaseDmnServiceImpl {
 	}
 
 	protected Map _deployDMN(String namespace, String name) {
-		String cname = getCleanName(name);
-		dmnCache.remove(cname);
 		return null;
 	}
 
-	protected List<Map> _executeDecision(String namespace, String name, String jsonString, Map variables) throws Exception {
-		DmnDecision decision = getDecision(namespace, name,jsonString);
-		String cname = getCleanName(name);
-		info(this, "Dmn._executeDecision(" + cname + ").input:" + variables);
+	protected List<Map> _executeDecision(String namespace, String decisionString, Map variables) throws Exception {
+		String md5 = getMD5OfUTF8(decisionString);
+		DmnDecision decision = getDecision(namespace, md5, decisionString);
+		info(this, "Dmn.executeDecision(" + md5 + ").variables:" + variables);
 		DmnDecisionResult result = this.dmnEngine.evaluateDecision(decision, variables);
-		info(this, "Dmn._executeDecision(" + cname + ").resultVars:" + result.getResultList());
+		info(this, "Dmn.executeDecision(" + md5 + ").result:" + result.getResultList());
 		return new ArrayList<Map>(result.getResultList());
 	}
 
-	private DmnDecision getDecision(String namespace, String name, String jsonString) throws Exception {
-		String cname = getCleanName(name);
-		String fullName = getFullName(namespace, cname);
-		DmnDecision dmnDecision = this.dmnCache.get(fullName);
+	private DmnDecision getDecision(String namespace, String md5, String decisionString) throws Exception {
+		DmnDecision dmnDecision = this.dmnCache.get(md5);
 		if( dmnDecision != null){
 			return dmnDecision;
 		}
-		Map rulesMap = null;
-		if( !isEmpty(jsonString)){
-			rulesMap = (Map)ds.deserialize( jsonString);
-		}else{
-			rulesMap = getRules(namespace, name);
-		}
+		Map rulesMap = (Map)ds.deserialize( decisionString);
 		RulesConverter rc = new RulesConverter(rulesMap);
-		dmnDecision = rc.convert(cname);
-		//			this.dmnCache.put( fullName, dmnDecision);
+		dmnDecision = rc.convert("MD5"+ md5);
+		this.dmnCache.put( md5, dmnDecision);
 		return dmnDecision;
 	}
 
-	private Map getRules(String namespace, String name) {
-		String filterJson = this.gitService.searchContent(namespace, name, "sw.rule");
-		Map contentMap = (Map) this.ds.deserialize(filterJson);
-		return contentMap;
-	}
-
-	private String getCleanName(String name) {
-		String cname = name.replace(".", "_");
-		return cname;
-	}
-
-	private String getFullName(String namespace, String name) {
-		return namespace + "." + name;
+	private String getMD5OfUTF8(String text) {
+		try {
+			MessageDigest msgDigest = MessageDigest.getInstance("MD5");
+			byte[] mdbytes = msgDigest.digest(text.getBytes("UTF-8"));
+			StringBuffer hexString = new StringBuffer();
+			for (int i = 0; i < mdbytes.length; i++) {
+				String hex = Integer.toHexString(0xff & mdbytes[i]);
+				if (hex.length() == 1){
+					hexString.append('0');
+				}
+				hexString.append(hex);
+			}
+			return hexString.toString();
+		} catch (Exception ex) {
+			throw new RuntimeException("BaseDmnServiceImpl.getMD5OfUTF8",ex);
+		}
 	}
 }
 

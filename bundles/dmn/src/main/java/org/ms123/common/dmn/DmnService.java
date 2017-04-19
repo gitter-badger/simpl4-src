@@ -19,6 +19,9 @@
 package org.ms123.common.dmn;
 
 import java.util.*;
+import org.ms123.common.rpc.RpcException;
 
 public interface DmnService {
+	public final String DMN_SERVICE = "dmnService";
+	public List<Map> executeDecision( String namespace, String decisionString, Map variables) throws RpcException;
 }
