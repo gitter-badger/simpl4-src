@@ -101,6 +101,9 @@ class BaseDmnServiceImpl {
 			return dmnDecision;
 		}
 		Map rulesMap = (Map)ds.deserialize( decisionString);
+		if( rulesMap.get("decision") != null){
+			rulesMap = (Map)rulesMap.get("decision");
+		}
 		RulesConverter rc = new RulesConverter(rulesMap);
 		dmnDecision = rc.convert("MD5"+ md5);
 		this.dmnCache.put( md5, dmnDecision);
