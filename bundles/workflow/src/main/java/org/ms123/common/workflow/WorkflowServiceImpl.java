@@ -75,6 +75,8 @@ import javax.servlet.http.*;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.dmn.DmnService;
+import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.process.ProcessDefinitionResponse;
 import org.ms123.common.docbook.DocbookService;
@@ -137,6 +139,8 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	private ScriptEngineService m_scriptEngineService;
 
 	protected PermissionService m_permissionService;
+	protected DmnService m_dmnService;
+	protected RegistryService m_registryService;
 
 	protected ActivitiService m_activitiService;
 	protected TransactionService m_transactionService;
@@ -286,6 +290,8 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 			c.getBeans().put(WORKFLOW_SERVICE, this);
 			//c.getBeans().put(CamelService.CAMEL_SERVICE, m_camelService);
 			c.getBeans().put(PermissionService.PERMISSION_SERVICE, m_permissionService);
+			c.getBeans().put(DmnService.DMN_SERVICE, m_dmnService);
+			c.getBeans().put(RegistryService.REGISTRY_SERVICE, m_registryService);
 			exManager.setProcessEngine(m_processEngine);
 			m_shiroJobExecutor.setProcessEngine(m_processEngine);
 		} catch (Exception e) {
@@ -620,6 +626,18 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		this.m_permissionService = paramPermissionService;
 		info("WorkflowServiceImpl.setPermissionService:" + paramPermissionService);
 	}
+	@Reference(multiple = false, dynamic = true, optional=true)
+	public void setDmnService(DmnService paramDmnService) {
+		this.m_dmnService = paramDmnService;
+		info("WorkflowServiceImpl.setDmnService:" + paramDmnService);
+	}
+
+	@Reference(multiple = false, dynamic = true, optional=true)
+	public void setRegistryService(RegistryService paramRegistryService) {
+		this.m_registryService = paramRegistryService;
+		info("WorkflowServiceImpl.setRegistryService:" + paramRegistryService);
+	}
+
 	@Reference(multiple = false, dynamic = true, optional = true)
 	public void setActivitiService(ActivitiService paramActivitiService) {
 		this.m_activitiService = paramActivitiService;

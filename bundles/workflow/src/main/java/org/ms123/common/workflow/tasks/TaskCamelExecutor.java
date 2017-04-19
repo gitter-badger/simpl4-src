@@ -138,12 +138,6 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 			throw new RuntimeException(e);
 		}
 	}
-	private boolean isEmpty(Object s) {
-		if (s == null || "".equals(((String)s).trim())) {
-			return true;
-		}
-		return false;
-	}
 
 	private String getName(String s) {
 		if (s == null) {

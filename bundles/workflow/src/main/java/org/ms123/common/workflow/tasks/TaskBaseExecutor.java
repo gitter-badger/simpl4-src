@@ -55,6 +55,8 @@ import org.apache.commons.beanutils.*;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.dmn.DmnService;
+import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.workflow.GroovyTaskDsl;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.docbook.DocbookService;
@@ -80,11 +82,11 @@ public abstract class TaskBaseExecutor implements Constants {
 
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected JSONSerializer m_js = new JSONSerializer();
-	protected DataLayer m_dataLayer;
-	protected WorkflowService m_workflowService;
-	protected PermissionService m_permissionService;
-	protected BundleContext m_bundleContext;
-	protected CallService m_callService;
+	private DataLayer m_dataLayer;
+	private WorkflowService m_workflowService;
+	private PermissionService m_permissionService;
+	private BundleContext m_bundleContext;
+	private CallService m_callService;
 
 	protected File getProcessBasedir(DelegateExecution execution) {
 		String ws = System.getProperty("workspace");
@@ -160,14 +162,28 @@ public abstract class TaskBaseExecutor implements Constants {
 		}
 	}
 
+	protected void setWorkflowService(WorkflowService ws) {
+		m_workflowService = ws;
+	}
+
+	protected void setDataLayer(DataLayer dl) {
+		m_dataLayer = dl;
+	}
+
 	protected PermissionService getPermissionService() {
 		SessionContext sc = null;
-		if (m_permissionService != null) {
-			return m_permissionService;
-		} else {
-			Map beans = Context.getProcessEngineConfiguration().getBeans();
-			return (PermissionService) beans.get(PermissionService.PERMISSION_SERVICE);
-		}
+		Map beans = Context.getProcessEngineConfiguration().getBeans();
+		return (PermissionService) beans.get(PermissionService.PERMISSION_SERVICE);
+	}
+
+	protected DmnService getDmnService() {
+		Map beans = Context.getProcessEngineConfiguration().getBeans();
+		return (DmnService) beans.get(DmnService.DMN_SERVICE);
+	}
+
+	protected RegistryService getRegistryService() {
+		Map beans = Context.getProcessEngineConfiguration().getBeans();
+		return (RegistryService) beans.get(RegistryService.REGISTRY_SERVICE);
 	}
 
 	protected Object getValue(DelegateExecution execution, String processvar) {
@@ -355,9 +371,6 @@ public abstract class TaskBaseExecutor implements Constants {
 		return script.run();
 	}
 
-	private boolean isEmpty(String s) {
-		return (s == null || "".equals(s.trim()));
-	}
 
 	private String getString(TaskContext tc, String key, String expr) {
 		return expr;
@@ -388,6 +401,35 @@ public abstract class TaskBaseExecutor implements Constants {
 			list.add(s.substring(pos));
 		}
 		return list;
+	}
+
+	protected boolean isEmpty(Object s) {
+		if (s == null || "".equals(((String)s).trim())) {
+			return true;
+		}
+		return false;
+	}
+
+	protected BigInteger checksum(Object obj) {
+		try {
+			if (obj == null) {
+				return BigInteger.ZERO;
+			}
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(bos);
+			oos.writeObject(obj);
+			oos.close();
+			MessageDigest m = MessageDigest.getInstance("SHA1");
+			m.update(bos.toByteArray());
+			return new BigInteger(1, m.digest());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return BigInteger.ZERO;
+	}
+
+	protected String getValueFromRegistry( String key ){
+		return getRegistryService().get(key);
 	}
 
 	protected List<ProcessInstance> getProcessInstances(TaskContext tc, Map<String, String> processCriteria, boolean exception) {
@@ -554,23 +596,6 @@ public abstract class TaskBaseExecutor implements Constants {
 		}
 	}
 
-	protected BigInteger checksum(Object obj) {
-		try {
-			if (obj == null) {
-				return BigInteger.ZERO;
-			}
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(bos);
-			oos.writeObject(obj);
-			oos.close();
-			MessageDigest m = MessageDigest.getInstance("SHA1");
-			m.update(bos.toByteArray());
-			return new BigInteger(1, m.digest());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return BigInteger.ZERO;
-	}
 
 	protected void log(String message) {
 		m_logger.info(message);

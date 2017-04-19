@@ -31,6 +31,7 @@ dependencies {
   	compile files("${bundlesBuild}/org.ms123.common.system-1.0.0.jar")
 		compile files("${bundlesBuild}/org.ms123.common.utils-1.0.0.jar")
 		compile files("${bundlesBuild}/org.ms123.common.workflow.api-1.0.0.jar")
+		compile files("${bundlesBuild}/org.ms123.common.dmn-1.0.0.jar")
 		compile files("${bundlesBuild}/org.ms123.common.camel.api-1.0.0.jar")
   	compile files("${repository}/datanucleus/javax.jdo-3.2.0-m1-SNAPSHOT.jar")
     compile files("${repository}/flexjson-2.1.bar")

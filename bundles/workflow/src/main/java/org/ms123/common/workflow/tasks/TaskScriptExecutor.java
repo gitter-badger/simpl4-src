@@ -87,8 +87,8 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 		tc.setPid(pid);
 		tc.setScript(script);
 		tc.setExecution(variableScope);
-		m_dataLayer = dataLayer;
-		m_workflowService = ws;
+		setDataLayer(dataLayer);
+		setWorkflowService(ws);
 
 		if (m_ownTransaction) {
 			TransactionTemplate tt = getTransactionService().getTransactionTemplate(true);

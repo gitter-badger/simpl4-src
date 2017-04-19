@@ -267,11 +267,5 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		return processDefinition;
 	}
 
-	private boolean isEmpty(Object s) {
-		if (s == null || "".equals(((String) s).trim())) {
-			return true;
-		}
-		return false;
-	}
 }
 

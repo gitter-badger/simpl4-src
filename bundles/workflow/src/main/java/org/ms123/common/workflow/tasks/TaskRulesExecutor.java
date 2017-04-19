@@ -29,6 +29,7 @@ import javax.transaction.UserTransaction;
 import org.ms123.common.data.api.SessionContext;
 import org.apache.commons.beanutils.*;
 import flexjson.*;
+import org.ms123.common.dmn.DmnService;
 import org.ms123.common.store.StoreDesc;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -36,15 +37,19 @@ import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.ProcessEngine;
 import org.ms123.common.git.GitService;
 import org.ms123.common.workflow.RulesProcessor;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings("unchecked")
 public class TaskRulesExecutor extends TaskBaseExecutor implements JavaDelegate {
 
-	protected JSONDeserializer m_ds = new JSONDeserializer();
+	protected JSONDeserializer ds = new JSONDeserializer();
 
-	protected JSONSerializer m_js = new JSONSerializer();
+	protected JSONSerializer js = new JSONSerializer();
 
 	private Expression rulesname;
+	private Expression ruleskey;
 
 	private Expression variablesmapping;
 
@@ -52,12 +57,27 @@ public class TaskRulesExecutor extends TaskBaseExecutor implements JavaDelegate 
 	public void execute(DelegateExecution execution) {
 		TaskContext tc = new TaskContext(execution);
 		String namespace = tc.getTenantId();
-		String rname = rulesname.getValue(execution).toString();
+
+		Object rn =  this.rulesname != null ? this.rulesname.getValue(execution) : null;
+		Object rk =  this.ruleskey != null ? this.ruleskey.getValue(execution) : null;
+
+		String rname=null;
+		String rkey=null;
+		if( !isEmpty( rn )){
+			rname = rn.toString();
+		}else if( !isEmpty( rk )){
+			rkey = rk.toString();
+		}
+		
+		if( isEmpty(rname) && isEmpty( rkey)){
+			throw new RuntimeException("TaskRulesExecutor: one of ruleskey, rulesname  must be set");
+		}
+
 		String vm = variablesmapping.getValue(execution).toString();
-		Map map = (Map) m_ds.deserialize(vm);
+		Map map = (Map) this.ds.deserialize(vm);
 		List<Map> varmap = (List<Map>) map.get("items");
-		m_js.prettyPrint(true);
-		System.out.println("varmap:" + m_js.deepSerialize(varmap));
+		this.js.prettyPrint(true);
+		info(this, "varmap:" + this.js.deepSerialize(varmap));
 		Map<String, Object> values = new HashMap();
 		try {
 			for (Map<String, String> m : varmap) {
@@ -69,19 +89,28 @@ public class TaskRulesExecutor extends TaskBaseExecutor implements JavaDelegate 
 					values.put(rulesvar, o);
 				}
 			}
-			System.out.println("Incomingvalues:" + m_js.deepSerialize(values));
-			Map rules = getRules(rname, namespace);
-			RulesProcessor rp = new RulesProcessor(rules, values);
-			Map ret = rp.execute();
-			System.out.println("RulesProcessor.ret:" + ret);
+			info(this, "Incomingvalues:" + this.js.deepSerialize(values));
+			Map ret = null;
+			if( !isEmpty(rname)){
+				Map rules = getRules(rname, namespace);
+				RulesProcessor rp = new RulesProcessor(rules, values);
+				ret = rp.execute();
+			}else{
+				String decisionString = getValueFromRegistry( rkey );
+				info(this, "RulesProcessor.decisionString:" + decisionString);
+				List<Map> resultList = getDmnService().executeDecision( namespace, decisionString, values);
+				if( resultList!=null && resultList.size()>0){
+					ret = resultList.get(0);
+				}
+			}
+			info(this, "RulesProcessor.ret:" + ret);
 			for (Map<String, String> m : varmap) {
 				String direction = m.get("direction");
 				if (direction.equals("outgoing")) {
 					String rulesvar = m.get("rulesvar");
 					Object o = ret.get(rulesvar);
 					String processvar = m.get("processvar");
-					System.out.println("ProcessVarsetting:processvar:" + processvar + "->rulesvar:" + rulesvar + "("
-							+ o + ")");
+					info(this, "ProcessVarsetting:processvar:" + processvar + "->rulesvar:" + rulesvar + "(" + o + ")");
 					setValue(execution, processvar, o);
 				}
 			}
@@ -95,7 +124,7 @@ public class TaskRulesExecutor extends TaskBaseExecutor implements JavaDelegate 
 		Map beans = Context.getProcessEngineConfiguration().getBeans();
 		GitService gitService = (GitService) beans.get("gitService");
 		String filterJson = gitService.searchContent(namespace, name, "sw.rule");
-		Map contentMap = (Map) m_ds.deserialize(filterJson);
+		Map contentMap = (Map) this.ds.deserialize(filterJson);
 		return contentMap;
 	}
 }

@@ -99,12 +99,6 @@ public class TaskFilterExecutor extends TaskBaseExecutor implements JavaDelegate
 			sc.handleFinally(tx);
 		}
 	}
-	private boolean isEmpty(Object s) {
-		if (s == null || "".equals(((String)s).trim())) {
-			return true;
-		}
-		return false;
-	}
 	private String checkAndGet(Object s, String error) {
 		if (isEmpty(s)) {
 			throw new RuntimeException("TaskFilterExecutor."+error+" is required");

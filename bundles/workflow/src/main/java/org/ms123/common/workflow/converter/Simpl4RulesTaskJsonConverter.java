@@ -43,6 +43,10 @@ public class Simpl4RulesTaskJsonConverter extends BaseBpmnJsonConverter {
 
 	private final String RULESNAME = "rulesname";
 
+	private final String RULESKEY_PROP = "ruleskey";
+
+	private final String RULESKEY = "ruleskey";
+
 	private final String VARMAPPING_PROP = "variablesmapping";
 
 	private final String VARMAPPING = "variablesmapping";
@@ -72,7 +76,12 @@ public class Simpl4RulesTaskJsonConverter extends BaseBpmnJsonConverter {
 
 		field = new FieldExtension();
 		field.setFieldName(RULESNAME);
-		field.setStringValue(checkNull(RULESNAME, propMap.get(RULESNAME_PROP)));
+		field.setStringValue(getValue(RULESNAME, propMap.get(RULESNAME_PROP)));
+		task.getFieldExtensions().add(field);
+
+		field = new FieldExtension();
+		field.setFieldName(RULESKEY);
+		field.setStringValue(getValue(RULESKEY, propMap.get(RULESKEY_PROP)));
 		task.getFieldExtensions().add(field);
 		return task;
 	}
@@ -88,6 +97,12 @@ public class Simpl4RulesTaskJsonConverter extends BaseBpmnJsonConverter {
 	private String checkNull(String name, Object value) {
 		if (value == null)
 			throw new RuntimeException("Simpl4RulesTaskJsonConverter:" + name + " is null");
+		return value.toString();
+	}
+	private String getValue(String name, Object value) {
+		if (value == null){
+			return null;
+		}
 		return value.toString();
 	}
 }
