@@ -273,7 +273,6 @@ ${vfsbundles} \
 ${activemqbundles} \
 ${pdfboxbundles} \
 ${scalabundles} \
-${flowablebundles} \
 ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/pax-web-jetty-bundle-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-spi-4.1.1.jar@3 \
@@ -328,7 +327,6 @@ ${camundabundles} \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.auth-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.auth.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.data-1.0.0.jar \
-  scan-bundle:file:$BUNDLESBUILD/org.ms123.common.flowable-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.dmn-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.data.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.form-1.0.0.jar \
@@ -450,6 +448,7 @@ ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/OrientDBService-1.0.0.jar \
 	scan-bundle:file:$REPOSITORY/KafkaService-1.0.0.jar \
 	scan-bundle:file:$REPOSITORY/joor-0.9.6.jar \
+	scan-bundle:file:$REPOSITORY/juel-2.1.0.bar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \
 	--workingDirectory=${SERVERDIR} \
