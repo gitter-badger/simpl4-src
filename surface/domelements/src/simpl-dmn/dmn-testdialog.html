@@ -111,9 +111,8 @@
 						method: "executeDecision",
 						parameter: {
 							namespace: "mdm",
-							name: "test",
 							variables: variables,
-							jsonString: JSON.stringify( decision )
+							decisionString: JSON.stringify( decision )
 						},
 						async: true,
 						context: this,
