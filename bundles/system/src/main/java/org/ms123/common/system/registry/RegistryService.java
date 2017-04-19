@@ -22,6 +22,7 @@ import java.util.Map;
 import org.ms123.common.rpc.RpcException;
 
 public interface RegistryService {
+	public final String REGISTRY_SERVICE = "registryService";
 	public void  set(String key, String value,Map attributes) throws RpcException;
 	public String  get(String key) throws RpcException;
 	public List<String>  getKeys(Map attributes) throws RpcException;
