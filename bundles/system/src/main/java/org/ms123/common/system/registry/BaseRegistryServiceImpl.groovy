@@ -48,12 +48,13 @@ abstract class BaseRegistryServiceImpl {
 	protected JSONSerializer js = new JSONSerializer();
 	protected Object registryClass;
 
-	protected void  _set(String key, String value){
+	protected void  _set(String key, String value,Map attributes){
 		def obj = this.registryClass.graphQuery("select from Registry where key=?", true, key)
 		if( obj == null){
 			this.registryClass.newInstance( [key:key,value:value] );
 		}else{
 			obj.value = value;
+			obj.attributes = attributes;
 		}
 	}
 	protected String  _get(String key){
@@ -62,6 +63,25 @@ abstract class BaseRegistryServiceImpl {
 			throw new RuntimeException("_get("+key+"):not found");
 		}
 		return obj.value;
+	}
+	protected List<String>  _getKeys(Map attributes){
+		def sql = "select from Registry where ";
+		def and ="";
+		def values = [];
+		attributes.each{ key, value ->
+			sql += and + 'attributes.'+key+'=?';
+			and = " and ";
+			values.add( value);
+		}
+		info(this, "getKeys.sql:"+ sql);
+		info(this, "getKeys.values:"+ values);
+		def objs = this.registryClass.graphQuery(sql, false, values.toArray())
+		def list = [];
+		objs.each{ obj ->
+			list.add(obj.key);
+		}
+		info(this, "getKeys.result:"+ list);
+		return list;
 	}
 	protected void  _delete(String key){
 		def obj = this.registryClass.graphQuery("select from Registry where key=?", true, key)
@@ -83,3 +103,4 @@ abstract class BaseRegistryServiceImpl {
 		}
 	}
 }
+
