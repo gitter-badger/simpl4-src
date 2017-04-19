@@ -29,6 +29,7 @@ qx.Class.define("ms123.Application", {
 
 			ms123.util.RelationList;
 			ms123.util.RepoList;
+			ms123.util.RegistryKeyList;
 			this.__taskbars = {};
 			this.__desktops = {};
 			this.__topPanels = {};
