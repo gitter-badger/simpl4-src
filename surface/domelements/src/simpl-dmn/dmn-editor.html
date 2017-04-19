@@ -163,6 +163,9 @@
 			properties: {
 				key: {
 					type: String
+				},
+				namespace: {
+					type: String
 				}
 			},
 			behaviors: [
@@ -378,8 +381,8 @@
 					service: "registry",
 					method: "set",
 					parameter: {
-						namespace: this.namespace,
 						key: this.key,
+						attributes:{ subject:"decision", namespace:this.namespace},
 						value: JSON.stringify( data )
 					},
 					async: true,
