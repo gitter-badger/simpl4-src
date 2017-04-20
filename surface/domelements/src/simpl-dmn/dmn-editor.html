@@ -161,7 +161,7 @@
 		Polymer( {
 			is: "dmn-editor",
 			properties: {
-				key: {
+				regkey: {
 					type: String
 				},
 				namespace: {
@@ -380,7 +380,7 @@
 					service: "registry",
 					method: "set",
 					parameter: {
-						key: this.key,
+						key: this.regkey,
 						attributes:{ subject:"decision", namespace:this.namespace},
 						value: JSON.stringify( data )
 					},
@@ -403,7 +403,7 @@
 					method: "get",
 					parameter: {
 						namespace: this.namespace,
-						key: this.key
+						key: this.regkey
 					},
 					async: true,
 					context: this,
