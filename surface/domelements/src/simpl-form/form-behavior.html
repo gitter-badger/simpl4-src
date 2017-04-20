@@ -302,6 +302,7 @@
 			this.__dataChanged();
 		},
 		_setData: function( data ) {
+			if( data == null) return;
 			this.fields.forEach( function( field ) {
 				if ( field.setValue == null ) return;
 				field.withoutCheck = true;
