@@ -184,6 +184,7 @@
 					cols: this.cols,
 					rows: this.rows,
 					tableClass: 'dmnTable',
+					element: this.$.gridedit,
 					includeRowHandles: true,
 					includeContextMenu: true,
 					onCellClick: function( e ) {
@@ -321,7 +322,7 @@
 					label: "Output -> " + ( data.label || data.name ) + ":" + data.type,
 					valueKey: data.name,
 					type: 'string',
-					exprType: data.type.substring(4),
+					exprType: data.type,
 					editable: true
 				};
 				this.gridedit.addToStack( {

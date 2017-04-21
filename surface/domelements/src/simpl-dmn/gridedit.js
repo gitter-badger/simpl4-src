@@ -13,7 +13,7 @@
       this.uniqueValueKey = this.config.uniqueValueKey;
       this.rowIndex = this.config.rowIndex;
       this.useFixedHeaders = this.config.useFixedHeaders;
-      this.element = document.querySelectorAll(this.config.element || '#gridedit')[0];
+      this.element = this.config.element,
       this.contextMenu = new GridEdit.ContextMenu(this);
       this.themeName = this.config.themeName;
       this.customTheme = this.config.themeTemplate;
