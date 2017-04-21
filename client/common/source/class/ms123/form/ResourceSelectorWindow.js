@@ -69,6 +69,10 @@ qx.Class.define("ms123.form.ResourceSelectorWindow", {
 			excludePathList = null;
 			includePathList = null;
 			path = "enumerations";
+		}else if( resourceTypes.indexOf( "sw.schema") != -1){
+			excludePathList = null;
+			includePathList = null;
+			path = "jsonschema";
 		}else{
 			excludePathList.push("enumerations");
 			excludePathList.push("data_description");

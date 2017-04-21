@@ -347,6 +347,7 @@ qx.Class.define("ms123.settings.ResourceSelector", {
 						required: true
 					},
 					'config': {
+            'namespace':"global",
 						'type': 'sw.schema',
 						'showTextField':false,
 						'editable':false

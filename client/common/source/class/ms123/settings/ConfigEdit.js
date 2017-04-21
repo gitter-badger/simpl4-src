@@ -71,7 +71,7 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 				if ( data ) {
 					this._schemaname = data[ ms123.settings.Config.SETTINGS_SCHEMANAME ];
 					var schemaString = ms123.util.Remote.rpcSync( "git:searchContent", {
-						reponame: this._facade.storeDesc.getNamespace(),
+						reponame: "global",//this._facade.storeDesc.getNamespace(),
 						name: this._schemaname,
 						type: "sw.schema"
 					} );
