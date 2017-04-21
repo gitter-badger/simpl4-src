@@ -33,9 +33,11 @@ import org.ms123.common.utils.ParameterParser;
 import org.ms123.common.git.GitService;
 import org.ms123.common.libhelper.Inflector;
 import static java.text.MessageFormat.format;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.osgi.service.event.Event;
 
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 /**
  */
 @SuppressWarnings("unchecked")
@@ -81,6 +83,19 @@ class GitMetaDataImpl implements MetaData, Constants {
 		}
 	}
 
+	public List<Map> getResourceSettings(String settingsid, String resourceid) throws Exception {
+		List<Map> repoList = m_gitService.getRepositories(new ArrayList(), false);
+		List<Map> retList = new ArrayList<Map>();
+		for( Map<String,String> repo : repoList){
+			String name = repo.get("name");
+			Map res = getResourceSetting( name, settingsid, resourceid );
+			if( res != null){
+				retList.add( res);
+			}
+		}
+		return retList;
+	}
+
 	public List<String> getResourceSettingNames(String namespace, String settingsid, String resourcePrefix) throws Exception {
 		List<String> assets = m_gitService.assetList(getRepo(namespace), null, SETTING_TYPE,false);
 		List<String> retList = new ArrayList<String>();
@@ -95,21 +110,23 @@ class GitMetaDataImpl implements MetaData, Constants {
 
 	public void setResourceSetting(String namespace, String settingsid, String resourceid, Map settings, boolean overwrite) throws Exception {
 		if (!overwrite && m_gitService.exists(getRepo(namespace), format(SETTING_PATH, resourceid))) {
-			debug("setResourceSetting:" + format(SETTING_PATH, resourceid) + "exists");
+			debug(this,"setResourceSetting:" + format(SETTING_PATH, resourceid) + "exists");
 			return;
 		}
 		m_gitService.putContent(getRepo(namespace), format(SETTING_PATH, resourceid), SETTING_TYPE, m_js.deepSerialize(settings));
+		sendEvent( "setResource", namespace, settingsid, resourceid);
 	}
 
 	public void deleteResourceSetting(String namespace, String settingsid, String resourceid) throws Exception {
-		debug("deleteResourceSetting:"+getRepo(namespace)+","+settingsid+","+resourceid);
+		debug(this,"deleteResourceSetting:"+getRepo(namespace)+","+settingsid+","+resourceid);
 		m_gitService.deleteObjects(getRepo(namespace), SETTINGS_PATH, resourceid);
+		sendEvent( "deleteResource", namespace, settingsid, resourceid);
 	}
 
 	public Map getFieldSets(String settingsid, String namespace, String entityName) throws Exception {
-		debug("getFieldSets:" + settingsid + "/" + entityName + "/" + namespace);
+		debug(this,"getFieldSets:" + settingsid + "/" + entityName + "/" + namespace);
 		List<Map> res = getFieldsetsForEntity(namespace, settingsid, entityName);
-		debug("\t:" + res);
+		debug(this,"\t:" + res);
 		return _listToMap(res, "fsname");
 	}
 
@@ -118,7 +135,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 		String settingStr = getResource(namespace, settingsid, resourceid);
 		if (settingStr != null) {
 			Map m = (Map) m_ds.deserialize(settingStr);
-			debug("m:" + m);
+			debug(this,"m:" + m);
 			return filterFieldSetFields((List) m.get(FIELDSETS),namespace, entity);
 		} else {
 			return new ArrayList();
@@ -136,7 +153,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,StoreDesc.getPackName(entity));
 		if (settingStr != null) {
 			Map m = (Map) m_ds.deserialize(settingStr);
-			debug("m:" + m);
+			debug(this,"m:" + m);
 			Map<String, Map> allFields = _listToMap(m_ssi.m_entityService.getFields(sdesc, StoreDesc.getSimpleEntityName(entity), true), "name");
 			retList = _mergeProperties((List) m.get(FIELDS), allFields);
 			printList("\tAftermerge:", retList);
@@ -151,7 +168,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 			boolean rd = getBoolean(m,"readonly",false);
 			boolean readonly = !sc.isFieldPermitted((String) m.get("name"), StoreDesc.getSimpleEntityName(entity), "write");
 			if( rd) readonly = true;
-			debug("\tisReadOnly(" + m.get("name") + "," + entity + ")" + readonly);
+			debug(this,"\tisReadOnly(" + m.get("name") + "," + entity + ")" + readonly);
 			m.put("readonly", readonly);
 		}
 		if (sortField != null) {
@@ -202,7 +219,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 	}
 
 	private String getResource(String namespace, String settingsid, String resourceid) {
-		debug("GetResource:" + resourceid+"/"+namespace+"/"+settingsid);
+		debug(this,"GetResource:" + resourceid+"/"+namespace+"/"+settingsid);
 		String ret = null;
 		try {
 			StoreDesc sdesc = StoreDesc.getNamespaceData(namespace);
@@ -221,7 +238,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 				} catch (Exception e2) {}
 			}
 		}
-		debug("GetResource.ret:" + ret);
+		debug(this,"GetResource.ret:" + ret);
 		return ret;
 	}
 
@@ -245,25 +262,25 @@ class GitMetaDataImpl implements MetaData, Constants {
 	}
 
 	private void printList(String header, List list) {
-		debug("----->" + header);
+		debug(this,"----->" + header);
 		if (list != null) {
 			String komma = "";
-			debug("\t");
+			debug(this,"\t");
 			Iterator it = list.iterator();
 			while (it.hasNext()) {
 				Map obj = (Map) it.next();
-				debug(komma + obj.get("name"));
+				debug(this,komma + obj.get("name"));
 				komma = ", ";
 			}
 		}
-		debug("");
+		debug(this,"");
 	}
 
 	protected List<Map> _mergeProperties(List<Map> l, Map<String, Map> mapMerge) {
 		List<Map> resList = new ArrayList<Map>();
 		for (Map<String, Object> m : l) {
 			if (getBoolean(m, "enabled", true) == false) {
-				debug("Not enabled:" + m.get("name"));
+				debug(this,"Not enabled:" + m.get("name"));
 				continue;
 			}
 			Map<String, Object> merge = mapMerge.get(m.get("name"));
@@ -296,6 +313,14 @@ class GitMetaDataImpl implements MetaData, Constants {
 		return def;
 	}
 
+	private void sendEvent(String topic, String namespace, String settingsid, String resourceid) {
+		Map props = new HashMap();
+		props.put("namespace", namespace);
+		props.put("settingsid", settingsid);
+		props.put("resourceid", resourceid);
+		info(this, "SettingService.sendEvent("+topic+"):"+namespace+"|"+settingsid+"|"+resourceid);
+		m_ssi.getEventAdmin().postEvent(new Event("setting/" + topic, props));
+	}
 	protected Map<String, Map> _listToMap(List<Map> list, String key) {
 		Map<String, Map> retMap = new HashMap();
 		Iterator it = list.iterator();
@@ -305,11 +330,4 @@ class GitMetaDataImpl implements MetaData, Constants {
 		}
 		return retMap;
 	}
-	protected void debug(String msg) {
-		m_logger.debug(msg);
-	}
-	protected void info(String msg) {
-		m_logger.info(msg);
-	}
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(GitMetaDataImpl.class);
 }

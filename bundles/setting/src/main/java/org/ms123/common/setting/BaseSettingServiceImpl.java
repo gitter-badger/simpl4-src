@@ -37,9 +37,11 @@ import org.ms123.common.libhelper.Bean2Map;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.utils.UtilsService;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.osgi.service.event.EventAdmin;
 import static java.text.MessageFormat.format;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /** BaseSettingService implementation
  */
@@ -54,6 +56,7 @@ public class BaseSettingServiceImpl implements Constants {
 	protected PermissionService m_permissionService;
 	protected UtilsService m_utilsService;
 	protected EntityService m_entityService;
+	protected EventAdmin m_eventAdmin;
 
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 
@@ -67,9 +70,9 @@ public class BaseSettingServiceImpl implements Constants {
 
 	/* P U B L I C - A P I  */
 	public Map getFieldSets(String settingsid, String namespace, String entityName) throws Exception {
-		debug("getFieldSets:" + settingsid + "/" + entityName + "/" + namespace);
+		debug(this,"getFieldSets:" + settingsid + "/" + entityName + "/" + namespace);
 		List<Map> res = getFieldsetsForEntity(namespace, settingsid, entityName);
-		debug("\t:" + res);
+		debug(this,"\t:" + res);
 		return _listToMap(res, "fsname");
 	}
 
@@ -153,14 +156,4 @@ public class BaseSettingServiceImpl implements Constants {
 		}
 		return retMap;
 	}
-	protected void debug(String msg) {
-		m_logger.debug(msg);
-	}
-	protected void info(String msg) {
-		m_logger.info(msg);
-	}
-	protected void error(String msg) {
-		m_logger.error(msg);
-	}
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(BaseSettingServiceImpl.class);
 }

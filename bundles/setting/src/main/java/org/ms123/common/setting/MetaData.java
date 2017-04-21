@@ -41,6 +41,7 @@ interface  MetaData {
 
 	public void setResourceSetting(String namespace, String settingsid, String resourceid, Map settings,boolean overwrite) throws Exception;
 	public Map getResourceSetting(String namespace, String settingsid, String resourceid) throws Exception;
+	public List<Map> getResourceSettings(String settingsid, String resourceid) throws Exception;
 	public List<String> getResourceSettingNames(String namespace, String settingsid, String resourcePrefix) throws Exception;
 	public void deleteResourceSetting(String namespace, String settingsid, String resourceid) throws Exception;
 

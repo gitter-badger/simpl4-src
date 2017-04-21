@@ -57,10 +57,14 @@ import javax.jdo.Query;
 import javax.transaction.UserTransaction;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.ms123.common.libhelper.Bean2Map;
+import org.osgi.service.event.EventAdmin;
 import static java.text.MessageFormat.format;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /** SettingService implementation
  */
@@ -122,6 +126,15 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 			return m_gitMetaData.getResourceSetting(namespace, settingsid, resourceid);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "SettingServiceImpl.getResourceSetting:", e);
+		}
+	}
+	public List<Map> getResourceSettings(
+			@PName(SETTINGS_ID)        String settingsid,
+			@PName(RESOURCE_ID)        String resourceid) throws RpcException {
+		try {
+			return m_gitMetaData.getResourceSettings(settingsid, resourceid);
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "SettingServiceImpl.getResourceSettings:", e);
 		}
 	}
 	public List<String> getResourceSettingNames(
@@ -222,7 +235,7 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 						List fields = m_gitMetaData.getFieldsForEntityView(namespace,settingsid, entity, view,null, null, null );
 						viewFields.put( view,fields);
 					}catch(Exception e){
-						error("getAllSettingsForEntity:Entity not found:"+entity);
+						error(this,"getAllSettingsForEntity:Entity not found:"+entity);
 					}
 				}
 				entityMap.put("viewFields",viewFields);
@@ -233,7 +246,7 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 						Map props = m_gitMetaData.getPropertiesForEntityView(namespace,settingsid, entity, view );
 						viewProps.put( view,props);
 					}catch(Exception e){
-						error("getAllSettingsForEntity2:Entity not found:"+entity);
+						error(this,"getAllSettingsForEntity2:Entity not found:"+entity);
 					}
 				}
 				entityMap.put("viewProps",viewProps);
@@ -245,23 +258,26 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 		}
 	}
 
+	protected EventAdmin getEventAdmin(){
+		return m_eventAdmin;
+	}
 
 	/* END JSON-RPC-API*/
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
 	public void setDataLayerJDO(DataLayer dataLayer) {
-		info("SettingServiceImpl.setDataLayer:" + dataLayer);
+		info(this,"SettingServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayerJDO = dataLayer;
 	}
 
 	@Reference(target = "(kind=orientdb)", dynamic = true, optional = true)
 	public void setDataLayerOrientDB(DataLayer dataLayer) {
-		info("SettingServiceImpl.setDataLayer:" + dataLayer);
+		info(this,"SettingServiceImpl.setDataLayer:" + dataLayer);
 		m_dataLayerOrientDB = dataLayer;
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setGitService(GitService gitService) {
-		info("SettingServiceImpl.setGitService:" + gitService);
+		info(this,"SettingServiceImpl.setGitService:" + gitService);
 		m_gitService = gitService;
 		m_gitMetaData = new GitMetaDataImpl(gitService,this);
 	}
@@ -269,22 +285,27 @@ public class SettingServiceImpl extends BaseSettingServiceImpl implements org.ms
 	@Reference(dynamic = true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.m_permissionService = paramPermissionService;
-		info("SettingServiceImpl.setPermissionService:" + paramPermissionService);
+		info(this,"SettingServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 	@Reference(dynamic = true)
 	public void setNamespaceService(NamespaceService nss) {
-		info("SettingServiceImpl.setNamespaceService:" + nss);
+		info(this,"SettingServiceImpl.setNamespaceService:" + nss);
 		m_isRuntimeSystem = nss.isRuntimeSystem();
 	}
 
 	@Reference(dynamic = true)
 	public void setUtilsService(UtilsService paramUtilsService) {
 		this.m_utilsService = paramUtilsService;
-		info("SettingServiceImpl.setUtilsService:" + paramUtilsService);
+		info(this,"SettingServiceImpl.setUtilsService:" + paramUtilsService);
 	}
 	@Reference(dynamic = true)
 	public void setEntityService(EntityService paramEntityService) {
 		this.m_entityService = paramEntityService;
-		info("SettingServiceImpl.setEntityService:" + paramEntityService);
+		info(this,"SettingServiceImpl.setEntityService:" + paramEntityService);
+	}
+	@Reference(dynamic = true)
+	public void setEventAdmin(EventAdmin paramEventAdmin) {
+		info(this,"SettingServiceImpl.setEventAdmin:" + paramEventAdmin);
+		this.m_eventAdmin = paramEventAdmin;
 	}
 }
