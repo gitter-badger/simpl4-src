@@ -25,6 +25,7 @@ public interface SettingService {
 	public Map getFieldSets(String settingsid, String namespace, String entityName) throws Exception;
 	public List getFieldsForEntityView(String namespace, String entity, String view) throws Exception;
 	public void setResourceSetting(String namespace, String settingsid, String resourceid, Map settings) throws Exception;
+	public List<Map> getResourceSettings(String settingsid, String resourceid) throws Exception;
 	public Map getResourceSetting(String namespace, String settingsid,  String resourceid ) throws Exception;
 	public void deleteResourceSetting(String namespace, String settingsid, String resourceid ) throws Exception;
 	public Map getPropertiesForEntityView( String namespace, String settingsid, String entity, String view) throws RpcException;
