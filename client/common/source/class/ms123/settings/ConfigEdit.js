@@ -137,7 +137,7 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 					form = this._translate( schema[ "form" ] );
 					save = schema[ "save" ];
 				}
-				if ( save ) {
+				if ( save && save.method) {
 					save.parameter = save.parameter || {};
 					save.parameter.formData = formData;
 					var params = {
