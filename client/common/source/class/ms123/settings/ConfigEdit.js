@@ -226,6 +226,11 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 				JSONEditor.plugins.selectize.enable = true;
 				this._editor = new JSONEditor( c, {
 					theme: "html",
+					disable_properties:true,
+					disable_edit_json:true,
+					disable_collapse:true,
+					no_additional_properties:true,
+					required_by_default:true,
 					iconlib: "fontawesome4",
 					schema: schema
 				} );
