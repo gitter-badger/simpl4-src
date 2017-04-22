@@ -229,6 +229,8 @@ qx.Class.define( "ms123.settings.ConfigEdit", {
 					disable_properties:true,
 					disable_edit_json:true,
 					disable_collapse:true,
+					disable_array_delete_last_row:true,
+					disable_array_delete_all_rows:true,
 					no_additional_properties:true,
 					required_by_default:true,
 					iconlib: "fontawesome4",
