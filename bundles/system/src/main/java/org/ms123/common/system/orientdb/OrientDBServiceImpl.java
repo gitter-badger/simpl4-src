@@ -40,6 +40,9 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
+import org.ms123.common.rpc.CallService;
+import org.ms123.common.setting.api.SettingService;
+import org.ms123.common.permission.api.PermissionService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
@@ -51,8 +54,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import org.osgi.framework.Bundle;
+import org.osgi.service.event.EventHandler;
+import org.osgi.service.event.EventConstants;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.event.Event;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.FrameworkEvent;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
@@ -76,11 +88,16 @@ initSchema musr be with getRawGraph done
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=orientdb" })
-public class OrientDBServiceImpl implements OrientDBService {
+public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, EventHandler  {
 	private Map<String, OrientGraphFactory> factoryMap = new HashMap<String, OrientGraphFactory>();
 	private OServer server;
 	private OServerAdmin serverAdmin;
 	private String passwd = "simpl4";
+	private CallService callService;
+	private SettingService settingService;
+	private PermissionService permissionService;
+	private ServiceRegistration serviceRegistration;
+	static final String[] topics = new String[] { "setting/deleteResource", "setting/setResource" };
 
 	private BundleContext bundleContext;
 
@@ -93,20 +110,53 @@ public class OrientDBServiceImpl implements OrientDBService {
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		this.bundleContext = bundleContext;
+		this.bundleContext.addFrameworkListener(this);
 		try {
 			info(this, "OrientDbService starting");
 			server = OServerMain.create();
-			File f = new File("../etc/orientdb-server-config.xml");
-			info(this, "OrientDbService startup(" + server + "):" + f);
-			server.startup(f);
+			File file = new File("../etc/orientdb-server-config.xml");
+			info(this, "OrientDbService startup(" + server + "):" + file);
+			server.startup(file);
 			server.activate();
 
 			info(this, "OrientDBService started");
 			serverAdmin = new OServerAdmin("remote:127.0.0.1").connect("root", passwd);
 			info(this, "OrientDBService.serverAdmin:" + serverAdmin);
+
+			Dictionary d = new Hashtable();
+			d.put(EventConstants.EVENT_TOPIC, topics);
+			this.serviceRegistration = this.bundleContext.registerService(EventHandler.class.getName(), this, d);
 		} catch (Exception e) {
-			e.printStackTrace();
 			error(this, "OrientDBServiceImpl.activate.error:%[exception]s", e);
+		}
+	}
+
+	public void frameworkEvent(FrameworkEvent event) {
+		info(this,"OrientServiceImpl.frameworkEvent:"+event);
+		if( event.getType() != FrameworkEvent.STARTED){
+			return; 
+		}
+		try{
+			setupLiveList();
+		}catch(Exception e){
+			error(this, "OrientDBServiceImpl.FrameworkEvent.error:%[exception]s", e);
+		}
+	}
+	public void handleEvent(Event event) {
+		info(this,"OrientDBServiceImpl.Event: " + event);
+		try{
+			if( "setting/deleteResource".equals(event.getTopic())){
+				clearLiveList();
+				setupLiveList();
+			}
+			if( "setting/setResource".equals(event.getTopic())){
+				clearLiveList();
+				setupLiveList();
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			error(this, "OrientDBServiceImpl.handleEvent.error:%[exception]s", e);
+		}finally{
 		}
 	}
 
@@ -118,6 +168,53 @@ public class OrientDBServiceImpl implements OrientDBService {
 		info(this, "OrientDBServiceImpl.deactivate");
 		server.shutdown();
 	}
+
+	/* LiveQuery Begin*/
+	private List<OrientDBLive> orientDBLiveList = new ArrayList<OrientDBLive>();
+	private void clearLiveList() {
+		info(this,"OrientServiceImpl.clearLiveList:"+this.orientDBLiveList);
+		for( OrientDBLive oLive : this.orientDBLiveList){
+			OrientGraphFactory f = getFactory( oLive.getDatabaseName());
+			OrientGraph orientGraph = f.getTx();
+			try{
+				oLive.unsubscribe( orientGraph );
+			}catch(Exception e){
+				error(this, "OrientDBServiceImpl.clearLiveList.error("+oLive.getName()+"):%[exception]s", e);
+			}finally{
+				orientGraph.shutdown();
+			}
+		}
+		info(this,"OrientServiceImpl.clearLiveList.finished");
+		this.orientDBLiveList.clear();
+	}
+
+	private void setupLiveList() throws Exception{
+		List<Map> resSettings = this.settingService.getResourceSettings("global", "configs.orientdbLive");
+		info(this,"resSettings:"+resSettings);
+		for( Map<String,Map> resMap : resSettings){
+			Map data = resMap.get("data");
+			List<Map> liveList = (List)data.get("live");
+			info(this,"liveList:"+liveList);
+
+			for( Map<String,Object> liveMap : liveList){
+				String sql = (String)liveMap.get("sql");
+				boolean enabled = (Boolean)liveMap.get("enabled");
+				if( isEmpty( sql ) || !enabled) {
+					continue;
+				}
+				OrientGraphFactory f = getFactory( (String)liveMap.get("database"));
+				OrientGraph orientGraph = f.getTx();
+				try{
+					this.orientDBLiveList.add(new OrientDBLive(orientGraph, liveMap,this.callService,this.permissionService));
+				}catch(Exception e){
+					error(this, "OrientDBServiceImpl.FrameworkEvent.start.error:%[exception]s", e);
+				}finally{
+					orientGraph.shutdown();
+				}
+			}
+		}
+	}
+	/* LiveQuery End*/
 
 	@RequiresRoles("admin")
 	public void dropVertices(
@@ -199,5 +296,21 @@ public class OrientDBServiceImpl implements OrientDBService {
 		}
 	}
 
+	@Reference(dynamic = true, optional = true)
+	public void setSettingService(SettingService paramSettingService) {
+		this.settingService = paramSettingService;
+		info(this, "OrientDBServiceImpl.setSettingService:" + paramSettingService);
+	}
+
+	@Reference(dynamic = true, optional=true)
+	public void setCallService(CallService callService) {
+		info(this,"OrientDBServiceImpl.setCallService:" + callService);
+		this.callService = callService;
+	}
+	@Reference(dynamic = true, optional = true)
+	public void setPermissionService(PermissionService paramPermissionService) {
+		this.permissionService = paramPermissionService;
+		info(this,"CallServiceImpl.setPermissionService:" + paramPermissionService);
+	}
 }
 

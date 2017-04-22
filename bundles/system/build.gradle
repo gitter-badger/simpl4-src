@@ -10,6 +10,7 @@ dependencies {
 	compile files("${bundlesBuild}/org.ms123.common.domainobjects.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.permission.api-1.0.0.jar")
   compile files("${bundlesBuild}/org.ms123.common.rpc-1.0.0.jar")
+	compile files("${bundlesBuild}/org.ms123.common.setting.api-1.0.0.jar")
   compile files("${bundlesBuild}/org.ms123.common.namespace-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.store-1.0.0.jar")
   compile files("${repository}/biz.aQute.bnd.jar")
