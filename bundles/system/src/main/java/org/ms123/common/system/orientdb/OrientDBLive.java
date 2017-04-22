@@ -18,48 +18,30 @@
  */
 package org.ms123.common.system.orientdb;
 
-import com.orientechnologies.common.util.OCallable;
-import com.orientechnologies.orient.client.remote.OServerAdmin;
-import com.orientechnologies.orient.core.command.OCommandRequest;
-import com.orientechnologies.orient.core.Orient;
-import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
-import com.orientechnologies.orient.server.OServer;
-import com.orientechnologies.orient.core.sql.OCommandSQL;
-import com.orientechnologies.orient.core.sql.query.OLiveResultListener;
-import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.db.record.ORecordOperation;
-import com.orientechnologies.orient.core.sql.query.OLiveResultListener;
-import com.orientechnologies.orient.core.sql.query.OLiveQuery;
 import com.orientechnologies.common.exception.OException;
-import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal;
-
-
-import com.orientechnologies.orient.server.OServerMain;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
+import com.orientechnologies.orient.core.command.OCommandRequest;
+import com.orientechnologies.orient.core.db.record.ORecordOperation;
+import com.orientechnologies.orient.core.Orient;
+import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.orientechnologies.orient.core.sql.query.OLiveQuery;
+import com.orientechnologies.orient.core.sql.query.OLiveResultListener;
+import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
-import org.ms123.common.rpc.CallService;
-import org.ms123.common.permission.api.PermissionService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-
-import static com.jcabi.log.Logger.info;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.rpc.CallService;
+import org.ms123.common.system.thread.ThreadContext;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 
 @SuppressWarnings("unchecked")
 public class OrientDBLive implements OLiveResultListener  {
-	private BundleContext bundleContext;
 	private Map<String,Object> liveMap;
 	private Object token;
 	private CallService callService;
@@ -81,8 +63,7 @@ public class OrientDBLive implements OLiveResultListener  {
 			info(this,"content: "+((ODocument)iOp.getRecord()).toMap());
 			Map params = new HashMap();
 			params.put("record", ((ODocument)iOp.getRecord()).toMap());
-			this.permissionService.loginInternal("global");
-			this.callService.callCamel( (String)this.liveMap.get("call"), params);
+			new ExecThread( (String)this.liveMap.get("call"), params).start();
 
 		}catch(Exception e){
 			error(this, "OrientDBLive.onLiveResult.error:%[exception]s", e);
@@ -117,5 +98,27 @@ public class OrientDBLive implements OLiveResultListener  {
 		info(this,"executeLiveQuery("+sql+"):"+this.token);
 	}
 
+	private class ExecThread extends Thread {
+		String call;
+		Map params;
+
+		public ExecThread(String call, Map params) {
+			this.call = call;
+			this.params = params;
+		}
+
+		public void run() {
+			try {
+				permissionService.loginInternal("global");
+				Object answer = callService.callCamel( call, params);
+				info(this, "OrientDBLive.ExecThread.callCamel.answer:" + answer);
+			} catch (Exception e) {
+				ThreadContext.getThreadContext().finalize(e);
+				error(this, "OrientDBLive.ExecThread:%[exception]s", e);
+			} finally {
+				ThreadContext.getThreadContext().finalize(null);
+			}
+		}
+	}
 }
 

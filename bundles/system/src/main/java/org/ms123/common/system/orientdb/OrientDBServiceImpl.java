@@ -18,57 +18,51 @@
  */
 package org.ms123.common.system.orientdb;
 
+
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
-import com.orientechnologies.common.util.OCallable;
 import com.orientechnologies.orient.client.remote.OServerAdmin;
 import com.orientechnologies.orient.core.command.OCommandRequest;
 import com.orientechnologies.orient.core.Orient;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.orientechnologies.orient.server.OServer;
-import com.orientechnologies.orient.core.sql.OCommandSQL;
-
-
 import com.orientechnologies.orient.server.OServerMain;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.rpc.CallService;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
-import org.ms123.common.rpc.CallService;
+import org.ms123.common.rpc.RpcException;
 import org.ms123.common.setting.api.SettingService;
-import org.ms123.common.permission.api.PermissionService;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
-import org.apache.shiro.authz.annotation.RequiresRoles;
-import org.ms123.common.rpc.RpcException;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import org.osgi.framework.Bundle;
-import org.osgi.service.event.EventHandler;
-import org.osgi.service.event.EventConstants;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.event.Event;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.FrameworkEvent;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import static com.jcabi.log.Logger.info;
-import static com.jcabi.log.Logger.debug;
-import static com.jcabi.log.Logger.error;
 
 /** OrientDBService implementation
 --------------------------
