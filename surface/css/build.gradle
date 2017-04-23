@@ -6,7 +6,6 @@ task stage (type:Task) {
 		fileset(file:'libs/pikaday.css')
 		fileset(file:'libs/contextmenu.css')
 		fileset(file:'libs/reflex.css')
-		fileset(file:'libs/gridstack.css')
 		fileset(dir:'css',includes:'**/*.css')
 	}
 	ant.copy( file:"${surfaceBuild}/${cssLibs}",tofile:"${surfaceBuildUC}/${cssLibs}")
