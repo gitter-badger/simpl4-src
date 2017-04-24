@@ -521,7 +521,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 				if( maxHeight == 0 ) maxHeight=500;
 				return "overflow-x:hidden;min-height:" + ( maxHeight - 30 ) + "px;";
 			},
-			attached: function() {
+			ready: function() {
 				var tab = this.item.selected;
 				if ( !tab && this.item.childShapes.length > 0 ) {
 					tab = this.item.childShapes[ 0 ].xf_id;
