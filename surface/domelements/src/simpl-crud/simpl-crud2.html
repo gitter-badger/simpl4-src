@@ -190,6 +190,7 @@ CRUD operations for simpl4
 			searchAction: function() {
 				this.entityName = this.entity;
 				this.querySelector("#crud2TableId").refresh();
+				this.$.searchDialog.isAttached=true;//@@@MS ???
 				this.async( function() {
 					this.$.searchDialog.open();
 				},50 );
