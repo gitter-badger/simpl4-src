@@ -520,7 +520,8 @@ $(function () {
                     width: me.$el.width(),
                     height: me.$el.height()
                 });
-                $('body').append(me.$el);
+                //$('body').append(me.$el);
+								Polymer.dom($('body')[0]).appendChild(me.$el[0]);
                 //If we are expanding panel to full screen from footer and in footer there are no more elements
                 //remove footer also
                 var footer = me._getFooterForMinimizedPanels();
