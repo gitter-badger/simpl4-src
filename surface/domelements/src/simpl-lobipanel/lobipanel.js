@@ -267,7 +267,7 @@ $(function () {
                     left: left,
                     top: top,
                     width: width,
-                    height: height
+                    height: height+10
                 });
             }
             var res = me._getMaxZIndex();
