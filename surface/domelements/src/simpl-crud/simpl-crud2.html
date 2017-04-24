@@ -108,13 +108,17 @@ CRUD operations for simpl4
 					type: String
 				},
 				buttonList: {
-					type: String
+					value:null,
+					type: Array
 				}
 			},
 			observers: [
-				'buttonsChanged(buttons)',
+				'buttonsChanged(isAttached)',
 				'entityChanged(entity)'
 			],
+			attached: function(){
+				this.isAttached=true;
+			},
 			buttonsChanged: function(){
 				var buttons = {
 					add: {
@@ -149,7 +153,7 @@ CRUD operations for simpl4
 					b.name = name;
 					bList.push( b );
 				} ).bind( this ) );
-				this.buttonList = bList;
+				this.set("buttonList",  bList);
 			},
 			setButtonState: function(name,enabled) {
 				if ( this.buttonDef == null ) return;
