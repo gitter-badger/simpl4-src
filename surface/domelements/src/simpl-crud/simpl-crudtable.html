@@ -100,10 +100,13 @@
 			},
 			observers: [
 				'filterChanged(filter.*,dtOptions)',
-				'buttonsChanged(buttons)',
+				'buttonsChanged(buttons,isAttached)',
 				'selectionChanged(selection)'
 			],
 			ready: function() {},
+			attached: function() {
+				this.isAttached=true;
+			},
 			addAction: function() {
 				this.fire( "add-action", {
 					entity: this.entity,
