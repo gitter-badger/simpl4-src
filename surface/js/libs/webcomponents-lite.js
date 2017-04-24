@@ -1909,7 +1909,8 @@ window.CustomElements = window.CustomElements || {
   scope.initializeModules = initializeModules;
   scope.hasNative = Boolean(document.registerElement);
   scope.isIE = /Trident/.test(navigator.userAgent);
-  scope.useNative = !flags.register && scope.hasNative && !window.ShadowDOMPolyfill && (!window.HTMLImports || window.HTMLImports.useNative);
+//@@@MS dont't use native, problem observers in dom-repeat, if parent dom is detached and reattached (moved)
+  scope.useNative = false;//!flags.register && scope.hasNative && !window.ShadowDOMPolyfill && (!window.HTMLImports || window.HTMLImports.useNative);
 })(window.CustomElements);
 
 window.CustomElements.addModule(function(scope) {
