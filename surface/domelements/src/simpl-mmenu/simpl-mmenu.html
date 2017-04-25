@@ -239,24 +239,24 @@
 				if ( this.context == null ) return;
 				this._applyMenuContext( this._mainmenu );
 			},
-			_loadMenu:function(name){
+			_loadMenu: function( name ) {
 				var nodes = null;
 				var url = name;
 				var namespace = null;
-				var base=null;
-				if( name.indexOf(":") >= 0){
-					namespace = name.split(":")[0];
+				var base = null;
+				if ( name.indexOf( ":" ) >= 0 ) {
+					namespace = name.split( ":" )[ 0 ];
 					simpl4.util.MessageManager.installMessages( namespace );
-					name = name.split(":")[1];
+					name = name.split( ":" )[ 1 ];
 					var loc = window.location;
-					base=loc.origin+"/repo/"+namespace;
-					url = base +"/"+name;
+					base = loc.origin + "/repo/" + namespace;
+					url = base + "/" + name;
 				}
 
-				if( !name.endsWith(".json")  && !name.endsWith(".yaml") ){
+				if ( !name.endsWith( ".json" ) && !name.endsWith( ".yaml" ) ) {
 					url += ".json";
 				}
-				console.log("_loadMenu.url:",url);
+				console.log( "_loadMenu.url:", url );
 				nodes = jQuery.ajax( {
 					url: url,
 					async: false,
@@ -267,11 +267,11 @@
 				} ).responseText;
 
 				url = name;
-				if( !name.endsWith(".json")  && !name.endsWith(".yaml") ){
+				if ( !name.endsWith( ".json" ) && !name.endsWith( ".yaml" ) ) {
 					url += ".yaml";
 				}
 
-				console.log("_loadMenu2:",url);
+				console.log( "_loadMenu2:", url );
 				if ( _.isEmpty( nodes ) ) {
 					nodes = jQuery.ajax( {
 						url: url,
@@ -289,20 +289,20 @@
 					console.error( "Error.Read Menu:", e );
 					return;
 				}
-				if( base != null){
-					for( var i=0; i< nodes.length;i++){
-						this._insertBase(nodes[i], base );
+				if ( base != null ) {
+					for ( var i = 0; i < nodes.length; i++ ) {
+						this._insertBase( nodes[ i ], base );
 					}
 				}
 				return nodes;
 			},
-			_insertBase:function( node, base ){
-				if( node.uri && node.uri != "" ){
-					node.uri = base + "/"+ node.uri;
+			_insertBase: function( node, base ) {
+				if ( node.uri && node.uri != "" ) {
+					node.uri = base + "/" + node.uri;
 				}
-				if( node.children ){
-					for( var i=0; i< node.children.length;i++){
-						this._insertBase(node.children[i], base );
+				if ( node.children ) {
+					for ( var i = 0; i < node.children.length; i++ ) {
+						this._insertBase( node.children[ i ], base );
 					}
 				}
 			},
@@ -317,18 +317,18 @@
 				} ).bind( this ) );
 			},
 			_getMenuYaml: function() {
-				var nodes = this._loadMenu(this.name);
+				var nodes = this._loadMenu( this.name );
 				var pages = [];
-				if( nodes.length>0){
-					nodes[0].hash="0";
+				if ( nodes.length > 0 ) {
+					nodes[ 0 ].hash = "0";
 				}
 				this._traverse( [], nodes, pages );
 				return nodes;
 			},
-			_hashExists:function(pages, hash){
-				for( var p=0; p < pages.length;p++){
-					if( pages[p].hash == hash){
-						 return true;
+			_hashExists: function( pages, hash ) {
+				for ( var p = 0; p < pages.length; p++ ) {
+					if ( pages[ p ].hash == hash ) {
+						return true;
 					}
 				}
 				return false;
@@ -337,8 +337,8 @@
 				for ( var i = 0; i < nodes.length; i++ ) {
 					var node = nodes[ i ];
 
-					if( node.uri && node.uri.startsWith("structure:")){
-						node.children = this._loadMenu(node.uri.substring(10));
+					if ( node.uri && node.uri.startsWith( "structure:" ) ) {
+						node.children = this._loadMenu( node.uri.substring( 10 ) );
 						node.uri = null;
 					}
 
@@ -347,25 +347,25 @@
 						node.name = tr( name );
 					}
 
-					if( _.isEmpty(node.icon)){
+					if ( _.isEmpty( node.icon ) ) {
 						node.icon = "av:web-asset";
 					}
-					if( _.isEmpty(node.hash)){
+					if ( _.isEmpty( node.hash ) ) {
 						node.hash = node.id;
 					}
-					if ( _.isEmpty(node.hash) && name ) {
+					if ( _.isEmpty( node.hash ) && name ) {
 						node.hash = name.toLowerCase().replace( /[^a-z0-9_]/g, "-" );
 					}
 					var hash = base = node.hash;
-					var x=0;
-					while( this._hashExists( pages, hash)){
-						hash = base + x;	
-						x++;	
+					var x = 0;
+					while ( this._hashExists( pages, hash ) ) {
+						hash = base + x;
+						x++;
 					}
-					if( x>0 && node.uri){
+					if ( x > 0 && node.uri ) {
 						node.hash = hash;
 						var hasQuery = node.uri.indexOf( "?" ) >= 0;
-						node.uri += ( hasQuery ? "&" : "?" ) + "dummy="+i;
+						node.uri += ( hasQuery ? "&" : "?" ) + "dummy=" + i;
 					}
 					node.url = node.uri || node.url;
 					if ( node.url && node.url.indexOf( "%l" ) != -1 ) {
@@ -373,13 +373,15 @@
 					}
 					node.disabled = node.disabled === true || node.enabled === false;
 					if ( !node.disabled ) {
-						var path = _.map(parents, function( e){
-							return tr(e.title);
-						}).join("/");
-						node.path = path + "/"+ tr(node.name);
+						var path = _.map( parents, function( e ) {
+							return tr( e.title );
+						} ).join( "/" );
+						node.path = path + "/" + tr( node.name );
 						if ( node.children && node.children.length > 0 ) {
 							pages.push( node );
-							var n = clone(node); n.children=null; parents.push(n);
+							var n = clone( node );
+							n.children = null;
+							parents.push( n );
 							this._traverse( parents, node.children, pages );
 							parents.pop();
 						} else {
