@@ -324,8 +324,8 @@ body.lobipanel-minimized {
   position: relative;
   border-top-right-radius: 0px;
   border-top-left-radius: 0px;
-    border-bottom: 5px solid #d32f2f;
-    background-color: #cfd8dc;
+    border-bottom: 4px solid #d32f2f;
+    background-color: #EFF2F3;
 }
 .lobipanel > .panel-heading > .panel-title {
   float: left;
