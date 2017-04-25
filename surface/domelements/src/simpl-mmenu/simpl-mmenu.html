@@ -322,7 +322,7 @@
 				if( nodes.length>0){
 					nodes[0].hash="0";
 				}
-				this._traverse( nodes, pages );
+				this._traverse( [], nodes, pages );
 				return nodes;
 			},
 			_hashExists:function(pages, hash){
@@ -333,7 +333,7 @@
 				}
 				return false;
 			},
-			_traverse: function( nodes, pages ) {
+			_traverse: function( parents, nodes, pages ) {
 				for ( var i = 0; i < nodes.length; i++ ) {
 					var node = nodes[ i ];
 
@@ -373,9 +373,15 @@
 					}
 					node.disabled = node.disabled === true || node.enabled === false;
 					if ( !node.disabled ) {
+						var path = _.map(parents, function( e){
+							return tr(e.title);
+						}).join("/");
+						node.path = path + "/"+ tr(node.name);
 						if ( node.children && node.children.length > 0 ) {
 							pages.push( node );
-							this._traverse( node.children, pages );
+							var n = clone(node); n.children=null; parents.push(n);
+							this._traverse( parents, node.children, pages );
+							parents.pop();
 						} else {
 							pages.push( node );
 						}

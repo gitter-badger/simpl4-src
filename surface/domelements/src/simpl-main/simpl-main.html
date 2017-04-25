@@ -196,7 +196,7 @@
 					<template is="dom-if" if="[[!toolbarProvided]]">
 						<paper-toolbar class="main__toolbar" id="mainToolbar">
 							<paper-icon-button id="menuButton" icon="menu" paper-multidrawer-toggle-left on-tap="togglePanel"></paper-icon-button>
-							<div id="headlineId" class="flex">[[selectedPage.name]]</div>
+							<div id="headlineId" class="flex">[[selectedPage.path]]</div>
 							<template is="dom-if" if="[[selectedPage.help]]">
 								<span>
 									<paper-tooltip>[[helpMessage]]</paper-tooltip>
