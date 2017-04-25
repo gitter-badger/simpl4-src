@@ -22,6 +22,8 @@
 <dom-module id="simpl-lobipanel" flex relative>
 	<template>
 		<style>
+
+
 		</style>
 		<link rel="import" type="css" href="bootstrap.css" />
 		<link rel="import" type="css" href="lobipanel.css" />
@@ -37,7 +39,6 @@
 			attached: function() {
 				this.async( function() {
 					$( ".panel" ).lobiPanel( {
-						sortable: true,
 						reload: {
 							icon: 'fa fa-refresh'
 						},
@@ -58,16 +59,16 @@
 						expand: {
 							icon: 'fa fa-expand',
 							icon2: 'fa fa-compress'
-						}
+						},
+						sortable: true,
+						reload: false,
+						close: false,
+						editTitle: false
 					} );
 					this.async( function() {
 						this.setStyleScope( this, "style-scope", this.tagName.toLowerCase() );
 						//this.toggleSearchMode();
 					} );
-
-
-
-
 				}, 200 );
 			}
 		} );

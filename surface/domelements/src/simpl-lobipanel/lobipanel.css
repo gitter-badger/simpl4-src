@@ -491,8 +491,7 @@ body.lobipanel-minimized {
   overflow: hidden;
   position: absolute;
   z-index: 10000;
-  -webkit-box-shadow: 2px 2px 15px 5px rgba(10, 10, 10, 0.5);
-  box-shadow: 2px 2px 15px 5px rgba(10, 10, 10, 0.5);
+  box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
 }
 .lobipanel.panel-unpin > .panel-heading {
   cursor: move;
