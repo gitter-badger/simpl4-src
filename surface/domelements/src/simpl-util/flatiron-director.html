@@ -41,6 +41,9 @@ license that can be found in the LICENSE file.
 					}
 					this.fire( 'director-route', this.route );
 				},
+				changeRoute: function( route ) {
+					this.route = route;
+				},
 				get router() {
 					if ( !private_router ) {
 						private_router = new Router();
