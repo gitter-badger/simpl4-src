@@ -623,6 +623,9 @@
 			if ( t == "datetime" ) {
 				return "date";
 			}
+			if ( t == "password" ) {
+				return "text";
+			}
 			return t;
 		},
 		_buildShapeMap: function( shape ) {
