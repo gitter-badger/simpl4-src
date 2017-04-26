@@ -317,14 +317,15 @@ body.lobipanel-minimized {
 }
 .lobipanel {
   position: relative;
-  margin-bottom: 15px;
+  margin: 5px;
+  margin-left: 0px;
 }
 .lobipanel > .panel-heading {
   padding: 5px;
   position: relative;
   border-top-right-radius: 0px;
   border-top-left-radius: 0px;
-    border-bottom: 4px solid #d32f2f;
+    border-bottom: 4px solid #607d8b;
     background-color: #EFF2F3;
 }
 .lobipanel > .panel-heading > .panel-title {
@@ -485,7 +486,7 @@ body.lobipanel-minimized {
 .lobipanel.panel-expanded,
 .lobipanel.panel-unpin,
 .lobipanel.panel-minimized.panel-unpin {
-  margin-bottom: 0;
+  margin: 0;
 }
 .lobipanel.panel-unpin {
   overflow: hidden;
