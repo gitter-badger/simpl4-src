@@ -376,7 +376,7 @@
 						var path = _.map( parents, function( e ) {
 							return tr( e.title );
 						} ).join( "/" );
-						node.path = path + "/" + tr( node.name );
+						node.path =_.isEmpty(path) ? tr(node.name) :  path + "/" + tr( node.name );
 						if ( node.children && node.children.length > 0 ) {
 							pages.push( node );
 							var n = clone( node );
