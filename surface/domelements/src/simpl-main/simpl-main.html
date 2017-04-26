@@ -172,6 +172,26 @@
 			pointer-events: none;
 		}
 
+		simpl-toast /deep/ paper-toast {
+			white-space: nowrap;
+			padding-top: 10px;
+			padding-bottom: 10px;
+			background-color: #607d8b;
+		}
+		simpl-toast /deep/ span {
+			min-width: 250px;
+			padding-right: 25px;
+			font-size: 18px;
+			vertical-align: left;
+		}
+		simpl-toast /deep/ iron-icon[icon="check"].simpl-toast {
+			background: #080808;
+		}
+		simpl-toast /deep/ iron-icon {
+			width: 32px;
+			height: 32px;
+			vertical-align: left;
+		}
 	</style>
 	<template>
 		<simpl-globals></simpl-globals>
