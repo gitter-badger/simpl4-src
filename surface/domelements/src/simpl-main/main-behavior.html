@@ -83,9 +83,6 @@
 		observers: [
 			'routeChanged(route)'
 		],
-		toolbarBottomCache: function() {
-			return {};
-		},
 		pageCache: function() {
 			return {};
 		},
@@ -261,15 +258,6 @@
 				if ( this.pageCache[ page.url ] !== true ) {
 					this.importHref( this._buildUrl( page ), this.onResponse.bind( this ) );
 				} else {
-					var toolbarBottom = this.querySelector( ".toolbar.bottom" );
-					var tb = this.toolbarBottomCache[ page.url ];
-					this.setToolbarClass( tb );
-					if ( tb == null ) {
-						tb = this.getEmptyToolbarBottom();
-					}
-					if( toolbarBottom && toolbarBottom.parentNode){
-						toolbarBottom.parentNode.replaceChild( tb, toolbarBottom );
-					}
 				}
 			}
 			this.$.drawerPanel.closeDrawer();
@@ -278,8 +266,6 @@
 			var _import = e.target.import;
 			var body = _import.body;
 			var head = _import.head;
-
-			this._toolbarStuff( body ); //@@@MS remove
 
 			this.pageCache[ this.selectedPage.url ] = true;
 			var insertPoint = this.neonPages.selectedItem.firstElementChild;
@@ -382,43 +368,6 @@
 			this.fire( 'toolbar-button-pressed', e.target || e.srcElement, {
 				key1: "value1"
 			} );
-		},
-		_toolbarStuff: function( body ) {
-			var newToolbarBottom = body.querySelector( ".toolbar.bottom" );
-			this.setToolbarClass( newToolbarBottom );
-			this.toolbarBottomCache[ this.selectedPage.url ] = newToolbarBottom;
-			if ( newToolbarBottom == null ) {
-				newToolbarBottom = this.getEmptyToolbarBottom();
-			}
-			var toolbarBottom = this.querySelector( "div.toolbar.bottom" );
-			if ( toolbarBottom != null ) {
-				toolbarBottom.parentNode.replaceChild( newToolbarBottom, toolbarBottom );
-				var buttons = newToolbarBottom.querySelectorAll( "[on-tap]" );
-				for ( var i = 0; i < buttons.length; i++ ) {
-					var button = buttons[ i ];
-					button.addEventListener( 'tap', this.externalButtonEventHandler );
-				}
-			}
-		},
-		setToolbarClass: function( newToolbarBottom ) {
-			var mainToolbar = this.querySelector( "#mainToolbar" );
-			if ( mainToolbar == null ) return;
-			if ( newToolbarBottom == null ) {
-				mainToolbar.classList.remove( "medium-tall" );
-				mainToolbar.classList.remove( "small" );
-			} else {
-				mainToolbar.classList.add( "medium-tall" );
-				mainToolbar.classList.add( "small" );
-			}
-		},
-		getEmptyToolbarBottom: function() {
-			if ( this.emptyToolbarBottom == null ) {
-				var div = document.createElement( 'div' );
-				div.classList.add( "toolbar" );
-				div.classList.add( "bottom" );
-				this.emptyToolbarBottom = div;
-			}
-			return this.emptyToolbarBottom;
 		},
 		isAsciidoc: function( url ) {
 			return url.indexOf( ".adoc" ) > 0;
