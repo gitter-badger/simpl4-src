@@ -112,6 +112,9 @@
 				margin-left: 0px;
 				margin-right: 0px;
 			}
+			:host /deep/ .toolbarlabel {
+				display:none !important;
+			}
 		}
 		simpl-mmenu {
 			position: relative;
@@ -162,19 +165,24 @@
 		#drawerPanel {
 			position: relative;
 		}
+		:host /deep/ .menuentry iron-icon {
+			pointer-events: none;
+		}
+		:host /deep/ .menuentry .toolbarlabel {
+			pointer-events: none;
+		}
 
 	</style>
 	<template>
 		<simpl-globals></simpl-globals>
 		<simpl-toast id="toastGlobal"></simpl-toast>
 
-		<flatiron-director route="{{route}}" auto-hash></flatiron-director>
 
 		<template is="dom-if" if="[[useKeyboard]]">
 			<iron-a11y-keys id="keys" target="[[target]]" keys="up down left right space space+shift" on-keys-pressed="keyHandler"></iron-a11y-keys>
 		</template>
 
-		<simpl-dispatcher id="dispatcherId" on-menu-selected="menuItemSelected" selected="{{route}}">
+		<simpl-dispatcher id="dispatcherId" name="[[mmenuName]]" on-menu-selected="menuItemSelected" selected="{{route}}">
 			<paper-multidrawer-panel id="drawerPanel" drawer-width="230px" responsive-width="[[responsiveWidth]]" disable-swipe="false">
 				<div class="column grid" left-drawer>
 					<div class="grid column brand_drawer_panel fit">
@@ -188,41 +196,36 @@
 								</template>
 							</a>
 						</div>
-						<simpl-mmenu name="[[mmenuName]]" background="{{mmenuBackground}}" classes="{{mmenuClasses}}" sliding-submenus="true" searchfield="true" class="flex" />
+						<simpl-mmenu on-menu-ready="onMenuReady" name="[[mmenuName]]" background="{{mmenuBackground}}" classes="{{mmenuClasses}}" sliding-submenus="true" searchfield="true" class="flex" />
 					</div>
 				</div>
 
 				<paper-scroll-header-panel id="scrollHeaderPanelId" fixed$="[[header-fixed]]" header-height="64" main>
-					<template is="dom-if" if="[[!toolbarProvided]]">
-						<paper-toolbar class="main__toolbar" id="mainToolbar">
-							<paper-icon-button id="menuButton" icon="menu" paper-multidrawer-toggle-left on-tap="togglePanel"></paper-icon-button>
-							<div id="headlineId" class="flex">[[selectedPage.path]]</div>
-							<template is="dom-if" if="[[selectedPage.help]]">
-								<span>
-									<paper-tooltip>[[helpMessage]]</paper-tooltip>
-									<paper-icon-button on-click="showHelp" icon="help"></paper-icon-button>
-								</span>
-							</template>
+					<paper-toolbar class="main__toolbar" id="mainToolbar">
+						<paper-icon-button id="menuButton" icon="menu" paper-multidrawer-toggle-left on-tap="togglePanel"></paper-icon-button>
+						<div id="headlineId" class="flex">[[selectedPage.path]]</div>
+						<template is="dom-if" if="[[selectedPage.help]]">
+							<span>
+								<paper-tooltip>[[helpMessage]]</paper-tooltip>
+								<paper-icon-button on-click="showHelp" icon="help"></paper-icon-button>
+							</span>
+						</template>
 
 
-							<paper-icon-button on-click="reload" class="langIcon" src="[[getLangIcon()]]"></paper-icon-button>
-							<template is="dom-if" if="[[signInOutIcon]]">
-								<div>
-									<paper-tooltip position="left">[[loginMessage]]</paper-tooltip>
-									<paper-icon-button on-click="login" icon="[[signInOutIcon]]"></paper-icon-button>
-								</div>
-							</template>
-							<div class="toolbar bottom row grid"> </div>
-							<!--insertpoint toolbar-bottom-->
-						</paper-toolbar>
-					</template>
+						<paper-icon-button on-click="reload" class="langIcon" src="[[getLangIcon()]]"></paper-icon-button>
 
-					<template is="dom-if" if="[[toolbarProvided]]">
-						<content select="*"></content>
-					</template>
+						<div id="toolbarIconsId"></div>
+						<template is="dom-repeat" items="[[toolbarPages]]">
+							<a class="menuentry" href="">
+								<paper-tooltip position="left">[[item.tooltip]]</paper-tooltip>
+								<paper-icon-button on-click="login" icon="[[item.icon]]"></paper-icon-button>
+							</a>
+						</template>
+						<div class="toolbar bottom row grid"> </div>
+					</paper-toolbar>
 
-					<neon-animated-pages id="pages" selected="{{route}}" attr-for-selected="hash">
-						<template is="dom-repeat" items="{{getPages()}}">
+					<neon-animated-pages id="pages" selected="[[route]]" attr-for-selected="hash">
+						<template is="dom-repeat" items="[[allPages]]">
 							<simpl-animatable-page hash$={{item.hash}}>
 								<div>{{item.name}}</div>
 							</simpl-animatable-page>
@@ -232,6 +235,10 @@
 
 			</paper-multidrawer-panel>
 		</simpl-dispatcher>
+
+		<template is="dom-if" if="[[allPages]]">
+			<flatiron-director route="{{route}}" auto-hash></flatiron-director>
+		</template>
 
 		<paper-dialog with-backdrop id="helpDialog">
 			<paper-dialog-scrollable>

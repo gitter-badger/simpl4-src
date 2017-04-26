@@ -70,20 +70,19 @@
 			behaviors: [
 				StyleScopeBehavior
 			],
-			attached: function() {},
-			ready: function() {
+			attached: function() {
 				this.context = null;
 				this.backgroundColor = "invalid";
 				this.classes = "mm-white mm-zoom-panels";
-				//console.log( "mmenu.globalsChanged:", simpl4Globals.getAll() );
-				var nodes = this._getMenuYaml();
+				var nodes = document.querySelector("#dispatcherId").getNodes();
 				this._createTree( nodes );
 				this._createMenu()
-					//				this.context = "class2";
 				this.setStyleScope( this._mainmenu, "style-scope", this.tagName.toLowerCase() );
 				var subscription = channel.subscribe( "context.changed", ( function( data ) {
 					this.context = data.context;
 				} ).bind( this ) );
+
+				this.fire( "menu-ready", { } );
 			},
 			getMenuApi: function() {
 				return $( this._mainmenu ).data( "mmenu" );
@@ -151,6 +150,9 @@
 			},
 			_createNodeList: function( ul, nodes, firstLevel ) {
 				for ( var i = 0; i < nodes.length; i++ ) {
+					if ( nodes[i].uri && nodes[i].uri.startsWith( "mainToolbar:" ) ) {
+						continue;
+					}
 					var node = nodes[ i ];
 					if ( this._isNodeDisabled( node ) ) {
 						continue;
@@ -239,73 +241,6 @@
 				if ( this.context == null ) return;
 				this._applyMenuContext( this._mainmenu );
 			},
-			_loadMenu: function( name ) {
-				var nodes = null;
-				var url = name;
-				var namespace = null;
-				var base = null;
-				if ( name.indexOf( ":" ) >= 0 ) {
-					namespace = name.split( ":" )[ 0 ];
-					simpl4.util.MessageManager.installMessages( namespace );
-					name = name.split( ":" )[ 1 ];
-					var loc = window.location;
-					base = loc.origin + "/repo/" + namespace;
-					url = base + "/" + name;
-				}
-
-				if ( !name.endsWith( ".json" ) && !name.endsWith( ".yaml" ) ) {
-					url += ".json";
-				}
-				console.log( "_loadMenu.url:", url );
-				nodes = jQuery.ajax( {
-					url: url,
-					async: false,
-					error: function() {
-						console.log( name + '.json not found.' );
-					},
-					dataType: "json"
-				} ).responseText;
-
-				url = name;
-				if ( !name.endsWith( ".json" ) && !name.endsWith( ".yaml" ) ) {
-					url += ".yaml";
-				}
-
-				console.log( "_loadMenu2:", url );
-				if ( _.isEmpty( nodes ) ) {
-					nodes = jQuery.ajax( {
-						url: url,
-						async: false,
-						error: function() {
-							console.log( name + '.yaml not found.' );
-						},
-						dataType: "json"
-					} ).responseText;
-				}
-				try {
-					nodes = JSON.parse( nodes );
-				} catch ( e ) {
-					alert( "Error.Read Menu:" + e );
-					console.error( "Error.Read Menu:", e );
-					return;
-				}
-				if ( base != null ) {
-					for ( var i = 0; i < nodes.length; i++ ) {
-						this._insertBase( nodes[ i ], base );
-					}
-				}
-				return nodes;
-			},
-			_insertBase: function( node, base ) {
-				if ( node.uri && node.uri != "" ) {
-					node.uri = base + "/" + node.uri;
-				}
-				if ( node.children ) {
-					for ( var i = 0; i < node.children.length; i++ ) {
-						this._insertBase( node.children[ i ], base );
-					}
-				}
-			},
 			_applyMenuContext: function( main_el ) {
 				this._domVisitor( main_el, ( function( el ) {
 					if ( el.tagName === "LI" ) {
@@ -315,80 +250,6 @@
 						}
 					}
 				} ).bind( this ) );
-			},
-			_getMenuYaml: function() {
-				var nodes = this._loadMenu( this.name );
-				var pages = [];
-				if ( nodes.length > 0 ) {
-					nodes[ 0 ].hash = "0";
-				}
-				this._traverse( [], nodes, pages );
-				return nodes;
-			},
-			_hashExists: function( pages, hash ) {
-				for ( var p = 0; p < pages.length; p++ ) {
-					if ( pages[ p ].hash == hash ) {
-						return true;
-					}
-				}
-				return false;
-			},
-			_traverse: function( parents, nodes, pages ) {
-				for ( var i = 0; i < nodes.length; i++ ) {
-					var node = nodes[ i ];
-
-					if ( node.uri && node.uri.startsWith( "structure:" ) ) {
-						node.children = this._loadMenu( node.uri.substring( 10 ) );
-						node.uri = null;
-					}
-
-					var name = node.name || node.title;
-					if ( name ) {
-						node.name = tr( name );
-					}
-
-					if ( _.isEmpty( node.icon ) ) {
-						node.icon = "av:web-asset";
-					}
-					if ( _.isEmpty( node.hash ) ) {
-						node.hash = node.id;
-					}
-					if ( _.isEmpty( node.hash ) && name ) {
-						node.hash = name.toLowerCase().replace( /[^a-z0-9_]/g, "-" );
-					}
-					var hash = base = node.hash;
-					var x = 0;
-					while ( this._hashExists( pages, hash ) ) {
-						hash = base + x;
-						x++;
-					}
-					if ( x > 0 && node.uri ) {
-						node.hash = hash;
-						var hasQuery = node.uri.indexOf( "?" ) >= 0;
-						node.uri += ( hasQuery ? "&" : "?" ) + "dummy=" + i;
-					}
-					node.url = node.uri || node.url;
-					if ( node.url && node.url.indexOf( "%l" ) != -1 ) {
-						node.url = node.url.replace( "%l", simpl4Globals.get( "lang" ) );
-					}
-					node.disabled = node.disabled === true || node.enabled === false;
-					if ( !node.disabled ) {
-						var path = _.map( parents, function( e ) {
-							return tr( e.title );
-						} ).join( "/" );
-						node.path =_.isEmpty(path) ? tr(node.name) :  path + "/" + tr( node.name );
-						if ( node.children && node.children.length > 0 ) {
-							pages.push( node );
-							var n = clone( node );
-							n.children = null;
-							parents.push( n );
-							this._traverse( parents, node.children, pages );
-							parents.pop();
-						} else {
-							pages.push( node );
-						}
-					}
-				}
 			}
 		} );
 

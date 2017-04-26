@@ -73,6 +73,9 @@
 				value: false,
 				type: Boolean
 			},
+			waitOnPages: { //Pages, eg. mainToolbar, mmenu ..
+				value: 2
+			},
 			target: {
 				type: Object,
 				value: function() {
@@ -86,7 +89,19 @@
 		pageCache: function() {
 			return {};
 		},
-		getPages: function() {
+		onToolbarReady:function() {
+			this.pagesReady();
+		},
+		onMenuReady:function() {
+			this.pagesReady();
+		},
+		pagesReady:function() {
+			this.waitOnPages--;
+			if (this.waitOnPages === 0) {
+				this.allPages = this._getPages();
+			}
+		},
+		_getPages: function() {
 			var menuEntries = document.querySelectorAll( "a.menuentry" );
 			var pages = [];
 			for ( var i = 0; i < menuEntries.length; i++ ) {
@@ -94,7 +109,25 @@
 			}
 			return pages;
 		},
+		buildToolbar:function(){
+			var nodes = document.querySelector("#dispatcherId").getNodes();
+			var parent = this.querySelector("#toolbarIconsId");
+			for ( var i = 0; i < nodes.length; i++ ) {
+				var node = nodes[ i ];
+				if ( node.uri && node.uri.startsWith( "mainToolbar:" ) ) {
+					for ( var j = 0; j < node.children.length; j++ ) {
+						var child = node.children[j];
+						if ( this._isNodeDisabled( child ) ) {
+							continue;
+						}
+						this._createToolbarEntry( parent, child );
+					}
+				}
+			}
+			this.onToolbarReady();
+		},
 		attached: function() {
+			this.buildToolbar();
 			this.async( function() {
 				this._attached();
 			} );
@@ -245,7 +278,6 @@
 			}
 		},
 		menuItemSelected: function( e ) {
-			console.log( "menuItemSelected:" );
 			var page = e.detail.page;
 			if ( e.detail.isSelected && page.url ) {
 				//console.debug( "menuItemSelected:", e );
@@ -410,6 +442,53 @@
 			Simpl4.Cache.setItem( "lang", ( lang == "de" || lang == null ) ? "en" : "de" );
 			location.search = "";
 			window.location.reload()
+		},
+		setSelected: function( page ) {
+		},
+		_createToolbarEntry: function( parent, node ) {
+			var icon = this._createIcon( node );
+			var a = document.createElement( 'a' );
+			var tdiv = document.createElement( 'div' );
+			var pr = document.createElement( 'paper-ripple' );
+			var t = document.createTextNode( node.name );
+			Polymer.dom( parent ).appendChild( a )
+			if ( browser.name != "ie" || ( browser.major != "9" && browser.major != "10" ) ) {
+				Polymer.dom( parent ).appendChild( pr )
+			}
+			Polymer.dom( a ).appendChild( icon );
+			Polymer.dom( a ).setAttribute( "style", 'cursor:pointer' );
+			Polymer.dom( a ).setAttribute( "id", "hash_" + node.hash );
+			Polymer.dom( a ).classList.add( 'menuentry' )
+			Polymer.dom( a ).appendChild( tdiv );
+			Polymer.dom( tdiv ).appendChild( t );
+			Polymer.dom( tdiv ).setAttribute( "style", 'display:inline' );
+			Polymer.dom( tdiv ).classList.add( 'toolbarlabel' )
+			Polymer.dom( parent ).setAttribute( "style", 'list-style:none' );
+			Polymer.dom( parent ).setAttribute( "id", "x" + node.hash );
+			a.page = node;
+			node.provider = this;
+		},
+		_addNodeClasses: function( el, classes ) {
+			if ( classes == null ) return;
+			var classArray = classes.split( "," );
+			for ( var i = 0; i < classArray.length; i++ ) {
+				el.classList.add( classArray[ i ] );
+			}
+		},
+		_isNodeDisabled: function( node ) {
+			return node.disabled === true;
+		},
+		_createIcon: function( node ) {
+			var icon = null;
+			if ( node.aweicon ) {
+				icon = document.createElement( 'font-awesome' );
+				Polymer.dom( icon ).setAttribute( "icon", node.aweicon );
+			} else if ( node.icon ) {
+				icon = document.createElement( 'iron-icon' );
+				this._addNodeClasses( icon, "small" );
+				Polymer.dom( icon ).setAttribute( "icon", node.icon );
+			}
+			return icon;
 		}
 	}
 
