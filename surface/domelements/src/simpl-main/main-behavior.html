@@ -69,10 +69,6 @@
 				value: false,
 				type: Boolean
 			},
-			toolbarProvided: {
-				value: false,
-				type: Boolean
-			},
 			waitOnPages: { //Pages, eg. mainToolbar, mmenu ..
 				value: 2
 			},
@@ -99,6 +95,8 @@
 			this.waitOnPages--;
 			if (this.waitOnPages === 0) {
 				this.allPages = this._getPages();
+				channel.publish( "main.pagesReady", {
+				} );
 			}
 		},
 		_getPages: function() {
