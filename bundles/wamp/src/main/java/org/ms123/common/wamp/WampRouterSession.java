@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.eclipse.jetty.websocket.api.Session;
 import org.ms123.common.wamp.BaseWebSocket;
 import org.ms123.common.wamp.WampMessages.*;
@@ -219,7 +221,12 @@ class WampRouterSession {
 				boolean matched = true;
 				if (components.length == wildcardSubscription.components.length) {
 					for (int i = 0; i < components.length; i++) {
-						if (wildcardSubscription.components[i].length() > 0 && !components[i].equals(wildcardSubscription.components[i])) {
+						if ( isSet(components[i]) && isSet(wildcardSubscription.components[i] )){
+							Set<String> s1 = toSet( components[i] );	
+							Set<String> s2 = toSet( wildcardSubscription.components[i] );	
+							matched = s2.retainAll( s1);
+							if( !matched ) break;
+						}else if (wildcardSubscription.components[i].length() > 0 && !components[i].equals(wildcardSubscription.components[i])) {
 							matched = false;
 							break;
 						}
@@ -451,6 +458,19 @@ class WampRouterSession {
 		int dollarIndex = s.lastIndexOf("$");
 		String name = s.substring(dollarIndex + 1, nameEndIndex);
 		return name.toLowerCase();
+	}
+
+	private boolean isSet( String s){
+		if( s.length() < 2 ) return false;
+		return s.startsWith("[") && s.endsWith("]");
+	}
+
+	private Set<String> toSet( String s){
+		s = s.substring(1, s.length()-1);
+		String a[] = s.split("|");
+		
+		Set<String> ret = Arrays.stream(a).collect(Collectors.toSet());
+		return ret;
 	}
 
 	protected static void debug(String msg) {
