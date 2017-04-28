@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Set;
 import org.activiti.engine.delegate.event.ActivitiEvent;
 import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.delegate.event.ActivitiEventListener;
@@ -41,6 +43,7 @@ import org.activiti.engine.delegate.event.ActivitiVariableEvent;
 import org.activiti.engine.delegate.event.ActivitiSequenceFlowTakenEvent;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.HistoryService;
+import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.impl.context.Context;
@@ -103,6 +106,16 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 				result.put( "taskId", tasks.get(0).getId());
 				result.put( "owner", tasks.get(0).getOwner());
 				result.put( "assignee", tasks.get(0).getAssignee());
+				List<String> res = new ArrayList<String>();
+				Set<IdentityLink> iLinks = tasks.get(0).getCandidates();
+				for( IdentityLink il : iLinks ){
+					if( il.getUserId() != null){
+						res.add( il.getUserId());
+					}else if( il.getGroupId() != null){
+						res.add( il.getGroupId());
+					}
+				}
+				result.put( "candidates", "[" + String.join("|", res)+ "]" );
 			}
 		}
 		if( event instanceof ActivitiActivityEvent ){
