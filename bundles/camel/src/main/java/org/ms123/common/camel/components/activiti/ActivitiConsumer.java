@@ -105,22 +105,26 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 				result.put( "formKey", tasks.get(0).getFormKey());
 				result.put( "taskId", tasks.get(0).getId());
 				result.put( "owner", tasks.get(0).getOwner());
-				result.put( "assignee", tasks.get(0).getAssignee());
-				List<String> res = new ArrayList<String>();
+				String assignee = tasks.get(0).getAssignee();
+				result.put( "assignee", assignee );
+				List<String> candidates = new ArrayList<String>();
 				Set<IdentityLink> iLinks = tasks.get(0).getCandidates();
 				for( IdentityLink il : iLinks ){
 					if( il.getUserId() != null){
-						res.add( il.getUserId());
+						candidates.add( il.getUserId());
 					}else if( il.getGroupId() != null){
 						String[] g = il.getGroupId().split("\\.");
 						if( g.length == 1){
-							res.add( g[0] );
+							candidates.add( g[0] );
 						}else{
-							res.add( g[1]);
+							candidates.add( g[1]);
 						}
 					}
 				}
-				result.put( "candidates", "[" + String.join("|", res)+ "]" );
+				if( !isEmpty(assignee)){
+					candidates.add( assignee );
+				}
+				result.put( "candidates", "[" + String.join("|", candidates)+ "]" );
 			}
 		}
 		if( event instanceof ActivitiActivityEvent ){
