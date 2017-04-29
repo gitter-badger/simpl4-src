@@ -246,7 +246,7 @@
 
 					<neon-animated-pages id="pages" selected="[[route]]" attr-for-selected="hash">
 						<template is="dom-repeat" items="[[allPages]]">
-							<simpl-animatable-page hash$={{item.hash}}>
+							<simpl-animatable-page hash$="{{item.hash}}">
 								<div>{{item.name}}</div>
 							</simpl-animatable-page>
 						</template>
