@@ -112,7 +112,12 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 					if( il.getUserId() != null){
 						res.add( il.getUserId());
 					}else if( il.getGroupId() != null){
-						res.add( il.getGroupId());
+						String[] g = il.getGroupId().split("\\.");
+						if( g.length == 1){
+							res.add( g[0] );
+						}else{
+							res.add( g[1]);
+						}
 					}
 				}
 				result.put( "candidates", "[" + String.join("|", res)+ "]" );
