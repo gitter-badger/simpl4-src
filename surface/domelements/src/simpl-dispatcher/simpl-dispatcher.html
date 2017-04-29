@@ -114,6 +114,9 @@
 				this.selectMenuItem( this.selected );
 			},
 			filterLocalLinks:function(e){
+				if( !e.querySelectorAll ){
+					return;
+				}
 				var aList = e.querySelectorAll( "a" );
 				for ( var i = 0; i < aList.length; i++ ) {
 					var a = aList[ i ];

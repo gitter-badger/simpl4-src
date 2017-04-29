@@ -309,18 +309,23 @@
 					return tr( text );
 				} );
 				//console.log("HEAD;", head.innerHTML);
-				Polymer.dom( insertPoint ).appendChild( head.firstElementChild );
+				Polymer.dom( insertPoint ).appendChild( head.firstElementChild.cloneNode(true) );
 			}
 			if ( body.firstElementChild ) {
 				if ( body.childNodes.length > 1 ) {
 					for ( var i = 0; i < body.childNodes.length; i++ ) {
 						var node = body.childNodes[ i ];
+						if( node.nodeType != 1){
+							 continue;
+						}
+						node = node.cloneNode(true);
 						Polymer.dom( insertPoint ).appendChild( node );
 						this.$.dispatcherId.filterLocalLinks( node );
 					}
 				} else {
-					Polymer.dom( insertPoint ).appendChild( body.firstElementChild );
-					this.$.dispatcherId.filterLocalLinks( insertPoint.firstElementChild );
+					var node = body.firstElementChild.cloneNode(true);
+					Polymer.dom( insertPoint ).appendChild( node );
+					this.$.dispatcherId.filterLocalLinks( node );
 				}
 			}
 			this.async( function() {
