@@ -382,6 +382,15 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 		}
 	}
 
+	public List<String> getRolesByUserId(
+			@PName("uid")             String uid) throws RpcException {
+		try {
+			return getUserRoles(uid);
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "PermissionServiceImpl.getRolesByUserId:", e);
+		}
+	}
+
 	public List<Map> getAccessPermissionsForFileList(
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName("filenames")             List<String> filenames) throws RpcException {
