@@ -545,7 +545,7 @@
      * @private
      */
     Wampy.prototype._validateURI = function (uri) {
-        var re = /^([0-9a-zA-Z_]{2,}\.)*([0-9a-zA-Z_]{2,})$/;
+        var re = /^([0-9a-zA-Z_|\[\]]{2,}\.)*([0-9a-zA-Z_|\[\]]{2,})$/;
         if (!re.test(uri) || uri.indexOf('wamp') === 0) {
             return false;
         } else {
