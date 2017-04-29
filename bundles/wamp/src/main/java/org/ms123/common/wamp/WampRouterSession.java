@@ -104,15 +104,15 @@ class WampRouterSession {
 			SubscribeMessage sub = (WampMessages.SubscribeMessage) msg;
 			debug("    SUBSCRIPING");
 			String err = null;
-			SubscriptionFlags flags = SubscriptionFlags.Exact;
+			SubscriptionFlags flags = SubscriptionFlags.Wildcard;
 			if (sub.options != null) {
 				JsonNode match = sub.options.get("match");
 				if (match != null) {
 					String matchValue = match.asText();
 					if ("prefix".equals(matchValue)) {
 						flags = SubscriptionFlags.Prefix;
-					} else if ("wildcard".equals(matchValue)) {
-						flags = SubscriptionFlags.Wildcard;
+					} else if ("exact".equals(matchValue)) {
+						flags = SubscriptionFlags.Exact;
 					}
 				}
 			}
@@ -224,7 +224,10 @@ class WampRouterSession {
 						if ( isSet(components[i]) && isSet(wildcardSubscription.components[i] )){
 							Set<String> s1 = toSet( components[i] );	
 							Set<String> s2 = toSet( wildcardSubscription.components[i] );	
-							matched = s2.retainAll( s1);
+							info("wildcardSubscriptionMap.s1/s2:"+s1+"/"+s2);
+							s1.retainAll( s2);
+							matched = s1.size()>0;
+							info("wildcardSubscriptionMap.matched:"+matched+"/"+s1);
 							if( !matched ) break;
 						}else if (wildcardSubscription.components[i].length() > 0 && !components[i].equals(wildcardSubscription.components[i])) {
 							matched = false;
@@ -467,7 +470,7 @@ class WampRouterSession {
 
 	private Set<String> toSet( String s){
 		s = s.substring(1, s.length()-1);
-		String a[] = s.split("|");
+		String a[] = s.split("\\|");
 		
 		Set<String> ret = Arrays.stream(a).collect(Collectors.toSet());
 		return ret;

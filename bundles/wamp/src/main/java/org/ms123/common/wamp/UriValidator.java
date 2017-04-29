@@ -24,8 +24,8 @@ public abstract class UriValidator {
 	static final Pattern LOOSE_URI_NOT_EMPTY = Pattern.compile("^([^\\s\\.#]+\\.)*([^\\s\\.#]+)$");
 	static final Pattern LOOSE_URI_MAYBE_EMPTY = Pattern.compile("^(([^\\s\\.#]+\\.)|\\.)*([^\\s\\.#]+)?$");
 
-	static final Pattern STRICT_URI_NOT_EMPTY = Pattern.compile("^([0-9a-z_]+\\.)*([0-9a-z_]+)$");
-	static final Pattern STRICT_URI_MAYBE_EMPTY = Pattern.compile("^(([0-9a-z_]+\\.)|\\.)*([0-9a-z_]+)?$");
+	static final Pattern STRICT_URI_NOT_EMPTY = Pattern.compile("^([0-9a-z_|\\[\\]]+\\.)*([0-9a-z_|\\[\\]]+)$");
+	static final Pattern STRICT_URI_MAYBE_EMPTY = Pattern.compile("^(([0-9a-z_|\\[\\]]+\\.)|\\.)*([0-9a-z_|\\[\\]]+)?$");
 
 	/**
 	 * Checks a WAMP Uri for validity.
