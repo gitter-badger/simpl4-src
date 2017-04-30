@@ -2,7 +2,7 @@
 /**
  * This file is part of SIMPL4(http://simpl4.org).
  *
- * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
  *
  * SIMPL4 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,35 +20,6 @@
 -->
 <dom-module id="simpl-processcontroller">
 	<style>
-		html /deep/ iron-icon.error-big {
-			color: red;
-			height: 64px;
-			width: 64px;
-		}
-		html /deep/ paper-button[affirmative] {
-			color: #4285f4;
-		}
-		/*Extra Würste for polyfills*/
-		
-		paper-button[affirmative] {
-			color: #4285f4;
-		}
-		iron-icon.error-big {
-			color: red;
-			height: 64px;
-			width: 64px;
-		}
-		iron-icon.finish-big {
-			color: blue;
-			height: 64px;
-			width: 64px;
-		}
-		paper-toast#toast {
-			z-index: 10;
-		}
-		paper-dialog {
-			min-height: 250px;
-		}
 
 	</style>
 	<template>
@@ -57,30 +28,6 @@
 				<simpl-form id="formid" on-xaction="actionCallback" namespace="[[namespace]]" form-name="[[formName]]" variables="[[variables]]"></simpl-form>
 			</simpl-panel>
 		</template>
-		<paper-toast id="toast" class="capsule" text="[[error_message]]" style="padding-right: 60px;"></paper-toast>
-
-		<paper-dialog with-backdrop id="error">
-			<div class="layout vertical flex">
-				<iron-icon class="error-big" icon="error"></iron-icon>
-				<p></p>
-			</div>
-			<div class="buttons">
-				<paper-button raised dialog-confirm>
-					<iron-icon affirmative icon="check"></iron-icon>Ok</paper-button>
-			</div>
-		</paper-dialog>
-
-		<paper-dialog with-backdrop id="finish">
-			<div class="layout vertical flex">
-				<iron-icon class="finish-big" icon="verified-user"></iron-icon>
-				<p></p>
-			</div>
-			<div class="buttons">
-				<paper-button raised on-tap="onFinishTap" xialog-confirm>
-					<iron-icon affirmative icon="check"></iron-icon>Ok</paper-button>
-			</div>
-		</paper-dialog>
-
 	</template>
 
 	<script>
@@ -104,21 +51,21 @@
 				this.panelBackgroundColor = 'black';
 				this.panelHeader = '';
 				this.formName = null;
-				console.log("ProcessController.ready");
+				console.log( "ProcessController.ready" );
 			},
 			attached: function() {
-				console.log("ProcessController.attached:",this.namespace+"/"+this.name+"/"+this.paramObject);
-				if( this.name && this.namespace && this.paramObject){
-					this.startByName(this.namespace, this.name, this.paramObject);
+				console.log( "ProcessController.attached:", this.namespace + "/" + this.name + "/" + this.paramObject );
+				if ( this.name && this.namespace && this.paramObject ) {
+					this.startByName( this.namespace, this.name, this.paramObject );
 				}
 			},
 			isParamsOk: function( namespace, formName ) {
 				return this.namespace != null && this.formName != null;
 			},
-			nameChanged:function(){
-				var params=null;
-				if( this.parameter && this.parameter.startsWith("{")){
-					params = JSON.parse(this.parameter);
+			nameChanged: function() {
+				var params = null;
+				if ( this.parameter && this.parameter.startsWith( "{" ) ) {
+					params = JSON.parse( this.parameter );
 				}
 				this.paramObject = params || {};
 			},
@@ -188,8 +135,11 @@
 					if ( xaction == "execute" ) {
 						var buttonKey = xid;
 						if ( !valid ) {
-							self.error_message = tr( "process.form_incomplete" );
-							self.querySelector( "#toast" ).show();
+							Lobibox.notify( 'error', {
+								delay: 6000,
+								icon: "vaadin-icons:exclamation",
+								msg: tr( "process.form_incomplete" )
+							} );
 							return;
 						}
 						self.handleExecuteButton( data, task, formVar, buttonKey, finishCallback );
@@ -203,15 +153,15 @@
 				var processVariables = {};
 				var mappedFormValues = null;
 				if ( task != null ) {
-					processVariables = this.getProcessVariables( processTenantId,formResourceKey,  task.processInstanceId );
+					processVariables = this.getProcessVariables( processTenantId, formResourceKey, task.processInstanceId );
 					mappedFormValues = this.getMappedFormValues( task.id, task.processInstanceId );
 				} else {
 					processVariables[ "__namespace" ] = simpl4.util.BaseManager.getNamespace();
 				}
-				if( taskName){
-					this.panelHeader = tr(processName) + "/" + taskName;
-				}else{
-					this.panelHeader = tr(processName);
+				if ( taskName ) {
+					this.panelHeader = tr( processName ) + "/" + taskName;
+				} else {
+					this.panelHeader = tr( processName );
 				}
 				this.variables = processVariables;
 				this.namespace = processTenantId;
@@ -313,7 +263,8 @@
 					if ( tasks && tasks.total > 0 ) {
 						this.showForm( tasks.data[ 0 ], finishCallback );
 					} else {
-						if ( task && task.fromTaskList ) {
+console.log("task:",task);
+						if ( task ) {
 							this.finish( tr( "processes.taskform.started" ) + " -> ID" + ( task.processInstanceId ), finishCallback );
 						} else {
 							this.finish( tr( "processes.startform.started" ) + " -> ID" + ( task ? task.processInstanceId : ret.id ), finishCallback );
@@ -453,21 +404,24 @@
 				return null;
 			},
 			finish: function( message, callback ) {
-				this.querySelector( "#finish p" ).innerHTML = message;
+				Lobibox.notify( 'default', {
+					delay: 6000,
+					icon: "vaadin-icons:info-circle-o",
+					msg: message
+				} );
 
-				var dia = this.querySelector( "#finish" );
 				this.onFinishTap = function( e ) {
-					dia.close();
-					callback();
-				}
-				dia.open();
+						callback();
+					}
 			},
 			alert: function( message ) {
-				this.querySelector( "#error p" ).innerHTML = message;
-				this.querySelector( "#error" ).open();
+				Lobibox.notify( 'error', {
+					delay: 6000,
+					icon: "vaadin-icons:exclamation",
+					msg: message
+				} );
 			}
 		} );
 
 	</script>
-
 </dom-module>
