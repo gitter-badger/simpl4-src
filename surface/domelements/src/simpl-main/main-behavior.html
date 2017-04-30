@@ -309,23 +309,18 @@
 					return tr( text );
 				} );
 				//console.log("HEAD;", head.innerHTML);
-				Polymer.dom( insertPoint ).appendChild( head.firstElementChild.cloneNode(true) );
+				Polymer.dom( insertPoint ).appendChild( head.firstElementChild );
 			}
 			if ( body.firstElementChild ) {
-				if ( body.childNodes.length > 1 ) {
+				if ( body.childNodes.length > 0 ) {
 					for ( var i = 0; i < body.childNodes.length; i++ ) {
 						var node = body.childNodes[ i ];
 						if( node.nodeType != 1){
 							 continue;
 						}
-						node = node.cloneNode(true);
 						Polymer.dom( insertPoint ).appendChild( node );
 						this.$.dispatcherId.filterLocalLinks( node );
 					}
-				} else {
-					var node = body.firstElementChild.cloneNode(true);
-					Polymer.dom( insertPoint ).appendChild( node );
-					this.$.dispatcherId.filterLocalLinks( node );
 				}
 			}
 			this.async( function() {
@@ -336,7 +331,7 @@
 				}
 				this.setStyleScope( insertPoint, scope );
 				this.async( function() {
-					$( insertPoint ).fadeIn();
+					$( insertPoint ).fadeIn(700);
 				}, 0 );
 			}, 2 );
 		},
