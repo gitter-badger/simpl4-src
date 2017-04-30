@@ -141,7 +141,12 @@ var Lobibox = Lobibox || {};
             if (me.$options.img) {
                 $innerIconEl.append('<img src="' + me.$options.img + '"/>');
             } else if (me.$options.icon) {
-                $innerIconEl.append('<div class="icon-el"><i class="' + me.$options.icon + '"></i></div>');
+                //$innerIconEl.append('<div class="icon-el"><i class="' + me.$options.icon + '"></i></div>');
+								var icon = "vaadin-icons:info-circle-o";
+								if( me.$options.icon && me.$options.icon!=''){
+									icon = me.$options.icon;
+								}
+                $innerIconEl.append('<iron-icon class="big" icon="'+icon + '"></iron-icon>');
             } else {
                 $notify.addClass('without-icon');
             }
@@ -395,7 +400,7 @@ var Lobibox = Lobibox || {};
         },
         default: {
             'class': 'lobibox-notify-default',
-            'title': 'Default',
+            'title': 'Information',
             sound: false
         },
         success: {

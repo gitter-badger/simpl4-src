@@ -772,8 +772,12 @@ var Lobibox = Lobibox || {};
 
             var d = $('<div></div>');
             if (me.$options.iconClass) {
+								var icon = "vaadin-icons:question";
+								if( me.$options.icon && me.$options.iconClass!=''){
+									icon = me.$options.iconClass;
+								}
                 d.append($('<div class="lobibox-icon-wrapper"></div>')
-                    .append('<i class="lobibox-icon ' + me.$options.iconClass + '"></i>'))
+                    .append('<iron-icon class="big" icon="'+icon + '"></iron-icon>'))
                 ;
             }
             d.append('<div class="lobibox-body-text-wrapper"><span class="lobibox-body-text">' + me.$options.msg + '</span></div>');
