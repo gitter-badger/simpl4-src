@@ -263,7 +263,6 @@
 					if ( tasks && tasks.total > 0 ) {
 						this.showForm( tasks.data[ 0 ], finishCallback );
 					} else {
-console.log("task:",task);
 						if ( task ) {
 							this.finish( tr( "processes.taskform.started" ) + " -> ID" + ( task.processInstanceId ), finishCallback );
 						} else {
@@ -409,10 +408,9 @@ console.log("task:",task);
 					icon: "vaadin-icons:info-circle-o",
 					msg: message
 				} );
-
-				this.onFinishTap = function( e ) {
-						callback();
-					}
+				this.async( function() {
+					callback();
+				}, 500 );
 			},
 			alert: function( message ) {
 				Lobibox.notify( 'error', {
