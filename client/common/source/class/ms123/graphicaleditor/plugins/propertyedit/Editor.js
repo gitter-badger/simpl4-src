@@ -461,7 +461,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 					var formElement;
 					var isCamelDiagramName = (this.isCamelRoot && pair.id() == 'name');
 					var isCamelDiagramId = (this.isCamelRoot && pair.id() == 'overrideid');
-					var isBPMNDiagramName = (this.isBPMNRoot && pair.id() == 'name');
+					var isBPMNDiagramName = (this.isBPMNRoot && pair.id() == 'overrideid');
 					var isFormDiagramName = (this.isFormRoot && pair.id() == 'xf_name');
 					var isFormDiagramId = (this.isFormRoot && pair.id() == 'xf_id');
 
