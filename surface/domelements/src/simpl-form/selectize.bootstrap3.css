@@ -325,7 +325,7 @@
   height: auto;
   padding: 0;
   margin: 2px 0 0 0;
-  z-index: 1000;
+  z-index: 60000;
   background: #ffffff;
   border: 1px solid #cccccc;
   border: 1px solid rgba(0, 0, 0, 0.15);
