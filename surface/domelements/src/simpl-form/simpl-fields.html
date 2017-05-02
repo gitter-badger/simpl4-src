@@ -2639,11 +2639,11 @@
 
 		<paper-dialog id="linkedObjDialog" no-cancel-on-outside-click with-backdrop="">
 			<paper-dialog-scrollable>
-				<div class="lyaout vertical flex">
-					<simpl-filter id="filterId" style="margin-bottom:10px;" namespace="{{namespace}}" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
-					<div style="height:20px;"></div>
+				<div style="color:#d00c0c;">
+					<simpl-filter id="filterId" style="margin-bottom:10px;" namespace="{{namespace}}" with-cancel on-cancel="cancelAction" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
+					<div style="height:13px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
 					<simpl-panel bgcolor="black" heading="[[getHeader(_entityName)]]">
-						<simpl-crudtable disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="cancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
 			</paper-dialog-scrollable>
@@ -2696,8 +2696,11 @@
 				this.editValue = null;
 				this.id = null;
 			},
-			selectAction: function( e ) {
-				this.data = e.detail.data;
+			rowsSelected: function( e ) {
+				if( !e.detail.doubleTap ){
+					return;
+				}
+				this.data = e.detail.rows[0];
 				this.$.linkedObjDialog.close();
 				var t = this._maskedEval( this.props.title_expression, this.data );
 				this.id = this.data.id || this.data._id;
@@ -2752,6 +2755,9 @@
 					var pack = this.getPack();
 					this.entityName = pack ? (pack +":"+ this.getSimpleEntityName(this.entity)) : this.entity;
 				},10 );
+			},
+			getHelp:function(){
+				return tr("crud2.select_with");
 			},
 			getHeader:function(entityName){
 				this.pack = this.getPack() || "data";

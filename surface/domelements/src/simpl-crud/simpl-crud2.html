@@ -77,7 +77,7 @@ CRUD operations for simpl4
 					<simpl-filter id="filterId" style="margin-bottom:10px;" with-cancel namespace="{{namespace}}" entity="{{entityName}}" on-cancel="selectCancelAction" filter="{{filter}}"></simpl-filter>
 					<div style="height:13px;padding-right:20px;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
 					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" >
-						<simpl-crudtable id="crud2TableId" disable-spinner namespace="{{namespace}}" xuttons="select,cancel" on-rows-selected="rowsSelected" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable id="crud2TableId" disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
 			</paper-dialog-scrollable>
