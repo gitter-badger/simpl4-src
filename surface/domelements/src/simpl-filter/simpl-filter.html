@@ -30,19 +30,21 @@
 			//color: #4B575C;
 		}
 		.btn-primary {
-			color: #FFF;
-			background-color: #8A8B8C !important;
-			border-color: #8A8B8C !important;
+			color: #607d8b;
+			background-color: #eff2f3 !important;
+			border-color: #eff2f3 !important;
 		}
-		.btn-primary:hover,
+		.btn-primary:hover{
+			color: #000;
+		}
 		.btn-primary:focus,
 		.btn-primary.focus,
 		.btn-primary:active,
 		.btn-primary.active,
 		.open > .dropdown-toggle.btn-primary {
 			color: #FFF;
-			background-color: #4B575C !important;
-			border-color: #4B575C !important;
+    	background-color: #607d8b !important;
+    	border-color: #607d8b !important;
 		}
 		.btn-success {
 			color: #FFF;
@@ -51,7 +53,12 @@
 		}
 		.button_error_raised,
 		.button_secondary_raised{
-			padding:0px 0px;
+			background: #607d8b !important;
+			padding: 2px;
+			color: #fff !important;
+		}
+		.btn-group {
+			font-size: 0.9em !important;
 		}
 		.btn-xs{
 			line-height:1;
@@ -141,7 +148,10 @@
 				</div>
 				
 				<div class="flex" style="text-align:right;">
-				<content></content>
+					<template is="dom-if" if="[[withCancel]]">
+						<paper-button style="min-width:150px !important;" class="flex button" on-tap="cancel">
+							<iron-icon icon="cancel"></iron-icon>{{tr('button.cancel')}}</paper-button>
+					</template>
 					<paper-button raised style="min-width:150px !important;" class="flex button_primary_raised" on-tap="search">
 						<iron-icon icon="search"></iron-icon>{{tr('searchfilter.searchbutton')}}</paper-button>
 				</div>
@@ -168,6 +178,10 @@
 				entity: {
 					observer: "entityChanged",
 					type: String
+				},
+				withCancel: {
+					type: Boolean,
+					value: false
 				},
 				filter: {
 					value: null,
@@ -323,6 +337,10 @@
 					$( Polymer.dom( this.root ).querySelectorAll( ".rule-container" ) ).attr( "simpleSearch", "" );
 					$( Polymer.dom( this.root ).querySelectorAll( ".rules-group-container" ) ).attr( "simpleSearch", "" );
 				}
+			},
+			cancel: function( e ) {
+				this.fire( "cancel", {
+				} );
 			},
 			search: function( e ) {
 				var event = {

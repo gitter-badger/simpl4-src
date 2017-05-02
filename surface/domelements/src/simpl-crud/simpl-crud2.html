@@ -73,11 +73,11 @@ CRUD operations for simpl4
 		<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
 		<paper-dialog id="searchDialog" no-cancel-on-outside-click with-backdrop="">
 			<paper-dialog-scrollable>
-				<div class="lyaout vertical flex">
-					<simpl-filter id="filterId" style="margin-bottom:10px;" namespace="{{namespace}}" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
-					<div style="height:20px;"></div>
+				<div style="color:#d00c0c">
+					<simpl-filter id="filterId" style="margin-bottom:10px;" with-cancel namespace="{{namespace}}" entity="{{entityName}}" on-cancel="selectCancelAction" filter="{{filter}}"></simpl-filter>
+					<div style="height:13px;padding-right:20px;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
 					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" >
-						<simpl-crudtable id="crud2TableId" disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable id="crud2TableId" disable-spinner namespace="{{namespace}}" xuttons="select,cancel" on-rows-selected="rowsSelected" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
 			</paper-dialog-scrollable>
@@ -237,6 +237,18 @@ CRUD operations for simpl4
 				this.mode = "edit";
 				var data = e.detail.data;
 				console.log("selectAction:",e);
+				this.$.searchDialog.close();
+				this.currentData = clone(data);
+				this.$.formid.setData( this.currentData );
+			},
+			rowsSelected:function(e){
+				console.log("rowsSelected:",e.detail);
+				if( !e.detail.doubleTap ){
+					return;
+				}
+				this.setButtonState("del", true);
+				this.mode = "edit";
+				var data = e.detail.rows[0];
 				this.$.searchDialog.close();
 				this.currentData = clone(data);
 				this.$.formid.setData( this.currentData );
@@ -430,6 +442,9 @@ console.log("ret:",ret);
 				this.data = [ {
 					articleId: "ABC"
 				} ]
+			},
+			getHelp:function(){
+				return tr("crud2.select_with");
 			},
 			getHeader:function(entityName){
 				return tr(this.getPackFromEntity(this.entity)+'.'+this.getSimpleEntityName(entityName));

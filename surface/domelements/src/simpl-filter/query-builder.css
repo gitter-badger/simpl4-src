@@ -73,7 +73,7 @@ dd.rules-group-body{
 .query-builder .error-container {
   display:none !important;
   cursor:help;
-  color:red;
+  color:#d00c0c;
 }
 
 .query-builder .has-error .error-container {
