@@ -191,6 +191,9 @@
 			ready:function(){
 				this.toggleSearchMode();
 			},
+			doSearch:function(){
+				this.search();
+			},
 			attached: function() {
 				console.debug( "Filter.attached.Entity:", this.entity + "/namespace:" + this.namespace );
 				if ( this.entity == null || this.namespace == null ) {
