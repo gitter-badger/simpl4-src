@@ -38,6 +38,9 @@ CRUD operations for simpl4
 		paper-button /deep/ paper-material.content {
 			padding: 0.5em 0 !important;
 		}
+		paper-button.h  {
+			max-width:200px;
+		}
 		paper-button.h /deep/ iron-icon {
 			vertical-align: bottom;
 		}
@@ -112,26 +115,26 @@ CRUD operations for simpl4
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
-							<simpl-crudtable id="crudTableId" on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+							<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
 					</template>
 					<template is="dom-if" if="[[!withPanel]]">
-						<simpl-crudtable id="crudTableId" on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 					</template>
 				</template>
 			</section>
 			<section style="padding:0px;position:relative;overflow-x:hidden;" num="1" unresolved>
 				<!--simpl-panel heading="{{panelHeaderCrudForm}}"-->
 					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
-						<paper-button class="h flex button button_primary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
-							<iron-icon icon="save"></iron-icon>{{tr('data.form.save')}}</paper-button>
 						<paper-button class="h flex button" raised on-tap="cancelAction">
-							<iron-icon icon="arrow-back"></iron-icon>{{tr('button.back')}}</paper-button>
+							<iron-icon icon="vaadin-icons:close-small"></iron-icon>{{tr('button.back')}}</paper-button>
+						<paper-button class="h flex button button_primary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
+							<iron-icon icon="vaadin-icons:check"></iron-icon>{{tr('data.form.save')}}</paper-button>
 						<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
-							<iron-icon icon="image:navigate-before"></iron-icon>
+							<iron-icon icon="vaadin-icons:angle-left"></iron-icon>
 						</paper-button>
 						<paper-button class="h flex button button_primary" id="nextButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="nextAction">
-							<iron-icon icon="image:navigate-next"></iron-icon>
+							<iron-icon icon="vaadin-icons:angle-right"></iron-icon>
 						</paper-button>
 					</div>
 					<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
