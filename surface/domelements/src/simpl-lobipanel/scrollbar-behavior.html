@@ -1,0 +1,72 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<script>
+	ScrollbarBehavior = {
+		attached: function() {
+			this._childPanels = {};
+			this.async( function() {
+				this._initScrollbars();
+				$( '.panel' ).on( 'onFullScreen.lobiPanel', ( function( ev, lobiPanel ) {
+					var id = lobiPanel.$body[ 0 ].firstElementChild.firstElementChild.id;
+					this._childPanels[ id ].update();
+					this._childPanels[ id ].setPosition( 0, 0 );
+				} ).bind( this ) );
+			}, 300 );
+		},
+		_initScrollbars: function() {
+			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
+			var tables = this._toElementArray( this.querySelectorAll( ".dataTables_scrollBody" ) );
+			var childPanels = this._toElementArray( this.querySelectorAll( ".panel-body" ) );
+			var elements = tables.concat( childPanels );
+			for ( var i = 0; i < elements.length; i++ ) {
+				var elem = elements[ i ];
+				var firstChild = elem.firstElementChild;
+				var scrollbar = window.Scrollbar.init( elem, {
+					speed: isTouch ? 1 : 4,
+					damping: isTouch ? 0.1 : 0.05,
+					renderByPixels: true,
+					overscrollEffect: "bounce",
+					alwaysShowTracks: true,
+					overscrollEffectColor: "#87ceeb",
+					thumbMinSize: 10
+				} );
+				if ( !firstChild.id ) {
+					firstChild.id = "id" + i;
+				}
+				this._childPanels[ firstChild.id ] = scrollbar;
+				if ( firstChild.setParent ) {
+					firstChild.setParent( this );
+				}
+			}
+		},
+		updateScrollbar: function( child ) {
+			this._childPanels[ child.id ].update();
+		},
+		_toElementArray: function( elements ) {
+			var res = []
+			for ( var i = 0; i < elements.length; i++ ) {
+				res.push( elements[ i ] );
+			}
+			return res;
+		}
+	}
+
+</script>
