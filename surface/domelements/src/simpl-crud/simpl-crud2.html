@@ -68,7 +68,7 @@ CRUD operations for simpl4
 				margin: 0px;
 				padding: 0px;
 			}
-			.scrollbar{
+			.smooth-scrollbar{
 				height:calc(100% - 40px);
 				overflow:auto;
 				position:relative;
@@ -80,7 +80,7 @@ CRUD operations for simpl4
 					<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
 			</template>
 		</div>
-		<div class="scrollbar">
+		<div class="smooth-scrollbar">
 			<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
 		</div>
 		<paper-dialog id="searchDialog" no-cancel-on-outside-click with-backdrop="">
