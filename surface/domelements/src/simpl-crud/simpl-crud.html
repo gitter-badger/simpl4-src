@@ -188,7 +188,6 @@ CRUD operations for simpl4
 				</neon-animated-pages>
 			</section>
 		</iron-pages>
-		<delete-dialog on-delete-ok="onDeleteOk" id="dialogOkId"></delete-dialog>
 	</template>
 	<script>
 		Polymer( {
@@ -273,6 +272,11 @@ CRUD operations for simpl4
 				this.fire( "error", e.detail );
 			},
 			attached: function() {
+				if( this.initialized != true ){
+					this.init();
+				}
+			},
+			init: function() {
 				this.selectedDetailsTabId = "detailsMainTabId";
 				this.entryAnimation = 'slide-from-left-animation';
 				this.exitAnimation = 'slide-left-animation';
@@ -286,6 +290,7 @@ CRUD operations for simpl4
 				this.panelHeaderCrudTable = tr( ep.pack + "." + ep.entityName + "_list" );
 				this.pageStack = new Array();
 				this.pageSelected = 0;
+				this.initialized=true;
 			},
 			setFormSpec: function( namespace, entity ) {
 				if ( namespace === this.prevNamespace && entity === this.prevEntityName ) return;
@@ -456,10 +461,18 @@ CRUD operations for simpl4
 			},
 			delAction: function( e ) {
 				var detail = e.detail;
-				this.mode = 'del';
 				console.log( "delAction:", detail );
 				this.currentTable = detail.table;
-				this.$.dialogOkId.open( detail );
+ 				Lobibox.confirm( {
+					msg: tr("entitytypes.confirm_delete"),
+					title: "&nbsp;",
+					callback: ( function( $this, type ) {
+						if ( type === 'yes' ) {
+							this.mode = 'del';
+							this.onDeleteOk( e );
+						} else if ( type === 'no' ) {}
+					} ).bind( this )
+				} );
 			},
 			onDeleteOk: function( e ) {
 				console.log( "deleteok:", e );
@@ -669,7 +682,11 @@ CRUD operations for simpl4
 				console.log( "getIdValue:", entityName + "/", data );
 				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
 				if ( pkList == null || pkList.length === 0 ) {
-					pkList = [ "id" ];
+					if( data["_id"] != null){
+						pkList = [ "_id" ];
+					}else{
+						pkList = [ "id" ];
+					}
 				}
 				var idValue = "";
 				var colon = "";
