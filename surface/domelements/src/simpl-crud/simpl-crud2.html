@@ -26,8 +26,9 @@ CRUD operations for simpl4
 	<template>
 		<style>
 			:host {
-				min-height: 400px;
 				display: inherit;
+				height:100%;
+				overflow:hidden;
 			}
 			:host /deep/ #searchDialog {
 				position:fixed;
@@ -63,14 +64,25 @@ CRUD operations for simpl4
 				height: 48px;
 				vertical-align: middle;
 			}
+			#searchDialog {
+				margin: 0px;
+				padding: 0px;
+			}
+			.scrollbar{
+				height:calc(100% - 40px);
+				overflow:auto;
+				position:relative;
+			}
 		</style>
-		<div class="layout horizontal" style="margin-bottom:10px;">
+		<div class="layout horizontal" style="height:40px;margin-bottom:0px;">
 			<template is="dom-repeat" items="{{buttonList}}">
 				<paper-button class="button button_secondary ripple flex" raised name$="{{item.name}}" on-tap="onTap" disabled$="{{item.disabled}}">
 					<iron-icon name$="{{item.name}}" icon="{{item.icon}}"></iron-icon>{{item.text}}</paper-button>
 			</template>
 		</div>
-		<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
+		<div class="scrollbar">
+			<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
+		</div>
 		<paper-dialog id="searchDialog" no-cancel-on-outside-click with-backdrop="">
 			<paper-dialog-scrollable>
 				<div style="color:#d00c0c">
@@ -189,24 +201,39 @@ CRUD operations for simpl4
 			},
 			searchAction: function() {
 				this.entityName = this.entity;
-				this.querySelector("#crud2TableId").refresh();
-				this.$.searchDialog.isAttached=true;//@@@MS ???
+				this.$.filterId.doSearch();
+
 				this.async( function() {
-					this.$.searchDialog.open();
-					this.$.filterId.doSearch();
-				},50 );
+					var sd = $( this.$.searchDialog ).dialog({
+						resizable: true,
+						draggable: true,
+						title:"",
+						height: "auto",
+						width: "80%",
+						modal: true
+					});
+					sd.parent().css("z-index","555111");
+				},200 );
 				this.fire( "search-action", {
 					entity: this.entity,
 					namespace: this.namespace
 				} );
 			},
 			delAction: function() {
-				this.setButtonState("del", false);
-				this.mode = 'del';
-				this.$.dialogOkId.open( this.currentData );
-				this.fire( "del-action", {
-					entity: this.entity,
-					namespace: this.namespace
+ 				Lobibox.confirm( {
+					msg: tr("entitytypes.confirm_delete"),
+					title: "&nbsp;",
+					callback: ( function( $this, type ) {
+						if ( type === 'yes' ) {
+							this.mode = 'del';
+							this.setButtonState("del", false);
+							this.onDeleteOk( {detail:this.currentData} );
+							this.fire( "del-action", {
+								entity: this.entity,
+								namespace: this.namespace
+							} );
+						} else if ( type === 'no' ) {}
+					} ).bind( this )
 				} );
 			},
 			onDeleteOk: function( e ) {
@@ -229,7 +256,7 @@ CRUD operations for simpl4
 			},
 			selectCancelAction: function() {
 				this.async( function() {
-					this.$.searchDialog.close();
+					$(this.$.searchDialog).dialog("close");
 				},50 );
 			},
 			selectAction: function( e ) {
@@ -237,7 +264,7 @@ CRUD operations for simpl4
 				this.mode = "edit";
 				var data = e.detail.data;
 				console.log("selectAction:",e);
-				this.$.searchDialog.close();
+				$(this.$.searchDialog).dialog("close");
 				this.currentData = clone(data);
 				this.$.formid.setData( this.currentData );
 			},
@@ -249,7 +276,7 @@ CRUD operations for simpl4
 				this.setButtonState("del", true);
 				this.mode = "edit";
 				var data = e.detail.rows[0];
-				this.$.searchDialog.close();
+				$(this.$.searchDialog).dialog("close");
 				this.currentData = clone(data);
 				this.$.formid.setData( this.currentData );
 			},
