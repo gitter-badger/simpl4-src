@@ -21,26 +21,27 @@
 <script>
 	ScrollbarBehavior = {
 		attached: function() {
-			this._childPanels = {};
 			this.async( function() {
 				this._initScrollbars();
 				$( '.panel' ).on( 'onFullScreen.lobiPanel', ( function( ev, lobiPanel ) {
-					var id = lobiPanel.$body[ 0 ].firstElementChild.firstElementChild.id;
-					this._childPanels[ id ].update();
-					this._childPanels[ id ].setPosition( 0, 0 );
+					var sbElements = lobiPanel.$body[ 0 ].querySelectorAll( ".smooth-scrollbar" );
+					for ( var i = 0; i < sbElements.length; i++ ) {
+						var sb = Scrollbar.get( sbElements[ i ] );
+						if ( sb ) {
+							sb.setPosition( 0, 0 );
+							sb.update();
+						}
+					}
 				} ).bind( this ) );
 			}, 300 );
 		},
 		_initScrollbars: function() {
 			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
 			var tables = this._toElementArray( this.querySelectorAll( ".dataTables_scrollBody" ) );
-			var childPanels = this._toElementArray( this.querySelectorAll( ".panel-body" ) );
-			var crud = this._toElementArray( this.querySelectorAll( ".scrollbar" ) );
-			var elements = tables.concat( childPanels ).concat(crud);
-			for ( var i = 0; i < elements.length; i++ ) {
-				var elem = elements[ i ];
-				var firstChild = elem.firstElementChild;
-				var scrollbar = window.Scrollbar.init( elem, {
+			var sbElements = this._toElementArray( this.querySelectorAll( ".smooth-scrollbar" ) );
+			var elementArray = tables.concat( sbElements );
+			for ( var i = 0; i < elementArray.length; i++ ) {
+				window.Scrollbar.init( elementArray[i], {
 					speed: isTouch ? 1 : 4,
 					damping: isTouch ? 0.1 : 0.05,
 					renderByPixels: true,
@@ -49,17 +50,7 @@
 					overscrollEffectColor: "#87ceeb",
 					thumbMinSize: 10
 				} );
-				if ( !firstChild.id ) {
-					firstChild.id = "id" + i;
-				}
-				this._childPanels[ firstChild.id ] = scrollbar;
-				if ( firstChild.setParent ) {
-					firstChild.setParent( this );
-				}
 			}
-		},
-		updateScrollbar: function( child ) {
-			this._childPanels[ child.id ].update();
 		},
 		_toElementArray: function( elements ) {
 			var res = []
