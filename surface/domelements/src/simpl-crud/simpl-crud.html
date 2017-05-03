@@ -104,7 +104,7 @@ CRUD operations for simpl4
 		<iron-pages id="ironPages" selected="{{pageSelected}}" attr-for-selected="num">
 			<section style="padding:0px;min-height:400px;position:relative;overflow-x:hidden;" num="0">
 				<template is="dom-if" if="[[!filterName]]">
-					<simpl-filter namespace="{{namespace}}" entity="{{mainEntityName}}" filter="{{filter}}">
+					<simpl-filter id="filterId" namespace="{{namespace}}" entity="{{mainEntityName}}" filter="{{filter}}">
 						<paper-button raised style="min-width:100px !important;" class="new flex button_primary" on-tap="_addAction">
 							<iron-icon icon="add"></iron-icon>{{tr('button.new')}}</paper-button>
 					</simpl-filter>
@@ -204,6 +204,10 @@ CRUD operations for simpl4
 					value: null,
 					type: String
 				},
+				autoSearch: {
+					value: false,
+					type: Boolean
+				},
 				entity: {
 					type: String
 				},
@@ -274,6 +278,11 @@ CRUD operations for simpl4
 			attached: function() {
 				if( this.initialized != true ){
 					this.init();
+					if( this.autoSearch){
+						this.async( function() {
+							this.querySelector("#filterId").doSearch();
+						}, 200 );
+					}
 				}
 			},
 			init: function() {
