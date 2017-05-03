@@ -112,11 +112,11 @@ CRUD operations for simpl4
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
-							<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+							<simpl-crudtable id="crudTableId" on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
 					</template>
 					<template is="dom-if" if="[[!withPanel]]">
-						<simpl-crudtable on-error="onError" namespace="[[namespace]]" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable id="crudTableId" on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 					</template>
 				</template>
 			</section>
@@ -429,6 +429,23 @@ CRUD operations for simpl4
 					this.pageSelected = 1;
 				} ).bind( this ) );
 			},
+			rowsSelected:function(e){
+				console.log("rowsSelected:",e.detail);
+				if( !e.detail.doubleTap ){
+					return;
+				}
+				var crud = this.querySelector("#crudTableId");
+				var data = e.detail.rows[0];
+				var detail = {
+					data : data,
+					dataSet: crud.dataSet,
+					rowIndex: crud.currentRowIndex,
+					table: crud,
+					entity : this.entity,
+					namespace : this.namespace
+				}
+				this.editAction({ detail:detail} );
+			},
 			refreshAction: function( e ) {
 				var detail = e.detail;
 				console.log( "refreshAction:", detail );
@@ -636,7 +653,7 @@ CRUD operations for simpl4
 			getPack: function( en ) {
 				var p = "data";
 				var e = en;
-				if ( en.indexOf( ":" ) > 0 ) {
+				if ( en && en.indexOf( ":" ) > 0 ) {
 					p = en.split( ":" )[ 0 ];
 					e = en.split( ":" )[ 1 ];
 				}
