@@ -459,11 +459,13 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
     	height:    -moz-calc(100% - 75px);
     	height:         calc(100% - 75px);
 		}
-
+		:host neon-animated-pages .iron-selected:not(.neon-animating) { 
+			position: relative; 
+		}
 	</style>
 	<template>
 		<div id="[[item.xf_id]]">
-			<paper-tabs selected="{{tabsId}}" selectables="paper-tab" attr-for-selected="tabs-id" scrollable>
+			<paper-tabs selected="{{tabsId}}" style="margin-bottom:15px;" selectables="paper-tab" attr-for-selected="tabs-id" scrollable>
 				<template is="dom-repeat" as="i" items="[[item.childShapes]]">
 					<template is="dom-if" if="[[i.label]]" restamp>
 						<paper-tab tabs-id$="[[i.xf_id]]">[[tabTitle(i.label)]]</paper-tab>
@@ -506,7 +508,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 				return "display:block;padding-top:0px;padding-bottom:0px;"
 			},
 			getPageStyle: function() {
-				return "margin-top:20px;padding:0px;"
+				return "margin-top:0px;padding:0px;"
 			},
 			computePagesStyle: function( item ) {
 				var maxHeight = 0;
@@ -519,7 +521,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 					maxHeight = Math.max( maxHeight, h );
 				}
 				if( maxHeight == 0 ) maxHeight=500;
-				return "overflow-x:hidden;min-height:" + ( maxHeight - 30 ) + "px;";
+				return "overflow:hidden;min-height:" + ( maxHeight - 30 ) + "px;";
 			},
 			ready: function() {
 				var tab = this.item.selected;
