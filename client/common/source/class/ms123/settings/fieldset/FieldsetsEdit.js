@@ -59,6 +59,9 @@ qx.Class.define("ms123.settings.fieldset.FieldsetsEdit", {
 					value: "name"
 				};
 				var filter = 'datatype=="string"||datatype=="text"';
+				if( this.storeDesc.isOrientDB()){
+					filter = 'datatype=="7"';
+				}
 				var cm = new ms123.config.ConfigManager();
 				this._selectableFields = cm.getFields(this.storeDesc,entity, false, false,filter,mapping);
 				for (var i = 0; i < this._selectableFields.length; i++) {
