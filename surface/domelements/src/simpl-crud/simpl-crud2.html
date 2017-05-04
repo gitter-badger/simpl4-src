@@ -57,6 +57,22 @@ CRUD operations for simpl4
 			#searchDialog /deep/ paper-dialog-scrollable{
 				margin:0px !important;
 			}
+			simpl-crudtable /deep/ table.responsive.dataTables thead th{
+				border-top: 0px solid #607d8b; 
+				border-bottom: 1px solid #607d8b;
+			}
+			simpl-panel /deep/  .panel__header {
+				background:white;
+				border-bottom-width: 0px;
+				height:0px;
+			}
+			simpl-panel /deep/  .panel__header .title {
+				display:none !important;
+			}
+			simpl-crudtable /deep/ table.responsive.dataTables thead tr th {
+				color: #455a64;
+				background: #eff2f3;
+			}
 		</style>
 		<div class="layout horizontal" style="height:40px;margin-bottom:0px;">
 			<template is="dom-repeat" items="{{buttonList}}">
@@ -71,7 +87,7 @@ CRUD operations for simpl4
 			<paper-dialog-scrollable>
 				<div style="color:#d32f2f">
 					<simpl-filter id="filterId" style="margin-bottom:10px;" with-cancel namespace="{{namespace}}" entity="{{entityName}}" on-cancel="selectCancelAction" filter="{{filter}}"></simpl-filter>
-					<div style="height:1px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;top:10px;position:relative;z-index:111;">[[getHelp()]]</div></div>
+					<div style="height:1px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;top:5px;position:relative;z-index:111;">[[getHelp()]]</div></div>
 					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" >
 						<simpl-crudtable id="crud2TableId" disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>

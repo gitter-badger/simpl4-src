@@ -77,6 +77,22 @@ CRUD operations for simpl4
 		paper-button.new /deep/ paper-material.content {
 			padding: 0.3em 0.57em !important;
 		}
+		simpl-crudtable /deep/ table.responsive.dataTables thead th{
+			border-top: 0px solid #607d8b; 
+			border-bottom: 1px solid #607d8b;
+		}
+		simpl-panel /deep/  .panel__header {
+			background:white;
+			border-bottom-width: 0px;
+			height:0px;
+		}
+			simpl-panel /deep/  .panel__header .title {
+				display:none !important;
+			}
+		simpl-crudtable /deep/ table.responsive.dataTables thead tr th {
+			color: #455a64;
+			background: #eff2f3;
+		}
 	</style>
 	<template>
 		<iron-pages id="ironPages" selected="{{pageSelected}}" attr-for-selected="num">
@@ -92,7 +108,7 @@ CRUD operations for simpl4
 				</template>
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
-						<div style="height:1px;padding-right:20px;line-height:initial;color:#d32f2f;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;top:10px;position: relative;z-index: 111;">[[getHelp()]]</div></div>
+						<div style="height:1px;padding-right:20px;line-height:initial;color:#d32f2f;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;top:40px;position: relative;z-index: 111;">[[getHelp()]]</div></div>
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
 							<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
