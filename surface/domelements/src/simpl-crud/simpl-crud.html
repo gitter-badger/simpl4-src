@@ -47,9 +47,6 @@ CRUD operations for simpl4
 		paper-button[invisible] {
 			display: none;
 		}
-		paper-toast#toast {
-			z-index: 10;
-		}
 		paper-button[dialog-confirm] {
 			color: #4285f4;
 		}
@@ -80,27 +77,8 @@ CRUD operations for simpl4
 		paper-button.new /deep/ paper-material.content {
 			padding: 0.3em 0.57em !important;
 		}
-		simpl-toast /deep/ paper-toast {
-			white-space: nowrap;
-			padding-top: 10px;
-			padding-bottom: 10px;
-		}
-		simpl-toast /deep/ span {
-			min-width: 450px;
-			padding-right: 25px;
-			font-size: 30px;
-			vertical-align: middle;
-		}
-		simpl-toast /deep/ iron-icon {
-			width: 48px;
-			height: 48px;
-			vertical-align: middle;
-		}
-
 	</style>
 	<template>
-		<simpl-toast id="toastId"></simpl-toast>
-
 		<iron-pages id="ironPages" selected="{{pageSelected}}" attr-for-selected="num">
 			<section style="padding:0px;min-height:400px;position:relative;overflow-x:hidden;" num="0">
 				<template is="dom-if" if="[[!filterName]]">
@@ -114,11 +92,13 @@ CRUD operations for simpl4
 				</template>
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
+						<div style="height:13px;padding-right:20px;line-height:initial;color:#d00c0c;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
 							<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
 					</template>
 					<template is="dom-if" if="[[!withPanel]]">
+						<div style="height:13px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
 						<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 					</template>
 				</template>
@@ -194,6 +174,7 @@ CRUD operations for simpl4
 			is: 'simpl-crud',
 			behaviors: [
 				Polymer.IronA11yKeysBehavior,
+				LobiboxBehavior,
 				TranslationsBehavior
 			],
 			properties: {
@@ -492,7 +473,7 @@ CRUD operations for simpl4
 							this.currentTable.refresh();
 						}
 					}, 100 );
-					this.getToast().show( tr("entitytypes.deleted"), "success", "5000" );
+					this.notify( tr("entitytypes.deleted"), "success", "5000" );
 				} catch ( e ) {
 					console.error( "delAction:", e );
 					var msg = null;
@@ -501,7 +482,7 @@ CRUD operations for simpl4
 					} else {
 						msg = e.toString();
 					}
-					this.getToast().show( msg, "error", "10000" );
+					this.notify( msg, "error", "10000" );
 					return;
 				}
 			},
@@ -723,7 +704,7 @@ CRUD operations for simpl4
 				console.log( "saveAction.valid(" + valid + "):", data );
 				if ( !valid ) {
 					var msg = tr( "widgets.table.form_incomplete" );
-					this.getToast().show( msg, "error", "10000" );
+					this.notify( msg, "error", "10000" );
 					return;
 				} else {
 					try {
@@ -748,7 +729,7 @@ CRUD operations for simpl4
 							} else {
 								msg = tr( "data.form.saved" );
 							}
-							this.getToast().show( msg, "success", "10000" );
+							this.notify( msg, "success", "10000" );
 
 							this.needRefresh = true;
 							if ( this.mode == 'add' ) {
@@ -769,7 +750,7 @@ CRUD operations for simpl4
 							msg = m.substring( m.indexOf( "entityName:" ) + 11 );
 							msg = tr( "data.form.save" ) + ": (" + msg + ")";
 						}
-						this.getToast().show( msg, "error", "10000" );
+						this.notify( msg, "error", "10000" );
 						return;
 					}
 				}
@@ -813,12 +794,8 @@ CRUD operations for simpl4
 					done();
 				}, 50 );
 			},
-			getToast:function(){
-				var t = document.querySelector("#toastGlobal");
-				if( t == null){
-					t = this.querySelector("#toastId");
-				}
-				return t;
+			getHelp:function(){
+				return tr("crud2.select_with");
 			},
 			alert: function( message ) {
 				this.querySelector( "#error p" ).innerHTML = message;
