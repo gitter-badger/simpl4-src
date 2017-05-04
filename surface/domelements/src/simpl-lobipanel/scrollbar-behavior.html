@@ -33,13 +33,14 @@
 						}
 					}
 				} ).bind( this ) );
-			}, 300 );
+			}, 500 );
 		},
 		_initScrollbars: function() {
 			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
 			var tables = this._toElementArray( this.querySelectorAll( ".dataTables_scrollBody" ) );
 			var sbElements = this._toElementArray( this.querySelectorAll( ".smooth-scrollbar" ) );
 			var elementArray = tables.concat( sbElements );
+			console.log("smoothElementArray:",elementArray);
 			for ( var i = 0; i < elementArray.length; i++ ) {
 				window.Scrollbar.init( elementArray[i], {
 					speed: isTouch ? 1 : 4,
