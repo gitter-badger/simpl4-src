@@ -127,6 +127,12 @@
 			padding: 0.3em 0.57em;
 		}
 
+		.query-builder .rule-container  {
+			margin: 0px 0;
+			padding: 0px;
+		}
+
+
 	</style>
 
 	<template>
@@ -206,6 +212,7 @@
 				this.toggleSearchMode();
 			},
 			doSearch:function(){
+				if( this.entity == null) return;
 				this.search();
 			},
 			attached: function() {

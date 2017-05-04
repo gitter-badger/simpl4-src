@@ -217,7 +217,6 @@ console.log("QueryBuilder.construct");
      */
     QueryBuilder.prototype.init = function(options) {
         // PROPERTIES
-console.log("QueryBuilder.init");
         this.settings = $.extendext(true, 'replace', {}, QueryBuilder.DEFAULTS, options);
         this.status = {
             group_id: 0,
