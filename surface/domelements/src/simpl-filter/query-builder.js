@@ -891,7 +891,7 @@ console.log("QueryBuilder.construct");
                                     break;
                                 }
                             }
-                            else if (value[i].length === 0) {
+                            else if (value[i].length === 1000) { //@@@MS disabled
                                 result = ['string_empty'];
                                 break;
                             }
