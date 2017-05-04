@@ -92,7 +92,7 @@ CRUD operations for simpl4
 				</template>
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
-						<div style="height:13px;padding-right:20px;line-height:initial;color:#d00c0c;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
+						<div style="height:1px;padding-right:20px;line-height:initial;color:#d32f2f;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;top:10px;position: relative;z-index: 111;">[[getHelp()]]</div></div>
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
 							<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
@@ -108,7 +108,7 @@ CRUD operations for simpl4
 					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
 						<paper-button class="h flex button" raised on-tap="cancelAction">
 							<iron-icon icon="vaadin-icons:close-small"></iron-icon>{{tr('button.back')}}</paper-button>
-						<paper-button class="h flex button button_primary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
+						<paper-button class="h flex button button_secondary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
 							<iron-icon icon="vaadin-icons:check"></iron-icon>{{tr('data.form.save')}}</paper-button>
 						<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
 							<iron-icon icon="vaadin-icons:angle-left"></iron-icon>
