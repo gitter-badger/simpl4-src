@@ -368,7 +368,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
 		OrientGraph orientGraph = factory.getTx();
 		try {
-			Map fieldSets = this.settingService.getFieldSets(config, sdesc.getNamespace(), entityName);
+			Map fieldSets = this.settingService.getFieldSets(config, sdesc.getNamespace(), StoreDesc.getFqEntityName(entityName,sdesc));
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
 			String where = qb.getWhere() + getOrderBy(params);
 			Class clazz = getClass(sessionContext, entityName);
