@@ -21,6 +21,7 @@
 <dom-module id="simpl-processcontroller">
 	<style>
 
+
 	</style>
 	<template>
 		<template is="dom-if" if="[[isParamsOk(namespace,formName)]]">
@@ -46,6 +47,9 @@
 			},
 			observers: [
 				'nameChanged(namespace,name,parameter)'
+			],
+			behaviors: [
+				LobiboxBehavior
 			],
 			ready: function() {
 				this.panelBackgroundColor = 'black';
@@ -403,11 +407,7 @@
 				return null;
 			},
 			finish: function( message, callback ) {
-				Lobibox.notify( 'default', {
-					delay: 6000,
-					icon: "vaadin-icons:info-circle-o",
-					msg: message
-				} );
+				this.notify( message, 'success', 8000 );
 				this.async( function() {
 					callback();
 				}, 500 );
