@@ -189,6 +189,10 @@
 					type: Boolean,
 					value: false
 				},
+				isInited: {
+					type: Boolean,
+					value: false
+				},
 				filter: {
 					value: null,
 					notify: true,
@@ -201,21 +205,26 @@
 			namespaceChanged: function() {
 				console.log( "filter.namespaceChanged:", this.namespace + "/" + this.entity );
 				if ( this.entity == null ) return;
-				this.attached();
+				this.init();
 			},
 			entityChanged: function() {
 				console.log( "filter.entityChanged:", this.namespace + "/" + this.entity );
 				if ( this.namespace == null ) return;
-				this.attached();
+				this.init();
 			},
 			ready:function(){
-				this.toggleSearchMode();
+//				this.toggleSearchMode();
 			},
 			doSearch:function(){
 				if( this.entity == null) return;
 				this.search();
 			},
 			attached: function() {
+				if( this.isInited !== true){
+					this.init();
+				}
+			},
+			init: function() {
 				console.debug( "Filter.attached.Entity:", this.entity + "/namespace:" + this.namespace );
 				if ( this.entity == null || this.namespace == null ) {
 					return;
@@ -256,6 +265,7 @@
 					this.setStyleScope( this.$.builder, "style-scope", this.tagName.toLowerCase() );
 					//this.toggleSearchMode();
 				} );
+				this.isInited=true;
 			},
 			renameOne: function( from, to, model ) {
 				model[ to ] = model[ from ];
