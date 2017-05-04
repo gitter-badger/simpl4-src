@@ -252,7 +252,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	}
 
 	def isSimple( def dt ){
-		def simpleList = ["1", "2", "3", "4", "5", "6", "7", "17", "19", "21"]
+		def simpleList = ["0", "1", "2", "3", "4", "5", "6", "7", "17", "19", "21"]
 		return simpleList.contains( dt );
 	}
 }
