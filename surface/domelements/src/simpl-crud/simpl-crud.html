@@ -38,8 +38,8 @@ CRUD operations for simpl4
 		paper-button /deep/ paper-material.content {
 			padding: 0.5em 0 !important;
 		}
-		paper-button.h  {
-			max-width:200px;
+		paper-button.h {
+			max-width: 200px;
 		}
 		paper-button.h /deep/ iron-icon {
 			vertical-align: bottom;
@@ -77,22 +77,39 @@ CRUD operations for simpl4
 		paper-button.new /deep/ paper-material.content {
 			padding: 0.3em 0.57em !important;
 		}
-		simpl-crudtable /deep/ table.responsive.dataTables thead th{
-			border-top: 0px solid #607d8b; 
+		simpl-crudtable /deep/ table.responsive.dataTables thead th {
+			border-top: 0px solid #607d8b;
 			border-bottom: 1px solid #607d8b;
 		}
-		simpl-panel /deep/  .panel__header {
-			background:white;
+		simpl-panel /deep/ .panel__header {
+			background: white;
 			border-bottom-width: 0px;
-			height:0px;
+			height: 0px;
 		}
-			simpl-panel /deep/  .panel__header .title {
-				display:none !important;
-			}
+		simpl-panel /deep/ .panel__header .title {
+			display: none !important;
+		}
 		simpl-crudtable /deep/ table.responsive.dataTables thead tr th {
 			color: #455a64;
 			background: #eff2f3;
 		}
+		simpl-filter /deep/ select {
+			box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) !important;
+			border: none !important;
+			color: #303e45 !important;
+		}
+		simpl-filter /deep/ paper-button,
+		simpl-filter /deep/ label {
+			box-shadow: 3px 3px 12px -5px rgba(0, 0, 0, 0.75);
+			border: none !important;
+			border-radius: 0px;
+			min-width: 5.14em !important;
+		}
+		simpl-filter /deep/ .btn {
+			font-size: 12px !important;
+			padding: 3px 6px !important;
+		}
+
 	</style>
 	<template>
 		<iron-pages id="ironPages" selected="{{pageSelected}}" attr-for-selected="num">
@@ -108,32 +125,38 @@ CRUD operations for simpl4
 				</template>
 				<template is="dom-if" if="[[filter]]">
 					<template is="dom-if" if="[[withPanel]]">
-						<div style="height:1px;padding-right:20px;line-height:initial;color:#303e45;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;top:40px;position: relative;z-index: 111;">[[getHelp()]]</div></div>
+						<div style="height:1px;padding-right:20px;line-height:initial;color:#303e45;" class="layout horizontal">
+							<div class="flex">&#160;</div>
+							<div class="" style="font-size:11px;top:40px;position: relative;z-index: 111;">[[getHelp()]]</div>
+						</div>
 						<simpl-panel id="panel2" heading="[[panelHeaderCrudTable]]">
-							<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+							<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 						</simpl-panel>
 					</template>
 					<template is="dom-if" if="[[!withPanel]]">
-						<div style="height:13px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
-						<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected"  buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
+						<div style="height:13px;padding-right:20px;line-height:initial;" class="layout horizontal">
+							<div class="flex">&#160;</div>
+							<div class="" style="font-size:11px;">[[getHelp()]]</div>
+						</div>
+						<simpl-crudtable id="crudTableId" disable-spinner on-error="onError" namespace="[[namespace]]" on-rows-selected="rowsSelected" buttons="[[buttonList]]" dt-options="[[dtOptions]]" on-add-action="addAction" on-copy-action="copyAction" on-del-action="delAction" on-refresh-action="refreshAction" on-detail-action="detailAction" on-edit-action="editAction" filter="{{filter}}"></simpl-crudtable>
 					</template>
 				</template>
 			</section>
 			<section style="padding:0px;position:relative;overflow-x:hidden;" num="1" unresolved>
 				<!--simpl-panel heading="{{panelHeaderCrudForm}}"-->
-					<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
-						<paper-button class="h flex button" raised on-tap="cancelAction">
-							<iron-icon icon="vaadin-icons:close-small"></iron-icon>{{tr('button.back')}}</paper-button>
-						<paper-button class="h flex button button_secondary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
-							<iron-icon icon="vaadin-icons:check"></iron-icon>{{tr('data.form.save')}}</paper-button>
-						<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
-							<iron-icon icon="vaadin-icons:angle-left"></iron-icon>
-						</paper-button>
-						<paper-button class="h flex button button_primary" id="nextButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="nextAction">
-							<iron-icon icon="vaadin-icons:angle-right"></iron-icon>
-						</paper-button>
-					</div>
-					<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
+				<div class="layout horizontal" style="margin-top:20px;margin-bottom:4px;text-align:left;">
+					<paper-button class="h flex button" raised on-tap="cancelAction">
+						<iron-icon icon="vaadin-icons:close-small"></iron-icon>{{tr('button.back')}}</paper-button>
+					<paper-button class="h flex button button_secondary" disabled$="{{saveDisabled}}" raised on-tap="saveAction">
+						<iron-icon icon="vaadin-icons:check"></iron-icon>{{tr('data.form.save')}}</paper-button>
+					<paper-button class="h flex button button_primary" id="prevButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="prevAction">
+						<iron-icon icon="vaadin-icons:angle-left"></iron-icon>
+					</paper-button>
+					<paper-button class="h flex button button_primary" id="nextButton" invisible$="{{prevNextButtonsInvisible}}" style="min-width:45px;max-width:45px;" raised on-tap="nextAction">
+						<iron-icon icon="vaadin-icons:angle-right"></iron-icon>
+					</paper-button>
+				</div>
+				<simpl-form id="formid" mode="{{mode}}" pack="[[_pack]]" variables="{{variables}}" namespace="{{namespace}}" form-name="[[formName]]" save-disabled="{{saveDisabled}}" spec="{{formSpec}}"></simpl-form>
 				<!--/simpl-panel-->
 				<paper-dialog id="error" class="scrolling">
 					<!--action-dialog-->
@@ -237,7 +260,7 @@ CRUD operations for simpl4
 					readOnly: true,
 					value: ''
 				},
-				noCarriageReturn:{
+				noCarriageReturn: {
 					type: Boolean,
 					value: false
 				},
@@ -265,7 +288,7 @@ CRUD operations for simpl4
 			_enterPressed: function() {
 				console.log( "_enterPressedCrud:", this.saveDisabled );
 				console.log( "_pageSelected:", this.pageSelected );
-				if ( this.pageSelected==0 || this.noCarriageReturn || this.saveDisabled === true ) return;
+				if ( this.pageSelected == 0 || this.noCarriageReturn || this.saveDisabled === true ) return;
 				this.saveAction();
 			},
 			onError: function( e ) {
@@ -273,11 +296,11 @@ CRUD operations for simpl4
 				this.fire( "error", e.detail );
 			},
 			attached: function() {
-				if( this.initialized != true ){
+				if ( this.initialized != true ) {
 					this.init();
-					if( this.autoSearch){
+					if ( this.autoSearch ) {
 						this.async( function() {
-							this.querySelector("#filterId").doSearch();
+							this.querySelector( "#filterId" ).doSearch();
 						}, 200 );
 					}
 				}
@@ -296,7 +319,7 @@ CRUD operations for simpl4
 				this.panelHeaderCrudTable = tr( ep.pack + "." + ep.entityName + "_list" );
 				this.pageStack = new Array();
 				this.pageSelected = 0;
-				this.initialized=true;
+				this.initialized = true;
 			},
 			setFormSpec: function( namespace, entity ) {
 				if ( namespace === this.prevNamespace && entity === this.prevEntityName ) return;
@@ -325,7 +348,7 @@ CRUD operations for simpl4
 				if ( dataDesc.type == "table" ) {
 					ct.filter = dataDesc;
 				} else {
-					ct.setData( clone(this.getFormData( dataDesc )) );
+					ct.setData( clone( this.getFormData( dataDesc ) ) );
 				}
 			},
 			cancelAction: function( e ) {
@@ -368,7 +391,7 @@ CRUD operations for simpl4
 
 				this.whenElementsReady( ( function() {
 					console.debug( "Ready" );
-					this.$.formid.setData( clone(this.currentRowData) );
+					this.$.formid.setData( clone( this.currentRowData ) );
 					this.pageSelected = 1;
 				} ).bind( this ) );
 			},
@@ -380,13 +403,13 @@ CRUD operations for simpl4
 					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
-					if( Detectizr.browser.name == "firefox"){
-						this.$.formid.clearData( );
+					if ( Detectizr.browser.name == "firefox" ) {
+						this.$.formid.clearData();
 						this.async( function() {
-							this.$.formid.setData( clone(this.currentRowData) );
+							this.$.formid.setData( clone( this.currentRowData ) );
 						}, 10 );
-					}else{
-						this.$.formid.setData( clone(this.currentRowData) );
+					} else {
+						this.$.formid.setData( clone( this.currentRowData ) );
 					}
 				}
 				this.handlePrevNextButtons();
@@ -399,13 +422,13 @@ CRUD operations for simpl4
 					} else {
 						this.currentRowData = this.currentDataSet[ this.currentRowIndex ];
 					}
-					if( Detectizr.browser.name == "firefox"){
-						this.$.formid.clearData( );
+					if ( Detectizr.browser.name == "firefox" ) {
+						this.$.formid.clearData();
 						this.async( function() {
-							this.$.formid.setData( clone(this.currentRowData) );
+							this.$.formid.setData( clone( this.currentRowData ) );
 						}, 10 );
-					}else{
-						this.$.formid.setData( clone(this.currentRowData) );
+					} else {
+						this.$.formid.setData( clone( this.currentRowData ) );
 					}
 				}
 				this.handlePrevNextButtons();
@@ -438,27 +461,29 @@ CRUD operations for simpl4
 
 				var ep = this.getPack( detail.entity );
 				this.panelHeaderCrudForm = tr( ep.pack + "." + ep.entityName );
-				this.$.formid.setData( clone(this.currentRowData) );
+				this.$.formid.setData( clone( this.currentRowData ) );
 				this.whenElementsReady( ( function() {
 					this.pageSelected = 1;
 				} ).bind( this ) );
 			},
-			rowsSelected:function(e){
-				console.log("rowsSelected:",e.detail);
-				if( !e.detail.doubleTap ){
+			rowsSelected: function( e ) {
+				console.log( "rowsSelected:", e.detail );
+				if ( !e.detail.doubleTap ) {
 					return;
 				}
-				var crud = this.querySelector("#crudTableId");
-				var data = e.detail.rows[0];
+				var crud = this.querySelector( "#crudTableId" );
+				var data = e.detail.rows[ 0 ];
 				var detail = {
-					data : data,
+					data: data,
 					dataSet: crud.dataSet,
 					rowIndex: crud.currentRowIndex,
 					table: crud,
-					entity : this.entity,
-					namespace : this.namespace
+					entity: this.entity,
+					namespace: this.namespace
 				}
-				this.editAction({ detail:detail} );
+				this.editAction( {
+					detail: detail
+				} );
 			},
 			refreshAction: function( e ) {
 				var detail = e.detail;
@@ -469,8 +494,8 @@ CRUD operations for simpl4
 				var detail = e.detail;
 				console.log( "delAction:", detail );
 				this.currentTable = detail.table;
- 				Lobibox.confirm( {
-					msg: tr("entitytypes.confirm_delete"),
+				Lobibox.confirm( {
+					msg: tr( "entitytypes.confirm_delete" ),
 					title: "&nbsp;",
 					callback: ( function( $this, type ) {
 						if ( type === 'yes' ) {
@@ -489,7 +514,7 @@ CRUD operations for simpl4
 							this.currentTable.refresh();
 						}
 					}, 100 );
-					this.notify( tr("entitytypes.deleted"), "success", "5000" );
+					this.notify( tr( "entitytypes.deleted" ), "success", "5000" );
 				} catch ( e ) {
 					console.error( "delAction:", e );
 					var msg = null;
@@ -658,7 +683,7 @@ CRUD operations for simpl4
 					id: this.getIdValue( this.mainEntityName, this.namespace, data )
 				}
 				console.log( "rpc.delete:", rpc );
-				var ret = simpl4.util.Rpc.rpcSync( "data:delete" , rpc );
+				var ret = simpl4.util.Rpc.rpcSync( "data:delete", rpc );
 				return ret;
 			},
 			getData: function( data ) {
@@ -688,9 +713,9 @@ CRUD operations for simpl4
 				console.log( "getIdValue:", entityName + "/", data );
 				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
 				if ( pkList == null || pkList.length === 0 ) {
-					if( data["_id"] != null){
+					if ( data[ "_id" ] != null ) {
 						pkList = [ "_id" ];
-					}else{
+					} else {
 						pkList = [ "id" ];
 					}
 				}
@@ -751,9 +776,9 @@ CRUD operations for simpl4
 							if ( this.mode == 'add' ) {
 								this.cancelAction();
 							}
-							if ( this.mode == 'edit' && this.loadBeforeEdit()==false ) {
-								simpl4.util.Merge.merge(false, this.currentRowData, data);
-								console.log("merged:",JSON.stringify(this.currentRowData,null,2));
+							if ( this.mode == 'edit' && this.loadBeforeEdit() == false ) {
+								simpl4.util.Merge.merge( false, this.currentRowData, data );
+								console.log( "merged:", JSON.stringify( this.currentRowData, null, 2 ) );
 							}
 						}
 					} catch ( e ) {
@@ -810,8 +835,8 @@ CRUD operations for simpl4
 					done();
 				}, 50 );
 			},
-			getHelp:function(){
-				return tr("crud2.select_with");
+			getHelp: function() {
+				return tr( "crud2.select_with" );
 			},
 			alert: function( message ) {
 				this.querySelector( "#error p" ).innerHTML = message;

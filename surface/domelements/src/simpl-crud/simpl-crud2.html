@@ -27,15 +27,15 @@ CRUD operations for simpl4
 		<style>
 			:host {
 				display: inherit;
-				height:100%;
-				overflow:hidden;
+				height: 100%;
+				overflow: hidden;
 			}
 			:host /deep/ #searchDialog {
-				position:fixed;
+				position: fixed;
 				top: 5vh;
 				min-width: 70%;
 				max-width: 70%;
-				max-height:90%;
+				max-height: 90%;
 				border-radius: 4px;
 			}
 			@media screen and (max-width: 767px) {
@@ -49,30 +49,47 @@ CRUD operations for simpl4
 				margin: 0px;
 				padding: 0px;
 			}
-			.smooth-scrollbar{
-				height:calc(100% - 40px);
-				overflow:auto;
-				position:relative;
+			.smooth-scrollbar {
+				height: calc(100% - 40px);
+				overflow: auto;
+				position: relative;
 			}
-			#searchDialog /deep/ paper-dialog-scrollable{
-				margin:0px !important;
+			#searchDialog /deep/ paper-dialog-scrollable {
+				margin: 0px !important;
 			}
-			simpl-crudtable /deep/ table.responsive.dataTables thead th{
-				border-top: 0px solid #607d8b; 
+			simpl-crudtable /deep/ table.responsive.dataTables thead th {
+				border-top: 0px solid #607d8b;
 				border-bottom: 1px solid #607d8b;
 			}
-			simpl-panel /deep/  .panel__header {
-				background:white;
+			simpl-panel /deep/ .panel__header {
+				background: white;
 				border-bottom-width: 0px;
-				height:0px;
+				height: 0px;
 			}
-			simpl-panel /deep/  .panel__header .title {
-				display:none !important;
+			simpl-panel /deep/ .panel__header .title {
+				display: none !important;
 			}
 			simpl-crudtable /deep/ table.responsive.dataTables thead tr th {
 				color: #455a64;
 				background: #eff2f3;
 			}
+			simpl-filter /deep/ select {
+				box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) !important;
+				border: none !important;
+				color: #303e45 !important;
+			}
+			simpl-filter /deep/ paper-button,
+			simpl-filter /deep/ label {
+				box-shadow: 3px 3px 12px -5px rgba(0, 0, 0, 0.75);
+				border: none !important;
+				border-radius: 0px;
+				min-width: 5.14em !important;
+			}
+			simpl-filter /deep/ .btn {
+				font-size: 12px !important;
+				padding: 3px 6px !important;
+			}
+
 		</style>
 		<div class="layout horizontal" style="height:40px;margin-bottom:0px;">
 			<template is="dom-repeat" items="{{buttonList}}">
@@ -87,8 +104,11 @@ CRUD operations for simpl4
 			<paper-dialog-scrollable>
 				<div style="color:#303e45">
 					<simpl-filter id="filterId" style="margin-bottom:10px;" with-cancel namespace="{{namespace}}" entity="{{entityName}}" on-cancel="selectCancelAction" filter="{{filter}}"></simpl-filter>
-					<div style="height:1px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;top:5px;position:relative;z-index:111;">[[getHelp()]]</div></div>
-					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" >
+					<div style="height:1px;padding-right:20px;line-height:initial;" class="layout horizontal">
+						<div class="flex">&#160;</div>
+						<div class="" style="font-size:11px;top:5px;position:relative;z-index:111;">[[getHelp()]]</div>
+					</div>
+					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]">
 						<simpl-crudtable id="crud2TableId" disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
@@ -119,7 +139,7 @@ CRUD operations for simpl4
 					type: String
 				},
 				buttonList: {
-					value:null,
+					value: null,
 					type: Array
 				}
 			},
@@ -127,10 +147,10 @@ CRUD operations for simpl4
 				'buttonsChanged(isAttached)',
 				'entityChanged(entity)'
 			],
-			attached: function(){
-				this.isAttached=true;
+			attached: function() {
+				this.isAttached = true;
 			},
-			buttonsChanged: function(){
+			buttonsChanged: function() {
 				var buttons = {
 					add: {
 						action: this.addAction,
@@ -164,9 +184,9 @@ CRUD operations for simpl4
 					b.name = name;
 					bList.push( b );
 				} ).bind( this ) );
-				this.set("buttonList",  bList);
+				this.set( "buttonList", bList );
 			},
-			setButtonState: function(name,enabled) {
+			setButtonState: function( name, enabled ) {
 				if ( this.buttonDef == null ) return;
 				this.buttonDef[ name ].disabled = !enabled;
 				for ( var i = 0; i < this.buttonList.length; i++ ) {
@@ -186,12 +206,12 @@ CRUD operations for simpl4
 				if ( name == null ) return;
 				this.buttonDef[ name ].action.call( this );
 			},
-			addAction: function(noEvent) {
+			addAction: function( noEvent ) {
 				this.mode = "add";
-				this.setButtonState("save", true);
-				this.setButtonState("del", false);
+				this.setButtonState( "save", true );
+				this.setButtonState( "del", false );
 				this.$.formid.setData( {} );
-				if( noEvent !== true){
+				if ( noEvent !== true ) {
 					this.fire( "add-action", {
 						entity: this.entity,
 						namespace: this.namespace
@@ -203,30 +223,32 @@ CRUD operations for simpl4
 				this.$.filterId.doSearch();
 
 				this.async( function() {
-					var sd = $( this.$.searchDialog ).dialog({
+					var sd = $( this.$.searchDialog ).dialog( {
 						resizable: true,
 						draggable: true,
-						title:"",
+						title: "",
 						height: "auto",
 						width: "80%",
 						modal: true
-					});
-					sd.parent().css("z-index","555111");
-				},200 );
+					} );
+					sd.parent().css( "z-index", "555111" );
+				}, 200 );
 				this.fire( "search-action", {
 					entity: this.entity,
 					namespace: this.namespace
 				} );
 			},
 			delAction: function() {
- 				Lobibox.confirm( {
-					msg: tr("entitytypes.confirm_delete"),
+				Lobibox.confirm( {
+					msg: tr( "entitytypes.confirm_delete" ),
 					title: "&nbsp;",
 					callback: ( function( $this, type ) {
 						if ( type === 'yes' ) {
 							this.mode = 'del';
-							this.setButtonState("del", false);
-							this.onDeleteOk( {detail:this.currentData} );
+							this.setButtonState( "del", false );
+							this.onDeleteOk( {
+								detail: this.currentData
+							} );
 							this.fire( "del-action", {
 								entity: this.entity,
 								namespace: this.namespace
@@ -239,7 +261,7 @@ CRUD operations for simpl4
 				console.log( "deleteok:", e );
 				try {
 					this.deleteData( e.detail );
-					this.notify( tr("entitytypes.deleted"), "success", "5000" );
+					this.notify( tr( "entitytypes.deleted" ), "success", "5000" );
 					this.addAction( true );
 				} catch ( e ) {
 					console.error( "delAction:", e );
@@ -255,33 +277,33 @@ CRUD operations for simpl4
 			},
 			selectCancelAction: function() {
 				this.async( function() {
-					$(this.$.searchDialog).dialog("close");
-				},50 );
+					$( this.$.searchDialog ).dialog( "close" );
+				}, 50 );
 			},
 			selectAction: function( e ) {
-				this.setButtonState("del", true);
+				this.setButtonState( "del", true );
 				this.mode = "edit";
 				var data = e.detail.data;
-				console.log("selectAction:",e);
-				$(this.$.searchDialog).dialog("close");
-				this.currentData = clone(data);
+				console.log( "selectAction:", e );
+				$( this.$.searchDialog ).dialog( "close" );
+				this.currentData = clone( data );
 				this.$.formid.setData( this.currentData );
 			},
-			rowsSelected:function(e){
-				console.log("rowsSelected:",e.detail);
-				if( !e.detail.doubleTap ){
+			rowsSelected: function( e ) {
+				console.log( "rowsSelected:", e.detail );
+				if ( !e.detail.doubleTap ) {
 					return;
 				}
-				this.setButtonState("del", true);
+				this.setButtonState( "del", true );
 				this.mode = "edit";
-				var data = e.detail.rows[0];
-				$(this.$.searchDialog).dialog("close");
-				this.currentData = clone(data);
+				var data = e.detail.rows[ 0 ];
+				$( this.$.searchDialog ).dialog( "close" );
+				this.currentData = clone( data );
 				this.$.formid.setData( this.currentData );
 			},
 			saveAction: function() {
-				if(this._saveAction()){
-					this.addAction(true);
+				if ( this._saveAction() ) {
+					this.addAction( true );
 				}
 			},
 			_saveAction: function() {
@@ -311,7 +333,7 @@ CRUD operations for simpl4
 						}
 						console.log( "saveAction.storeData:", data );
 						var ret = this.storeData( data );
-						console.log("ret:",ret);
+						console.log( "ret:", ret );
 						var cv = ret[ "constraintViolations" ];
 						if ( cv ) {
 							var message = "";
@@ -328,7 +350,7 @@ CRUD operations for simpl4
 								msg = tr( "data.form.saved" );
 							}
 							data.id = ret.id;
-							this.$.formid.updateData(data);
+							this.$.formid.updateData( data );
 							this.notify( msg, "success", "10000" );
 						}
 					} catch ( e ) {
@@ -370,7 +392,7 @@ CRUD operations for simpl4
 				var idValue = this.getIdValue( this.entity, this.namespace, data );
 				console.log( "storeData.idValue:", idValue );
 				var rpc = {
-					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + this.getPackFromEntity(this.entity),
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + this.getPackFromEntity( this.entity ),
 					entity: this.entity,
 					id: idValue,
 					data: data
@@ -382,22 +404,22 @@ CRUD operations for simpl4
 			},
 			deleteData: function( data ) {
 				var rpc = {
-					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + this.getPackFromEntity(this.entity),
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + this.getPackFromEntity( this.entity ),
 					entity: this.entity,
 					id: this.getIdValue( this.entity, this.namespace, data )
 				}
 				console.log( "rpc.delete:", rpc );
-				var ret = simpl4.util.Rpc.rpcSync( "data:delete" , rpc );
+				var ret = simpl4.util.Rpc.rpcSync( "data:delete", rpc );
 				return ret;
 			},
 			getIdValue: function( entityName, namespace, data ) {
-				if( this.mode == "add") return null;
+				if ( this.mode == "add" ) return null;
 				console.log( "getIdValue:", entityName + "/", data );
 				var pkList = simpl4.util.EntityManager.getEntity( entityName, namespace ).primaryKeys;
 				if ( pkList == null || pkList.length === 0 ) {
-					if( data["_id"] != null){
+					if ( data[ "_id" ] != null ) {
 						pkList = [ "_id" ];
-					}else{
+					} else {
 						pkList = [ "id" ];
 					}
 				}
@@ -409,7 +431,7 @@ CRUD operations for simpl4
 				}
 				return idValue;
 			},
-			entityChanged:function(){
+			entityChanged: function() {
 				this.getColumns( this.entity );
 				this._pack = this.getPackFromEntity( this.entity );
 				this.setFormSpec( this.namespace, this.entity );
@@ -428,7 +450,7 @@ CRUD operations for simpl4
 				}
 				this.async( function() {
 					this.$.formid.setData( {} );
-				},5 );
+				}, 5 );
 			},
 			getFormSpec: function( item ) {
 				return [ simpl4FormManager.getCrudForm( item.entity, item.namespace || this.namespace ) ];
@@ -469,11 +491,11 @@ CRUD operations for simpl4
 					articleId: "ABC"
 				} ]
 			},
-			getHelp:function(){
-				return tr("crud2.select_with");
+			getHelp: function() {
+				return tr( "crud2.select_with" );
 			},
-			getHeader:function(entityName){
-				return tr(this.getPackFromEntity(this.entity)+'.'+this.getSimpleEntityName(entityName));
+			getHeader: function( entityName ) {
+				return tr( this.getPackFromEntity( this.entity ) + '.' + this.getSimpleEntityName( entityName ) );
 			},
 			getPackFromEntity: function( entity ) {
 				if ( entity.indexOf( ':' ) >= 0 ) {
