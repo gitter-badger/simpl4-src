@@ -1604,7 +1604,7 @@
 
 	</style>
 	<template>
-		<paper-dropdown-menu style="display:inline !important;" id="decorator" label="[[label]]" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[isInvalid]]">
+		<paper-dropdown-menu id="dropdownId" style="display:inline !important;" id="decorator" label="[[label]]" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" readonly disabled$="[[disabled]]" invalid="[[isInvalid]]">
 			<simpl-jqtree style="width:100%;" jqtree="{{jqtree}}" class="dropdown-content" contextmenu="[[contextmenu]]" selected-item="{{selectedItem}}" multi-select="[[multiSelect]]" options="[[options]]" data="[[items]]">
 			</simpl-jqtree>
 		</paper-dropdown-menu>
@@ -1677,7 +1677,7 @@
 				console.log( "tree-field(" + this.name + ").itemsChanged:", this.items );
 			},
 			valueChanged: function( v ) {
-				console.log( "tree-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
+				console.log( "tree-field(" + this.name+",wo:"+this.withoutCheck + ").valueChanged:", this.value );
 				if ( this.isDomReady != true ) return;
 				if ( this.withoutCheck ) {
 					this.withoutCheck = false;
@@ -1697,7 +1697,11 @@
 					var node = this.jqtree.tree('getNodeById', id);
 					this.jqtree.tree('selectNode', node);
 					this.jqtree.tree('scrollToNode', node);
-					this.value = node.name;
+				}else{
+					this.jqtree.tree('selectNode', null);
+					this.selectedItem=null;
+					this.$.dropdownId.querySelector("#input").value='';
+					this.setInvalid( false );
 				}
 			},
 			getValue: function() {
