@@ -229,6 +229,10 @@ CRUD operations for simpl4
 				this.currentData = e.detail.rows[ 0 ];
 				this.setButtonState( "edit", true );
 				this.setButtonState( "del", true );
+				if ( !e.detail.doubleTap ) {
+					return;
+				}
+				this.editAction();
 			},
 			addAction: function() {
 				this.entityName = this.entity;
@@ -273,9 +277,6 @@ CRUD operations for simpl4
 				this._saveAction();
 			},
 			cancelAction: function( e ) {
-				this.setButtonState( "del", false );
-				this.setButtonState( "edit", false );
-				this.querySelector( "#dataTablesId" ).unselectAll();
 				$( this.$.formDialog ).dialog( "close" );
 			},
 			saveAction: function() {
