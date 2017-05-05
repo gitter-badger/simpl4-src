@@ -77,10 +77,16 @@ CRUD operations for simpl4
 		paper-button.new /deep/ paper-material.content {
 			padding: 0.3em 0.57em !important;
 		}
+
 		simpl-crudtable /deep/ table.responsive.dataTables thead th {
-			border-top: 0px solid #607d8b;
+			border-top: 3px solid white;
 			border-bottom: 1px solid #607d8b;
 		}
+		simpl-crudtable /deep/ table.responsive.dataTables thead tr th {
+			color: #303e45;
+			background: white;
+		}
+
 		simpl-panel /deep/ .panel__header {
 			background: white;
 			border-bottom-width: 0px;
@@ -88,27 +94,6 @@ CRUD operations for simpl4
 		}
 		simpl-panel /deep/ .panel__header .title {
 			display: none !important;
-		}
-		simpl-crudtable /deep/ table.responsive.dataTables thead tr th {
-			color: #455a64;
-			background: #eff2f3;
-		}
-		simpl-filter /deep/ select {
-			box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) !important;
-			border: none !important;
-			color: #303e45 !important;
-			min-width: 125px;
-		}
-		simpl-filter /deep/ paper-button,
-		simpl-filter /deep/ label {
-			box-shadow: 3px 3px 12px -5px rgba(0, 0, 0, 0.75);
-			border: none !important;
-			border-radius: 0px;
-			min-width: 5.14em !important;
-		}
-		simpl-filter /deep/ .btn {
-			font-size: 12px !important;
-			padding: 3px 6px !important;
 		}
 
 	</style>
