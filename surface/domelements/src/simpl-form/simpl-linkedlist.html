@@ -42,6 +42,10 @@ CRUD operations for simpl4
 					margin: 0px;
 				}
 			}
+			#selectDialog {
+				margin: 0px;
+				padding: 0px;
+			}
 			paper-toast#toast {
 				z-index: 10;
 			}
@@ -184,7 +188,15 @@ CRUD operations for simpl4
 				this.entityName = this.entity;
 				console.log( "linkedlist.selectOpenAction:", this.entity );
 				this.async( function() {
-					this.$.selectDialog.open();
+					var sd = $( this.$.selectDialog ).dialog( {
+						resizable: true,
+						draggable: true,
+						title: "",
+						height: "auto",
+						width: "80%",
+						modal: true
+					} );
+					sd.parent().css( "z-index", "555111" );
 				}, 50 );
 			},
 			selectAction: function(e) {
@@ -197,7 +209,7 @@ CRUD operations for simpl4
 				this.changeData("del",this.currentData);
 			},
 			changeData: function(mode, chgData) {
-				this.$.selectDialog.close();
+				$( this.$.selectDialog ).dialog( "close" );
 				var oldData = clone( this.data ) || [];
 				this.data = [];
 				if ( mode == "select" ) {
@@ -222,7 +234,7 @@ CRUD operations for simpl4
 			},
 			selectCancelAction: function( e ) {
 				this.setButtonState( "del", false );
-				this.$.selectDialog.close();
+				$( this.$.selectDialog ).dialog( "close" );
 			},
 			entityChanged: function() {
 				this.getColumns( this.entity );

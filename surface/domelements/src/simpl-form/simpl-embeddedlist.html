@@ -42,6 +42,10 @@ CRUD operations for simpl4
 					margin: 0px;
 				}
 			}
+			#formDialog {
+				margin: 0px;
+				padding: 0px;
+			}
 			paper-toast#toast {
 				z-index: 10;
 			}
@@ -222,14 +226,30 @@ CRUD operations for simpl4
 				this.mode = "add";
 				this.$.formid.setData( {} );
 				this.async( function() {
-					this.$.formDialog.open();
+					var sd = $( this.$.formDialog ).dialog( {
+						resizable: true,
+						draggable: true,
+						title: "",
+						height: "auto",
+						width: "80%",
+						modal: true
+					} );
+					sd.parent().css( "z-index", "555111" );
 				}, 50 );
 			},
 			editAction: function() {
 				this.mode = "edit";
 				this.$.formid.setData( this.currentData );
 				this.async( function() {
-					this.$.formDialog.open();
+					var sd = $( this.$.formDialog ).dialog( {
+						resizable: true,
+						draggable: true,
+						title: "",
+						height: "auto",
+						width: "80%",
+						modal: true
+					} );
+					sd.parent().css( "z-index", "555111" );
 				}, 50 );
 			},
 			delAction: function() {
@@ -246,10 +266,10 @@ CRUD operations for simpl4
 				this.setButtonState( "del", false );
 				this.setButtonState( "edit", false );
 				this.querySelector( "#dataTablesId" ).unselectAll();
-				this.$.formDialog.close();
+				$( this.$.formDialog ).dialog( "close" );
 			},
 			saveAction: function() {
-				var form= this.querySelector( "#formid" );
+				var form= this.$.formid;
 				if( !form.validate()){
 					return;
 				}
@@ -257,7 +277,8 @@ CRUD operations for simpl4
 			},
 			_saveAction: function() {
 				this.cancelAction();
-				var chgData = this.querySelector( "#formid" ).getData();
+				var form= this.$.formid;
+				var chgData = form.getData();
 				var oldData = clone( this.data ) || [];
 				this.data = [];
 				if ( this.mode == "add" ) {
