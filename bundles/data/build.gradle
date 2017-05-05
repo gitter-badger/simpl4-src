@@ -57,4 +57,5 @@ dependencies {
 	compile files("${repository}/joor-0.9.6.jar")
 	compile files("${repository}/OrientDBService-1.0.0.jar")
  	compile files("${repository}/jcabi-1.0.jar")
+ 	compile files("${repository}/jchronic-0.2.6.bar")
 }

@@ -449,6 +449,7 @@ ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/KafkaService-1.0.0.jar \
 	scan-bundle:file:$REPOSITORY/joor-0.9.6.jar \
 	scan-bundle:file:$REPOSITORY/juel-2.1.0.bar \
+	scan-bundle:file:$REPOSITORY/jchronic-0.2.6.bar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \
 	--workingDirectory=${SERVERDIR} \

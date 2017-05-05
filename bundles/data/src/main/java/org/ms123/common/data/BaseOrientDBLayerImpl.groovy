@@ -96,7 +96,11 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 			info(this,"K:"+k+"/"+v.datatype);
 			if( isSimple( v.datatype ) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
-				cleanData[k] = data[k];
+				if( isDate( v.datatype) && data[k] instanceof String){
+					cleanData[k] = parseFromString(data[k]);
+				}else{
+					cleanData[k] = data[k];
+				}
 			}else if( isLinkedObj(v.datatype) && data[k] != null){
 				info(this,"LinkedObj("+entityName+":"+k+"):"+data[k]);
 				Class clazz = getClass(sc, v.linkedclass);
@@ -156,7 +160,11 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 			info(this,"K:"+k+"/"+v.datatype);
 			if( isSimple( v.datatype) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
-				obj[k] = data[k];
+				if( isDate( v.datatype) && data[k] instanceof String){
+					obj[k] = parseFromString(data[k]);
+				}else{
+					obj[k] = data[k];
+				}
 			}else if( isLinkedObj(v.datatype) && data[k] != null){
 				info(this,"LinkedObj("+entityName+":"+k+"):"+data[k]);
 				Class clazz = getClass(sc, v.linkedclass);
@@ -251,9 +259,17 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		return list.contains( dt );
 	}
 
+	def isDate ( dt ){
+		def list = ["19", "6"]
+		return list.contains( dt );
+	}
+
 	def isSimple( def dt ){
 		def simpleList = ["0", "1", "2", "3", "4", "5", "6", "7", "17", "19", "21"]
 		return simpleList.contains( dt );
+	}
+	def parseFromString( String str ){
+		return com.mdimension.jchronic.Chronic.parse(str).beginCalendar.time
 	}
 }
 
