@@ -2625,7 +2625,23 @@
 			max-height: inherit !important;
 			padding: 0 10px;
 		}
+		#linkedObjId /deep/ table.responsive.dataTables thead tr th, 
+		#linkedObjId /deep/ table.responsive.dataTables tfoot tr th {
+				color: #455a64;
+				background: #eff2f3;
+		}
 
+		#linkedObjId /deep/ table.responsive.dataTables thead th, 
+		#linkedObjId /deep/ table.responsive.dataTables thead td {
+				border-top: 1px solid #eff2f3;
+				border-bottom: 1px solid #607d8b;
+		}
+
+		simpl-panel /deep/ .panel__header {
+				background: #ffffff;
+				border-bottom: 0px solid #607d8b;
+				height: 1px;
+		}
 	</style>
 	<template>
 
@@ -2651,7 +2667,7 @@
 					<simpl-filter id="filterId" style="margin-bottom:10px;" namespace="{{namespace}}" with-cancel on-cancel="cancelAction" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
 					<div style="height:13px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
 					<simpl-panel bgcolor="black" heading="[[getHeader(_entityName)]]">
-						<simpl-crudtable disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+						<simpl-crudtable id="linkedObjId" disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
 			</paper-dialog-scrollable>

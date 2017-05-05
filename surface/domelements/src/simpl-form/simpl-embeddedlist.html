@@ -65,7 +65,17 @@ CRUD operations for simpl4
 				height: 48px;
 				vertical-align: middle;
 			}
+			#dataTablesId /deep/ table.responsive.dataTables thead tr th, 
+			#dataTablesId /deep/ table.responsive.dataTables tfoot tr th {
+					color: #455a64;
+					background: #eff2f3;
+			}
 
+			#dataTablesId /deep/ table.responsive.dataTables thead th, 
+			#dataTablesId /deep/ table.responsive.dataTables thead td {
+					border-top: 1px solid #eff2f3;
+					border-bottom: 1px solid #607d8b;
+			}
 		</style>
 		<div class="layout vertical" style="width:100%;">
 			<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTablesId" on-rows-selected="onRowSelected" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[data]]"> </simpl-datatables>
