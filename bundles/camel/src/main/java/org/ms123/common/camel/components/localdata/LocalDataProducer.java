@@ -619,7 +619,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 	}
 
 	private List<Object> getObjectsByWhere(Exchange exchange, SessionContext sc, String entityType, String where) {
-		String pack = StoreDesc.getPackName(entityType);
+		String pack = StoreDesc.getPackName(entityType, m_endpoint.isOrientdb() ? "odata" : "data");
 		String namespace = getNamespace(exchange);
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace, pack);
 		Class clazz = sc.getClass(sdesc, entityType);
