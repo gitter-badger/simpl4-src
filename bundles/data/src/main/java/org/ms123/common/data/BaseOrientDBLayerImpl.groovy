@@ -98,6 +98,8 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				if( isDate( v.datatype) && data[k] instanceof String){
 					cleanData[k] = parseFromString(data[k]);
+				}else if( isDate( v.datatype) && data[k] instanceof Long){
+					cleanData[k] = new Date(data[k]);
 				}else{
 					cleanData[k] = data[k];
 				}
@@ -162,6 +164,8 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				if( isDate( v.datatype) && data[k] instanceof String){
 					obj[k] = parseFromString(data[k]);
+				}else if( isDate( v.datatype) && data[k] instanceof Long){
+					obj[k] = new Date(data[k]);
 				}else{
 					obj[k] = data[k];
 				}
