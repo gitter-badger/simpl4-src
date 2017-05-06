@@ -154,6 +154,9 @@ qx.Class.define('ms123.shell.InternalPlugin', {
 			if (model.id == "rules" && level == 1) {
 				model.title = this.tr("shell.rules_dir");
 			}
+			if (model.id == "services" && level == 1) {
+				model.title = this.tr("shell.services_dir");
+			}
 			if (model.id == "processes" && level == 1) {
 				model.title = this.tr("shell.processes_dir");
 			}
