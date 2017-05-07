@@ -22,59 +22,13 @@
 <!--
 CRUD operations for simpl4
 -->
+<link rel="import" href="../simpl-crud/simpl-crud-shared-styles.html">
 <dom-module id="simpl-embeddedlist" flex relative>
 	<template>
+   	<style is="custom-style" include="simpl-crud-shared-styles"></style>
 		<style>
-			:host {
-			}
-			:host /deep/ #formDialog {
-				position: fixed;
-				top: 5vh;
-				min-width: 70%;
-				max-width: 70%;
-				max-height: 90%;
-				border-radius: 4px;
-			}
-			@media screen and (max-width: 767px) {
-				:host /deep/ #formDialog {
-					left: 0vw;
-					min-width: 100%;
-					margin: 0px;
-				}
-			}
-			#formDialog {
-				margin: 0px;
-				padding: 0px;
-			}
-			paper-toast#toast {
-				z-index: 10;
-			}
-			simpl-toast /deep/ paper-toast {
-				white-space: nowrap;
-				padding-top: 10px;
-				padding-bottom: 10px;
-			}
-			simpl-toast /deep/ span {
-				min-width: 450px;
-				padding-right: 25px;
-				font-size: 30px;
-				vertical-align: middle;
-			}
-			simpl-toast /deep/ iron-icon {
-				width: 48px;
-				height: 48px;
-				vertical-align: middle;
-			}
-			#dataTablesId /deep/ table.responsive.dataTables thead tr th, 
-			#dataTablesId /deep/ table.responsive.dataTables tfoot tr th {
-					color: #303e45;
-					background: white;
-			}
-
-			#dataTablesId /deep/ table.responsive.dataTables thead th, 
-			#dataTablesId /deep/ table.responsive.dataTables thead td {
-					border-top: 3px solid white;
-					border-bottom: 1px solid #607d8b;
+			paper-dialog /deep/ paper-dialog-scrollable {
+				margin-bottom: 20px !important;
 			}
 		</style>
 		<div class="layout vertical" style="width:100%;">

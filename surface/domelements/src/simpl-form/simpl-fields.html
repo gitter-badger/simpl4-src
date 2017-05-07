@@ -21,6 +21,7 @@
 <script src="jquery.dropdown.js"></script>
 <link rel="import" type="css" href="bootstrap-datetimepicker-standalone.css" />
 <link rel="import" type="css" href="bootstrap-datetimepicker.css" />
+<link rel="import" href="../simpl-crud/simpl-crud-shared-styles.html">
 <script>
 	FieldBehavior = {
 		properties: {
@@ -2589,26 +2590,6 @@
 			:host {
 				display:inherit;
 			}
-		:host /deep/ #linkedObjDialog {
-			position:fixed;
-			top: 5vh;
-			left: 15%;
-			min-width: 70%;
-			max-width: 70%;
-			max-height:90%;
-			border-radius: 4px;
-		}
-		@media screen and (max-width: 767px) {
-			:host /deep/ #linkedObjDialog {
-				left: 0vw;
-				min-width: 100%;
-				margin: 0px;
-			}
-		}
-		#linkedObjDialog {
-			margin: 0px;
-			padding: 0px;
-		}
 		:host {
 			--paper-input-container: {
 				padding: 0px;
@@ -2633,24 +2614,8 @@
 			max-height: inherit !important;
 			padding: 0 10px;
 		}
-		#linkedObjId /deep/ table.responsive.dataTables thead tr th, 
-		#linkedObjId /deep/ table.responsive.dataTables tfoot tr th {
-				color: #303e45;
-				background: white;
-		}
-
-		#linkedObjId /deep/ table.responsive.dataTables thead th, 
-		#linkedObjId /deep/ table.responsive.dataTables thead td {
-				border-top: 3px solid white;
-				border-bottom: 1px solid #607d8b;
-		}
-
-		simpl-panel /deep/ .panel__header {
-				background: #ffffff;
-				border-bottom: 0px solid #607d8b;
-				height: 1px;
-		}
 	</style>
+  <style is="custom-style" include="simpl-crud-shared-styles"></style>
 	<template>
 
 		<div class="layout horizontal center">

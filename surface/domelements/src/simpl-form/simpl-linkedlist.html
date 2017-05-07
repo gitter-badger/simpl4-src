@@ -22,61 +22,11 @@
 <!--
 CRUD operations for simpl4
 -->
+<link rel="import" href="../simpl-crud/simpl-crud-shared-styles.html">
 <dom-module id="simpl-linkedlist" flex relative>
 	<template>
+	  <style is="custom-style" include="simpl-crud-shared-styles"></style>
 		<style>
-			:host {
-			}
-			:host /deep/ #selectDialog {
-				position: fixed;
-				top: 5vh;
-				min-width: 70%;
-				max-width: 70%;
-				max-height: 90%;
-				border-radius: 4px;
-			}
-			@media screen and (max-width: 767px) {
-				:host /deep/ #selectDialog {
-					left: 0vw;
-					min-width: 100%;
-					margin: 0px;
-				}
-			}
-			#selectDialog {
-				margin: 0px;
-				padding: 0px;
-			}
-			paper-toast#toast {
-				z-index: 10;
-			}
-			simpl-toast /deep/ paper-toast {
-				white-space: nowrap;
-				padding-top: 10px;
-				padding-bottom: 10px;
-			}
-			simpl-toast /deep/ span {
-				min-width: 450px;
-				padding-right: 25px;
-				font-size: 30px;
-				vertical-align: middle;
-			}
-			simpl-toast /deep/ iron-icon {
-				width: 48px;
-				height: 48px;
-				vertical-align: middle;
-			}
-
-			#linkedListId /deep/ table.responsive.dataTables thead tr th, 
-			#linkedListId /deep/ table.responsive.dataTables tfoot tr th {
-					color: #303e45;
-					background: white;
-			}
-
-			#linkedListId /deep/ table.responsive.dataTables thead th, 
-			#linkedListId /deep/ table.responsive.dataTables thead td {
-					border-top: 3px solid white;
-					border-bottom: 1px solid #607d8b;
-			}
 		</style>
 		<div class="layout vertical" style="width:100%;">
 			<simpl-datatables style="width:100%;position:relative;" class="flex" id="dataTablesId" on-rows-selected="onRowSelected" options="[[dataTablesOptions]]" meta="[[meta]]" data="[[data]]"> </simpl-datatables>
@@ -89,11 +39,14 @@ CRUD operations for simpl4
 		</div>
 		<paper-dialog id="selectDialog" no-cancel-on-outside-click with-backdrop="">
 			<paper-dialog-scrollable>
-				<div class="lyaout vertical flex">
-					<simpl-filter style="margin-bottom:10px;" namespace="{{namespace}}" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
-					<div style="height:20px;"></div>
-					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]" collapsable="">
-						<simpl-crudtable id="linkedListId" disable-spinner namespace="{{namespace}}" buttons="select,cancel" on-select-action="selectAction" on-cancel-action="selectCancelAction" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+				<div style="color:#303e45">
+					<simpl-filter id="filterId" style="margin-bottom:10px;" with-cancel namespace="{{namespace}}" entity="{{entityName}}" on-cancel="selectCancelAction" filter="{{filter}}"></simpl-filter>
+					<div style="height:1px;padding-right:20px;line-height:initial;" class="layout horizontal">
+						<div class="flex">&#160;</div>
+						<div class="" style="font-size:11px;top:5px;position:relative;z-index:111;">[[getHelp()]]</div>
+					</div>
+					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]">
+						<simpl-crudtable id="linkedListId" disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
 					</simpl-panel>
 				</div>
 			</paper-dialog-scrollable>
@@ -198,6 +151,7 @@ CRUD operations for simpl4
 			openSelectDialog: function() {
 				this.entityName = this.entity;
 				console.log( "linkedlist.selectOpenAction:", this.entity );
+				this.$.filterId.doSearch();
 				this.async( function() {
 					var sd = $( this.$.selectDialog ).dialog( {
 						resizable: true,
@@ -208,12 +162,16 @@ CRUD operations for simpl4
 						modal: true
 					} );
 					sd.parent().css( "z-index", "555111" );
-				}, 50 );
+				}, 250 );
 			},
-			selectAction: function(e) {
+			rowsSelected: function(e) {
+				if ( !e.detail.doubleTap ) {
+					return;
+				}
 				this.setButtonState( "del", false );
 				console.log( "linkedlist.selectAction:", e.detail );
-				this.changeData("select", e.detail.data);
+				var data = e.detail.rows[ 0 ];
+				this.changeData("select", data);
 			},
 			delAction: function() {
 				this.setButtonState( "del", false );
@@ -281,6 +239,9 @@ CRUD operations for simpl4
 				}
 				console.debug( "linkedlist.meta:", columns );
 				this.meta = columns;
+			},
+			getHelp: function() {
+				return tr( "crud2.select_with" );
 			},
 			getHeader:function(entityName){
 				return tr(this.getPackFromEntity(this.entity)+'.'+this.getSimpleEntityName(entityName));
