@@ -178,6 +178,9 @@ qx.Class.define("ms123.config.ConfigManager", {
 		},*/
 		getFields: function (storeDesc,entity,withAutoGen,withRelations,filter,mapping) {
 			var storeId = storeDesc.getStoreId();
+			if( entity.startsWith("odata:")){
+				storeId = storeDesc.getNamespace()+"_odata";
+			}
 			withAutoGen = withAutoGen===true;
 			withRelations = withRelations===true;
 			var fields = ms123.config.ConfigManager.__fieldcache["fields-" + storeDesc.toString()+"-"+entity+"-"+withAutoGen+"-"+withRelations+"-"+filter+"-"+mapping];
@@ -287,13 +290,16 @@ qx.Class.define("ms123.config.ConfigManager", {
 		},
 		getEntityTree: function (storeDesc,main,maxlevel,listResolved,pathid,type,silent) {
 			var storeId = storeDesc.getStoreId();
+			if( main.startsWith("odata:")){
+				storeId = storeDesc.getNamespace()+"_odata";
+			}
 			listResolved = listResolved===true;
 			pathid = pathid===true;
 			var tree = ms123.config.ConfigManager.__entitycache["entitytree-" + main+"-"+maxlevel+"-"+storeDesc.toString()+"-"+listResolved+"-"+pathid+"-"+type];
 			if (!tree) {
 				try {
 					tree = ms123.util.Remote.rpcSync("entity:getEntityTree", {
-						storeId: storeDesc.getStoreId(),
+						storeId: storeId,
 						main: main,
 						listResolved:listResolved,
 						pathid:pathid,

@@ -95,7 +95,7 @@ qx.Class.define("ms123.datamapper.create.PojoFieldsEditor", {
 				newModel.fieldType=entity;
 			}
 			visited[entity] = true;
-			newModel.children = this._getFieldsForEntity(entity);
+			newModel.children = this._getFieldsForEntity(model.entity);
 			for (var i = 0; model.children && i < model.children.length; i++) {
 				var c = model.children[i];
 				if( visited[c.name] !== true && visited[c.entity] !== true){
