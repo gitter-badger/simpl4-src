@@ -22,26 +22,31 @@
 <link rel="import" type="css" href="bootstrap-spinner.css" />
 <dom-module id="simpl-spinner" flex relative>
 	<style>
-
-	a[data-spin]{
-		margin-right:4px;
-outline: none;
-	}
-	input[data-rule]{
-		max-width:30px;
-outline: none;
-	}
+		a[data-spin] {
+			margin-right: 4px;
+			outline: none;
+		}
+		input[data-rule] {
+			max-width: 30px;
+			outline: none;
+		}
+		iron-icon.spin {
+			cursor: pointer;
+			height: 20px;
+			width: 20px;
+			color: #607d8b;
+		}
 
 	</style>
 	<template>
 		<div data-trigger="spinner" id="spinner">
 			<a data-spin="down" style="position:relative;">
-				<iron-icon style="cursor:pointer;height:24px;width:24px;color:#607d8b;" icon="vaadin-icons:minus"></iron-icon>
+				<iron-icon class="spin" icon="vaadin-icons:minus"></iron-icon>
 				<paper-ripple></paper-ripple>
 			</a>
-			<input type="text" value="[[value]]" data-rule="quantity">
+			<input type="text" id="input" value="[[value]]" data-rule="quantity">
 			<a data-spin="up" style="position:relative;">
-				<iron-icon style="cursor:pointer;height:24px;width:24px;color:#607d8b;" icon="vaadin-icons:plus"></iron-icon>
+				<iron-icon class="spin" icon="vaadin-icons:plus"></iron-icon>
 				<paper-ripple></paper-ripple>
 			</a>
 		</div>
@@ -52,8 +57,16 @@ outline: none;
 		Polymer( {
 			is: 'simpl-spinner',
 			properties: {
-				value: {
+				eventname: {
 					type: String,
+					value: "value-changed"
+				},
+				rule: {
+					type: String,
+					value: "quantity"
+				},
+				value: {
+					type: Object,
 					value: 0
 				}
 			},
@@ -61,13 +74,31 @@ outline: none;
 			behaviors: [
 				StyleScopeBehavior
 			],
+			up: function() {
+				$( this.$.spinner ).spinner( "spin", "up" );
+			},
+			down: function() {
+				$( this.$.spinner ).spinner( "spin", "down" );
+			},
 			attached: function() {
 				$( this.$.spinner )
 					.spinner( 'delay', 200 ) //delay in ms
-					.spinner( 'rule', "quantity" )
-					.spinner( 'changed', function( e, newVal, oldVal ) {
-						console.log( "changed:", e );
+					.spinner( 'rule', this.rule )
+					.spinner( 'changed', ( function( e, newVal, oldVal ) {
+						this.value = newVal;
+						this.fire( this.eventname, {
+							id: this.id,
+							value: newVal
+						} )
+					} ).bind( this ) )
+				$( this.$.input ).keyup( ( function( e ) {
+					var val = this.$.input.value;
+					val = parseInt( val );
+					this.fire( this.eventname, {
+						id: this.id,
+						value: val
 					} )
+				} ).bind( this ) );
 			},
 			ready: function() {}
 		} );
