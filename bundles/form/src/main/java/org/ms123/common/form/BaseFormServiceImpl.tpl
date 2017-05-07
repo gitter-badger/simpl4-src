@@ -142,6 +142,11 @@ class BaseFormServiceImpl {
 			idList = new ArrayList();
 			idList.add("input");
 			idList.add("textarea");
+			idList.add("custom");
+			idList.add("embeddedobj");
+			idList.add("embeddedlist");
+			idList.add("linkedobj");
+			idList.add("linkedlist");
 			idList.add("gridinput");
 			idList.add("tableselect");
 			idList.add("enumselect");
