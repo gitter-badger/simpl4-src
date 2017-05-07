@@ -152,7 +152,7 @@ public class OrientDBSelectBuilder extends JPASelectBuilder implements SelectBui
 
 	private String getNotEqual(String f, String d, String dt) {
 		d = d.toUpperCase();
-		if (("string".equals(dt) || "text".equals(dt))) {
+		if (("7".equals(dt))) {
 			return f + ".toUpperCase() <> '" + d + "'";
 		} else if ("date".equals(dt)) {
 			return f + " <> " + d;
@@ -164,7 +164,7 @@ public class OrientDBSelectBuilder extends JPASelectBuilder implements SelectBui
 	}
 
 	private String getCaseEqual(String f, String d, String dt) {
-		if (("string".equals(dt) || "text".equals(dt))) {
+		if (("7".equals(dt))) {
 			return f + " = '" + d + "'";
 		} else if ("boolean".equals(dt)) {
 			return f + " = " + d;
@@ -179,7 +179,7 @@ public class OrientDBSelectBuilder extends JPASelectBuilder implements SelectBui
 
 	private String getEqual(String f, String d, String dt) {
 		info(this,"\tgetEqual:" + f + "," + d + "," + dt);
-		if (("string".equals(dt) || "text".equals(dt))) {
+		if (("7".equals(dt))) {
 			d = d.toUpperCase();
 			if( "".equals(d)){
 				return f +" is null or " + f + ".toUpperCase() = ''";
