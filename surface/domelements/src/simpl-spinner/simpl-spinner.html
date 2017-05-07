@@ -1,0 +1,76 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<link rel="import" href="import-js.html">
+<link rel="import" type="css" href="bootstrap-spinner.css" />
+<dom-module id="simpl-spinner" flex relative>
+	<style>
+
+	a[data-spin]{
+		margin-right:4px;
+outline: none;
+	}
+	input[data-rule]{
+		max-width:30px;
+outline: none;
+	}
+
+	</style>
+	<template>
+		<div data-trigger="spinner" id="spinner">
+			<a data-spin="down" style="position:relative;">
+				<iron-icon style="cursor:pointer;height:24px;width:24px;color:#607d8b;" icon="vaadin-icons:minus"></iron-icon>
+				<paper-ripple></paper-ripple>
+			</a>
+			<input type="text" value="[[value]]" data-rule="quantity">
+			<a data-spin="up" style="position:relative;">
+				<iron-icon style="cursor:pointer;height:24px;width:24px;color:#607d8b;" icon="vaadin-icons:plus"></iron-icon>
+				<paper-ripple></paper-ripple>
+			</a>
+		</div>
+
+
+	</template>
+	<script>
+		Polymer( {
+			is: 'simpl-spinner',
+			properties: {
+				value: {
+					type: String,
+					value: 0
+				}
+			},
+			observers: [],
+			behaviors: [
+				StyleScopeBehavior
+			],
+			attached: function() {
+				$( this.$.spinner )
+					.spinner( 'delay', 200 ) //delay in ms
+					.spinner( 'rule', "quantity" )
+					.spinner( 'changed', function( e, newVal, oldVal ) {
+						console.log( "changed:", e );
+					} )
+			},
+			ready: function() {}
+		} );
+
+	</script>
+</dom-module>
