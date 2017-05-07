@@ -1166,6 +1166,9 @@
 				StyleScopeBehavior,
 				FieldBehavior
 			],
+			listeners: {
+				'value-changed': 'ignore'
+			},
 			properties: {
 				multiple: {
 					value: false
@@ -1499,6 +1502,10 @@
 					this.__value = null;
 				}
 			},
+			ignore:function(e){
+				e.preventDefault();
+				e.stopPropagation();
+			},
 			attached:function(){
 				this.async( function() {
 					this._attached();
@@ -1539,6 +1546,7 @@
 				this.isInvalid = b;
 			},
 			isRequired: function() {
+				if( !this.form ) return false;
 				var data = this.form._getData();
 				var req = this.form._maskedEval( this.required, data, false );
 				return req;
