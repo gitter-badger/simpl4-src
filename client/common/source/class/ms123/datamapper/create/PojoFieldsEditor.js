@@ -54,7 +54,7 @@ qx.Class.define("ms123.datamapper.create.PojoFieldsEditor", {
 				"type": {
 					'type': "SelectBox",
 					'label': this.tr("datamapper.type"),
-					'value': ms123.datamapper.Config.NODETYPE_ELEMENT,
+					'value': ms123.datamapper.Config.NODETYPE_COLLECTION,
 					'options': [{
 						value: ms123.datamapper.Config.NODETYPE_ELEMENT,
 						label: "Element"
