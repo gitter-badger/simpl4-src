@@ -867,7 +867,7 @@
 
 			urlChanged:function(){			
 				if( this.url == null) return;
-				this.importHref( this.url, this.onResponse.bind( this ) );
+				this.importHref( this.url+"?time="+(new Date().getTime()), this.onResponse.bind( this ) );
 			},
 
 			onResponse: function( e ) {
