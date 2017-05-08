@@ -563,6 +563,7 @@
 			this._form = {};
 			this._preData = null;
 
+			if( this.formName=="empty") return;
 			this.async( function() {
 				var form = simpl4FormManager.getForm( this.formName, this.namespace );
 				this._form = form.properties;

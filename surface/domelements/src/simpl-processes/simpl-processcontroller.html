@@ -169,10 +169,13 @@
 				}
 				this.variables = processVariables;
 				this.namespace = processTenantId;
-				this.formName = formName;
+				var form = this.querySelector( "#formid" );
+				this.formName = 'empty';
 				this.async( function() {
-					var form = this.querySelector( "#formid" );
-					form.setData( mappedFormValues );
+					this.formName = formName;
+					this.async( function() {
+						form.setData( mappedFormValues );
+					}, 100 );
 				}, 100 );
 			},
 			getFormName: function( formResourceKey ) {
