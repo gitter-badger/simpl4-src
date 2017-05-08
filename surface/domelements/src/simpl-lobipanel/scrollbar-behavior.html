@@ -21,6 +21,7 @@
 <script>
 	ScrollbarBehavior = {
 		attached: function() {
+			if( this._autoScrollbar === false) return;
 			this.async( function() {
 				this._initScrollbars();
 				$( '.panel' ).on( 'onFullScreen.lobiPanel', ( function( ev, lobiPanel ) {
@@ -35,10 +36,24 @@
 				} ).bind( this ) );
 			}, 500 );
 		},
-		_initScrollbars: function() {
+		_initScrollbar: function(elem) {
+			elem = elem || this;
 			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
-			var tables = this._toElementArray( this.querySelectorAll( ".dataTables_scrollBody" ) );
-			var sbElements = this._toElementArray( this.querySelectorAll( ".smooth-scrollbar" ) );
+			window.Scrollbar.init( elem, {
+				speed: isTouch ? 1 : 4,
+				damping: isTouch ? 0.1 : 0.05,
+				renderByPixels: true,
+				overscrollEffect: "bounce",
+				alwaysShowTracks: true,
+				overscrollEffectColor: "#87ceeb",
+				thumbMinSize: 10
+			} );
+		},
+		_initScrollbars: function(elem) {
+			elem = elem || this;
+			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
+			var tables = this._toElementArray( elem.querySelectorAll( ".dataTables_scrollBody" ) );
+			var sbElements = this._toElementArray( elem.querySelectorAll( ".smooth-scrollbar" ) );
 			var elementArray = tables.concat( sbElements );
 			console.log("smoothElementArray:",elementArray);
 			for ( var i = 0; i < elementArray.length; i++ ) {
@@ -51,6 +66,7 @@
 					overscrollEffectColor: "#87ceeb",
 					thumbMinSize: 10
 				} );
+				elementArray[i].setAttribute("scrollbar","");
 			}
 		},
 		_toElementArray: function( elements ) {

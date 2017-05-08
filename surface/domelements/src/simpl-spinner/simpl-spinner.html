@@ -81,7 +81,6 @@
 				$( this.$.spinner ).spinner( "spin", "down" );
 			},
 			attached: function() {
-				console.log( "isInited:", this.isInited );
 				if ( this.isInited ) return;
 				$( this.$.spinner )
 					.spinner( 'delay', 200 ) //delay in ms
