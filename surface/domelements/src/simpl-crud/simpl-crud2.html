@@ -68,6 +68,7 @@ CRUD operations for simpl4
 			behaviors: [
 				Polymer.IronA11yKeysBehavior,
 				LobiboxBehavior,
+				DialogBehavior,
 				TranslationsBehavior
 			],
 			properties: {
@@ -170,15 +171,7 @@ CRUD operations for simpl4
 				this.$.filterId.doSearch();
 
 				this.async( function() {
-					var sd = $( this.$.searchDialog ).dialog( {
-						resizable: true,
-						draggable: true,
-						title: "",
-						height: "auto",
-						width: "80%",
-						modal: true
-					} );
-					sd.parent().css( "z-index", "555111" );
+					this.openDialog( this.$.searchDialog );
 				}, 200 );
 				this.fire( "search-action", {
 					entity: this.entity,
@@ -224,7 +217,7 @@ CRUD operations for simpl4
 			},
 			selectCancelAction: function() {
 				this.async( function() {
-					$( this.$.searchDialog ).dialog( "close" );
+					this.closeDialog( this.$.searchDialog );
 				}, 50 );
 			},
 			selectAction: function( e ) {
@@ -232,7 +225,7 @@ CRUD operations for simpl4
 				this.mode = "edit";
 				var data = e.detail.data;
 				console.log( "selectAction:", e );
-				$( this.$.searchDialog ).dialog( "close" );
+				this.closeDialog( this.$.searchDialog );
 				this.currentData = clone( data );
 				this.$.formid.setData( this.currentData );
 			},
@@ -244,7 +237,7 @@ CRUD operations for simpl4
 				this.setButtonState( "del", true );
 				this.mode = "edit";
 				var data = e.detail.rows[ 0 ];
-				$( this.$.searchDialog ).dialog( "close" );
+				this.closeDialog( this.$.searchDialog );
 				this.currentData = clone( data );
 				this.$.formid.setData( this.currentData );
 			},

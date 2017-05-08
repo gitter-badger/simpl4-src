@@ -2654,6 +2654,7 @@
 				Polymer.IronFormElementBehavior,
 				Polymer.PaperInputBehavior,
 				Polymer.IronControlState,
+				DialogBehavior,
 				TranslationsBehavior,
 				FieldBehavior
 			],
@@ -2686,15 +2687,7 @@
 				this._entityName = this.entityName;
 				this.$.filterId.doSearch();
 				this.async( function() {
-					var sd = $( this.$.linkedObjDialog ).dialog( {
-						resizable: true,
-						draggable: true,
-						title: "",
-						height: "auto",
-						width: "80%",
-						modal: true
-					} );
-					sd.parent().css( "z-index", "555111" );
+					this.openDialog( this.$.linkedObjDialog );
 				},250 );
 			},
 			clearCallback: function() {
@@ -2706,14 +2699,14 @@
 					return;
 				}
 				this.data = e.detail.rows[0];
-				$( this.$.linkedObjDialog ).dialog( "close" );
+				this.closeDialog( this.$.linkedObjDialog );
 				var t = this._maskedEval( this.props.title_expression, this.data );
 				this.id = this.data.id || this.data._id;
 				this.editValue = t || this.id ||  ".";
 			},
 			cancelAction: function() {
 				this.async( function() {
-					$( this.$.linkedObjDialog ).dialog( "close" );
+					this.closeDialog( this.$.linkedObjDialog );
 				},50 );
 			},
 			editValueChanged: function() {
@@ -2864,6 +2857,7 @@
 				Polymer.IronFormElementBehavior,
 				Polymer.PaperInputBehavior,
 				Polymer.IronControlState,
+				DialogBehavior,
 				TranslationsBehavior,
 				FieldBehavior
 			],
@@ -2910,15 +2904,7 @@
 				this._pack = this.getPack();
 				this.$.formid.setData(this.data);
 				this.async( function() {
-					var sd = $( this.$.embeddedObjDialog ).dialog( {
-						resizable: true,
-						draggable: true,
-						title: "",
-						height: "auto",
-						width: "80%",
-						modal: true
-					} );
-					sd.parent().css( "z-index", "555111" );
+					this.openDialog( this.$.embeddedObjDialog );
 				},50 );
 			},
 			clearCallback: function() {
@@ -2927,13 +2913,13 @@
 			},
 			takeOverAction: function( e ) {
 				this.data = this.$.formid.getData();
-				$( this.$.embeddedObjDialog ).dialog( "close" );
+				this.closeDialog( this.$.embeddedObjDialog );
 				var t = this._maskedEval( this.props.title_expression, this.data );
 				this.editValue = t || this.data._id ||  ".";
 			},
 			cancelAction: function() {
 				this.async( function() {
-					$( this.$.embeddedObjDialog ).dialog( "close" );
+					this.closeDialog( this.$.embeddedObjDialog );
 				},50 );
 			},
 			editValueChanged: function() {

@@ -57,6 +57,7 @@ CRUD operations for simpl4
 			is: 'simpl-linkedlist',
 			behaviors: [
 				Polymer.IronA11yKeysBehavior,
+				DialogBehavior,
 				TranslationsBehavior
 			],
 			properties: {
@@ -153,15 +154,7 @@ CRUD operations for simpl4
 				console.log( "linkedlist.selectOpenAction:", this.entity );
 				this.$.filterId.doSearch();
 				this.async( function() {
-					var sd = $( this.$.selectDialog ).dialog( {
-						resizable: true,
-						draggable: true,
-						title: "",
-						height: "auto",
-						width: "80%",
-						modal: true
-					} );
-					sd.parent().css( "z-index", "555111" );
+					this.openDialog( this.$.selectDialog );
 				}, 250 );
 			},
 			rowsSelected: function(e) {
@@ -178,7 +171,7 @@ CRUD operations for simpl4
 				this.changeData("del",this.currentData);
 			},
 			changeData: function(mode, chgData) {
-				$( this.$.selectDialog ).dialog( "close" );
+				this.closeDialog( this.$.selectDialog );
 				var oldData = clone( this.data ) || [];
 				this.data = [];
 				if ( mode == "select" ) {
@@ -203,7 +196,7 @@ CRUD operations for simpl4
 			},
 			selectCancelAction: function( e ) {
 				this.setButtonState( "del", false );
-				$( this.$.selectDialog ).dialog( "close" );
+				this.closeDialog( this.$.selectDialog );
 			},
 			entityChanged: function() {
 				this.getColumns( this.entity );

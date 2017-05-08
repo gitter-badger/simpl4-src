@@ -57,6 +57,7 @@ CRUD operations for simpl4
 			is: 'simpl-embeddedlist',
 			behaviors: [
 				Polymer.IronA11yKeysBehavior,
+				DialogBehavior,
 				TranslationsBehavior
 			],
 			properties: {
@@ -194,30 +195,14 @@ CRUD operations for simpl4
 				this.mode = "add";
 				this.$.formid.setData( {} );
 				this.async( function() {
-					var sd = $( this.$.formDialog ).dialog( {
-						resizable: true,
-						draggable: true,
-						title: "",
-						height: "auto",
-						width: "80%",
-						modal: true
-					} );
-					sd.parent().css( "z-index", "555111" );
+					this.openDialog( this.$.formDialog );
 				}, 50 );
 			},
 			editAction: function() {
 				this.mode = "edit";
 				this.$.formid.setData( this.currentData );
 				this.async( function() {
-					var sd = $( this.$.formDialog ).dialog( {
-						resizable: true,
-						draggable: true,
-						title: "",
-						height: "auto",
-						width: "80%",
-						modal: true
-					} );
-					sd.parent().css( "z-index", "555111" );
+					this.openDialog( this.$.formDialog );
 				}, 50 );
 			},
 			delAction: function() {
@@ -231,7 +216,7 @@ CRUD operations for simpl4
 				this._saveAction();
 			},
 			cancelAction: function( e ) {
-				$( this.$.formDialog ).dialog( "close" );
+				this.closeDialog( this.$.formDialog);
 			},
 			saveAction: function() {
 				var form= this.$.formid;
