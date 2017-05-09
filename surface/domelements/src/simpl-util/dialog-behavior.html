@@ -29,6 +29,10 @@
 			} )
 		},
 		openDialog: function( dia ) {
+			var width = "80%";
+			if ( window.matchMedia( '(max-device-width: 480px)' ).matches ) {
+				width = "95%";
+			}
 			var sd = $( dia ).dialog( {
 				open: function( event, ui ) {
 					$( dia ).hide();
@@ -38,7 +42,7 @@
 				draggable: true,
 				title: "",
 				height: "auto",
-				width: "80%",
+				width: width,
 				modal: true
 			} );
 			sd.parent().css( "z-index", "555111" );
