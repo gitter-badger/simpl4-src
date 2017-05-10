@@ -1706,6 +1706,7 @@
 					var node = this.jqtree.tree('getNodeById', id);
 					this.jqtree.tree('selectNode', node);
 					this.jqtree.tree('scrollToNode', node);
+					this.$.dropdownId.querySelector("#input").value=node.name;
 				}else{
 					this.jqtree.tree('selectNode', null);
 					this.selectedItem=null;
