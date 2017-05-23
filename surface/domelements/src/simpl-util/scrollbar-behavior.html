@@ -39,6 +39,7 @@
 		_initScrollbar: function(elem) {
 			elem = elem || this;
 			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
+if( isTouch) return;
 			window.Scrollbar.init( elem, {
 				speed: isTouch ? 1 : 4,
 				damping: isTouch ? 0.1 : 0.05,
@@ -52,7 +53,10 @@
 		_initScrollbars: function(elem) {
 			elem = elem || this;
 			var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
-			var tables = this._toElementArray( elem.querySelectorAll( ".dataTables_scrollBody" ) );
+			var tables = [];
+			if( !isTouch ){
+				tables = this._toElementArray( elem.querySelectorAll( ".dataTables_scrollBody" ) );
+			}
 			var sbElements = this._toElementArray( elem.querySelectorAll( ".smooth-scrollbar" ) );
 			var elementArray = tables.concat( sbElements );
 			console.log("smoothElementArray:",elementArray);
