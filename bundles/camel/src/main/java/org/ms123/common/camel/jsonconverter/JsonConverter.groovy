@@ -787,6 +787,27 @@ class RecipientListJsonConverter extends JsonConverterImpl{
 	}
 }
 
+class LoopJsonConverter extends JsonConverterImpl{
+	void convertToCamel(ctx){
+		ctx.current = ctx.current.loop(createExpression(shapeProperties.expression,shapeProperties.language));
+		ctx.current.id(resourceId);
+	}
+}
+
+class LoopDoWhileJsonConverter extends JsonConverterImpl{
+	void convertToCamel(ctx){
+		ctx.current = ctx.current.loopDoWhile(createExpression(shapeProperties.expression,shapeProperties.language));
+		ctx.current.id(resourceId);
+	}
+}
+
+class EndJsonConverter extends JsonConverterImpl{
+	void convertToCamel(ctx){
+		ctx.current = ctx.current.end();
+	}
+}
+
+
 class MessageAggregateJsonConverter extends JsonConverterImpl{
 	void convertToCamel(ctx){
 		if( isEmpty(shapeProperties.option_strategyRef)){

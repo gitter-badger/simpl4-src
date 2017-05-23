@@ -177,6 +177,9 @@ class CamelRouteJsonConverter extends BaseRouteJsonConverter implements org.ms12
 		m_typesMap["messagesplitter"] = MessageSplitterJsonConverter.class;
 		m_typesMap["recipientlist"] = RecipientListJsonConverter.class;
 		m_typesMap["marshal"] = MarshalJsonConverter.class;
+		m_typesMap["loop"] = LoopJsonConverter.class;
+		m_typesMap["loopdowhile"] = LoopDoWhileJsonConverter.class;
+		m_typesMap["end"] = EndJsonConverter.class;
 		m_typesMap["unmarshal"] = UnmarshalJsonConverter.class;
 	}
 	private void createConverterGraph(JsonConverter jsonConverter, Map shape) throws Exception {
