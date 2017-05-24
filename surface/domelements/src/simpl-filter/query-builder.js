@@ -1302,10 +1302,10 @@ console.log("QueryBuilder.construct");
       '<paper-button type="button" class="style-scope simpl-filter button_secondary_raised" data-add="rule">' +
         '<i class="style-scope simpl-filter ' + this.icons.add_rule + '"></i> '+ this.lang.add_rule +
       '</paper-button>' +
-      + (this.settings.allow_groups===-1 || this.settings.allow_groups>=level ? '<paper-button type="button" class="style-scope simpl-filter button_secondary_raised" data-add="group">' +
+      (this.settings.allow_groups===-1 || this.settings.allow_groups>=level ? '<paper-button type="button" class="style-scope simpl-filter button_secondary_raised" data-add="group">' +
         '<i class="style-scope simpl-filter ' + this.icons.add_group + '"></i> '+ this.lang.add_group +
       '</paper-button>' : '') +
-      + (level>1 ? '<paper-button type="button" class="style-scope simpl-filter small button_error_raised" data-delete="group">' +
+      (level>1 ? '<paper-button type="button" class="style-scope simpl-filter small button_error_raised" data-delete="group">' +
         '<i class="' + this.icons.remove_group + '"></i> '+ this.lang.delete_group +
       '</paper-button>' : '') +
     '</div>' +
@@ -1359,7 +1359,7 @@ console.log("QueryBuilder.construct");
       '</paper-button>' +
     '</div>' +
   '</div>' +
-  + (this.settings.display_errors ? '<div class="style-scope simpl-filter error-container"><i class="' + this.icons.error + '"></i></div>' : '') +
+   (this.settings.display_errors ? '<div class="style-scope simpl-filter error-container"><i class="' + this.icons.error + '"></i></div>' : '') +
   '<div class="style-scope simpl-filter rule-filter-container"></div>' +
   '<div class="style-scope simpl-filter rule-operator-container"></div>' +
   '<div class="style-scope simpl-filter rule-value-container"></div>' +
