@@ -1295,29 +1295,29 @@ console.log("QueryBuilder.construct");
      * @return {string}
      */
     QueryBuilder.prototype.getGroupTemplate = function(group_id, level) {
-        var h = '\
-<dl id="'+ group_id +'" class="style-scope simpl-filter rules-group-container"> \
-  <dt class="style-scope simpl-filter rules-group-header"> \
-    <div class="style-scope simpl-filter btn-group pull-right group-actions"> \
-      <paper-button type="button" class="style-scope simpl-filter button_secondary_raised" data-add="rule"> \
-        <i class="style-scope simpl-filter ' + this.icons.add_rule + '"></i> '+ this.lang.add_rule +' \
-      </paper-button> \
-      '+ (this.settings.allow_groups===-1 || this.settings.allow_groups>=level ? '<paper-button type="button" class="style-scope simpl-filter button_secondary_raised" data-add="group"> \
-        <i class="style-scope simpl-filter ' + this.icons.add_group + '"></i> '+ this.lang.add_group +' \
-      </paper-button>' : '') +' \
-      '+ (level>1 ? '<paper-button type="button" class="style-scope simpl-filter small button_error_raised" data-delete="group"> \
-        <i class="' + this.icons.remove_group + '"></i> '+ this.lang.delete_group +' \
-      </paper-button>' : '') +' \
-    </div> \
-    <div class="style-scope simpl-filter btn-group group-conditions"> \
-      '+ this.getGroupConditions(group_id) +' \
-    </div> \
-    '+ (this.settings.display_errors ? '<div class="style-scope simpl-filter error-container" data-toggle="tooltip" data-placement="right"><i class="style-scope simpl-filter ' + this.icons.error + '"></i></div>' : '') +'\
-  </dt> \
-  <dd class="style-scope simpl-filter rules-group-body"> \
-    <ul class="style-scope simpl-filter rules-list"></ul> \
-  </dd> \
-</dl>';
+        var h = 
+'<dl id="'+ group_id +'" class="style-scope simpl-filter rules-group-container">'+
+  '<dt class="style-scope simpl-filter rules-group-header">' +
+    '<div class="style-scope simpl-filter btn-group pull-right group-actions">' +
+      '<paper-button type="button" class="style-scope simpl-filter button_secondary_raised" data-add="rule">' +
+        '<i class="style-scope simpl-filter ' + this.icons.add_rule + '"></i> '+ this.lang.add_rule +
+      '</paper-button>' +
+      + (this.settings.allow_groups===-1 || this.settings.allow_groups>=level ? '<paper-button type="button" class="style-scope simpl-filter button_secondary_raised" data-add="group">' +
+        '<i class="style-scope simpl-filter ' + this.icons.add_group + '"></i> '+ this.lang.add_group +
+      '</paper-button>' : '') +
+      + (level>1 ? '<paper-button type="button" class="style-scope simpl-filter small button_error_raised" data-delete="group">' +
+        '<i class="' + this.icons.remove_group + '"></i> '+ this.lang.delete_group +
+      '</paper-button>' : '') +
+    '</div>' +
+    '<div class="style-scope simpl-filter btn-group group-conditions">' +
+      this.getGroupConditions(group_id) +
+    '</div>' +
+     (this.settings.display_errors ? '<div class="style-scope simpl-filter error-container" data-toggle="tooltip" data-placement="right"><i class="style-scope simpl-filter ' + this.icons.error + '"></i></div>' : '') +
+  '</dt>' +
+  '<dd class="style-scope simpl-filter rules-group-body">' +
+    '<ul class="style-scope simpl-filter rules-list"></ul>' +
+  '</dd>'+
+'</dl>';
 
         return this.change('getGroupTemplate', h, level);
     };
@@ -1335,10 +1335,10 @@ console.log("QueryBuilder.construct");
                 active = cond == this.settings.default_condition,
                 label = this.lang['condition_'+ cond.toLowerCase()] || cond;
 
-            h+= '\
-            <label class="btn btn-xs btn-primary '+ (active?'active':'') +'"> \
-              <input type="radio" name="'+ group_id +'_cond" value="'+ cond +'" '+ (active?'checked':'') +'> '+ label +' \
-            </label>';
+            h+= 
+            '<label class="btn btn-xs btn-primary '+ (active?'active':'') +'">' +
+              '<input type="radio" name="'+ group_id +'_cond" value="'+ cond +'" '+ (active?'checked':'') +'> '+ label +
+            '</label>';
         }
 
         return this.change('getGroupConditions', h);
@@ -1350,20 +1350,20 @@ console.log("QueryBuilder.construct");
      * @return {string}
      */
     QueryBuilder.prototype.getRuleTemplate = function(rule_id) {
-        var h = '\
-<li id="'+ rule_id +'" class="style-scope simpl-filter rule-container"> \
-  <div class="style-scope simpl-filter rule-header"> \
-    <div class="style-scope simpl-filter btn-group pull-right rule-actions"> \
-      <paper-button type="button" class="style-scope simpl-filter small button_error_raised" data-delete="rule"> \
-        <i class="style-scope simpl-filter ' + this.icons.remove_rule + '"></i> '+ this.lang.delete_rule +' \
-      </paper-button> \
-    </div> \
-  </div> \
-  '+ (this.settings.display_errors ? '<div class="style-scope simpl-filter error-container"><i class="' + this.icons.error + '"></i></div>' : '') +'\
-  <div class="style-scope simpl-filter rule-filter-container"></div> \
-  <div class="style-scope simpl-filter rule-operator-container"></div> \
-  <div class="style-scope simpl-filter rule-value-container"></div> \
-</li>';
+        var h = 
+'<li id="'+ rule_id +'" class="style-scope simpl-filter rule-container">' +
+  '<div class="style-scope simpl-filter rule-header">' +
+    '<div class="style-scope simpl-filter btn-group pull-right rule-actions">' +
+      '<paper-button type="button" class="style-scope simpl-filter small button_error_raised" data-delete="rule">' +
+        '<i class="style-scope simpl-filter ' + this.icons.remove_rule + '"></i> '+ this.lang.delete_rule + 
+      '</paper-button>' +
+    '</div>' +
+  '</div>' +
+  + (this.settings.display_errors ? '<div class="style-scope simpl-filter error-container"><i class="' + this.icons.error + '"></i></div>' : '') +
+  '<div class="style-scope simpl-filter rule-filter-container"></div>' +
+  '<div class="style-scope simpl-filter rule-operator-container"></div>' +
+  '<div class="style-scope simpl-filter rule-value-container"></div>' +
+'</li>';
 
         return this.change('getRuleTemplate', h);
     };
