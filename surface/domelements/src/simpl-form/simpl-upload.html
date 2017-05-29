@@ -407,7 +407,6 @@
 			var filereader = new FileReader();
 			filereader.file = file;
 			filereader.onloadend = ( function( evt ) {
-				console.log( "onloadend:", evt.target.result );
 				console.log( "onloadend:", evt );
 				this.set( prefix + ".complete", true );
 				this.fire( "upload-complete", evt );

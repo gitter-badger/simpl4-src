@@ -744,7 +744,7 @@
 				<div hidden$="[[!label]]" style="width:3%;">
 					<label class="label-text">{{label}}</label>
 				</div>
-				<simpl-upload id="input" class="paper-input-input" drop-text="[[tr('import.drop_file2')]]" droppable="true" raised="true">[[tr('import.select_file')]]</simpl-upload>
+				<simpl-upload id="input" multi class="paper-input-input" drop-text="[[tr('import.drop_file2')]]" droppable="true" raised="true">[[tr('import.select_file')]]</simpl-upload>
 			</div>
 			<template is="dom-if" if="[[errorMessage]]">
 				<paper-input-error>[[errorMessage]]</paper-input-error>
@@ -770,44 +770,43 @@
 			listeners: {
 				'upload-complete': 'valueChanged'
 			},
-			observers: [
-				'editValueChanged(editValue)'
-			],
 			properties: {
 				required: {
 					value:"",
 					type: String
-				}
+				},
+        value: {
+         type: Object
+        }
 			},
 			ready: function() {
 				this.isInvalid = false;
-			},
-			editValueChanged: function() {
-				this.value = this.editValue;
-				this.fire( 'value-changed', this );
 			},
 			valueChanged: function( e ) {
 				var f = this.form._getField( "filename" );
 				if ( f != null ) {
 					f.setValue( e.detail.target.file.name );
 				}
-				this.editValue = e.detail.target.result;
+				this.value[ e.detail.target.file.name ] =  e.detail.target.result;
 				this.checkConstraints();
 			},
+			getValue: function() {
+				console.log("upload.getValue",this.value); //@@@MS Incombatible change
+				return this.value;
+			},
 			setValue: function( v ) {
-				this.editValue = v;
+				this.value = {};
 				this.disabled = false;
 				var f = this.form._getField( "filename" );
 				if ( f != null && !this.isEmpty( f.getValue() ) ) {
 					this.disabled = true;
-					this.editValue = "ignore";
 				}
 				this.$.input.clear();
 			},
 			checkConstraints: function() {
 				this.setInvalid( false );
 				if ( !this.isRequired() ) return;
-				if ( this.editValue ) {
+				if ( Object.keys(this.value).length>0 ) {
 					return;
 				}
 				this.setInvalid( true );
@@ -1400,25 +1399,39 @@
 				if( this.items == null){
 					return;
 				}
+        if( this.selectize){
+         this.selectize.clearOptions();
+        }
 				if( this.items.length ){
 					for( var i=0; i < this.items.length;i++){
 						var item = this.items[i];
-						var option = document.createElement("option");
-						var label = document.createTextNode(item.label);
-						option.value = item.value;
-						Polymer.dom( option ).appendChild( label );
-						Polymer.dom( select ).appendChild( option );
-					}
+            if( this.selectize){
+	            this.selectize.addOption({value:item.value,text:item.label});
+						}else{
+             var option = document.createElement("option");
+             var label = document.createTextNode(item.label);
+             option.value = item.value;
+             Polymer.dom( option ).appendChild( label );
+             Polymer.dom( select ).appendChild( option );
+     				}
+    			}
 				}else{
 					var items=this.items
 					Object.keys(items).forEach(function(k) {
 						var item = items[k];
-						var option = document.createElement("option");
-						var label = document.createTextNode(item.label);
-						option.value = item.value;
-						Polymer.dom( option ).appendChild( label );
-						Polymer.dom( select ).appendChild( option );
+						if( this.selectize){
+							this.selectize.addOption({value:item.value,text:item.label});
+						}else{
+							var option = document.createElement("option");
+							var label = document.createTextNode(item.label);
+							option.value = item.value;
+							Polymer.dom( option ).appendChild( label );
+							Polymer.dom( select ).appendChild( option );
+						}
 					})
+				}
+				if( this.selectize){
+					this.selectize.refreshOptions(false);
 				}
 			},
 			valueChanged: function( v ) {
