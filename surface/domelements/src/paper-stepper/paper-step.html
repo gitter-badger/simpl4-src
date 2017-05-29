@@ -1,11 +1,3 @@
-<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
-<link rel="import" href="../paper-item/paper-item-behavior.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../iron-collapse/iron-collapse.html">
-<link rel="import" href="../paper-behaviors/paper-ripple-behavior.html">
-<link rel="import" href="../neon-animation/neon-animatable-behavior.html">
-<link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="step-horizontal-label.html">
 <link rel="import" href="step-vertical-label.html">
 
@@ -427,7 +419,7 @@ Missing Doc
       _updateSlideshowViewportTop: function(optional, _alternativeLabel, vertical) {
         if (!vertical) {
           this.async(function() {
-            this.$$('#slideshowViewport').style.top = this.clientHeight+'px';
+            this.$$('#slideshowViewport').style.top = '100px';
             this.fire('step-horizontal-label-resize');
           }, 1);
         }

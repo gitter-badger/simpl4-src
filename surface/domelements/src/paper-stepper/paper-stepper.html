@@ -1,13 +1,3 @@
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../iron-selector/iron-selectable.html">
-<link rel="import" href="../iron-menu-behavior/iron-menu-behavior.html">
-<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-styles/shadow.html">
-<link rel="import" href="../iron-collapse/iron-collapse.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="animations/fade-in-slide-from-right-animation.html">
 <link rel="import" href="animations/fade-out-slide-right-animation.html">
 <link rel="import" href="animations/fade-in-slide-from-left-animation.html">
@@ -182,10 +172,10 @@ Custom property | Description | Default
     <template is="dom-if" if="[[!vertical]]">
       <div class="flex"></div>
       <div id="buttonsWrapper">
-        <paper-button hidden$="[[!hasBackButton]]" disabled=[[!_hasBackStep]] on-tap="back">[[backText]]</paper-button>
+        <paper-button hidden$="[[!hasBackButton]]" disabled=[[!_hasBackStep]] on-tap="back"><iron-icon icon="vaadin-icons:arrow-long-left"></iron-icon>[[backText]]</paper-button>
         <span class="flex"></span>
         <paper-button hidden$="[[!hasSkipButton]]" disabled="[[!_canSkip]]" on-tap="progress">[[skipText]]</paper-button>
-        <paper-button id="continueButton" on-tap="continue">{{_choosePrimaryButtonText(_attrForSelectedStepPrimaryButtonText, finishText, continueText, updateText)}}</paper-button>
+        <paper-button hidden$="[[_isLastStep(_selectedIndex,savedStepNumber)]]" id="continueButton" on-tap="continue">{{_choosePrimaryButtonText(_attrForSelectedStepPrimaryButtonText, finishText, continueText, updateText)}}<iron-icon icon="vaadin-icons:arrows-long-right"></iron-icon></paper-button>
       </div>
     </template>
 
@@ -414,7 +404,7 @@ Custom property | Description | Default
           return true;
         }
         for (var i = (this._selectedIndex+1)%this.stepNumber; i != this._selectedIndex; i = (i+1)%this.stepNumber) {
-          if (this.items[i].selectable && !this.items[i].saved) {
+          if (this.items[i].selectable /*&& !this.items[i].saved*/) { //@@@MS
             this.selectIndex(i);
             this.fire('paper-stepper-progressed');
             return true;
@@ -473,9 +463,10 @@ Custom property | Description | Default
           } else if (!selectable) {
             //reset previous selected if non null and selectable or deselect
             if (this._previousSelected && this._previousSelected.selectable) {
-              this.selected = this._valueForItem(this.previousSelected);
+              this.selected = this._valueForItem(this._previousSelected);
+
             } else {
-              this.selected = null;
+              //this.selected = null;
             }
             this._previousSelected = null;
             return;
@@ -628,6 +619,9 @@ Custom property | Description | Default
         return _attrForPrimaryButtonText;
       },
 
+      _isLastStep: function(sel,ind) {
+        return (this.stepNumber - this.savedStepNumber) == 1 && (sel == ind);
+      },
       _initializeSteps: function() {
         var savedStepNumber = 0;
         var data = {
