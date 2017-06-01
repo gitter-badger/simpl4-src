@@ -303,12 +303,14 @@
 				Polymer.dom( insertPoint ).removeChild( insertPoint.firstChild );
 			}
 			$( insertPoint ).hide();
-			if ( head.firstElementChild && head.firstElementChild.set ) {
-				head.firstElementChild.set( "globals", this.getGlobals() );
-				head.firstElementChild.set( "tr", function( text ) {
-					return tr( text );
-				} );
-				//console.log("HEAD;", head.innerHTML);
+			if ( head.firstElementChild ) {
+				if( head.firstElementChild.set ){
+					head.firstElementChild.set( "globals", this.getGlobals() );
+					head.firstElementChild.set( "tr", function( text ) {
+						return tr( text );
+					} );
+				}
+				console.log("HEAD;", head.firstElementChild);
 				Polymer.dom( insertPoint ).appendChild( head.firstElementChild );
 			}
 			if ( body.firstElementChild ) {
