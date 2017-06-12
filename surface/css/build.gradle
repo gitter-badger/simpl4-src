@@ -9,6 +9,9 @@ task stage (type:Task) {
 		fileset(file:'libs/split.css')
 		fileset(file:'libs/jquery-ui.css')
 		fileset(file:'libs/lobibox.css')
+		fileset(file:'libs/simplemde.css')
+		fileset(file:'libs/dragtable-default.css')
+		fileset(file:'libs/jquery.resizableColumns.css')
 		fileset(dir:'css',includes:'**/*.css')
 	}
 	ant.copy( file:"${surfaceBuild}/${cssLibs}",tofile:"${surfaceBuildUC}/${cssLibs}")
