@@ -31,8 +31,22 @@ if [ ! -d "node_modules" ] ; then
 	 fi
 fi
 
-if [ -e "/usr/bin/vulcanize" ] ; then
-	/usr/bin/vulcanize  --strip-comments --inline-css --inline-scripts --inline index.html >domelements.html
+command -v vulcanize
+if [ $? -eq 0 ] ; then
+	#last running is 1.14.3 #after this, smooth-scrollbar.css is included in simpl-login.html !!!!
+	#look here:https://github.com/Polymer/polymer-bundler/blob/master/CHANGELOG.md
+	vulcanize  --strip-comments --inline-css --inline-scripts --inline index.html >domelements.html
+	crisper -s domelements.html -h out.html -j out.js
+	mv out.html domelements.html
+	jscomp.sh -o outnew.js out.js
+	mv outnew.js out.js
+	RESULT=domelements.html
+	sed -i 's!src="out.js"!!' $RESULT
+	sed -i 's!</html>$!!' $RESULT
+	echo "<script>" >>$RESULT
+	cat out.js >>$RESULT
+	echo "</script></html>" >>$RESULT
+	rm out.js
 else
 	cp bin/_domelements.html.gz domelements.html.gz
 fi
