@@ -50,6 +50,7 @@ task stage (type:Task) {
 		fileset(file:'libs/autoNumeric-2.0-BETA.js')
 		fileset(file:'libs/esprima.js')
 		fileset(file:'libs/metaes.js')
+		fileset(file:'libs/simplemde.js')
 		fileset(file:'libs/hammer.js')
 		fileset(file:'libs/split.js')
 		fileset(file:'libs/spinners.js')
@@ -61,6 +62,8 @@ task stage (type:Task) {
 		fileset(file:'libs/smooth-scrollbar.js')
 		fileset(file:'libs/jquery-ui.js')
 		fileset(file:'libs/polobx.js')
+		fileset(file:'libs/jquery.dragtable.js')
+		fileset(file:'libs/jquery.resizableColumns.js')
 		fileset(file:'libs/jquery.touchSwipe.js')
 		fileset(dir:'src',includes:'**/*.js', excludes:'src/util/Construct.js')
 	}
