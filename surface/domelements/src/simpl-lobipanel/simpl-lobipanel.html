@@ -40,6 +40,10 @@
 			],
 			attached: function() {
 				this.async( function() {
+				this.init();
+				}, 200 );
+			},
+			init: function() {
 					$( ".panel" ).lobiPanel( {
 						reload: {
 							icon: 'fa fa-refresh'
@@ -72,7 +76,6 @@
 						this.setStyleScope( this, "style-scope", this.tagName.toLowerCase() );
 						//this.toggleSearchMode();
 					} );
-				}, 200 );
 			}
 		} );
 
