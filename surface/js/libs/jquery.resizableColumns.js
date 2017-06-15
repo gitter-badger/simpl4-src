@@ -175,9 +175,10 @@ var ResizableColumns = (function () {
 
 				var height = _this3.options.resizeFromBody ? _this3.$table.height() : _this3.$table.find('thead').height();
 
-				var left = $el.data(_constants.DATA_TH).outerWidth() + ($el.data(_constants.DATA_TH).offset().left - _this3.$handleContainer.offset().left);
-
-				$el.css({ left: left, height: height });
+				if( $el.data(_constants.DATA_TH) != null) {
+					var left = $el.data(_constants.DATA_TH).outerWidth() + ($el.data(_constants.DATA_TH).offset().left - _this3.$handleContainer.offset().left);
+					$el.css({ left: left, height: height });
+				}			
 			});
 		}
 	}, {
