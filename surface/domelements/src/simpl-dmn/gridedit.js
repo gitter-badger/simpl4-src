@@ -325,7 +325,7 @@
 
     GridEdit.prototype.render = function() {
       if (this.element.hasChildNodes()) {
-        this.element = document.querySelectorAll(this.config.element || '#gridedit')[0];
+        this.element = this.config.element || (document.querySelectorAll('#gridedit')[0]);
       }
       return this.element.appendChild(this.tableEl);
     };
