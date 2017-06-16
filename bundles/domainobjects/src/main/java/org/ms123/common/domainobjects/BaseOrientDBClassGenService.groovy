@@ -104,15 +104,16 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 			String name = (String) entMap.get("name");
 			String classname = getClassName(entMap);
 			boolean isVertex = isVertex(entMap);
+			String restricted = isRestricted(entMap) ? " restricted = true, " : "restricted = false, ";
 			String  superclass = getSuperclass(entMap);
 
 			builder.newClazz(classname);
 			if( isVertex ){
-				builder.setAnnotation("@"+superclass+"(initSchema = true, value = '"+classname+"')");
+				builder.setAnnotation("@"+superclass+"(initSchema = true, " + restricted + "value = '"+classname+"')");
 			}else{
 				String _from = getFrom(entMap);
 				String _to = getTo(entMap);
-				builder.setAnnotation("@"+superclass+"(initSchema = true, from="+_from+", to="+_to+", value = '"+classname+"')");
+				builder.setAnnotation("@"+superclass+"(initSchema = true, " + restricted + "from="+_from+", to="+_to+", value = '"+classname+"')");
 			}
 			List<Map> fields = getEntityMetaData(sdesc, name);
 			for( int j=0; j< fields.size(); j++){
@@ -247,6 +248,11 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 	}
 	private boolean isEdgeConnection( Map<String,Boolean> m){
 		def ret = m.get("edgeconn");
+		if( ret == null) return false;
+		return ret;
+	}
+	private boolean isRestricted( Map<String,Boolean> m){
+		def ret = m.get("restricted");
 		if( ret == null) return false;
 		return ret;
 	}

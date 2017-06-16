@@ -43,6 +43,7 @@ import java.util.Map;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.auth.api.AuthService;
 import org.ms123.common.rpc.CallService;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
@@ -56,6 +57,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.ms123.common.system.thread.ThreadContext;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -89,6 +91,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	private String passwd = "simpl4";
 	private CallService callService;
 	private SettingService settingService;
+	private AuthService authService;
 	private PermissionService permissionService;
 	private ServiceRegistration serviceRegistration;
 	static final String[] topics = new String[] { "setting/deleteResource", "setting/setResource" };
@@ -227,27 +230,52 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 			graph.shutdown();
 		}
 	}
+
+	private static int maxUserPoolsize = 5;
+	private static int maxPoolsize = 50;
+	private static MultiUserPool multiUserPool = new MultiUserPool(maxPoolsize);
+
+	public synchronized OrientGraph getOrientGraph(String name){
+		String username = ThreadContext.getThreadContext().getUserName();
+
+		OrientGraphFactory factory = multiUserPool.get( name + "/"+ username );
+		if( factory == null){
+			Map	userProps = this.authService.getUserProperties(username);
+			String password = (String)userProps.get("password");
+			factory = getFactory( name, maxUserPoolsize, false, false );
+			OrientGraphFactory f = multiUserPool.push( name+"/"+username, factory);
+			if( f != null){
+				f.close();
+			}
+		}
+		return factory.getTx();
+	}
+
 	public synchronized OrientGraphFactory getFactory(String name) {
-		return getFactory( name, false);
+		return getFactory( name, 50, false, true);
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name, boolean autoCommit) {
-		OrientGraphFactory f = factoryMap.get(name+"/"+autoCommit);
+		return getFactory( name, 50, autoCommit, true);
+	}
+
+	public synchronized OrientGraphFactory getFactory(String name, int poolsize, boolean autoCommit, boolean cache) {
+		OrientGraphFactory f = cache ? factoryMap.get(name+"/"+autoCommit) : null;
 		
 		if (f == null || !dbExists(name)) {
 			if (!dbExists(name)) {
 				dbCreate(name);
 			}
 			f = new OrientGraphFactory("remote:127.0.0.1/" + name, "root", passwd, true);
-			f.setupPool(1, 50);
+			f.setupPool(1, poolsize);
 			f.setAutoStartTx(autoCommit);
-			factoryMap.put(name+"/"+autoCommit, f);
+			if( cache){
+				factoryMap.put(name+"/"+autoCommit, f);
+			}
 		}
 		info(this, "getFactory("+name+")"+f.isAutoStartTx());
 		return f;
 	}
-
-
 
 	public List<Map<String, Object>> executeQuery(OrientGraph graph, String sql, Object... args) {
 		OCommandRequest query = new OSQLSynchQuery(sql);
@@ -305,6 +333,12 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.permissionService = paramPermissionService;
 		info(this,"CallServiceImpl.setPermissionService:" + paramPermissionService);
+	}
+
+	@Reference(dynamic = true, optional = true)
+	public void setAuthService(AuthService authService) {
+		this.authService = authService;
+		info(this,"PermissionImpl.setAuthService:" + authService);
 	}
 }
 

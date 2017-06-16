@@ -185,6 +185,11 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					'exclude': 'superclass == "vertex"',
 					'value': "",
 					'options': this._vertexList
+				}, 
+				"restricted": {
+					'type': "CheckBox",
+					'value': false,
+					'label': this.tr( "Restricted" )
 				}
 			};
 
