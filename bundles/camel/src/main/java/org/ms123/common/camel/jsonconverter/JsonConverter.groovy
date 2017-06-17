@@ -289,12 +289,24 @@ abstract class JsonConverterImpl implements JsonConverter{
 			def gs = new GroovyShell(classLoader);
 			def clazz  = (Class) gs.evaluate(code);
 			def obj = clazz.newInstance();
-			injectField( clazz, obj, "orientdbFactory", getOrientDBService(namespace))
-			injectField( clazz, obj, "orientGraph", getOrientGraph(namespace))
+			if( fieldExists(clazz,"orientdbFactory")){
+				injectField( clazz, obj, "orientdbFactory", getOrientDBService(namespace))
+			}
+			if( fieldExists(clazz,"orientGraph")){
+				injectField( clazz, obj, "orientGraph", getOrientGraph(namespace))
+			}
 			return obj;
 		} catch (Throwable e) {
 			String msg = Utils.formatGroovyException(e,code);
 			throw new RuntimeException(msg);
+		}
+	}
+	def fieldExists(clazz, fieldname) {
+		try{
+			def field = clazz.getDeclaredField(fieldname);
+			return true;
+		}catch(Exception e){
+			return false;
 		}
 	}
 

@@ -28,11 +28,15 @@ import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
+import com.orientechnologies.orient.server.security.OServerSecurity;
+import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.server.security.authenticator.ODefaultPasswordAuthenticator;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.orientechnologies.orient.server.config.OServerUserConfiguration;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -65,6 +69,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 /** OrientDBService implementation
 --------------------------
@@ -105,6 +110,24 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		}
 	}
 
+	public static class Authenticator extends ODefaultPasswordAuthenticator{
+		public Authenticator(){
+			super();
+		}
+ 		public String authenticate(final String username, final String password) {
+			info(this,"OrientDbService.authenticate:"+username);
+			return username;
+		}
+		public boolean isAuthorized(final String username, final String resource) {
+			info(this,"OrientDbService.isAuthorized:"+username+"/"+resource);
+			return true;
+		}
+		public OServerUserConfiguration getUser(final String username) {
+			info(this,"OrientDbService.getUser:"+username);
+			return null;
+		}
+	}
+
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		this.bundleContext = bundleContext;
 		this.bundleContext.addFrameworkListener(this);
@@ -115,6 +138,10 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 			info(this, "OrientDbService startup(" + server + "):" + file);
 			server.startup(file);
 			server.activate();
+			OServerSecurity security = server.getSecurity();
+			security.registerSecurityClass(OrientDBServiceImpl.Authenticator.class);
+
+			security.reloadComponent("authentication", getDocument() );
 
 			info(this, "OrientDBService started");
 			serverAdmin = new OServerAdmin("remote:127.0.0.1").connect("root", passwd);
@@ -126,6 +153,33 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		} catch (Exception e) {
 			error(this, "OrientDBServiceImpl.activate.error:%[exception]s", e);
 		}
+	}
+
+	private ODocument getDocument(){
+		ODocument auth = new ODocument("auth");
+		auth.field( "allowDefault", true);
+
+		ODocument a1 = new ODocument("auth1");
+		a1.field("name", "Password");
+		a1.field("class", "org.ms123.common.system.orientdb.Authenticator");
+		a1.field("enabled", true);
+
+		ODocument a2 = new ODocument("auth2");
+		a2.field("name", "ServerConfig");
+		a2.field("class", "com.orientechnologies.orient.server.security.authenticator.OServerConfigAuthenticator");
+		a2.field("enabled", true);
+
+		ODocument a3 = new ODocument("auth3");
+		a2.field("name", "SystemAuthenticator");
+		a2.field("class", "com.orientechnologies.orient.server.security.authenticator.OSystemUserAuthenticator");
+		a2.field("enabled", true);
+		List<ODocument> listAuth = new ArrayList<ODocument>();
+		listAuth.add( a1);
+		listAuth.add( a2);
+		listAuth.add( a3);
+		auth.field( "authenticators", listAuth);
+		info(this,"OrientDBService.odoc:"+auth);
+		return auth;
 	}
 
 	public void frameworkEvent(FrameworkEvent event) {
@@ -231,49 +285,90 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		}
 	}
 
+	/* Begin Teststuff*/
+	public void testGraph( @PName("name") String name ) throws RpcException {
+		OrientGraph graph = getOrientGraph(name);
+		try {
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "OrientDBServiceImpl.testGraph:", e);
+		}finally{
+			graph.shutdown();
+		}
+	}
+	public void createCity( @PName("name") String name, @PName("city") String city) throws RpcException {
+		OrientGraph graph = getOrientGraph(name);
+		try {
+			executeUpdate( graph, "insert into city(name) values(?) ",city);
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "OrientDBServiceImpl.createCity:", e);
+		}finally{
+			graph.shutdown();
+		}
+	}
+
+	public void listCities( @PName("name") String name) throws RpcException {
+		OrientGraph graph = getOrientGraph(name);
+		try {
+			List cities = executeQuery( graph, "select from City");
+			info( this, "listCities("+name+"):"+cities);
+			return;
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "OrientDBServiceImpl.listCities:", e);
+		}finally{
+			graph.shutdown();
+		}
+	}
+	/* End Teststuff*/
+
 	private static int maxUserPoolsize = 5;
 	private static int maxPoolsize = 50;
 	private static MultiUserPool multiUserPool = new MultiUserPool(maxPoolsize);
 
 	public synchronized OrientGraph getOrientGraph(String name){
+		info( this, "getOrientGraph("+name+"):start");
 		String username = ThreadContext.getThreadContext().getUserName();
+		if( !userExists( name, username) ){
+			userCreate( name, username );
+		}
 
 		OrientGraphFactory factory = multiUserPool.get( name + "/"+ username );
 		if( factory == null){
 			Map	userProps = this.authService.getUserProperties(username);
 			String password = (String)userProps.get("password");
-			factory = getFactory( name, maxUserPoolsize, false, false );
+			factory = getFactory( name, username, password, maxUserPoolsize, false, false );
 			OrientGraphFactory f = multiUserPool.push( name+"/"+username, factory);
 			if( f != null){
 				f.close();
 			}
 		}
+		info( this, "getOrientGraph("+name+"):end");
 		return factory.getTx();
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name) {
-		return getFactory( name, 50, false, true);
+		return getFactory( name, "root", this.passwd, 50, false, true);
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name, boolean autoCommit) {
-		return getFactory( name, 50, autoCommit, true);
+		return getFactory( name, "root", this.passwd, 50, autoCommit, true);
 	}
 
-	public synchronized OrientGraphFactory getFactory(String name, int poolsize, boolean autoCommit, boolean cache) {
+	public synchronized OrientGraphFactory getFactory(String name, String user, String pw, int poolsize, boolean autoCommit, boolean cache) {
 		OrientGraphFactory f = cache ? factoryMap.get(name+"/"+autoCommit) : null;
+		info(this, "getFactory1("+name+"):"+user+"/"+poolsize);
 		
 		if (f == null || !dbExists(name)) {
 			if (!dbExists(name)) {
 				dbCreate(name);
 			}
-			f = new OrientGraphFactory("remote:127.0.0.1/" + name, "root", passwd, true);
+			f = new OrientGraphFactory("remote:127.0.0.1/" + name, user, pw, true);
 			f.setupPool(1, poolsize);
 			f.setAutoStartTx(autoCommit);
 			if( cache){
 				factoryMap.put(name+"/"+autoCommit, f);
 			}
 		}
-		info(this, "getFactory("+name+")"+f.isAutoStartTx());
+		info(this, "getFactory2("+name+"):"+f.isAutoStartTx());
 		return f;
 	}
 
@@ -315,6 +410,34 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 			e.printStackTrace();
 			error(this, "OrientDBServiceImpl.dbExists.error:%[exception]s", e);
 			return false;
+		}
+	}
+
+	private boolean userExists(String name, String username) {
+		OrientGraphFactory f = getFactory(name,true);
+		OrientGraph graph = f.getTx();
+		info(this, "userExists1("+name+"):"+username);
+		List users = null;
+		try{
+			users = executeQuery( graph, "select from OUser where name=?", username);
+		}finally{
+			graph.shutdown();
+		}
+		info(this, "userExists2("+name+"):"+users);
+		if( users != null && users.size() > 0){
+			return true;
+		}
+		return false;
+	}
+
+	private void userCreate(String name,String username) {
+		info(this, "userCreate("+name+"):"+username);
+		OrientGraphFactory f = getFactory(name,true);
+		OrientGraph graph = f.getTx();
+		try{
+			executeUpdate( graph, "create user "+username+" IDENTIFIED BY foo");
+		}finally{
+			graph.shutdown();
 		}
 	}
 
