@@ -96,7 +96,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	private String passwd = "simpl4";
 	private CallService callService;
 	private SettingService settingService;
-	private AuthService authService;
+	private static AuthService authService;
 	private PermissionService permissionService;
 	private ServiceRegistration serviceRegistration;
 	static final String[] topics = new String[] { "setting/deleteResource", "setting/setResource" };
@@ -116,7 +116,22 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		}
  		public String authenticate(final String username, final String password) {
 			info(this,"OrientDbService.authenticate:"+username);
-			return username;
+			if( password == null){
+				info(this,"OrientDbService.authenticate("+username+"):password null");
+				return null;
+			}
+			Map	userProps = authService.getUserProperties(username);
+			if( userProps == null){
+				info(this,"OrientDbService.authenticate("+username+"):unknown");
+				return null;
+			}
+			String pw = (String)userProps.get("password");
+			if( password.equals( pw)){
+				info(this,"OrientDbService.authenticate("+username+"):ok");
+				return username;
+			}
+			info(this,"OrientDbService.authenticate("+username+"):nok");
+			return null;
 		}
 		public boolean isAuthorized(final String username, final String resource) {
 			info(this,"OrientDbService.isAuthorized:"+username+"/"+resource);
