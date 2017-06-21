@@ -56,12 +56,12 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		List list = clazz.graphQuery("select from "+className + " where "+ where,false);
 		List result = [];
 		list.each{ obj ->
-			result.add( _objToMap( sc, obj));
+			result.add( _objToMap( sc, obj,0 ));
 		}
 		info(this,"List:"+result);
 		return result;
 	}
-	protected Map _objToMap(SessionContext sc, Object obj ){
+	protected Map _objToMap(SessionContext sc, Object obj, dt ){
 		def entityName = this.inflector.lowerFirst(obj.getClass().getSimpleName());
 		Map fields = sc.getPermittedFields(entityName, "read");
 		def cleanData = [:];
@@ -70,49 +70,58 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				cleanData[k] = obj[k];
 			}else if( isObj(v.datatype) && obj[k] != null){
 				info(this,"Obj("+entityName+":"+k+"):"+obj[k]);
-				cleanData[k] = _objToMap(sc, obj[k]);
+				cleanData[k] = _objToMap(sc, obj[k], v.datatype);
 			}else if( isList( v.datatype ) && obj[k] != null){
 				info(this,"List("+entityName+":"+k+"):"+obj[k]);
 				def mapList = [];
+				int i = 0;
 				for( Object child : obj[k] ){
-					mapList.add( _objToMap(sc,child) );
+					def m = _objToMap(sc,child, v.datatype);
+					m["_id"] = "id"+(i++);
+					mapList.add( m );
 				}
 				cleanData[k] = mapList;
 			}
 		}
-		cleanData["_id"] = obj.getId().toString();
+		if( !isEmbedded(dt)){
+			cleanData["_id"] = obj.getId().toString();
+		}
 		cleanData["@class"] = obj.vertex.getRecord().getClassName();
 		return cleanData;
 	}
 
 	public Map executeInsertObject(SessionContext sc, String entityName,Map data){
-		def obj = _executeInsertObject(sc, entityName, data);
+		def obj = _executeInsertObject(sc, entityName, data, false);
 		return [ id : obj.getIdentity() ];
 	}
-	protected Object _executeInsertObject(SessionContext sc, String entityName,Map data){
+	protected Object _executeInsertObject(SessionContext sc, String entityName,Map data, detach){
 		Map fields = sc.getPermittedFields(entityName, "write");
-		def cleanData = [:];
+		Class _clazz = getClass(sc, entityName);
+		def obj = _clazz.newInstance( );
+		if( detach ){
+			obj.detach();
+		}
 		fields.each{ k, v ->
 			info(this,"K:"+k+"/"+v.datatype);
 			if( isSimple( v.datatype ) && data[k] != null){
 				info(this,"Simple("+entityName+":"+k+"):"+data[k]);
 				if( isDate( v.datatype) && data[k] instanceof String){
-					cleanData[k] = parseFromString(data[k]);
+					obj[k] = parseFromString(data[k]);
 				}else if( isDate( v.datatype) && data[k] instanceof Long){
-					cleanData[k] = new Date(data[k]);
+					obj[k] = new Date(data[k]);
 				}else{
-					cleanData[k] = data[k];
+					obj[k] = data[k];
 				}
 			}else if( isLinkedObj(v.datatype) && data[k] != null){
 				info(this,"LinkedObj("+entityName+":"+k+"):"+data[k]);
 				Class clazz = getClass(sc, v.linkedclass);
 				def id = data[k]._id;
 				if( id && id.startsWith("#") ){
-					cleanData[k] = _getObject(clazz, id);
+					obj[k] = _getObject(clazz, id);
 				}
 			}else if( isEmbeddedObj(v.datatype) && data[k] != null){
 				info(this,"EmbeddedObj("+entityName+":"+k+"):"+data[k]);
-				cleanData[k] = _executeInsertObject(sc, v.linkedclass, data[k] );
+				obj[k] = _executeInsertObject(sc, v.linkedclass, data[k], true );
 			}else if( (isLinkedSet(v.datatype) || isLinkedList( v.datatype )) && data[k] != null){
 				info(this,"LinkedMulti("+entityName+":"+k+"):"+data[k]);
 				def objList = [];
@@ -123,20 +132,19 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 						objList.add( child );
 					}
 				}
-				cleanData[k] = objList;
+				obj[k] = objList;
 			}else if( (isEmbeddedSet(v.datatype) || isEmbeddedList( v.datatype )) && data[k] != null){
 				info(this,"EmbeddedMulti("+entityName+":"+k+"):"+data[k]);
 				def cleanList = [];
 				for( Map map : data[k] ){
 					info(this,"map:"+map);
-					def ret = _executeInsertObject(sc, v.linkedclass, map );
+					def ret = _executeInsertObject(sc, v.linkedclass, map, true );
 					cleanList.add(ret);
 				}
-				cleanData[k] = cleanList;
+				obj[k] = cleanList;
 			}
 		}
-		Class clazz = getClass(sc, entityName);
-		return clazz.newInstance( cleanData );
+		return obj;
 	}
 
 	public Map executeUpdateObject(SessionContext sc, String entityName, String id, Map data){
@@ -180,6 +188,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				info(this,"EmbeddedObj("+entityName+":"+k+"):"+data[k]);
 				Class clazz = getClass(sc, v.linkedclass);
 				def child = clazz.newInstance(  );
+				child.detach();
 				_executeUpdateObject(sc, child, data[k] );
 				obj[k] = child;
 			}else if( (isLinkedSet(v.datatype) || isLinkedList( v.datatype )) && data[k] != null){
@@ -200,6 +209,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				Class clazz = getClass(sc, v.linkedclass);
 				for( Map childData : data[k] ){
 					def child = clazz.newInstance(  );
+					child.detach();
 					_executeUpdateObject(sc, child, childData );
 					objList.add( child );
 				}
@@ -240,8 +250,17 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		def list = ["15"]
 		return list.contains( dt );
 	}
+	def isLinkedMap( def dt ){
+		def list = ["16"]
+		return list.contains( dt );
+	}
 	def isList ( dt ){
 		def list = ["10", "11", "14", "15"]
+		return list.contains( dt );
+	}
+
+	def isEmbedded( def dt ){
+		def list = ["9","10","11", "12"]
 		return list.contains( dt );
 	}
 
@@ -255,6 +274,10 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	}
 	def isEmbeddedSet( def dt ){
 		def list = ["11"]
+		return list.contains( dt );
+	}
+	def isEmbeddedMap( def dt ){
+		def list = ["12"]
 		return list.contains( dt );
 	}
 
