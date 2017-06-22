@@ -33,6 +33,11 @@ import org.apache.camel.processor.aggregate.GroupedExchangeAggregationStrategy;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import groovy.text.SimpleTemplateEngine;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import groovy.lang.Script;
 import java.net.URLEncoder;
 import java.net.URL;
 import org.apache.camel.model.language.*;
@@ -906,12 +911,20 @@ class ProcessorJsonConverter extends JsonConverterImpl{
 		def ref = shapeProperties.ref;
 		if( codeLanguage == "java" || codeLanguage == "groovy"){
 			def code = shapeProperties.code;
+			def srcFile = shapeProperties.srcFile;
 			if( isNotEmpty(ref)){
 				if( isEndpoint){
 					ctx.current = ctx.current.to(ref);
 				}else{
 					ctx.current = ctx.current.processRef(ref);
 				}
+			}else if( isNotEmpty(srcFile) && codeLanguage == "groovy" ){
+				def namespace = ctx.modelCamelContext.getRegistry().lookup("namespace");
+				def file  = getRepoFile(namespace, srcFile, "sw."+codeLanguage);
+				def script = readFileToString(file);
+
+				def sp = new GroovyProcessor(script,file, namespace, this);
+				ctx.current = ctx.current.process(sp);
 			}else if( code != null && code.length()> 10){
 				def codeImport = "";
 				if( addImport != null && addImport.size()> 0){
@@ -1013,6 +1026,109 @@ class ScriptProcessor implements Processor {
 		]
 		params.put("env", env);
 		compiledScript.eval(params);
+	}
+}
+
+class GroovyProcessor implements Processor {
+	def file;
+	def main;
+	def namespace;
+	def lastMod = null;
+	def compiledScript;
+	def scriptClazz;
+	public GroovyProcessor(script, f, ns, main ){
+		this.file = f;
+		this.lastMod = f.lastModified();
+		this.namespace = ns;
+		this.main = main;
+		this.compiledScript = parse(script, this.file.getName());
+	}
+
+	def testModified(){
+		if( this.file == null) return;
+		def curMod = this.file.lastModified();
+		if( curMod > this.lastMod){
+			def script = readFileToString(this.file);
+			this.compiledScript = parse(script, this.file.getName());
+			this.lastMod = curMod;
+		}
+	}
+
+	private Script parse(String scriptStr,String scriptName) {
+		println("parse("+scriptName+"):"+scriptStr);
+		if( scriptStr == null) return null;
+
+		ClassLoader parentLoader = this.getClass().getClassLoader();
+		CompilerConfiguration config = new CompilerConfiguration();
+		config.setScriptBaseClass(org.ms123.common.camel.jsonconverter.GroovyBase.class.getName());
+		def importCustomizer = new ImportCustomizer();
+		importCustomizer.addStarImports("org.apache.camel");
+		importCustomizer.addStarImports("groovy.transform");
+		config.addCompilationCustomizers(importCustomizer);
+		//GroovyClassLoader loader =  new CollectorClassLoader(parentLoader,config);
+		GroovyClassLoader loader =  new GroovyClassLoader(parentLoader,config);
+
+		try{
+			GroovyCodeSource gcs = new GroovyCodeSource( scriptStr, scriptName, "/groovy/shell");
+			this.scriptClazz = loader.parseClass(gcs,false);
+			return this.scriptClazz.newInstance();
+		}catch(Throwable e){
+			String msg = Utils.formatGroovyException(e,scriptStr);
+			println("parseerror:"+msg);
+			throw new RuntimeException("GroovyProcessor.parse("+scriptName+"):"+msg);
+		}
+	}
+
+	private Object run(Script script, Map vars, String scriptName) {
+		println("run("+scriptName+"):"+vars);
+		//println("run.orientGraph:"+script.getProperty("orientGraph"));
+
+		script.setBinding(new Binding(vars));
+		try{
+			return script.run();
+		}catch(groovy.lang.MissingMethodException e){
+			e.printStackTrace();
+			Object[] args = e.getArguments();
+			String a = "";
+			String k = "";
+			for(int i=0; i< args.length;i++){
+				a += k+args[i];
+				k = ",";
+			}
+			throw new RuntimeException("GroovyProcessor.run("+scriptName+"):"+e.getMethod() + "("+ a + ") not found");
+		}catch(Exception ex){
+			ex.printStackTrace();
+			throw new RuntimeException("GroovyProcessor.run("+scriptName+"):"+ex.getMessage() );
+		}
+	}
+
+	public void process(Exchange ex) {
+		testModified();
+
+		def params = [:];
+		params.put("exchange", ex);
+		def ctx = ex.getContext();
+		def registry = ctx.getRegistry();
+		params.put("headers", ex.in.headers);
+		params.put("h", ex.in.headers);
+		params.put("min", ex.in);
+		params.put("msg", ex.in);
+		params.put("registry", registry);
+		params.put("properties", ex.properties);
+		params.put("p", ex.properties);
+		def env = [
+			gitRepos: System.getProperty("git.repos"),
+			simpl4Dir: System.getProperty("simpl4.dir"),
+			homeDir: System.getProperty("git.repos")+ "/" + this.namespace,
+			homeDataDir: System.getProperty("git.repos")+ "/" + this.namespace+"_data",
+			namespace: this.namespace
+		]
+		params.put("env", env);
+		if( main.fieldExists(this.scriptClazz,"orientGraph")){
+			def orientGraph = main.getOrientGraph( this.namespace);
+			main.injectField( this.scriptClazz, this.compiledScript, "orientGraph", orientGraph)
+		}
+		run(this.compiledScript,params,this.file.getName());
 	}
 }
 
