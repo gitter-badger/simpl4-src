@@ -93,7 +93,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	private Map<String, OrientGraphFactory> factoryMap = new HashMap<String, OrientGraphFactory>();
 	private OServer server;
 	private OServerAdmin serverAdmin;
-	private String passwd = "simpl4";
+	private static String rootPassword = "simpl4";
 	private CallService callService;
 	private SettingService settingService;
 	private static AuthService authService;
@@ -106,7 +106,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	public OrientDBServiceImpl() {
 		String pw = System.getProperty("ORIENTDB_ROOT_PASSWORD");
 		if (pw != null) {
-			passwd = pw;
+			this.rootPassword = pw;
 		}
 	}
 
@@ -126,7 +126,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 				return null;
 			}
 			String pw = (String)userProps.get("password");
-			if( password.equals( pw)){
+			if( password.equals( pw) || ("admin".equals(username) && rootPassword.equals(password))){
 				info(this,"OrientDbService.authenticate("+username+"):ok");
 				return username;
 			}
@@ -159,7 +159,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 			security.reloadComponent("authentication", getDocument() );
 
 			info(this, "OrientDBService started");
-			serverAdmin = new OServerAdmin("remote:127.0.0.1").connect("root", passwd);
+			serverAdmin = new OServerAdmin("remote:127.0.0.1").connect("root", this.rootPassword);
 			info(this, "OrientDBService.serverAdmin:" + serverAdmin);
 
 			Dictionary d = new Hashtable();
@@ -350,6 +350,9 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		if( factory == null){
 			Map	userProps = this.authService.getUserProperties(username);
 			String password = (String)userProps.get("password");
+			if( "admin".equals(username) && password == null){
+				password = this.rootPassword;
+			}
 			factory = getFactory( name, username, password, maxUserPoolsize, false, false );
 			OrientGraphFactory f = multiUserPool.push( name+"/"+username, factory);
 			if( f != null){
@@ -361,11 +364,11 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name) {
-		return getFactory( name, "root", this.passwd, 50, false, true);
+		return getFactory( name, "root", this.rootPassword, 50, false, true);
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name, boolean autoCommit) {
-		return getFactory( name, "root", this.passwd, 50, autoCommit, true);
+		return getFactory( name, "root", this.rootPassword, 50, autoCommit, true);
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name, String user, String pw, int poolsize, boolean autoCommit, boolean cache) {
