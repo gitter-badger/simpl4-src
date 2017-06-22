@@ -466,7 +466,8 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.Editor", {
 					var isFormDiagramId = (this.isFormRoot && pair.id() == 'xf_id');
 
 					var configOrig = ms123.util.Clone.clone(pair.config()) || {};
-					var config = this.__supplant_object( pair.config(),configOrig,env) || {};
+					var config = ms123.util.Clone.clone(pair.config()) || {};
+					config = this.__supplant_object( config,configOrig,env) || {};
 
 					if( this.isBPMNRoot ){
 					}
