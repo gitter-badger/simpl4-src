@@ -267,6 +267,17 @@ abstract class JsonConverterImpl implements JsonConverter{
 		return optionsMap;
 	}
 
+	def getClassPath(){
+		URL url1 = 	new URL( "file:"+System.getProperty("workspace") + "/java/" + namespace+"/");
+		URL url2 = 	new URL( "file:"+System.getProperty("workspace") + "/groovy/" + namespace+"/");
+		URL url3 = 	new URL( "file:"+System.getProperty("git.repos") + "/"+namespace+"/.etc/jooq/build/");
+		URL[] urls = new URL[3];
+		urls[0] = url1;
+		urls[1] = url2;
+		urls[2] = url3;
+		return urls;
+	}
+
 	def createProcessorGroovy(processMethodStr,importStr,namespace, completeClass) {
 		def code = null;
 		if( completeClass){
@@ -283,14 +294,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 
 		}
 		try {
-			URL url1 = 	new URL( "file:"+System.getProperty("workspace") + "/java/" + namespace+"/");
-			URL url2 = 	new URL( "file:"+System.getProperty("workspace") + "/groovy/" + namespace+"/");
-			URL url3 = 	new URL( "file:"+System.getProperty("git.repos") + "/"+namespace+"/.etc/jooq/build/");
-			URL[] urls = new URL[3];
-			urls[0] = url1;
-			urls[1] = url2;
-			urls[2] = url3;
-			URLClassLoader classLoader = new URLClassLoader( urls, getClass().getClassLoader() )
+			URLClassLoader classLoader = new URLClassLoader( getClassPath(), getClass().getClassLoader() )
 			def gs = new GroovyShell(classLoader);
 			def clazz  = (Class) gs.evaluate(code);
 			def obj = clazz.newInstance();
@@ -1055,10 +1059,12 @@ class GroovyProcessor implements Processor {
 	}
 
 	private Script parse(String scriptStr,String scriptName) {
-		println("parse("+scriptName+"):"+scriptStr);
+		println("GroovyProcessor.parse("+scriptName+"):"+scriptStr);
 		if( scriptStr == null) return null;
 
-		ClassLoader parentLoader = this.getClass().getClassLoader();
+		def parentLoader = new URLClassLoader( main.getClassPath(), this.getClass().getClassLoader() )
+		println("GroovyProcessor.parentLoader("+scriptName+"):"+parentLoader);
+
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.setScriptBaseClass(org.ms123.common.camel.jsonconverter.GroovyBase.class.getName());
 		def importCustomizer = new ImportCustomizer();
@@ -1074,13 +1080,13 @@ class GroovyProcessor implements Processor {
 			return this.scriptClazz.newInstance();
 		}catch(Throwable e){
 			String msg = Utils.formatGroovyException(e,scriptStr);
-			println("parseerror:"+msg);
+			println("GroovyProcessor.parseerror:"+msg);
 			throw new RuntimeException("GroovyProcessor.parse("+scriptName+"):"+msg);
 		}
 	}
 
 	private Object run(Script script, Map vars, String scriptName) {
-		println("run("+scriptName+"):"+vars);
+		println("GroovyProcessor.run("+scriptName+"):"+vars);
 		//println("run.orientGraph:"+script.getProperty("orientGraph"));
 
 		script.setBinding(new Binding(vars));
