@@ -241,6 +241,9 @@ qx.Class.define('ms123.entitytypes.EntitytypePlugin', {
 				try {
 					var entity = item.getId();
 					var storeDesc = ms123.StoreDesc.getNamespaceDataStoreDesc(item.getPack());
+					if( storeDesc == null){
+						storeDesc = ms123.StoreDesc.getGlobalDataStoreDesc();
+					}
 					var data = ms123.util.Remote.rpcSync("entity:getEntitytype", {
 						storeId: storeDesc.getStoreId(item.getPack()),
 						name: entity
