@@ -342,7 +342,7 @@ public class Utils {
 				Iterator it = st.iterator();
 				while (it.hasNext()) {
 					StackTrace.Entry en = (StackTrace.Entry) it.next();
-					System.out.println("Entry:" + en);
+//					System.out.println("Entry:" + en);
 					String sf = en.getSourceFileName();
 					if (sf != null && sf.startsWith("Script") && sf.endsWith(".groovy")) {
 						lineNumber = en.getLineNumber();
