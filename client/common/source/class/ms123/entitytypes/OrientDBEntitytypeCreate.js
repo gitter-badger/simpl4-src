@@ -330,6 +330,9 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 			}, {
 				"value": "edge",
 				"label": "Edge"
+			}, {
+				"value": "orientDocument",
+				"label": "Document"
 			} ];
 		},
 		_setEntityProperties: function( entity ) {

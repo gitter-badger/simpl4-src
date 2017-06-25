@@ -45,6 +45,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import groovy.transform.CompileStatic;
 import org.ms123.groovy.orient.graph.Vertex;
 import org.ms123.groovy.orient.graph.Edge;
+import org.ms123.groovy.orient.document.OrientDocument;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.File;
@@ -101,17 +102,21 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		builder.addImport( CompileStatic);
 		builder.addImport( Vertex);
 		builder.addImport( Edge);
+		builder.addImport( OrientDocument);
 		for (int i = 0; i < entities.size(); i++) {
 			Map entMap = entities.get(i);
 			String name = (String) entMap.get("name");
 			String classname = getClassName(entMap);
 			boolean isVertex = isVertex(entMap);
+			boolean isDocument = isDocument(entMap);
 			String restricted = isRestricted(entMap) ? " restricted = true, " : "restricted = false, ";
 			String  superclass = getSuperclass(entMap);
 
 			builder.newClazz(classname);
 			if( isVertex ){
 				builder.setAnnotation("@"+superclass+"(initSchema = true, " + restricted + "value = '"+classname+"')");
+			}else if( isDocument ){
+				builder.setAnnotation("@"+superclass+"(initSchema = true, value = '"+classname+"')");
 			}else{
 				String _from = getFrom(entMap);
 				String _to = getTo(entMap);
@@ -244,6 +249,10 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		} catch (java.lang.reflect.InvocationTargetException e) {
 			throw e.getCause();
 		}
+	}
+
+	private boolean isDocument( Map<String,String> m){
+		return "orientDocument".equals(m.get("superclass"));
 	}
 
 	private boolean isVertex( Map<String,String> m){

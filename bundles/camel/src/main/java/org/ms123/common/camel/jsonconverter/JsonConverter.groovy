@@ -1042,6 +1042,8 @@ class GroovyProcessor implements Processor {
 	def lastMod = null;
 	def compiledScript;
 	def scriptClazz;
+	def scriptSource;
+	def classLoader;
 	public GroovyProcessor(script, f, ns, main ){
 		this.file = f;
 		this.lastMod = f.lastModified();
@@ -1063,9 +1065,9 @@ class GroovyProcessor implements Processor {
 	private Script parse(String scriptStr,String scriptName) {
 		println("GroovyProcessor.parse("+scriptName+"):"+scriptStr);
 		if( scriptStr == null) return null;
+		this.scriptSource = scriptStr;
 
 		def parentLoader = new URLClassLoader( main.getClassPath(this.namespace), this.getClass().getClassLoader() )
-		println("GroovyProcessor.parentLoader("+scriptName+"):"+parentLoader);
 
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.setScriptBaseClass(org.ms123.common.camel.jsonconverter.GroovyBase.class.getName());
@@ -1075,21 +1077,22 @@ class GroovyProcessor implements Processor {
 		config.addCompilationCustomizers(importCustomizer);
 		//GroovyClassLoader loader =  new CollectorClassLoader(parentLoader,config);
 		GroovyClassLoader loader =  new GroovyClassLoader(parentLoader,config);
+		this.classLoader = loader;
 
 		try{
-			GroovyCodeSource gcs = new GroovyCodeSource( scriptStr, scriptName, "/groovy/shell");
+			GroovyCodeSource gcs = new GroovyCodeSource( scriptStr, "Script_"+scriptName, "/groovy/shell");
 			this.scriptClazz = loader.parseClass(gcs,false);
 			return this.scriptClazz.newInstance();
 		}catch(Throwable e){
 			String msg = Utils.formatGroovyException(e,scriptStr);
-			println("GroovyProcessor.parseerror:"+msg);
 			throw new RuntimeException("GroovyProcessor.parse("+scriptName+"):"+msg);
 		}
 	}
 
 	private Object run(Script script, Map vars, String scriptName) {
 		println("GroovyProcessor.run("+scriptName+"):"+vars);
-		//println("run.orientGraph:"+script.getProperty("orientGraph"));
+
+		Thread.currentThread().setContextClassLoader(classLoader);//needed orientdb-groovy/OrientGraphHelper.groovy
 
 		script.setBinding(new Binding(vars));
 		try{
@@ -1106,7 +1109,8 @@ class GroovyProcessor implements Processor {
 			throw new RuntimeException("GroovyProcessor.run("+scriptName+"):"+e.getMethod() + "("+ a + ") not found");
 		}catch(Exception ex){
 			ex.printStackTrace();
-			throw new RuntimeException("GroovyProcessor.run("+scriptName+"):"+ex.getMessage() );
+			String msg = Utils.formatGroovyException(ex,scriptSource);
+			throw new RuntimeException("GroovyProcessor.run("+scriptName+"):"+msg );
 		}
 	}
 
