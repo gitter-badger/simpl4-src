@@ -390,7 +390,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				});
 				completed.call(this, ret);
 				this._rawEntityList = ret;
-				var retList = [{value:"",label:""}];
+				var retList = [{value:"",label:""},{value:"Object",label:"Object"}];
 				for (var i = 0; i < ret.length; i++) {
 					var o = {};
 					o.value = ret[i].name;
