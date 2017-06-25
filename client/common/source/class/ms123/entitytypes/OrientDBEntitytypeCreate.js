@@ -56,7 +56,7 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 					validation: {
 						required: true,
 						filter: /[a-zA-Z0-9_]/,
-						validator: "/^[a-zA-Z][0-9a-z_A-Z]{2,64}$/"
+						validator: "/^[a-zA-Z_][0-9a-z_A-Z]{2,64}$/"
 					},
 					'value': ""
 				}, {
