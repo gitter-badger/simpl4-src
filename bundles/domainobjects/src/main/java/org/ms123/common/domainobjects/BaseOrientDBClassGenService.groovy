@@ -67,8 +67,9 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 	public ClassLoader getClassLoader( StoreDesc sdesc){
 		ClassLoader cl = this.classLoaderMap.get( sdesc );
 		if( cl == null){
-			File[] locations = new File[1];
+			File[] locations = new File[2];
 			locations[0] = new File(sdesc.getBaseDir(), sdesc.getNamespace());
+			locations[1] = new File(sdesc.getBaseDir(), "global");
 			cl = new FileSystemClassLoader(this.getClass().getClassLoader(), locations);
 			info(this,"BaseOrientDBClassGenService.getClassLoader("+sdesc+"):"+locations[0]);
 			classLoaderMap.put( sdesc, cl);
@@ -89,11 +90,12 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 			}
 		}
 		info(this,"entities:"+entities);
-		File[] locations = new File[1];
+		File[] locations = new File[2];
 		locations[0] = new File( outDir);
+		locations[1] = new File(sdesc.getBaseDir(), "global");
 		FileSystemClassLoader fscl = new FileSystemClassLoader(this.getClass().getClassLoader(), locations);
 		classLoaderMap.put( sdesc, fscl);
-		ClassBuilder builder = new ClassBuilder(this.getClass().getClassLoader());
+		ClassBuilder builder = new ClassBuilder(fscl);
 		builder.setPack( javaPackage );
 		builder.addImport( OType);
 		builder.addImport( CompileStatic);
@@ -115,7 +117,7 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 				String _to = getTo(entMap);
 				builder.setAnnotation("@"+superclass+"(initSchema = true, " + restricted + "from="+_from+", to="+_to+", value = '"+classname+"')");
 			}
-			List<Map> fields = getEntityMetaData(sdesc, name);
+			List<Map> fields = getEntityMetaData(sdesc, name, isRestricted(entMap));
 			for( int j=0; j< fields.size(); j++){
 				Map field = fields.get(j);
 				String fieldname = getName(field);
@@ -219,9 +221,14 @@ abstract class BaseOrientDBClassGenService implements org.ms123.common.domainobj
 		return new File(out,  javaPackage.replace(".","/"));
 	}
 
-	protected List getEntityMetaData(StoreDesc sdesc, String entity) throws Exception {
+	protected List getEntityMetaData(StoreDesc sdesc, String entity, boolean restricted) throws Exception {
 		List list = m_entityService.getFields(sdesc, entity, false);
 		info(this,"getEntityMetaData:"+list);
+		if( restricted ){
+			StoreDesc oSdesc = StoreDesc.get("global_odata");
+			List l = m_entityService.getFields(oSdesc, "oRestricted", false);
+			list.addAll( l);
+		}
 		return list;
 	}
 
