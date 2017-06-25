@@ -135,6 +135,10 @@ abstract class BaseRenderer<T extends BaseRenderer<T>> implements Renderer<T> {
 	protected void headerFooterProcess(InputStream xsltResult, OutputStream result) throws Exception {
 	}
 
+	public void fopRender(InputStream fo, OutputStream fopResult) throws Docbook4JException {
+		postProcess(null,fo,fopResult);
+	}
+
 	protected void postProcess(InputStream xmlSource, InputStream xsltResult, OutputStream fopResult) throws Docbook4JException {
 	}
 

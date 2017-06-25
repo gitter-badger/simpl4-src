@@ -112,6 +112,17 @@ class BaseDocbookServiceImpl {
 		pdfRenderer.render(os);
 	}
 
+	public void jsonFoToPdf(String namespace, String json, Map<String, String> params, OutputStream os) throws Exception {
+		PDFRenderer pdfRenderer = new PDFRenderer(m_bc, m_gitService, namespace);
+		pdfRenderer.parameters(params);
+		pdfRenderer.fopRender(jsonToFO(namespace,json,params),os);
+	}
+	
+	private InputStream jsonToFO( String namespace,String json, Map<String, String> params ){
+		FOBuilder fb = new FOBuilder(m_dataLayer);
+		return fb.toFO(namespace, json,params);
+	}
+
 	public void jsonToDocbook(String namespace, String jsonName, Map<String, Object> paramsIn, Map<String, String> paramsOut, OutputStream out)  throws Exception{
 		String json = null;
 		if( jsonName.startsWith("{")){

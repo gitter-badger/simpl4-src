@@ -294,6 +294,24 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.jsonToDocbookPdf:", e);
 		}
 	}
+	public void jsonFoToPdf(
+			@PName(StoreDesc.NAMESPACE) String namespace, 
+			@PName("json")             String json, 
+			@PName("params")           @POptional Map<String, String> params, 
+			@PName("fileMap")          @POptional String  fileName, HttpServletResponse response) throws RpcException {
+		try {
+			if( fileName == null){
+				fileName = "doc.pdf";
+			}
+			jsonFoToPdf(namespace, json, params, response.getOutputStream());
+			response.setContentType("application/pdf;charset=UTF-8");
+			response.addHeader("Content-Disposition", "attachment;filename=\""+fileName+"\"");
+			response.setStatus(HttpServletResponse.SC_OK);
+			response.getOutputStream().close();
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.jsonFoToPdf:", e);
+		}
+	}
 	public String getHtml(
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName("name")         String name 
