@@ -114,8 +114,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		debug(this, "insertObject:" + dataMap + ",filterMap:" + filterMap + ",entity:" + entityName);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
-		OrientGraph orientGraph = factory.getTx();
+		OrientGraph orientGraph = this.orientdbService.getOrientGraph(sdesc.getNamespace());
 		try {
 			orientGraph.begin();
 			retMap = insertObject(sessionContext, dataMap, filterMap, hintsMap, entityName, entityNameParent, idParent);
@@ -210,8 +209,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		debug(this, "updateObject:" + dataMap + ",filterMap:" + filterMap + ",entityName:" + entityName);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
-		OrientGraph orientGraph = factory.getTx();
+		OrientGraph orientGraph = this.orientdbService.getOrientGraph(sdesc.getNamespace());
 		try {
 			orientGraph.begin();
 			retMap = updateObject(sessionContext, dataMap, filterMap, hintsMap, entityName, id, entityNameParent, idParent);
@@ -252,8 +250,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		debug(this, "deleteObject:" + dataMap + ",module:" + entityName + ",id:" + id);
 		Map retMap = new HashMap();
 		SessionContext sessionContext = getSessionContext(sdesc);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
-		OrientGraph orientGraph = factory.getTx();
+		OrientGraph orientGraph = this.orientdbService.getOrientGraph(sdesc.getNamespace());
 		try {
 			orientGraph.begin();
 			retMap = deleteObject(sessionContext, dataMap, entityName, id);
@@ -306,8 +303,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		checkPermissions(sdesc, sessionContext.getUserName(), entityName, null, "read");
 		debug(this, "getObject:fields:" + fields + ",entityName:" + entityName + ",id:" + id);
 		Class clazz = getClass(sessionContext, entityName);
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
-		OrientGraph orientGraph = factory.getTx();
+		OrientGraph orientGraph = this.orientdbService.getOrientGraph(sdesc.getNamespace());
 		try {
 			return executeGet(clazz, id);
 		} finally {
@@ -320,8 +316,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
 	public Map querySql(SessionContext sessionContext, StoreDesc sdesc, Map params, String sql){
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
-		OrientGraph orientGraph = factory.getTx();
+		OrientGraph orientGraph = this.orientdbService.getOrientGraph(sdesc.getNamespace());
 		try {
 			Class clazz = (Class)params.get("class");
 			List<Map> rows =  executeQuery(sessionContext,clazz,clazz.getSimpleName(),sql);
@@ -365,8 +360,7 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		if (params.get("filter") != null) {
 			filtersMap = (Map) params.get("filter");
 		}
-		OrientGraphFactory factory = this.orientdbService.getFactory(sdesc.getNamespace(), false);
-		OrientGraph orientGraph = factory.getTx();
+		OrientGraph orientGraph = this.orientdbService.getOrientGraph(sdesc.getNamespace());
 		try {
 			Map fieldSets = this.settingService.getFieldSets(config, sdesc.getNamespace(), StoreDesc.getFqEntityName(entityName,sdesc));
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, entityName, config, sessionContext, filtersMap, (Map) params, fieldSets);
