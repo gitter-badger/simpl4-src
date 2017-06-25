@@ -267,14 +267,16 @@ abstract class JsonConverterImpl implements JsonConverter{
 		return optionsMap;
 	}
 
-	def getClassPath(){
+	def getClassPath(namespace){
 		URL url1 = 	new URL( "file:"+System.getProperty("workspace") + "/java/" + namespace+"/");
-		URL url2 = 	new URL( "file:"+System.getProperty("workspace") + "/groovy/" + namespace+"/");
-		URL url3 = 	new URL( "file:"+System.getProperty("git.repos") + "/"+namespace+"/.etc/jooq/build/");
-		URL[] urls = new URL[3];
+		URL url2 = 	new URL( "file:"+System.getProperty("workspace") + "/java/global/");
+		URL url3 = 	new URL( "file:"+System.getProperty("workspace") + "/groovy/" + namespace+"/");
+		URL url4 = 	new URL( "file:"+System.getProperty("git.repos") + "/"+namespace+"/.etc/jooq/build/");
+		URL[] urls = new URL[4];
 		urls[0] = url1;
 		urls[1] = url2;
 		urls[2] = url3;
+		urls[3] = url4;
 		return urls;
 	}
 
@@ -294,7 +296,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 
 		}
 		try {
-			URLClassLoader classLoader = new URLClassLoader( getClassPath(), getClass().getClassLoader() )
+			URLClassLoader classLoader = new URLClassLoader( getClassPath(namespace), getClass().getClassLoader() )
 			def gs = new GroovyShell(classLoader);
 			def clazz  = (Class) gs.evaluate(code);
 			def obj = clazz.newInstance();
@@ -1062,7 +1064,7 @@ class GroovyProcessor implements Processor {
 		println("GroovyProcessor.parse("+scriptName+"):"+scriptStr);
 		if( scriptStr == null) return null;
 
-		def parentLoader = new URLClassLoader( main.getClassPath(), this.getClass().getClassLoader() )
+		def parentLoader = new URLClassLoader( main.getClassPath(this.namespace), this.getClass().getClassLoader() )
 		println("GroovyProcessor.parentLoader("+scriptName+"):"+parentLoader);
 
 		CompilerConfiguration config = new CompilerConfiguration();
