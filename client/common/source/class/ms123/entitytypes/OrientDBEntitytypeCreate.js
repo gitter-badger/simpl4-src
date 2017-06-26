@@ -175,14 +175,14 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				"from": {
 					'type': "SelectBox",
 					'label': this.tr( "From" ),
-					'exclude': 'superclass == "vertex"',
+					'exclude': 'superclass != "edge"',
 					'value': "",
 					'options': this._vertexList
 				},
 				"to": {
 					'type': "SelectBox",
 					'label': this.tr( "To" ),
-					'exclude': 'superclass == "vertex"',
+					'exclude': 'superclass != "edge"',
 					'value': "",
 					'options': this._vertexList
 				}, 
