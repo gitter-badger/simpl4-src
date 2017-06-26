@@ -76,7 +76,12 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 			var newList = this._toStringList(ret.entityList);
 			this._existsList = this._getExistsList(allList, newList);
 
-			var message = "<b>" + this.tr("datamapper.create_classes") + "</b><br/><br/>";
+			var message=null;
+			if( this.isOrientDB){
+				message = "<b>" + this.tr("datamapper.entitytypes_create_orient") + "</b><br/><br/>";
+			}else{
+				message = "<b>" + this.tr("datamapper.entitytypes_create_nucleus") + "</b><br/><br/>";
+			}
 			message += this.tr("datamapper.classes_exists") + ":<br/>";
 			if( this._existsList.length >0){
 				message += "<ul>";
@@ -180,11 +185,12 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 				return;
 			}
 		},
-		_dropVertices: function () {
+		_dropVertices: function (onlyDelete) {
 			if( this._existsList.length==0) return;
 			try {
 				var namespace= this._facade.storeDesc.getNamespace();
 				var result = ms123.util.Remote.rpcSync("orientdb:dropVertices", {
+					onlyDelete:onlyDelete,
 					databaseName: namespace,
 					vertexList: this._existsList
 				});
@@ -213,9 +219,14 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 			var createSettings = options.get("createSettings");
 			if (kind == "overwrite") {
 				if( this.isOrientDB){
-					this._dropVertices();
+					this._dropVertices(false);
 				}else{
 					this._cleanTables();
+				}
+			}
+			if (kind == "onlyDelete") {
+				if( this.isOrientDB){
+					this._dropVertices(true);
 				}
 			}
 			var ret = this._createEntitytypes(false,options.get("entities"));
@@ -277,7 +288,7 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 					'value': true
 				},
 				"kind": {
-					'height': 40,
+					'height': 52,
 					'type': "RadioGroup",
 					'label': this.tr("datamapper.exist_classes"),
 					'value': "overwrite",
@@ -291,6 +302,15 @@ qx.Class.define("ms123.datamapper.plugins.EntityCreate", {
 					}]
 				}
 			};
+
+			if( this.isOrientDB){
+				formData.createSettings.value=false;
+				formData.kind.value="onlyDelete";
+				formData.kind.options.push({
+					value: "onlyDelete",
+					label: this.tr("datamapper.only_delete_data")
+				});
+			}
 
 			var self = this;
 			var form = new ms123.form.Form({
