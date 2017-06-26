@@ -284,6 +284,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 
 	@RequiresRoles("admin")
 	public void dropVertices(
+			@PName("onlyDelete") Boolean onlyDelete, 
 			@PName("databaseName") String databaseName, 
 			@PName("vertexList")           List<String> vertexList) throws RpcException {
 		OrientGraphFactory f = getFactory(databaseName);
@@ -291,7 +292,9 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		try {
 			for( String v : vertexList){
 				executeUpdate(graph, "delete vertex "+v);
-				graph.dropVertexType(v);
+				if( onlyDelete == false){
+					graph.dropVertexType(v);
+				}
 			}
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "OrientDBServiceImpl.dropVertices:", e);
@@ -363,12 +366,17 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		return factory.getTx();
 	}
 
-	public synchronized OrientGraphFactory getFactory(String name) {
-		return getFactory( name, "root", this.rootPassword, 50, false, true);
+	public synchronized OrientGraph getOrientGraphRoot(String db) {
+		OrientGraphFactory f = getFactory( db, "root", this.rootPassword, 50, false, true);
+		return f.getTx();
 	}
 
-	public synchronized OrientGraphFactory getFactory(String name, boolean autoCommit) {
-		return getFactory( name, "root", this.rootPassword, 50, autoCommit, true);
+	public synchronized OrientGraphFactory getFactory(String db) {
+		return getFactory( db, "root", this.rootPassword, 50, false, true);
+	}
+
+	public synchronized OrientGraphFactory getFactory(String db, boolean autoCommit) {
+		return getFactory( db, "root", this.rootPassword, 50, autoCommit, true);
 	}
 
 	public synchronized OrientGraphFactory getFactory(String name, String user, String pw, int poolsize, boolean autoCommit, boolean cache) {
