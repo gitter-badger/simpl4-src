@@ -301,10 +301,15 @@ abstract class JsonConverterImpl implements JsonConverter{
 			def clazz  = (Class) gs.evaluate(code);
 			def obj = clazz.newInstance();
 			if( fieldExists(clazz,"orientdbFactory")){
-				injectField( clazz, obj, "orientdbFactory", getOrientDBService(namespace))
+				injectField( clazz, obj, "orientdbFactory", getOrientdbFactory(namespace))
 			}
+
 			if( fieldExists(clazz,"orientGraph")){
 				injectField( clazz, obj, "orientGraph", getOrientGraph(namespace))
+			}
+
+			if( fieldExists(clazz,"orientGraphRoot")){
+				injectField( clazz, obj, "orientGraphRoot", getOrientGraphRoot(namespace))
 			}
 			return obj;
 		} catch (Throwable e) {
@@ -312,14 +317,17 @@ abstract class JsonConverterImpl implements JsonConverter{
 			throw new RuntimeException(msg);
 		}
 	}
-	def fieldExists(clazz, fieldname) {
-		try{
-			def field = clazz.getDeclaredField(fieldname);
-			return true;
-		}catch(Exception e){
-			return false;
-		}
-	}
+  def fieldExists(clazz, fieldname) {
+    try{
+      println("fieldExists("+clazz+","+fieldname+")");
+      def field = clazz.getDeclaredField(fieldname);
+      println("fieldExists("+fieldname+"):true");
+      return true;
+    }catch(Exception e){
+      println("fieldExists("+fieldname+"):false");
+      return false;
+    }
+  }
 
 	def injectField(clazz,obj, fieldname, value) {
 		try{
@@ -481,7 +489,7 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}
 		return gitService.searchFile(namespace, name, type);
 	}
-	def getOrientDBService(namespace){
+	def getOrientdbFactory(namespace){
 		def oService=null;
 		def sr = bundleContext.getServiceReference("org.ms123.common.system.orientdb.OrientDBService");
 		if (sr != null) {
@@ -502,6 +510,17 @@ abstract class JsonConverterImpl implements JsonConverter{
 			throw new RuntimeException("JsonConverter.Cannot resolve OrientDBService");
 		}
 		return oService.getOrientGraph(namespace);
+	}
+	def getOrientGraphRoot(namespace){
+		def oService=null;
+		def sr = bundleContext.getServiceReference("org.ms123.common.system.orientdb.OrientDBService");
+		if (sr != null) {
+			oService = bundleContext.getService(sr);
+		}
+		if (oService == null) {
+			throw new RuntimeException("JsonConverter.Cannot resolve OrientDBService");
+		}
+		return oService.getOrientGraphRoot(namespace);
 	}
 	def getScriptEngine(namespace, name){
 		def scriptEngineService=null;
@@ -1137,8 +1156,10 @@ class GroovyProcessor implements Processor {
 		]
 		params.put("env", env);
 		if( main.fieldExists(this.scriptClazz,"orientGraph")){
-			def orientGraph = main.getOrientGraph( this.namespace);
-			main.injectField( this.scriptClazz, this.compiledScript, "orientGraph", orientGraph)
+			main.injectField( this.scriptClazz, this.compiledScript, "orientGraph", main.getOrientGraph( this.namespace))
+		}
+		if( main.fieldExists(this.scriptClazz,"orientGraphRoot")){
+			main.injectField( this.scriptClazz, this.compiledScript, "orientGraphRoot", main.getOrientGraphRoot( this.namespace))
 		}
 		run(this.compiledScript,params,this.file.getName());
 	}
