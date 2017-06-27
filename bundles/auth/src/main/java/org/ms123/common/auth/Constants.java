@@ -23,6 +23,7 @@ import java.util.*;
 public interface Constants {
 
 	public static String USER_ID = "userid";
+	public static String EMAIL = "email";
 	public static String PASSWD = "password";
 
 	public static String GROUP_ID = "groupid";

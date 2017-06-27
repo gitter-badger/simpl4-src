@@ -1,7 +1,7 @@
 /**
  * This file is part of SIMPL4(http://simpl4.org).
  *
- * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
  *
  * SIMPL4 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Set;
+import java.io.PrintWriter;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Extent;
@@ -51,9 +52,18 @@ import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.nucleus.api.NucleusService;
+import org.ms123.common.rpc.CallService;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import flexjson.JSONSerializer;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import java.io.UnsupportedEncodingException;
+import javax.servlet.http.*;
+import java.net.URLEncoder;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
@@ -66,10 +76,12 @@ import org.ms123.common.auth.user.*;
 public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, Constants {
 
 	protected Inflector m_inflector = Inflector.getInstance();
+	private JSONSerializer js = new JSONSerializer();
 
 	private DataLayer m_dataLayer;
 
 	private NamespaceService m_namespaceService;
+	protected CallService m_callService;
 	private String m_mainNamepace;
 
 	private NucleusService m_nucleusService;
@@ -82,7 +94,6 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	}
 
 	protected void deactivate() throws Exception {
-		m_logger.info("deactivate");
 		System.out.println("AuthServiceImpl deactivate");
 	}
 
@@ -111,10 +122,10 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 
 	public Map getUserProperties( String userid) {
 		try {
-			debug("getUserProperties.userid:" + userid);
+			debug(this,"getUserProperties.userid:" + userid);
 			StoreDesc sdesc = getStoreDesc();
 			Map ret = getUserByUserid(sdesc, userid);
-			debug("getUserProperties.ret:" + ret);
+			debug(this,"getUserProperties.ret:" + ret);
 			return ret;
 		} catch (RuntimeException e) {
 			if (e.getCause() instanceof javax.jdo.JDOObjectNotFoundException) {
@@ -155,9 +166,18 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		}
 		return result;
 	}
+	private Map getUserByEmail(StoreDesc sdesc, String email) throws Exception {
+		return getUserByFilter(sdesc,null,email);
+	}
 	private Map getUserByUserid(StoreDesc sdesc, String id) throws Exception {
+		return getUserByFilter(sdesc,id,null);
+	}
+	private Map getUserByFilter(StoreDesc sdesc, String id,String email) throws Exception {
 		String filter = "userid == '" + id + "'";
-		debug("getUserByUserid:" + filter);
+		if( email != null){
+			filter = "email == '" + email + "'";
+		}
+		debug(this,"getUserByUserid:" + filter);
 		PersistenceManager pm = m_nucleusService.getPersistenceManagerFactory(sdesc).getPersistenceManager();
 		Class clazz = m_nucleusService.getClass(sdesc, m_inflector.getClassName(USER_ENTITY));
 		Extent e = pm.getExtent(clazz, true);
@@ -197,7 +217,6 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		StoreDesc sdesc = getStoreDesc();
 		data.put(USER_ID, userid);
 		Map ret = m_dataLayer.updateObject(data, null, null, sdesc, USER_ENTITY, userid, null, null);
-		debug("RET:" + ret);
 		userid = (String) data.get(USER_ID);
 		String pw = (String) data.get(PASSWD);
 		List groups = new ArrayList();
@@ -321,6 +340,206 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		}
 	}
 
+	/* BEGIN:User registration */
+	public Map existsUser(
+			@PName(USER_ID)            String userid,
+			@PName(EMAIL)            String email
+				) throws RpcException {
+		try {
+			StoreDesc sdesc = getStoreDesc();
+			Map ret = new HashMap();
+			ret.put("exists", true);
+			try{	
+				Map um = getUserByUserid(sdesc, userid);
+				if( um == null){
+					um = getUserByEmail(sdesc, email);
+				}
+				if( um == null){
+					ret.put("exists", false);
+				}
+			}catch( Throwable t){
+			}	
+			return ret;
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "AuthServiceImpl.existsUser:", e);
+		} finally {
+		}
+	}
+
+	private boolean _existsUser( String userid, String email){
+		Map<String,Boolean> ret = existsUser( userid, email);
+		return ret.get("exists");
+	}
+
+	public Map requestAccount(
+			@PName(USER_ID)            String userid, 
+			@PName(EMAIL)            String email, 
+			@PName("data")             Map data) throws RpcException {
+		try {
+			Map ret = new HashMap();
+			ret.put("status", "nok");
+			String base = (String)data.get("base");
+			String link = (String)data.get("link");
+			String from = (String)data.get("from");
+			String sender = (String)data.get("sender");
+			String regards = (String)data.get("regards");
+			String credentials = (String)data.get("credentials");
+			String subject = (String)data.get("subject");
+			String passwdText = (String)data.get("passwdText");
+			String okUrl = (String)data.get("okUrl");
+
+			PasswordGenerator passwordGenerator = new PasswordGenerator.PasswordGeneratorBuilder()
+				.useDigits(true)
+				.useLower(true)
+				.useUpper(true)
+				.build();
+			String passwd = passwordGenerator.generate(8); 
+			passwdText += ":" + passwd;
+
+			if( isEmpty(credentials)){
+				info(this,"requestAccount("+userid+","+email+"):no credentials");
+				return ret;
+			}
+			if( isEmpty(passwd)){
+				info(this,"requestAccount("+userid+","+email+"):passwd empty");
+				return ret;
+			}
+			if( isEmpty(link) ){
+				link = "Bitte diesen Link zur Vervollständigung der Registrierung anklicken";
+			}
+			if( isEmpty(regards)){
+				regards = "Regards<br>Manfred";
+			}
+			if( isEmpty(from)){
+				from = "info@simpl4.org";
+			}
+			if( isEmpty(sender)){
+				sender = "dashboard.sendRegistrationMail";
+			}
+			if( isEmpty(subject)){
+				subject = "Registration";
+			}
+			if( isEmpty( userid) || isEmpty( email)){
+				info(this,"requestAccount("+userid+","+email+"):userid/email empty");
+				return ret;
+			}
+			if( isEmpty( okUrl)){
+				info(this,"requestAccount("+userid+","+email+"):ok url empty");
+				return ret;
+			}
+			if( _existsUser(userid, email)){
+				info(this,"requestAccount("+userid+","+email+"):userid/email exists");
+				return ret;
+			}
+			Map params = new HashMap();
+			params.put("to", email);
+			params.put("from", from);
+			params.put("subject", subject);
+			String body = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head>";
+						body += "<body bgcolor=\"#ffffff\" text=\"#000000\">";
+            body += "<br><br>"+passwdText+"<br><br><a href=\""+getEmailLink(base, okUrl, userid, email, credentials,passwd)+"\">"+link+"</a>";
+						body += "<div><br><br><i>"+regards+"<i><br></div></body></html>";
+
+			params.put("body", body);
+
+			m_callService.callCamel(sender, params);
+			ret.put("status", "ok");
+			return ret;
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "AuthServiceImpl.requestAccount:", e);
+		} finally {
+		}
+	}
+
+	public void createAccount(
+			@PName(USER_ID)            String userid, 
+			@PName(EMAIL)            String email, 
+			@PName("passwd")            String passwd, 
+			@PName("data")            Map data, 
+						HttpServletResponse response ) throws RpcException {
+		try {
+			info(this,"createUser("+userid+","+email+")");
+			if( isEmpty( userid) || isEmpty( email) || isEmpty(passwd)){
+				info(this,"createUser("+userid+","+email+"):userid/email empty");
+				response.setContentType("application/html;charset=utf-8");
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter().close();
+				return;
+			}
+			if( _existsUser(userid, email)){
+				info(this,"createUser("+userid+","+email+"):userid/email exists");
+				response.setContentType("application/html;charset=utf-8");
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter().close();
+				return;
+			}
+			Map udata = new HashMap();
+			udata.put("userid", userid);
+			udata.put("email", email);
+			udata.put("password", passwd);
+			createUser( userid, udata);
+
+			String okUrl = (String)data.get("okUrl");
+
+			String body = "<html><head> <meta http-equiv=\"refresh\" content=\"1; url="+okUrl+"\"> <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head>";
+						body += "<body></body></html>";
+
+			PrintWriter writer = response.getWriter();
+			writer.print(body);
+			writer.flush();
+
+			response.setContentLength(body.length());
+			response.setContentType("application/html;charset=utf-8");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().close();
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "AuthServiceImpl.createAccount:", e);
+		} finally {
+		}
+	}
+
+	private String getEmailLink(String base, String okUrl, String userid, String email, String credentials, String passwd){
+		Map rpc = new HashMap();
+		Map createUserParams = new HashMap();
+		createUserParams.put("userid", userid);
+		createUserParams.put("email", email);
+		createUserParams.put("passwd", passwd);
+		Map dataParam = new HashMap();
+		dataParam.put("okUrl", okUrl);
+		createUserParams.put("data", dataParam);
+		rpc.put("service","auth");
+		rpc.put("method","createAccount");
+		rpc.put("params",createUserParams);
+
+		String password = "guest";
+		String username = "guest";
+		byte[] b = (username + ":" + password).getBytes();
+		Base64.Encoder encoder = Base64.getEncoder();
+		//String credentials = new String(encoder.encode( b ));
+
+		String s = encodeURIComponent(js.deepSerialize(rpc));
+		s= base+"/rpc/get?rpc="+s + "&credentials=" + credentials;
+
+		info(this, "getEmailLink:"+s);
+		return s;
+	}
+	private static String encodeURIComponent(String s) {
+		String result = null;
+		try {
+			result = URLEncoder.encode(s, "UTF-8")
+				.replaceAll("\\+", "%20")
+				.replaceAll("\\%21", "!")
+				.replaceAll("\\%27", "'")
+				.replaceAll("\\%28", "(")
+				.replaceAll("\\%29", ")")
+				.replaceAll("\\%7E", "~");
+		} catch (UnsupportedEncodingException e) {
+			result = s;
+		}
+		return result;
+	}  
+	/* END:User registration */
+
 
 	/* END JSON-RPC-API*/
 	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
@@ -339,14 +558,10 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		this.m_nucleusService = paramNucleusService;
 		System.out.println("AuthServiceImpl.setNucleusService:" + paramNucleusService);
 	}
+	@Reference(dynamic = true, optional=true)
+	public void setCallService(CallService callService) {
+		info(this,"AuthServiceImpl.setCallService:" + callService);
+		m_callService = callService;
+	}
 
-	protected void debug(String msg) {
-		//System.out.println(msg);
-		m_logger.debug(msg);
-	}
-	protected void info(String msg) {
-		System.out.println(msg);
-		m_logger.info(msg);
-	}
-	private static final org.slf4j.Logger m_logger = org.slf4j.LoggerFactory.getLogger(AuthServiceImpl.class);
 }
