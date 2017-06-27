@@ -969,7 +969,7 @@
 			console.log( "====selectionList:", selectionList );
 			return selectionList;
 		},
-		_constructRegulaConstraints: function( constraints, msg ) {
+		_constructRegulaConstraints: function( constraints, message ) {
 			if ( constraints == null || constraints.length == 0 ) return "";
 			constraints = JSON.parse( constraints );
 			var ret = "";
@@ -982,7 +982,8 @@
 					ret += b + '@' + self._mapKeys( key );
 					var params = self._constraintParams[ key ];
 
-					if ( msg ) {
+					if ( message ) {
+						msg = message;
 						if ( msg && msg.match( /^[@%]/ ) ) {
 							msg = tr( msg.substring( 1 ) );
 						}
