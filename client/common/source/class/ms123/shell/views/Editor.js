@@ -477,7 +477,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 				msg = msg.replace(/Application error 500:/g, "");
 				msg = msg.replace(/:java.lang.RuntimeException/g, "");
 				msg = msg.replace(/:Line:/g, "<br/>Line:");
-				msg = ms123.util.Text.explode( msg, 90 );
+				//msg = ms123.util.Text.explode( msg, 90 );
 
 				var message = "<b>" + this.tr("shell.camel_save_failed")+":</b><pre style='font-size:10px'>" + msg + "</pre></div>";
 				var alert = new ms123.form.Alert({
