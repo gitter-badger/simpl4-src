@@ -372,7 +372,7 @@ public class Utils {
 
 	private static Object[] getLineNumberFromMsg(String msg) {
 		try{
-			Pattern p = Pattern.compile(".*Script\\d{1,5}.groovy: (\\d{1,5}):(.*)", Pattern.DOTALL);
+			Pattern p = Pattern.compile(".*Script[a-zA-Z0-9_]{1,50}.groovy: (\\d{1,5}):(.*)", Pattern.DOTALL);
 			Matcher m = p.matcher(msg);
 			Object[] ret = new Object[2];
 			if (m.find()) {
