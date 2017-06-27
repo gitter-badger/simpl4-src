@@ -30,4 +30,7 @@ public interface AuthService {
 	public Map getUserData(String d);
 	public List<Map> getUserList(Map filter);
 	public List<Map> getUserList(Map filter,int startIndex, int numResults);
+	public Map createUser( String userid, Map data);
+	public Map deleteUser( String userid);
+//	public Map requestUser( String userid, Map data);
 }

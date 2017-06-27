@@ -477,6 +477,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			udata.put("userid", userid);
 			udata.put("email", email);
 			udata.put("password", passwd);
+			udata.put("roles", "global.wawi,global.guest");
 			createUser( userid, udata);
 
 			String okUrl = (String)data.get("okUrl");
