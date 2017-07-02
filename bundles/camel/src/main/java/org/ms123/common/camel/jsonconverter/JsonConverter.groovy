@@ -533,6 +533,17 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}
 		return scriptEngineService.getEngineByName(namespace, name);
 	}
+	def getService(serviceName){
+		def service=null;
+		def sr = bundleContext.getServiceReference(serviceName);
+		if (sr != null) {
+			service = bundleContext.getService(sr);
+		}
+		if (service == null) {
+			throw new RuntimeException("JsonConverter.Cannot resolve :"+serviceName);
+		}
+		return service;
+	}
 }
 
 class OnExceptionJsonConverter extends JsonConverterImpl{
@@ -1059,7 +1070,6 @@ class GroovyProcessor implements Processor {
 	def main;
 	def namespace;
 	def lastMod = null;
-	def compiledScript;
 	def scriptClazz;
 	def scriptSource;
 	def classLoader;
@@ -1068,7 +1078,7 @@ class GroovyProcessor implements Processor {
 		this.lastMod = f.lastModified();
 		this.namespace = ns;
 		this.main = main;
-		this.compiledScript = parse(script, this.file.getName());
+		parse(script, this.file.getName());
 	}
 
 	def testModified(){
@@ -1076,12 +1086,12 @@ class GroovyProcessor implements Processor {
 		def curMod = this.file.lastModified();
 		if( curMod > this.lastMod){
 			def script = readFileToString(this.file);
-			this.compiledScript = parse(script, this.file.getName());
+			parse(script, this.file.getName());
 			this.lastMod = curMod;
 		}
 	}
 
-	private Script parse(String scriptStr,String scriptName) {
+	private void parse(String scriptStr,String scriptName) {
 		println("GroovyProcessor.parse("+scriptName+"):"+scriptStr);
 		if( scriptStr == null) return null;
 		this.scriptSource = scriptStr;
@@ -1101,7 +1111,6 @@ class GroovyProcessor implements Processor {
 		try{
 			GroovyCodeSource gcs = new GroovyCodeSource( scriptStr, "Script_"+scriptName, "/groovy/shell");
 			this.scriptClazz = loader.parseClass(gcs,false);
-			return this.scriptClazz.newInstance();
 		}catch(Throwable e){
 			String msg = Utils.formatGroovyException(e,scriptStr);
 			throw new RuntimeException("GroovyProcessor.parse("+scriptName+"):"+msg);
@@ -1154,14 +1163,21 @@ class GroovyProcessor implements Processor {
 			homeDataDir: System.getProperty("git.repos")+ "/" + this.namespace+"_data",
 			namespace: this.namespace
 		]
+		def script = 	this.scriptClazz.newInstance();
 		params.put("env", env);
+		if( main.fieldExists(this.scriptClazz,"entityService")){
+			main.injectField( this.scriptClazz, script, "entityService", main.getService( "org.ms123.common.entity.api.EntityService"))
+		}
+		if( main.fieldExists(this.scriptClazz,"messageService")){
+			main.injectField( this.scriptClazz, script, "messageService", main.getService( "org.ms123.common.message.MessageService"))
+		}
 		if( main.fieldExists(this.scriptClazz,"orientGraph")){
-			main.injectField( this.scriptClazz, this.compiledScript, "orientGraph", main.getOrientGraph( this.namespace))
+			main.injectField( this.scriptClazz, script, "orientGraph", main.getOrientGraph( this.namespace))
 		}
 		if( main.fieldExists(this.scriptClazz,"orientGraphRoot")){
-			main.injectField( this.scriptClazz, this.compiledScript, "orientGraphRoot", main.getOrientGraphRoot( this.namespace))
+			main.injectField( this.scriptClazz, script, "orientGraphRoot", main.getOrientGraphRoot( this.namespace))
 		}
-		run(this.compiledScript,params,this.file.getName());
+		run(script,params,this.file.getName());
 	}
 }
 
