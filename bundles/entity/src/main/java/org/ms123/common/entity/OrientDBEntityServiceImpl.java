@@ -122,7 +122,7 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 		if (level == maxlevel) {
 			return null;
 		}
-		info(this, "_getEntitySubTree:" + entityName);
+		info(this, "_getEntitySubTree("+entityName+"):" + type);
 		if (!m_permissionService.hasEntityPermissions(sdesc, entityName, "read")) {
 			info(this, "no read:" + entityName);
 			return null;
@@ -206,9 +206,9 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 					}
 				}
 			}else{
-				continue;
+				collectionType = "object";
 			}
-			info(this, "field(" + fieldname + "):linkedClass:" + linkedClass + "/collectionType:" + collectionType);
+			info(this, "field(" + fieldname +","+isEmbedded+","+isLink+ ",lc:"+linkedClass+",ct:"+collectionType+"):otype:"+otype.toString() );
 
 			s[0] = linkedClass;
 			s[2] = collectionType;
@@ -306,7 +306,7 @@ class OrientDBEntityServiceImpl implements org.ms123.common.entity.api.Constants
 		return internalList.contains(name);
 	}
 
-	private List<String> simpleTypeList = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "17", "19", "21");
+	private List<String> simpleTypeList = Arrays.asList("0","1", "2", "3", "4", "5", "6", "7", "17", "19", "21");
 
 	boolean isSimpleType(String type) {
 		return simpleTypeList.contains(type);
