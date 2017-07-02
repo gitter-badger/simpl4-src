@@ -192,9 +192,9 @@
 				},
 			};
 
-			window.channel = postal.channel();
-
-
+			if( window.channel==null){
+				window.channel = postal.channel();
+			}
 			var awFont = new Font();
 			awFont.src = simpl4.util.BaseManager.getBaseUrl() + "/sw/surface/fontawesome-webfont.woff?v=4.3.0";
 			awFont.fontFamily = "FontAwesome";
@@ -203,12 +203,12 @@
 			awFont.onload = function() {
 				//console.log("awfont loaded");
 			}
- Lobibox.base.OPTIONS.buttons.yes.text = tr("yes");
- Lobibox.base.OPTIONS.buttons.no.text = tr("no");
- Lobibox.notify.OPTIONS.error.title = tr("error");
- Lobibox.notify.OPTIONS.warning.title = tr("warning");
- Lobibox.notify.OPTIONS.success.title = tr("success");
- Lobibox.notify.OPTIONS.info.title = tr("info");
+			Lobibox.base.OPTIONS.buttons.yes.text = tr("yes");
+			Lobibox.base.OPTIONS.buttons.no.text = tr("no");
+			Lobibox.notify.OPTIONS.error.title = tr("error");
+			Lobibox.notify.OPTIONS.warning.title = tr("warning");
+			Lobibox.notify.OPTIONS.success.title = tr("success");
+			Lobibox.notify.OPTIONS.info.title = tr("info");
 
 
 			Polymer( {
