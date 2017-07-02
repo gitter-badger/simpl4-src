@@ -52,12 +52,16 @@ import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.nucleus.api.NucleusService;
+import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.rpc.CallService;
 import org.osgi.framework.BundleContext;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import flexjson.JSONSerializer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Callable;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.UnsupportedEncodingException;
 import javax.servlet.http.*;
@@ -81,6 +85,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	private DataLayer m_dataLayer;
 
 	private NamespaceService m_namespaceService;
+	protected PermissionService m_permissionService;
 	protected CallService m_callService;
 	private String m_mainNamepace;
 
@@ -387,6 +392,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			String subject = (String)data.get("subject");
 			String passwdText = (String)data.get("passwdText");
 			String okUrl = (String)data.get("okUrl");
+			String finalWork = (String)data.get("finalWork");
 
 			PasswordGenerator passwordGenerator = new PasswordGenerator.PasswordGeneratorBuilder()
 				.useDigits(true)
@@ -437,12 +443,14 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			params.put("subject", subject);
 			String body = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head>";
 						body += "<body bgcolor=\"#ffffff\" text=\"#000000\">";
-            body += "<br><br>"+passwdText+"<br><br><a href=\""+getEmailLink(base, okUrl, userid, email, credentials,passwd)+"\">"+link+"</a>";
+            body += "<br><br>"+passwdText+"<br><br><a href=\""+getEmailLink(base, okUrl, finalWork, userid, email, credentials,passwd)+"\">"+link+"</a>";
 						body += "<div><br><br><i>"+regards+"<i><br></div></body></html>";
 
 			params.put("body", body);
 
-			m_callService.callCamel(sender, params);
+			//m_callService.callCamel(sender, params);
+			ExecutorService executor = getExecutorService();
+			executor.submit(new MyCallable(sender,params, null));
 			ret.put("status", "ok");
 			return ret;
 		} catch (Throwable e) {
@@ -478,12 +486,16 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			udata.put("email", email);
 			udata.put("password", passwd);
 			udata.put("roles", "global.wawi,global.guest");
-			createUser( userid, udata);
+//			_createUser( userid, udata);
 
 			String okUrl = (String)data.get("okUrl");
+			String finalWork = (String)data.get("finalWork");
 
 			String body = "<html><head> <meta http-equiv=\"refresh\" content=\"1; url="+okUrl+"\"> <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head>";
 						body += "<body></body></html>";
+
+			ExecutorService executor = getExecutorService();
+			executor.submit(new MyCallable(finalWork,udata, userid));
 
 			PrintWriter writer = response.getWriter();
 			writer.print(body);
@@ -499,7 +511,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		}
 	}
 
-	private String getEmailLink(String base, String okUrl, String userid, String email, String credentials, String passwd){
+	private String getEmailLink(String base, String okUrl, String finalWork, String userid, String email, String credentials, String passwd){
 		Map rpc = new HashMap();
 		Map createUserParams = new HashMap();
 		createUserParams.put("userid", userid);
@@ -507,6 +519,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		createUserParams.put("passwd", passwd);
 		Map dataParam = new HashMap();
 		dataParam.put("okUrl", okUrl);
+		dataParam.put("finalWork", finalWork);
 		createUserParams.put("data", dataParam);
 		rpc.put("service","auth");
 		rpc.put("method","createAccount");
@@ -539,6 +552,37 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		}
 		return result;
 	}  
+
+
+
+	public class MyCallable implements Callable<String> {
+		String methodName;
+		String ns;
+		String userid;
+		Map params;
+
+		public MyCallable(String mn, Map p, String uid) {
+			this.params = p;
+			this.userid = uid;
+			this.ns = mn.split("\\.")[0];
+			this.methodName = mn;
+		}
+
+		@Override
+		public String call() throws Exception {
+			m_permissionService.loginInternal(ns);
+			if( this.userid != null){
+				_createUser( this.userid, this.params);
+			}
+			info(this,"callCamel("+this.methodName+"):"+this.params);
+			m_callService.callCamel(this.methodName, this.params);
+			return null;
+		}
+	}
+
+	private ExecutorService getExecutorService() {
+		return Executors.newSingleThreadExecutor();
+	}
 	/* END:User registration */
 
 
@@ -563,6 +607,11 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	public void setCallService(CallService callService) {
 		info(this,"AuthServiceImpl.setCallService:" + callService);
 		m_callService = callService;
+	}
+	@Reference(dynamic = true, optional=true)
+	public void setPermissionService(PermissionService paramPermissionService) {
+		this.m_permissionService = paramPermissionService;
+		info(this,"AuthServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 
 }
