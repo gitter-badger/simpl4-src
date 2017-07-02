@@ -32,6 +32,7 @@ public interface EntityService {
 	public Map getEntityTree( StoreDesc sdesc, String mainEntity, int maxlevel, Boolean pathid, String type, Boolean listResolved) throws Exception;
 	public List<Map> getFields( StoreDesc  sdesc, String entityName,Boolean withAutoGen) throws Exception;
 	public List<Map> getFields( StoreDesc  sdesc, String entityName,Boolean withAutoGen,Boolean withRelations) throws Exception;
+	public List<Map> getEntitytypeInfo( String storeId, List<String> names) throws RpcException;
 
 	/*not needed in orientdb*/
 	public List<Map> getDefaultFields();
