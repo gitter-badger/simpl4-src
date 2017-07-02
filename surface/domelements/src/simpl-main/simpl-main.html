@@ -234,13 +234,13 @@
 
 						<paper-icon-button on-click="reload" class="langIcon" src="[[getLangIcon()]]"></paper-icon-button>
 
-						<div id="toolbarIconsId"></div>
-						<template is="dom-repeat" items="[[toolbarPages]]">
+						<ul id="toolbarIconsId"></ul>
+						<!--template is="dom-repeat" items="[[toolbarPages]]">
 							<a class="menuentry" href="">
 								<paper-tooltip position="left">[[item.tooltip]]</paper-tooltip>
 								<paper-icon-button on-click="login" icon="[[item.icon]]"></paper-icon-button>
 							</a>
-						</template>
+						</template-->
 						<div class="toolbar bottom row grid"> </div>
 					</paper-toolbar>
 
