@@ -71,6 +71,7 @@ import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.AttributesBuilder.attributes;
 import static org.asciidoctor.OptionsBuilder.options;
+import static org.apache.commons.io.IOUtils.toInputStream;
 
 /**
  *
@@ -112,15 +113,37 @@ class BaseDocbookServiceImpl {
 		pdfRenderer.render(os);
 	}
 
-	public void jsonFoToPdf(String namespace, String json, Map<String, String> params, OutputStream os) throws Exception {
+	public void wawiToPdf(String namespace, String json, Map<String, Object> params, OutputStream os) throws Exception {
 		PDFRenderer pdfRenderer = new PDFRenderer(m_bc, m_gitService, namespace);
-		pdfRenderer.parameters(params);
-		pdfRenderer.fopRender(jsonToFO(namespace,json,params),os);
+		//pdfRenderer.parameters(params);
+		pdfRenderer.fopRender(wawiToFOInternal(namespace,json,params),os);
 	}
 	
-	private InputStream jsonToFO( String namespace,String json, Map<String, String> params ){
-		FOBuilder fb = new FOBuilder(m_dataLayer);
+	private InputStream wawiToFOInternal( String namespace,String json, Map<String, Object> params ){
+		FOBuilder fb = new FOBuilder(m_dataLayer,m_bc);
 		return fb.toFO(namespace, json,params);
+	}
+
+	public String wawiToFo( String namespace,String json, Map<String, Object> params ) throws Exception{
+		FOBuilder fb = new FOBuilder(m_dataLayer,m_bc);
+		return inputStreamToString(fb.toFO(namespace, json,params));
+	}
+
+/*	public void foToPdf(String namespace, String fo, Map<String, String> params, OutputStream os) throws Exception {
+		PDFRenderer pdfRenderer = new PDFRenderer(m_bc, m_gitService, namespace);
+		pdfRenderer.parameters(params);
+		pdfRenderer.fopRender(toInputStream(fo,"UTF-8"),os);
+	}
+
+	public void foToPdf(String namespace, InputStream is, Map<String, String> params, OutputStream os) throws Exception {
+		PDFRenderer pdfRenderer = new PDFRenderer(m_bc, m_gitService, namespace);
+		pdfRenderer.parameters(params);
+		pdfRenderer.fopRender(is,os);
+	}*/
+
+	public void htmlToFo(InputStream is, OutputStream os) throws Exception {
+		TransformToFo transformer = TransformToFo.create(this.m_bc);
+		transformer.transform(is, os);
 	}
 
 	public void jsonToDocbook(String namespace, String jsonName, Map<String, Object> paramsIn, Map<String, String> paramsOut, OutputStream out)  throws Exception{
@@ -437,5 +460,14 @@ class BaseDocbookServiceImpl {
 	private String getBasename(String path) {
 		String e[] = path.split("/");
 		return e[e.length - 1];
+	}
+	private String inputStreamToString( InputStream inputStream) throws Exception{
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = inputStream.read(buffer)) != -1) {
+			result.write(buffer, 0, length);
+		}
+		return result.toString("UTF-8");
 	}
 }

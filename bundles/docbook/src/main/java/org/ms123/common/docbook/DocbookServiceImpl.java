@@ -58,6 +58,7 @@ import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.io.IOUtils.toInputStream;
 
 
 /** DocbookService implementation
@@ -294,18 +295,31 @@ public class DocbookServiceImpl extends BaseDocbookServiceImpl implements Docboo
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.jsonToDocbookPdf:", e);
 		}
 	}
-	public void jsonFoToPdf(
+	public void wawiToPdf(
 			@PName(StoreDesc.NAMESPACE) String namespace, 
 			@PName("json")             String json, 
-			@PName("params")           @POptional Map<String, String> params, 
+			@PName("params")           @POptional Map<String, Object> params, 
 			@PName("fileMap")          @POptional String  fileName, HttpServletResponse response) throws RpcException {
 		try {
 			if( fileName == null){
 				fileName = "doc.pdf";
 			}
-			jsonFoToPdf(namespace, json, params, response.getOutputStream());
+			wawiToPdf(namespace, json, params, response.getOutputStream());
 			response.setContentType("application/pdf;charset=UTF-8");
 			response.addHeader("Content-Disposition", "attachment;filename=\""+fileName+"\"");
+			response.setStatus(HttpServletResponse.SC_OK);
+			response.getOutputStream().close();
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "DocbookServiceImpl.jsonFoToPdf:", e);
+		}
+	}
+	public void htmlToFo(
+			@PName("html")             String html, 
+			HttpServletResponse response) throws RpcException {
+		try {
+			htmlToFo(toInputStream(html) , response.getOutputStream());
+			response.setContentType("application/text;charset=UTF-8");
+			response.addHeader("Content-Disposition", "attachment;filename=\"fo\"");
 			response.setStatus(HttpServletResponse.SC_OK);
 			response.getOutputStream().close();
 		} catch (Throwable e) {

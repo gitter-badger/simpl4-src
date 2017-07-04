@@ -30,7 +30,8 @@ public interface DocbookService {
 	public void jsonToPdf(String namespace,String json, Map<String,Object> params, OutputStream os) throws Exception;
 	public void jsonToPdf(String namespace,InputStream is, Map<String,Object> params, OutputStream os) throws Exception;
 
-	public void jsonFoToPdf(String namespace,String json, Map<String,String> params, OutputStream os) throws Exception;
+	public void wawiToPdf(String namespace,String json, Map<String,Object> params, OutputStream os) throws Exception;
+	public String wawiToFo( String namespace,String json, Map<String, Object> params ) throws Exception;
 
 	public void jsonToDocbook( String namespace, String jsonName, Map<String, Object> params,Map<String,String> paramsOut, OutputStream os ) throws Exception;
 	public void jsonToDocbook( String namespace, InputStream is, Map<String, Object> params,Map<String,String> paramsOut, OutputStream os ) throws Exception;

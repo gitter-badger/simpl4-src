@@ -26,11 +26,13 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import org.ms123.common.docbook.rendering.TransformToFo;
 import groovy.text.Template;
 import groovy.text.TemplateEngine;
 import groovy.text.markup.MarkupTemplateEngine;
 import groovy.text.markup.TemplateConfiguration;
 import org.ms123.common.data.api.DataLayer;
+import org.osgi.framework.BundleContext;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.debug;
@@ -43,8 +45,10 @@ public class FOBuilder extends TemplateEvaluator{
 	private Map<String, Template> m_templateCache = new LinkedHashMap();
 
 	private TemplateEngine m_engine = new MarkupTemplateEngine();
+	private BundleContext bc;
 
-	public FOBuilder(DataLayer dl) {
+	public FOBuilder(DataLayer dl, BundleContext bc) {
+		this.bc = bc;
 		TemplateConfiguration templateConfiguration = new TemplateConfiguration();
 		templateConfiguration.setUseDoubleQuotes(true);
 		templateConfiguration.setAutoIndent(true);
@@ -53,7 +57,7 @@ public class FOBuilder extends TemplateEvaluator{
 		m_engine = new MarkupTemplateEngine(templateConfiguration);
 	}
 
-	public InputStream toFO( String namespace, String json, Map<String,String> variableMap){
+	public InputStream toFO( String namespace, String json, Map<String,Object> variableMap){
 	}
 
 	public String render( String text, Map<String,Object> variableMap){
@@ -70,6 +74,10 @@ public class FOBuilder extends TemplateEvaluator{
 		String answer = template.make(binding).toString();
 		debug(this,"GroovyMarkupEngine.answer:"+answer);
 		return answer;
+	}
+	private void htmlToFo(InputStream is, OutputStream os) throws Exception {
+		TransformToFo transformer = TransformToFo.create(this.bc);
+		transformer.transform(is, os);
 	}
 }
 

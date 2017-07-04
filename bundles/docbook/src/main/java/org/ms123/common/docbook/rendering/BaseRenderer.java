@@ -56,9 +56,9 @@ abstract class BaseRenderer<T extends BaseRenderer<T>> implements Renderer<T> {
 
 	protected String m_namespace;
 
-	private static Templates m_templates;
+	protected static Templates m_templates;
 
-	private static int m_useConter = 0;
+	protected static int m_useConter = 0;
 
 	private static final Logger log = LoggerFactory.getLogger(BaseRenderer.class);
 
@@ -246,7 +246,7 @@ abstract class BaseRenderer<T extends BaseRenderer<T>> implements Renderer<T> {
 		return null;
 	}
 
-	private void assertNotNull(Object value, String message) {
+	protected void assertNotNull(Object value, String message) {
 		if (value == null)
 			throw new IllegalArgumentException(message);
 	}
