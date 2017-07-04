@@ -119,14 +119,22 @@ class BaseDocbookServiceImpl {
 		pdfRenderer.fopRender(wawiToFOInternal(namespace,json,params),os);
 	}
 	
+	private Map<String,FOBuilder> foBuilderCache = new HashMap<String,FOBuilder>();
 	private InputStream wawiToFOInternal( String namespace,String json, Map<String, Object> params ){
-		FOBuilder fb = new FOBuilder(m_dataLayer,m_bc);
-		return fb.toFO(namespace, json,params);
+		FOBuilder fb = null;
+		synchronized(this){
+			fb = foBuilderCache.get(namespace);
+			if( fb == null){
+				fb = new FOBuilder(namespace,m_bc);
+				foBuilderCache.put(namespace, fb );
+			}
+		}
+		return fb.toFO(json,params);
 	}
 
 	public String wawiToFo( String namespace,String json, Map<String, Object> params ) throws Exception{
-		FOBuilder fb = new FOBuilder(m_dataLayer,m_bc);
-		return inputStreamToString(fb.toFO(namespace, json,params));
+		InputStream is = wawiToFOInternal( namespace, json, params);
+		return inputStreamToString(is);
 	}
 
 /*	public void foToPdf(String namespace, String fo, Map<String, String> params, OutputStream os) throws Exception {
