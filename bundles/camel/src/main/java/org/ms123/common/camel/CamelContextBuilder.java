@@ -45,6 +45,7 @@ import org.ms123.common.camel.components.template.*;
 import org.ms123.common.camel.components.asciidoctor.*;
 import org.ms123.common.camel.components.docbook.*;
 import org.ms123.common.camel.components.xdocreport.*;
+import org.ms123.common.camel.components.wawidoc.*;
 import org.ms123.common.camel.components.repo.*;
 import org.ms123.common.camel.components.direct.*;
 import org.ms123.common.camel.components.hazelcast.*;
@@ -112,6 +113,7 @@ public class CamelContextBuilder {
 		sr.put("vfs", new org.ms123.common.camel.components.vfs.VfsComponent());
 		sr.put("direct", new DirectComponent());
 		sr.put("xdocreport", new XDocReportComponent());
+		sr.put("wawidoc", new WawiDocComponent());
 		sr.put("template", new TemplateComponent());
 		sr.put("asciidoctor", new AsciidoctorComponent());
 		sr.put("docbook", new DocbookComponent());
