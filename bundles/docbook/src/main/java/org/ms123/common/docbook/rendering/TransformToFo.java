@@ -1,7 +1,7 @@
 /**
  * This file is part of SIMPL4(http://simpl4.org).
  *
- * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
  *
  * SIMPL4 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,6 @@ import static com.jcabi.log.Logger.isDebugEnabled;
 //import org.apache.xmlgraphics.image.loader.spi.*;
 @SuppressWarnings("unchecked")
 public class TransformToFo {
-	private static Templates templates;
-	private static int useConter = 0;
 	private BundleContext bundleContect;
 
 	private static final String defaultXslStylesheet = "/xsl/xhtml-to-xslfo.xsl";
@@ -64,22 +62,18 @@ public class TransformToFo {
 			ReaderConfig rc = ((WstxSAXParser) reader).getStaxConfig();
 			rc.setXMLResolver(new XslURIResolver(this.bundleContect, factory));
 
-			final Transformer transformer = createTransformer(factory, xmlResource);
+			final Transformer transformer = createTransformer(factory);
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			SAXSource source = new SAXSource(reader, new InputSource(xmlResource));
 			transformer.transform(source, new StreamResult(os));
-//			os.close();
 		} catch (Exception e) {
 			throw new RuntimeException("TransformToFo.transform.error!", e);
 		} finally {
 		}
 	}
 
-	private Transformer createTransformer(SAXParserFactory f, InputStream xmlSource) throws TransformerConfigurationException, Exception {
-		if (this.useConter > 50) {
-			this.templates = null;
-			this.useConter = 0;
-		}
-		this.useConter++;
+	private static Templates templates;
+	private Transformer createTransformer(SAXParserFactory f) throws TransformerConfigurationException, Exception {
 		if (this.templates == null) {
 			TransformerFactory transformerFactory = createTransformerFactory();
 			transformerFactory.setURIResolver(new XslURIResolver(this.bundleContect, f));
@@ -87,9 +81,7 @@ public class TransformToFo {
 			Source source = new StreamSource(xsl);
 			this.templates = transformerFactory.newTemplates(source);
 		}
-		long endTime = new java.util.Date().getTime();
-		Transformer transformer = this.templates.newTransformer();
-		return transformer;
+		return this.templates.newTransformer();
 	}
 	private SAXParserFactory createParserFactory() {
 		SAXParserFactory factory = SAXParserFactory.newInstance("com.ctc.wstx.sax.WstxSAXParserFactory", null);

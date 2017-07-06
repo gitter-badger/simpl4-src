@@ -1,7 +1,7 @@
 /**
  * This file is part of SIMPL4(http://simpl4.org).
  *
- * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
  *
  * SIMPL4 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.debug;
 import static org.apache.commons.io.IOUtils.toInputStream;
+import static org.apache.commons.io.IOUtils.toString;
 
 
 @SuppressWarnings("unchecked")
@@ -53,6 +54,7 @@ public class FOBuilder extends TemplateEvaluator{
 	private MyTemplateResolver resolver = null;
 	private BundleContext bc;
 	private String namespace;
+	private	TransformToFo transformer = null;
 
 	public FOBuilder(String namespace, BundleContext bc) {
 		this.bc = bc;
@@ -66,26 +68,25 @@ public class FOBuilder extends TemplateEvaluator{
 
 		this.resolver = new MyTemplateResolver( namespace);
 		this.engine = new MarkupTemplateEngine(this.class.getClassLoader(),templateConfiguration, resolver);
-		info(this, "new FOBuilder:"+this.engine+"/"+this.resolver);
+		this.transformer = TransformToFo.create(this.bc);
 	}
 
 	public InputStream toFO( String jsonText, Map<String,Object> variableMap){
 		def jsonSlurper = new JsonSlurper();
 		def json = (Map)jsonSlurper.parseText(jsonText);
-		info(this,"FOBuilder.jsonText:" + json);
 		def templateName = json.templateName as String;
 
 		def isMod = this.resolver.testModified( templateName );
-		info(this,"FOBuilder.isMod:" + isMod);
 		def template = this.templateCache.get(templateName);
 		if (template == null || isMod) {
 			template = this.engine.createTemplateByPath( templateName);
 			this.templateCache.put(templateName, template);
 		}
-		info(this,"FOBuilder.template:" + template);
+		htmlToFoList( json.blocks as List );
 
 		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
 		binding.putAll( variableMap);
+		binding.putAll( json);
 		info(this,"FOBuilder.binding:" + binding);
 		String answer = template.make(binding).toString();
 		info(this,"FOBuilder.answer:"+answer);
@@ -93,21 +94,6 @@ public class FOBuilder extends TemplateEvaluator{
 		return toInputStream( answer );
 	}
 
-	public String render( String text, Map<String,Object> variableMap){
-		info(this,"GroovyMarkupEngine.convert:"+text);
-		String key = getMD5OfUTF8(text);
-		Template template = this.templateCache.get(key);
-		if (template == null) {
-			template = engine.createTemplate(text);
-			this.templateCache.put(key, template);
-		}
-		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
-		binding.putAll( variableMap);
-		info(this,"Template is writing using attributes:" + binding);
-		String answer = template.make(binding).toString();
-		debug(this,"GroovyMarkupEngine.answer:"+answer);
-		return answer;
-	}
 
 	private static class MyTemplateResolver implements TemplateResolver {
 		private TemplateConfiguration templateConfiguration;
@@ -154,8 +140,19 @@ public class FOBuilder extends TemplateEvaluator{
 
 
 	private void htmlToFo(InputStream is, OutputStream os) throws Exception {
-		TransformToFo transformer = TransformToFo.create(this.bc);
-		transformer.transform(is, os);
+		this.transformer.transform(is, os);
+	}
+	private void htmlToFoList(List<Map> blocks) throws Exception {
+		blocks.each{ block ->
+info(this,"HTML:"+block.html);
+			block.fo = htmlToFo( "<div>" + block.html +"</div>"  as String );
+info(this,"FO:"+block.fo);
+		}
+	}
+	private String htmlToFo(String html) throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		this.transformer.transform(toInputStream(html), bos);
+		return bos.toString("UTF-8");
 	}
 }
 
