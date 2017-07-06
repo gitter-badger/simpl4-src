@@ -4975,7 +4975,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var yAxis = targets.yAxis;
 	    var content = targets.content;
 
-
+			x=0; //@@@MS now bounce in x direction
 	    (0, _utils.setStyle)(content, {
 	        '-transform': 'translate3d(' + -(offset.x + x) + 'px, ' + -(offset.y + y) + 'px, 0)'
 	    });
