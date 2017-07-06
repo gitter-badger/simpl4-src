@@ -304,6 +304,18 @@
 					this.autocomplete="new-password";
 				}
 			},
+			isNumber:function(){
+				if( this.type && this.type.match(/^number$/) ){
+					return true;
+				}
+				return false;
+			},
+			isDecimal:function(){
+				if( this._origType && this._origType.match(/^decimal/) ){
+					return true;
+				}
+				return false;
+			},
 			isDate:function(){
 				if( this.isDateYearMonth()) return true;
 				if( this._origType && this._origType.match(/^date/) ){
@@ -455,6 +467,7 @@
 					return;
 				}
 				if ( this.type != 'text' && !this.isAuthorizedType() ) {
+					this._origType = this.type;
 					if( this.type == "double" || this.type == "integer"){
 						this.type = 'number'
 					}else{
@@ -508,6 +521,19 @@
 				if ( this.isDate() ) {
 					if ( typeof this.value === "string" && !this._isIsoDate(this.value) ) {
 						return null;
+					}
+				}
+				if ( this.isNumber() ) {
+					if( this.value != null){
+						return parseInt(this.value);
+					}
+				}
+				if ( this.isDecimal() ) {
+					if( this.value != null){
+						if ( typeof this.value === "string" && this.value.indexOf(",")>=0) {
+							this.value = this.value.replace(/,/,".");
+						}	
+						return parseFloat(this.value);
 					}
 				}
 				return this.value;

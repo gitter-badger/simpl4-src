@@ -971,6 +971,8 @@
 		},
 		_constructRegulaConstraints: function( constraints, message ) {
 			if ( constraints == null || constraints.length == 0 ) return "";
+			constraints = constraints.replace(/DecimalMin/g, 'Min');
+			constraints = constraints.replace(/DecimalMax/g, 'Max');
 			constraints = JSON.parse( constraints );
 			var ret = "";
 			var b = "";
