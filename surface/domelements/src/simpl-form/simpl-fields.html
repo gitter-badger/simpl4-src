@@ -1518,8 +1518,10 @@
 				}
 			},
 			ignore:function(e){
-				e.preventDefault();
-				e.stopPropagation();
+				if( this.parentNode.tagName != "FORM-ELEMENT-RENDERER"){
+					e.preventDefault();
+					e.stopPropagation();
+				}
 			},
 			attached:function(){
 				this.async( function() {
