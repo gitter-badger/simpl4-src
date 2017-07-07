@@ -121,7 +121,6 @@
 			var errorList = [];
 
 			var elements = this._filterToArray( "input-field,checkbox-field,select-field" , this.$.formdiv, true,false );
-			console.log("elements:",elements);
 			Array.prototype.forEach.call( elements, function( elem ) {
 				elem.setInvalid( false );
 			} );
@@ -153,7 +152,6 @@
 				}
 			}
 			if ( errorList && errorList.length > 0 ) {
-				console.log( "form.validate.errorList:", errorList );
 			}
 			this._validateLocal( errorList );
 			return errorList.length == 0;
@@ -351,7 +349,20 @@
 				if ( field ) {
 					field.withoutCheck = true;
 					if ( field.setInvalid ) field.setInvalid( false );
-					field.setValue( data[ key ] );
+
+					var fieldData = this.data[ key ];
+					var oldValue = fieldData;
+					if ( field.expressionIn ) {
+						var env = {
+							$mode: this.mode,
+							$lang: simpl4.util.BaseManager.getLanguage(),
+							$self: fieldData
+						};
+						env = simpl4.util.Merge.merge( true, data, env );
+						fieldData = this._maskedEval( field.expressionIn, env );
+						console.log( "expressionIn(" + field.name + "\t," + field.expressionIn + "\t," + oldValue + ") -> ", fieldData );
+					}
+					field.setValue( fieldData );
 				}
 			} ).bind( this ) );
 			this._valueChanged();
