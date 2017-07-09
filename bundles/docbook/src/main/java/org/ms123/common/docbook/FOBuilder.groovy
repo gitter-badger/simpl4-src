@@ -82,11 +82,11 @@ public class FOBuilder extends TemplateEvaluator{
 			template = this.engine.createTemplateByPath( templateName);
 			this.templateCache.put(templateName, template);
 		}
-		htmlToFoList( json.blocks as List );
+		htmlToFoList( json.state as Map );
 
 		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
 		binding.putAll( variableMap);
-		binding.putAll( json);
+		binding.putAll( json.state as Map);
 		info(this,"FOBuilder.binding:" + binding);
 		String answer = template.make(binding).toString();
 		info(this,"FOBuilder.answer:"+answer);
@@ -142,11 +142,16 @@ public class FOBuilder extends TemplateEvaluator{
 	private void htmlToFo(InputStream is, OutputStream os) throws Exception {
 		this.transformer.transform(is, os);
 	}
-	private void htmlToFoList(List<Map> blocks) throws Exception {
-		blocks.each{ block ->
-info(this,"HTML:"+block.html);
-			block.fo = htmlToFo( "<div>" + block.html +"</div>"  as String );
-info(this,"FO:"+block.fo);
+	private void htmlToFoList(Map state) throws Exception {
+
+		Map areas = state.areas as Map;
+		areas.each{ entry -> 
+			List<Map> blocks = entry.value as List;
+			blocks.each{ block ->
+				info(this,"HTML:"+block.html);
+				block.fo = htmlToFo( "<div>" + block.html +"</div>"  as String );
+				info(this,"FO:"+block.fo);
+			}
 		}
 	}
 	private String htmlToFo(String html) throws Exception {
