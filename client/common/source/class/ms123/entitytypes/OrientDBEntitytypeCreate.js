@@ -239,6 +239,9 @@ qx.Class.define( "ms123.entitytypes.OrientDBEntitytypeCreate", {
 				'value': "7",
 				'label': "STRING"
 			}, {
+				'value': "8",
+				'label': "BINARY"
+			}, {
 				'value': "9",
 				'label': "EMBEDDED"
 			}, {
