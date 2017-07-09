@@ -228,6 +228,7 @@
 			try {
 				env._ = _;
 				env.moment = moment;
+				env.Math = Math;
 				env.form = this;
 				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
@@ -318,7 +319,7 @@
 					};
 					env = simpl4.util.Merge.merge( true, data, env );
 					fieldData = this._maskedEval( field.expressionIn, env );
-					console.log( "expressionIn(" + field.name + "\t," + field.expressionIn + "\t," + oldValue + ") -> ", fieldData );
+//					console.log( "expressionIn(" + field.name + "\t," + field.expressionIn + "\t," + oldValue + ") -> ", fieldData );
 
 				}
 				field.setValue( fieldData || field.defaultvalue || null );
@@ -395,7 +396,7 @@
 				env = simpl4.util.Merge.merge( true, data, env );
 				data[ field.name ] = this._maskedEval( field.expressionOut, env );
 
-				console.log( "expressionOut(" + field.name + "\t," + field.expressionOut + "\t," + oldValue + ") -> ", data[ field.name ] );
+				//console.log( "expressionOut(" + field.name + "\t," + field.expressionOut + "\t," + oldValue + ") -> ", data[ field.name ] );
 			}, this );
 			return data;
 		},
