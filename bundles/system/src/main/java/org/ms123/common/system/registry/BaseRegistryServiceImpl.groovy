@@ -57,6 +57,7 @@ abstract class BaseRegistryServiceImpl {
 			obj.attributes = attributes;
 		}
 	}
+
 	protected String  _get(String key){
 		def obj = this.registryClass.graphQuery("select from Registry where key=?", true, key)
 		if( obj == null){
@@ -64,6 +65,26 @@ abstract class BaseRegistryServiceImpl {
 		}
 		return obj.value;
 	}
+	protected List<Map>  _getAll(Map attributes){
+		def sql = "select from Registry where ";
+		def and ="";
+		def values = [];
+		attributes.each{ key, value ->
+			sql += and + 'attributes.'+key+'=?';
+			and = " and ";
+			values.add( value);
+		}
+		info(this, "getAll.sql:"+ sql);
+		info(this, "getAll.values:"+ values);
+		def objs = this.registryClass.graphQuery(sql, false, values.toArray())
+		def list = [];
+		objs.each{ obj ->
+			list.add([key:obj.key,value:obj.value]);
+		}
+		info(this, "getAll.result:"+ list);
+		return list;
+	}
+
 	protected List<String>  _getKeys(Map attributes){
 		def sql = "select from Registry where ";
 		def and ="";
@@ -83,6 +104,7 @@ abstract class BaseRegistryServiceImpl {
 		info(this, "getKeys.result:"+ list);
 		return list;
 	}
+
 	protected void  _delete(String key){
 		def obj = this.registryClass.graphQuery("select from Registry where key=?", true, key)
 		if( obj == null){
