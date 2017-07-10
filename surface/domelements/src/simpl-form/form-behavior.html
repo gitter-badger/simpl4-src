@@ -731,7 +731,9 @@
 					if ( shape.stencil.id.toLowerCase() == 'input' ) {
 						if ( shape.properties.xf_type.startsWith( "date" ) ) {
 							var d = shape.properties.xf_default;
-							if ( d != null && typeof( d ) === "string" && d.length > 0 ) {
+							if ( shape.properties.xf_default=="now") {
+								shape.properties.xf_default = Date.create().getTime();
+							}else if ( d != null && typeof( d ) === "string" && d.length > 0 ) {
 								shape.properties.xf_default = Date.create( d ).getTime();
 								if ( isNaN( shape.properties.xf_default ) ) {
 									console.error( "form-behavior:parse.error.DefaultDate(" + shape.properties.xf_id + "):" + d );
