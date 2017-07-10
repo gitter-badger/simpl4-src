@@ -795,6 +795,7 @@
 					var parammapping = props.xf_parammapping;
 					var resultmapping = props.xf_resultmapping;
 					var varname = props.xf_varname;
+					var namespace = props.xf_namespace || this.namespace;
 					if ( !this._isEmpty( varname ) ) {
 						props.items = this.variables[ varname ];
 						if ( !isTreeSelect ) {
@@ -813,10 +814,10 @@
 						}
 						props.items = this._doResultMapping( props.items, resultmapping );
 					} else if ( !isTreeSelect && !isTableSelect && enumembed && enumembed.totalCount > 0 ) {
-						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, enumembed );
+						var si = simpl4FormManager.createSelectableItems( namespace, this.formName, props.xf_id, enumembed );
 						props.items = si.getItems();
 					} else if ( !isTreeSelect && !isTableSelect && _enum && _enum.totalCount > 0 ) {
-						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
+						var si = simpl4FormManager.createSelectableItems( namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					} else if ( !isTreeSelect && !this._isEmpty( filter ) ) {
 						var filterDesc = {
@@ -826,7 +827,7 @@
 						}
 						filterDesc.params = this._doParameterMapping( parammapping );
 						filterDesc.checkParams = true;
-						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
+						var si = simpl4FormManager.createSelectableItems( namespace, this.formName, props.xf_id, JSON.stringify( filterDesc ) );
 						var items = si.getItems();
 						if ( si.getMissingParamList() ) {
 							console.error( "Filter:", filterDesc );
@@ -841,10 +842,10 @@
 							items: []
 						}
 						serviceDesc.params = this._doParameterMapping( parammapping );
-						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( serviceDesc ) );
+						var si = simpl4FormManager.createSelectableItems( namespace, this.formName, props.xf_id, JSON.stringify( serviceDesc ) );
 						props.items = this._doResultMapping( si.getItems(), resultmapping );
 					} else {
-						var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
+						var si = simpl4FormManager.createSelectableItems( namespace, this.formName, props.xf_id, JSON.stringify( props.xf_enum ) );
 						props.items = si.getItems();
 					}
 					if ( shape.stencil.id.toLowerCase() == 'tableselect' ) {
@@ -971,9 +972,15 @@
 			for ( var i = 0; i < items.length; i++ ) {
 				var item = items[ i ];
 				var selectionObject = clone(item);
+				if( _.isString(item)){
+					selectionObject = { 'self': item };
+				}
 				for ( var j = 0; j < mapping.length; j++ ) {
 					var _mapping = mapping[ j ].mapping;
 					var resexpr = mapping[ j ].resultexpr;
+					if( _.isString(item)){
+						item = { 'self': item };
+					}
 					selectionObject[ _mapping ] = this._maskedEval( resexpr, item );
 				}
 				selectionList.push( selectionObject );
