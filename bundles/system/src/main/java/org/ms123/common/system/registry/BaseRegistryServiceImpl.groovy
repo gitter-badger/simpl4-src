@@ -51,7 +51,7 @@ abstract class BaseRegistryServiceImpl {
 	protected void  _set(String key, String value,Map attributes){
 		def obj = this.registryClass.graphQuery("select from Registry where key=?", true, key)
 		if( obj == null){
-			this.registryClass.newInstance( [key:key,value:value] );
+			this.registryClass.newInstance( [key:key,value:value,attributes:attributes] );
 		}else{
 			obj.value = value;
 			obj.attributes = attributes;
