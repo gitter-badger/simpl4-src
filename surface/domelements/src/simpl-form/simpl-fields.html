@@ -2019,7 +2019,28 @@
 			xosition: absolute;
 		}
 
+		:host /deep/ paper-dialog > *:last-child {
+			margin-bottom: 4px;
+		}
+		:host /deep/ paper-dialog > *:first-child {
+			margin-top: 14px;
+		}
+		:host /deep/ paper-dialog#searchDialog {
+			padding: 0px 0px 0 0px;
+		}
+		:host /deep/ .button-content {
+			padding: 0.2em 0.27em;
+		}
+		paper-button {
+			min-width: 0px;
+		}
+		:host /deep/ #scrollable {
+			max-height: inherit !important;
+			padding: 0 10px;
+		}
+
 	</style>
+  <style is="custom-style" include="simpl-crud-shared-styles"></style>
 	<template>
 
 		<div id="floatedLabel" hidden$="[[!label]]" class="floatedLabel">
@@ -2032,6 +2053,9 @@
 				<div class="line grid row">
 					<template is="dom-repeat" index-as="cid" as="col" items="[[columns]]">
 						<grid-element-renderer id="[[getElementId(lid,cid)]]" style$="[[getColStyle(col.width)]]" class$="[[getColFlex(col.width)]]" item="[[col]]"></grid-element-renderer>
+					</template>
+					<template is="dom-if" if="[[search]]">
+						<paper-icon-button on-tap="_search" data-lid$="[[lid]]" icon="search"></paper-icon-button>
 					</template>
 					<paper-icon-button on-tap="addLine" data-lid$="[[lid]]" icon="add"></paper-icon-button>
 					<paper-icon-button on-tap="removeLine" data-lid$="[[lid]]" icon="remove"></paper-icon-button>
@@ -2049,6 +2073,17 @@
 				<iron-icon class="error-icon" icon="warning"></iron-icon>
 			</div>
 		</div>
+		<paper-dialog id="searchDialog" no-cancel-on-outside-click with-backdrop="">
+			<paper-dialog-scrollable>
+				<div style="color:#d00c0c;">
+					<simpl-filter id="filterId" style="margin-bottom:10px;" namespace="{{namespace}}" with-cancel on-cancel="cancelAction" entity="{{entityName}}" filter="{{filter}}"></simpl-filter>
+					<div style="height:13px;padding-right:20px;line-height:initial;" class="layout horizontal"><div class="flex">&#160;</div><div class="" style="font-size:11px;">[[getHelp()]]</div></div>
+					<simpl-panel bgcolor="black" heading="[[getHeader(entityName)]]">
+						<simpl-crudtable id="linkedObjId" disable-spinner namespace="{{namespace}}" on-rows-selected="rowsSelected" meta="{{meta}}" filter="{{filter}}"></simpl-crudtable>
+					</simpl-panel>
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
 	</template>
 	<script>
 		Polymer( {
@@ -2058,6 +2093,7 @@
 				Polymer.PaperInputBehavior,
 				Polymer.IronControlState,
 				TranslationsBehavior,
+				DialogBehavior,
 				FormBehavior,
 				FieldBehavior
 			],
@@ -2077,6 +2113,13 @@
 					},
 					type: Array
 				},
+				entity: {
+					type: String
+				},
+				search: {
+					value: false,
+					type: Boolean
+				},
 				arrows: {
 					value: true,
 					type: Boolean
@@ -2086,6 +2129,9 @@
 					type: String
 				}
 			},
+			observers: [
+				'entityChanged(entity,namespace)'
+			],
 			ready: function() {
 				this.isInvalid = false;
 				this.push( "lines", {} );
@@ -2117,6 +2163,44 @@
 			},
 			getElementId: function( lid, cid ) {
 				return "id" + lid + "_" + cid;
+			},
+			entityChanged: function() {
+				this.async( function() {
+					if( this.entity == null){
+					  return;
+					}
+					var pack = this.getPack();
+					this.entityName = pack ? (pack +":"+ this.getSimpleEntityName(this.entity)) : this.entity;
+				},10 );
+			},
+			getHeader:function(entityName){
+				this.pack = this.getPack() || "data";
+				return tr(this.pack+'.'+this.getSimpleEntityName(entityName));
+			},
+			_search: function(e) {
+				this._lid = parseInt(e.target.dataset.lid);
+				this._entityName = this.entityName;
+				this.$.filterId.doSearch();
+				this.async( function() {
+					this.openDialog( this.$.searchDialog );
+				},250 );
+			},
+			rowsSelected: function( e ) {
+				if( !e.detail.doubleTap ){
+					return;
+				}
+				var data = e.detail.rows[0];
+				this.closeDialog( this.$.searchDialog );
+				console.log("data:", data);
+				this.setLineValues( data, this._lid);
+			},
+			cancelAction: function() {
+				this.async( function() {
+					this.closeDialog( this.$.searchDialog );
+				},50 );
+			},
+			getHelp:function(){
+				return tr("crud2.select_with");
 			},
 			columnsChanged: function() {
 				this.columns.each( ( function( c ) {

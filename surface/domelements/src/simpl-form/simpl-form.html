@@ -377,7 +377,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			</linkedlist-field>
 		</template>
 		<template is="dom-if" if="{{isGridInput(item.id)}}">
-			<gridinput-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" height="[[item.height]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
+			<gridinput-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" namespace="{{item.xf_namespace}}" search="[[item.xf_search]]" entity="{{item.xf_module}}" required="[[item.xf_required]]" height="[[item.height]]" columns="[[item.columns]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
 			</gridinput-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isTextArea(item.id)}}">
