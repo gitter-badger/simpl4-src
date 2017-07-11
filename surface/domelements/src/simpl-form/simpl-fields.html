@@ -2122,7 +2122,9 @@
 				this.columns.each( ( function( c ) {
 					c.regulaConstraints = this._constructRegulaConstraints( c.constraints );
 					c.label = c.display;
-					c.id = "Input";
+					if( c.id != "Enumselect"){
+						c.id = "Input";
+					}
 					c.xf_type = c.type;
 					c.xf_id = c.colname;
 				} ).bind( this ) );
