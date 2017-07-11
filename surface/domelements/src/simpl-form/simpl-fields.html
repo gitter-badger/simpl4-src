@@ -1491,6 +1491,9 @@
 			},
 			onChange: function( val ) {
 				//console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
+				if( this.isEmpty(this.value) && this.isEmpty(val)){
+					return;
+				}
 				this.value = val;
 				this.fire( 'value-changed', this );
 			},
