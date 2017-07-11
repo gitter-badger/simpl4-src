@@ -2218,7 +2218,7 @@
 				var lid = parseInt(e.target.dataset.lid);
 				this.push( "lines", {} );
 				this.async( function() {
-					for ( var i = this.lines.length-1; i > lid; i-- ) {
+					for ( var i = this.lines.length-1; (i-1) > lid; i-- ) {
 						this._upLine(i);
 					}
 				}, 20 );
