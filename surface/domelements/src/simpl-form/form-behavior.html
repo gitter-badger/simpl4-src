@@ -775,11 +775,15 @@
 						}
 						if( col.type == "selection"){
 							col.id= "Enumselect";
-							col.items = JSONPath( {
-								json: this._selectionLists,
-								path: col.parameter,
-								callback: function() {}
-							} )[0];
+							try{
+								col.items = JSONPath( {
+									json: this._selectionLists,
+									path: col.parameter,
+									callback: function() {}
+								} )[0];
+							}catch(e){
+								console.error("JSONPath:",e);
+							}
 						}
 					}
 					props.xf_columns = undefined;
