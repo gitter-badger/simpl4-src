@@ -74,6 +74,9 @@ public class FOBuilder extends TemplateEvaluator{
 	public InputStream toFO( String jsonText, Map<String,Object> variableMap){
 		def jsonSlurper = new JsonSlurper();
 		def json = (Map)jsonSlurper.parseText(jsonText);
+		if( json.templateName == null){
+			json = [ state:json, templateName:"master.tpl"];
+		}
 		def templateName = json.templateName as String;
 
 		def isMod = this.resolver.testModified( templateName );
@@ -82,7 +85,11 @@ public class FOBuilder extends TemplateEvaluator{
 			template = this.engine.createTemplateByPath( templateName);
 			this.templateCache.put(templateName, template);
 		}
-		htmlToFoList( json.state as Map );
+		if( variableMap.bindings != null){
+			htmlToFoList( json.state as Map, variableMap.bindings as Map );
+		}else{
+			htmlToFoList( json.state as Map, variableMap );
+		}
 
 		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
 		binding.putAll( variableMap);
@@ -142,14 +149,20 @@ public class FOBuilder extends TemplateEvaluator{
 	private void htmlToFo(InputStream is, OutputStream os) throws Exception {
 		this.transformer.transform(is, os);
 	}
-	private void htmlToFoList(Map state) throws Exception {
+	private void htmlToFoList(Map state, Map bindings) throws Exception {
 
 		Map areas = state.areas as Map;
 		areas.each{ entry -> 
 			List<Map> blocks = entry.value as List;
 			blocks.each{ block ->
-				info(this,"HTML:"+block.html);
-				block.fo = htmlToFo( "<div>" + block.html +"</div>"  as String );
+				def text = null;
+				try{
+					text = render(block.html as String, bindings);
+				}catch(Exception e){
+					text = (block.html as String) + "<div>"+e.getMessage()+"</div>";
+				}
+				info(this,"HTML:"+text);
+				block.fo = htmlToFo( "<div>" + text +"</div>"  as String );
 				info(this,"FO:"+block.fo);
 			}
 		}

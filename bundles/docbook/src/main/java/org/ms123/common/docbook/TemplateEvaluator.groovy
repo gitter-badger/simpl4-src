@@ -41,7 +41,7 @@ public class TemplateEvaluator{
 		String key = getMD5OfUTF8(text);
 		Template temp = m_cache.get(key);
 		if( !temp ){
-			SimpleTemplateEngine engine = new SimpleTemplateEngine(m_shell);
+			SimpleTemplateEngine engine = m_shell != null ? new SimpleTemplateEngine(m_shell) : new SimpleTemplateEngine();
 			temp = engine.createTemplate(text);
 			m_cache.put(key,temp);
 		}
