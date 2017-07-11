@@ -1174,6 +1174,9 @@ class GroovyProcessor implements Processor {
 		if( main.fieldExists(this.scriptClazz,"registryService")){
 			main.injectField( this.scriptClazz, script, "registryService", main.getService( "org.ms123.common.system.registry.RegistryService"))
 		}
+		if( main.fieldExists(this.scriptClazz,"callService")){
+			main.injectField( this.scriptClazz, script, "callService", main.getService( "org.ms123.common.rpc.CallService"))
+		}
 		if( main.fieldExists(this.scriptClazz,"orientGraph")){
 			main.injectField( this.scriptClazz, script, "orientGraph", main.getOrientGraph( this.namespace))
 		}
