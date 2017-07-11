@@ -99,7 +99,7 @@ public class OrientDBSessionContextImpl extends BaseOrientDBSessionContextImpl i
 	}
 
 	public Map executeNamedFilter(String name, Map<String, Object> fparams) {
-		return executeNamedFilter(name, new HashMap(), null);
+		return executeNamedFilter(name, fparams, null);
 	}
 
 	public Map executeNamedFilter(String name, Map<String, Object> fparams, Map<String, Object> options) {
