@@ -468,10 +468,14 @@
 				}
 				if ( this.type != 'text' && !this.isAuthorizedType() ) {
 					this._origType = this.type;
-					if( this.type == "double" || this.type == "decimal" || this.type == "integer"){
-						this.type = 'number'
+					if( this.type == "double" || this.type == "decimal"){
+						this.step = "0.01";
+						this.type = 'number';
+					}else if( this.type == "integer"){
+						this.step = "1";
+						this.type = 'number';
 					}else{
-						this.type = 'text'
+						this.type = 'text';
 					}
 				}
 				if ( this.isDateTime() && this.hasDate) {
