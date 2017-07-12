@@ -153,7 +153,9 @@ public class FOBuilder extends TemplateEvaluator{
 
 		Map areas = state.areas as Map;
 		areas.each{ entry -> 
-			List<Map> blocks = entry.value as List;
+			List<Map> flowBlocks = entry.value['flow'] as List;
+			List<Map> staticBlocks = entry.value['static'] as List;
+			List<Map> blocks = flowBlocks + staticBlocks;
 			blocks.each{ block ->
 				def text = null;
 				try{
