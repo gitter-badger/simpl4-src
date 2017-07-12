@@ -85,14 +85,15 @@ public class FOBuilder extends TemplateEvaluator{
 			template = this.engine.createTemplateByPath( templateName);
 			this.templateCache.put(templateName, template);
 		}
+		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
 		if( variableMap.bindings != null){
+			binding.putAll( variableMap.bindings as Map);
 			htmlToFoList( json.state as Map, variableMap.bindings as Map );
 		}else{
 			htmlToFoList( json.state as Map, variableMap );
+			binding.putAll( variableMap);
 		}
 
-		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
-		binding.putAll( variableMap);
 		binding.putAll( json.state as Map);
 		info(this,"FOBuilder.binding:" + binding);
 		String answer = template.make(binding).toString();
@@ -154,12 +155,16 @@ public class FOBuilder extends TemplateEvaluator{
 		Map areas = state.areas as Map;
 		areas.each{ entry -> 
 			List<Map> flowBlocks = entry.value['flow'] as List;
-			List<Map> staticBlocks = entry.value['static'] as List;
-			List<Map> blocks = flowBlocks + staticBlocks;
+			List<Map> absoluteBlocks = entry.value['absolute'] as List;
+			List<Map> blocks = flowBlocks + absoluteBlocks;
 			blocks.each{ block ->
 				def text = null;
 				try{
-					text = render(block.html as String, bindings);
+					if( block.html ){
+						text = render(block.html as String, bindings);
+					}else{
+						text = "";
+					}
 				}catch(Exception e){
 					text = (block.html as String) + "<div>"+e.getMessage()+"</div>";
 				}
