@@ -305,7 +305,7 @@
 				}
 			},
 			isNumber:function(){
-				if( this.type && this.type.match(/^number$/) ){
+				if( this.type && this.type.match(/^number$/) && !this.isDecimal() ){
 					return true;
 				}
 				return false;
@@ -468,7 +468,7 @@
 				}
 				if ( this.type != 'text' && !this.isAuthorizedType() ) {
 					this._origType = this.type;
-					if( this.type == "double" || this.type == "integer"){
+					if( this.type == "double" || this.type == "decimal" || this.type == "integer"){
 						this.type = 'number'
 					}else{
 						this.type = 'text'
