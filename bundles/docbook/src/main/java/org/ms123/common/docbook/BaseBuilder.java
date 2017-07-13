@@ -82,16 +82,16 @@ public class BaseBuilder {
 			return "";
 		}
 		Map binding = paramsIn != null ? new HashMap(paramsIn) : new HashMap();
-		SessionContext sc = executeFilter(namespace,filter, binding);
+//		SessionContext sc = executeFilter(namespace,filter, binding);
 		try {
 			Map<String, Object> vars = new HashMap();
 			CompilerConfiguration config = new CompilerConfiguration();
 			config.setDebug(true);
 			config.setScriptBaseClass(GroovyTaskDslBase.class.getName());
 			//vars.put("__sessionContext", sc);
-			binding.put("__sessionContext", sc);
-			binding.put("__queredObjects", new ArrayList());
-			binding.put("__createdObjects", new ArrayList());
+//			binding.put("__sessionContext", sc);
+//			binding.put("__queredObjects", new ArrayList());
+//			binding.put("__createdObjects", new ArrayList());
 			Binding xbinding = new Binding(vars);
 			GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), xbinding, config);
 			TemplateEvaluator te = new TemplateEvaluator(shell);
