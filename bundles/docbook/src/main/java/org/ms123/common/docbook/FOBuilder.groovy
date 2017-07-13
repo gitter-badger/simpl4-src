@@ -42,7 +42,6 @@ import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.debug;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.apache.commons.io.IOUtils.toString;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 
 @SuppressWarnings("unchecked")
@@ -171,7 +170,7 @@ public class FOBuilder extends TemplateEvaluator{
 				}
 				try{
 					info(this,"HTML:"+text);
-					block.fo = htmlToFo( "<div>" + escapeHtml4(text) +"</div>"  as String );
+					block.fo = htmlToFo( "<div>" + HtmlEscape.escape(text) +"</div>"  as String );
 					info(this,"FO:"+block.fo);
 				}catch(Exception e){
 					block.fo = "<fo:block>"+block.markdown+":"+e.getMessage()+"</fo:block>";
