@@ -277,7 +277,7 @@ CRUD operations for simpl4
 				try {
 					var em = simpl4.util.EntityManager;
 					var data = em.getEntityViewFields( entity, this.namespace, "main-grid", false );
-					colModel = em.buildColModel( data, this.namespace, entity, "search" );
+					var colModel = em.buildColModel( data, this.namespace, entity, "search" );
 					this._buildMeta( colModel, entity );
 				} catch ( e ) {
 					console.error( "getSelectableFields:", e );
@@ -285,7 +285,7 @@ CRUD operations for simpl4
 				}
 				return colModel;
 			},
-			_buildMeta: function( colMode, entity ) {
+			_buildMeta: function( colModel, entity ) {
 				simpl4.util.MessageManager.installMessages( this.namespace );
 				this.fieldmap = {};
 				var columns = new Array();
