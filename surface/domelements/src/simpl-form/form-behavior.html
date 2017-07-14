@@ -626,27 +626,27 @@
 			}, 1 );
 		},
 		/*BEG: Dummy-Form handling, to win selectionLists */
-		formTabRenderer:function(shape){
+		_formTabRenderer:function(shape){
 			for( var i=0; i < shapes.length;i++){
 				var shape = shapes[i];
-				this.formElementRenderer( shape);
+				this._formElementRenderer( shape);
 			}
 		},
-		formElementSelector:function(shapes){
+		_formElementSelector:function(shapes){
 			for( var i=0; i < shapes.length;i++){
 				var shape = shapes[i];
 				if( this.isField( shape.id )){
-					this.formElementRenderer( shape);
+					this._formElementRenderer( shape);
 				}
 				if( this.isTabView( shape.id )){
-					this.formTabRenderer( shape.childShapes);
+					this._formTabRenderer( shape.childShapes);
 				}
 				if( this.isGroup( shape.id ) || this.isRow( shape.id) || this.isForm(shape.id)){
-					this.formElementSelector( shape.childShapes);
+					this._formElementSelector( shape.childShapes);
 				}
 			}
 		},
-		formElementRenderer:function(shape){
+		_formElementRenderer:function(shape){
 			if( this.isEnumSelect( shape.id )){
 				this._itemMap[shape.xf_id] = shape.items;
 			}
@@ -671,8 +671,7 @@
 			this.shapes = this._prepareShape( form ).childShapes;
 			this._shapeMap = {};
 			this._buildShapeMap( this.shapes[ 0 ] );
-			this.formElementSelector(this.shapes);
-console.log("_itemMap:", this._itemMap);
+			this._formElementSelector(this.shapes);
 		},
 		/*END Dummy-Form*/
 
