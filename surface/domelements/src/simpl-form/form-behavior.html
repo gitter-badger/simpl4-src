@@ -625,6 +625,57 @@
 				}, 1 );
 			}, 1 );
 		},
+		/*BEG: Dummy-Form handling, to win selectionLists */
+		formTabRenderer:function(shape){
+			for( var i=0; i < shapes.length;i++){
+				var shape = shapes[i];
+				this.formElementRenderer( shape);
+			}
+		},
+		formElementSelector:function(shapes){
+			for( var i=0; i < shapes.length;i++){
+				var shape = shapes[i];
+				if( this.isField( shape.id )){
+					this.formElementRenderer( shape);
+				}
+				if( this.isTabView( shape.id )){
+					this.formTabRenderer( shape.childShapes);
+				}
+				if( this.isGroup( shape.id ) || this.isRow( shape.id) || this.isForm(shape.id)){
+					this.formElementSelector( shape.childShapes);
+				}
+			}
+		},
+		formElementRenderer:function(shape){
+			if( this.isEnumSelect( shape.id )){
+				this._itemMap[shape.xf_id] = shape.items;
+			}
+		},
+		getItems: function( name ) {
+			return	this._itemMap[name];
+		},
+		initForm: function(namespace, name) {
+			this.fields = [];
+			this.fieldsMap = {};
+			this.shapes = [];
+			this._form = {};
+			this._itemMap = {};
+			this._preData = null;
+			this.namespace=namespace;
+
+			var form = simpl4FormManager.getForm( name, namespace );
+			this._form = form.properties;
+			this.formVar = form.properties.xf_name;
+			this._getSelectionLists( form.properties.xf_method_fetch );
+			this._doPreProcess();
+			this.shapes = this._prepareShape( form ).childShapes;
+			this._shapeMap = {};
+			this._buildShapeMap( this.shapes[ 0 ] );
+			this.formElementSelector(this.shapes);
+console.log("_itemMap:", this._itemMap);
+		},
+		/*END Dummy-Form*/
+
 		_toMap: function( arr ) {
 			var map = {};
 			arr.forEach( function( elem ) {
