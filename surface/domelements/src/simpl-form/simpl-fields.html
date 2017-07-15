@@ -774,7 +774,7 @@
 				<div hidden$="[[!label]]" style="width:3%;">
 					<label class="label-text">{{label}}</label>
 				</div>
-				<simpl-upload id="input" multi class="paper-input-input" drop-text="[[tr('import.drop_file2')]]" droppable="true" raised="true">[[tr('import.select_file')]]</simpl-upload>
+				<simpl-upload id="input" multi="{{multi}}" class="paper-input-input" drop-text="[[tr('import.drop_file2')]]" droppable="true" raised="true">[[tr('import.select_file')]]</simpl-upload>
 			</div>
 			<template is="dom-if" if="[[errorMessage]]">
 				<paper-input-error>[[errorMessage]]</paper-input-error>
@@ -807,7 +807,11 @@
 				},
         value: {
          type: Object
-        }
+        },
+				multi: {
+					type: Boolean,
+					value: true
+				}
 			},
 			ready: function() {
 				this.isInvalid = false;
@@ -817,7 +821,13 @@
 				if ( f != null ) {
 					f.setValue( e.detail.target.file.name );
 				}
-				this.value[ e.detail.target.file.name ] =  e.detail.target.result;
+				if( this.multi ){
+					this.value[ e.detail.target.file.name ] =  e.detail.target.result;
+				}else{
+					this.value = {};
+					this.value[ e.detail.currentTarget.file.name] =  e.detail.currentTarget.result;
+				}
+				this.fire( 'value-changed', this );
 				this.checkConstraints();
 			},
 			getValue: function() {

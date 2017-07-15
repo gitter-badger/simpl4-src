@@ -361,7 +361,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			</tree-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isUpload(item.id)}}">
-			<upload-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" enabled-expr$="{{item.xf_enabled}}" required="[[item.xf_required]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
+			<upload-field field class="flex" name$="{{item.xf_id}}" tabindex$="[[item.xf_tabindex]]" enabled-expr$="{{item.xf_enabled}}" multi="[[item.xf_multi]]" required="[[item.xf_required]]" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" default-vValue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
 			</upload-field>
 		</template>
 		<template is="dom-if" if="{{isTableSelect(item.id)}}">
