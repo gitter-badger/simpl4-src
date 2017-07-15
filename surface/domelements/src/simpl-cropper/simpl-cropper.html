@@ -1,0 +1,128 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<link rel="import" href="import-js.html">
+<link rel="import" type="css" href="cropper.css" />
+<dom-module id="simpl-cropper" flex relative>
+	<style>
+		.container {
+			max-width: 640px;
+			//			min-height:400px;
+			margin: 20px auto;
+		}
+		img {
+			width: 100%;
+		}
+		:host /deep/ #dropArea {
+			width: 100%;
+			height: 100%;
+		}
+		:host /deep/ #UploadBorder {
+			border: 1px dashed #c10618 !important;
+			width: 100%;
+			height: 200px;
+		}
+		:host /deep/ .uploadtrash {
+			width: 20px;
+		}
+		:host /deep/ simpl-upload paper-button {
+			margin: 0px !important;
+		}
+
+	</style>
+	<template>
+
+
+		<paper-tabs class="flex" selected="{{mainTabId}}" selectables="paper-tab" on-iron-select="mainTabSelected" attr-for-selected="main-item-id" scrollable>
+			<paper-tab class="menu__item_secondary" main-item-id="0">[[tr('dropper.upload')]]</paper-tab>
+			<paper-tab class="menu__item_secondary" main-item-id="1">[[tr('dropper.editor')]]</paper-tab>
+		</paper-tabs>
+
+		<div scrollbar style="" class="scrollId container">
+			<neon-animated-pages selected="{{mainTabId}}" attr-for-selected="main-item-id" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
+				<neon-animatable style="position:relative;" main-item-id="0">
+					<simpl-form id="uploadFormId" namespace="global" on-value-changed="onUploadValueChanged" data="[[formData]]" on-xaction="onTapPage1Setup" form-name="dropperUpload.form"></simpl-form>
+
+				</neon-animatable>
+				<neon-animatable style="position:relative;" main-item-id="1">
+					<div class="container">
+						<h1>Cropper with responsive container</h1>
+						<div>
+							<img id="image" src="" alt="Picture">
+						</div>
+						<div class="layout horizontal">
+							<paper-icon-button id="resetId" slot="top" icon="vaadin-icons:refresh" on-tap="onTapReset"></paper-icon-button>
+							<paper-tooltip for="resetId">[[tr('cropper.reset')]]</paper-tooltip>
+						</div>
+					</div>
+				</neon-animatable>
+			</neon-animated-pages>
+		</div>
+
+
+	</template>
+	<script>
+		Polymer( {
+			is: 'simpl-cropper',
+			properties: {
+				/**
+				/**
+				 * the options
+				 */
+				mainTabId: {
+					type: String,
+					value: "0"
+				},
+
+				options: {
+					type: String
+				}
+			},
+			observers: [],
+			behaviors: [
+				TranslationsBehavior,
+
+				StyleScopeBehavior
+			],
+			attached: function() {
+				this.formData = {};
+				this.image = $( this.$.image );
+				this.image.cropper( {
+					movable: false,
+					zoomable: false,
+					rotatable: false,
+					scalable: false
+				} );
+			},
+			onUploadValueChanged: function( e ) {
+				var data = this.$.uploadFormId.getData();
+				console.log( "onUploadValueChanged:", data.uploadId );
+				this.mainTabId = '1';
+				var key = Object.keys( data.uploadId )[ 0 ];
+				this.image.cropper( "replace", data.uploadId[ key ] );
+			},
+			onTapReset: function() {
+				var result = this.image.cropper( "reset" );
+			},
+			ready: function() {}
+		} );
+
+	</script>
+</dom-module>
