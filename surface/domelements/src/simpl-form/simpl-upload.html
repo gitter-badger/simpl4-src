@@ -270,6 +270,7 @@
 		 * Clears the list of files
 		 */
 		clear: function() {
+			$(this.$.fileInput).val(null);
 			this.set( "files", [] );
 			this._showDropText();
 		},
