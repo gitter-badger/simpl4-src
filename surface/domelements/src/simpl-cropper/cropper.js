@@ -2143,6 +2143,7 @@ var methods = {
     var naturalHeight = canvas.naturalHeight;
 
     ratio = Number(ratio);
+console.log("ratio:",ratio);
 
     if (ratio >= 0 && self.ready && !self.disabled && options.zoomable) {
       var newWidth = naturalWidth * ratio;
@@ -2483,6 +2484,7 @@ var methods = {
     var self = this;
     var cropBox = self.cropBox;
 
+console.log("getCropBoxData("+self.ready+","+self.cropped+"):", cropBox);
     return self.ready && self.cropped ? {
       left: cropBox.left,
       top: cropBox.top,

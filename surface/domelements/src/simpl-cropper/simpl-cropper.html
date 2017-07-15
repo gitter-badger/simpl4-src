@@ -57,10 +57,15 @@
 		#preview {
 			border: 1px solid #0d7eb7 !important
 		}
-#dimensionId {
-    font-size: 14px;
-    padding-right: 5px;
-}
+		#dimensionId {
+			font-size: 14px;
+			padding-right: 5px;
+		}
+		paper-icon-button.toolbar {
+			width:36px;
+			height:36px;
+			color:black;
+		}
 
 	</style>
 	<template>
@@ -84,35 +89,38 @@
 							<img id="image" src="" alt="Picture">
 						</div>
 						<div class="layout horizontal">
-							<paper-icon-button id="resetId" slot="top" icon="vaadin-icons:refresh" on-tap="onTapReset"></paper-icon-button>
+							<paper-icon-button id="resetId" class="toolbar" slot="top" icon="vaadin-icons:refresh" on-tap="onTapReset"></paper-icon-button>
 							<paper-tooltip for="resetId">[[tr('cropper.reset')]]</paper-tooltip>
 
-							<paper-icon-button id="zoomInId" slot="top" icon="vaadin-icons:search-plus" on-tap="onTapZoomIn"></paper-icon-button>
+							<paper-icon-button id="zoomInId" class="toolbar" slot="top" icon="vaadin-icons:search-plus" on-tap="onTapZoomIn"></paper-icon-button>
 							<paper-tooltip for="zoomInId">[[tr('cropper.zoomin')]]</paper-tooltip>
 
-							<paper-icon-button id="zoomOutId" slot="top" icon="vaadin-icons:search-minus" on-tap="onTapZoomOut"></paper-icon-button>
+							<paper-icon-button id="zoomOutId" class="toolbar" slot="top" icon="vaadin-icons:search-minus" on-tap="onTapZoomOut"></paper-icon-button>
 							<paper-tooltip for="zoomOutId">[[tr('cropper.zoomout')]]</paper-tooltip>
 
-							<paper-icon-button id="zoomToId" slot="top" icon="maps:zoom-out-map" on-tap="onTapZoomTo"></paper-icon-button>
+							<paper-icon-button id="zoomToId" class="toolbar" slot="top" icon="vaadin-icons:expand-full" on-tap="onTapZoomTo"></paper-icon-button>
 							<paper-tooltip for="zoomToId">[[tr('cropper.zoomto')]]</paper-tooltip>
 
-							<paper-icon-button id="moveLeftId" slot="top" icon="vaadin-icons:arrow-left" on-tap="onTapMoveLeft"></paper-icon-button>
+							<paper-icon-button id="moveLeftId" class="toolbar" slot="top" icon="vaadin-icons:arrow-left" on-tap="onTapMoveLeft"></paper-icon-button>
 							<paper-tooltip for="moveLeftId">[[tr('cropper.moveleft')]]</paper-tooltip>
 
-							<paper-icon-button id="moveRightId" slot="top" icon="vaadin-icons:arrow-right" on-tap="onTapMoveRight"></paper-icon-button>
+							<paper-icon-button id="moveRightId" class="toolbar" slot="top" icon="vaadin-icons:arrow-right" on-tap="onTapMoveRight"></paper-icon-button>
 							<paper-tooltip for="moveRightId">[[tr('cropper.moveright')]]</paper-tooltip>
 
-							<paper-icon-button id="moveUpId" slot="top" icon="vaadin-icons:arrow-up" on-tap="onTapMoveUp"></paper-icon-button>
+							<paper-icon-button id="moveUpId" class="toolbar" slot="top" icon="vaadin-icons:arrow-up" on-tap="onTapMoveUp"></paper-icon-button>
 							<paper-tooltip for="moveUpId">[[tr('cropper.moveup')]]</paper-tooltip>
 
-							<paper-icon-button id="moveDownId" slot="top" icon="vaadin-icons:arrow-down" on-tap="onTapMoveDown"></paper-icon-button>
+							<paper-icon-button id="moveDownId" class="toolbar" slot="top" icon="vaadin-icons:arrow-down" on-tap="onTapMoveDown"></paper-icon-button>
 							<paper-tooltip for="moveDownId">[[tr('cropper.movedown')]]</paper-tooltip>
 
-							<paper-icon-button id="previewId" slot="top" icon="vaadin-icons:viewport" on-tap="onTapPreview"></paper-icon-button>
-							<paper-tooltip for="previewId">[[tr('cropper.preview')]]</paper-tooltip>
-							 <div id="placeholderId" xtyle="max-width:200px;" class="flex"></div>
+							<paper-icon-button id="moveTo0Id" class="toolbar" slot="top" icon="vaadin-icons:arrows" on-tap="onTapMoveTo0"></paper-icon-button>
+							<paper-tooltip for="moveTo0Id">[[tr('cropper.moveto0')]]</paper-tooltip>
 
-								<div id="dimensionId">[[getDimension(dataHeight,dataWidth)]]</div>
+							<paper-icon-button id="previewId" class="toolbar" slot="top" icon="vaadin-icons:viewport" on-tap="onTapPreview"></paper-icon-button>
+							<paper-tooltip for="previewId">[[tr('cropper.preview')]]</paper-tooltip>
+							<div id="placeholderId" xtyle="max-width:200px;" class="flex"></div>
+
+							<div id="dimensionId">[[getDimension(dataHeight,dataWidth)]]</div>
 						</div>
 					</div>
 				</neon-animatable>
@@ -145,24 +153,37 @@
 			],
 			attached: function() {
 				this.hasImage = false;
-				this.dataHeight=0;
-				this.dataWidth=0;
+				this.dataHeight = 0;
+				this.dataWidth = 0;
 				this.formData = {};
 				this.image = $( this.$.image );
 				this.image.cropper( {
-					viewMode: 1,
+					viewMode: 0,
 					movable: true,
 					zoomable: true,
 					rotatable: false,
-					scalable: false,
+					scalable: true,
+					ready: ( function( e ) {
+						this.fire( "cropper-ready", {
+          		event: e
+        		} );
+					} ).bind( this ),
 					crop: ( function( e ) {
-						this.dataHeight =  Math.round( e.height );
+						this.dataHeight = Math.round( e.height );
 						this.dataWidth = Math.round( e.width );
 					} ).bind( this )
 				} );
 			},
-			getDimension:function(){
-				return "h:"+this.dataHeight+" w:"+this.dataWidth;
+			reset:function(){
+				this.image.cropper("destroy");
+				this.mainTabId="0";
+				this.formData={};
+			},
+			getImage:function(){
+				return this.image;
+			},
+			getDimension: function() {
+				return "h:" + this.dataHeight + " w:" + this.dataWidth;
 			},
 			onUploadValueChanged: function( e ) {
 				var data = this.$.uploadFormId.getData();
@@ -170,7 +191,7 @@
 				this.mainTabId = '1';
 				var key = Object.keys( data.uploadId )[ 0 ];
 				this.image.cropper( "replace", data.uploadId[ key ] );
-				this.hasImage=true;
+				this.hasImage = true;
 			},
 			onTapReset: function() {
 				var result = this.image.cropper( "reset" );
@@ -182,7 +203,7 @@
 				var result = this.image.cropper( "zoom", "-0.1" );
 			},
 			onTapZoomTo: function() {
-				var result = this.image.cropper( "zoom", "1" );
+				var result = this.image.cropper( "zoomTo", "0.01" );
 			},
 			onTapMoveLeft: function() {
 				var result = this.image.cropper( "move", "-10", "0" );
@@ -195,6 +216,9 @@
 			},
 			onTapMoveDown: function() {
 				var result = this.image.cropper( "move", "0", "10" );
+			},
+			onTapMoveTo0: function() {
+				var result = this.image.cropper( "moveTo", "0", "0" );
 			},
 			onTapPreview: function() {
 				this.mainTabId = '2';
