@@ -74,7 +74,9 @@
 		<paper-tabs class="flex" selected="{{mainTabId}}" selectables="paper-tab" on-iron-select="mainTabSelected" attr-for-selected="main-item-id" scrollable>
 			<paper-tab class="menu__item_secondary" main-item-id="0">[[tr('dropper.upload')]]</paper-tab>
 			<paper-tab disabled="[[!hasImage]]" class="menu__item_secondary" main-item-id="1">[[tr('dropper.editor')]]</paper-tab>
-			<paper-tab disabled="[[!hasImage]]" class="menu__item_secondary" main-item-id="2">[[tr('dropper.preview')]]</paper-tab>
+			<!--
+				<paper-tab disabled="[[!hasImage]]" class="menu__item_secondary" main-item-id="2">[[tr('dropper.preview')]]</paper-tab>
+			-->
 		</paper-tabs>
 
 		<div scrollbar style="" class="scrollId container">
@@ -92,14 +94,16 @@
 							<paper-icon-button id="resetId" class="toolbar" slot="top" icon="vaadin-icons:refresh" on-tap="onTapReset"></paper-icon-button>
 							<paper-tooltip for="resetId">[[tr('cropper.reset')]]</paper-tooltip>
 
-							<paper-icon-button id="zoomInId" class="toolbar" slot="top" icon="vaadin-icons:search-plus" on-tap="onTapZoomIn"></paper-icon-button>
-							<paper-tooltip for="zoomInId">[[tr('cropper.zoomin')]]</paper-tooltip>
+							<!--
+								<paper-icon-button id="zoomInId" class="toolbar" slot="top" icon="vaadin-icons:search-plus" on-tap="onTapZoomIn"></paper-icon-button>
+								<paper-tooltip for="zoomInId">[[tr('cropper.zoomin')]]</paper-tooltip>
 
-							<paper-icon-button id="zoomOutId" class="toolbar" slot="top" icon="vaadin-icons:search-minus" on-tap="onTapZoomOut"></paper-icon-button>
-							<paper-tooltip for="zoomOutId">[[tr('cropper.zoomout')]]</paper-tooltip>
+								<paper-icon-button id="zoomOutId" class="toolbar" slot="top" icon="vaadin-icons:search-minus" on-tap="onTapZoomOut"></paper-icon-button>
+								<paper-tooltip for="zoomOutId">[[tr('cropper.zoomout')]]</paper-tooltip>
 
-							<paper-icon-button id="zoomToId" class="toolbar" slot="top" icon="vaadin-icons:expand-full" on-tap="onTapZoomTo"></paper-icon-button>
-							<paper-tooltip for="zoomToId">[[tr('cropper.zoomto')]]</paper-tooltip>
+								<paper-icon-button id="zoomToId" class="toolbar" slot="top" icon="vaadin-icons:expand-full" on-tap="onTapZoomTo"></paper-icon-button>
+								<paper-tooltip for="zoomToId">[[tr('cropper.zoomto')]]</paper-tooltip>
+							-->
 
 							<paper-icon-button id="moveLeftId" class="toolbar" slot="top" icon="vaadin-icons:arrow-left" on-tap="onTapMoveLeft"></paper-icon-button>
 							<paper-tooltip for="moveLeftId">[[tr('cropper.moveleft')]]</paper-tooltip>
@@ -116,17 +120,21 @@
 							<paper-icon-button id="moveTo0Id" class="toolbar" slot="top" icon="vaadin-icons:arrows" on-tap="onTapMoveTo0"></paper-icon-button>
 							<paper-tooltip for="moveTo0Id">[[tr('cropper.moveto0')]]</paper-tooltip>
 
-							<paper-icon-button id="previewId" class="toolbar" slot="top" icon="vaadin-icons:viewport" on-tap="onTapPreview"></paper-icon-button>
-							<paper-tooltip for="previewId">[[tr('cropper.preview')]]</paper-tooltip>
+							<!--
+								<paper-icon-button id="previewId" class="toolbar" slot="top" icon="vaadin-icons:viewport" on-tap="onTapPreview"></paper-icon-button>
+								<paper-tooltip for="previewId">[[tr('cropper.preview')]]</paper-tooltip>
+							-->
 							<div id="placeholderId" xtyle="max-width:200px;" class="flex"></div>
 
 							<div id="dimensionId">[[getDimension(dataHeight,dataWidth)]]</div>
 						</div>
 					</div>
 				</neon-animatable>
-				<neon-animatable style="position:relative;" main-item-id="2">
-					<div id="preview"></div>
-				</neon-animatable>
+				<!--
+					<neon-animatable style="position:relative;" main-item-id="2">
+						<div id="preview"></div>
+					</neon-animatable>
+				-->
 			</neon-animated-pages>
 		</div>
 
@@ -152,7 +160,6 @@
 				StyleScopeBehavior
 			],
 			attached: function() {
-				console.log( "cropper.attached:", this.atta );
 				if ( this.atta ) return;
 				this.atta = true;
 				this.hasImage = false;
@@ -168,7 +175,6 @@
 					scalable: true,
 					responsive: false,
 					ready: ( function( e ) {
-						console.log( "cropper.ready:", e );
 						this.fire( "cropper-ready", {
 							event: e,
 							fileId: this.currentFileId
