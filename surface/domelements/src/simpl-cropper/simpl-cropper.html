@@ -62,9 +62,9 @@
 			padding-right: 5px;
 		}
 		paper-icon-button.toolbar {
-			width:36px;
-			height:36px;
-			color:black;
+			width: 36px;
+			height: 36px;
+			color: black;
 		}
 
 	</style>
@@ -152,6 +152,9 @@
 				StyleScopeBehavior
 			],
 			attached: function() {
+				console.log( "cropper.attached:", this.atta );
+				if ( this.atta ) return;
+				this.atta = true;
 				this.hasImage = false;
 				this.dataHeight = 0;
 				this.dataWidth = 0;
@@ -163,10 +166,13 @@
 					zoomable: true,
 					rotatable: false,
 					scalable: true,
+					responsive: false,
 					ready: ( function( e ) {
+						console.log( "cropper.ready:", e );
 						this.fire( "cropper-ready", {
-          		event: e
-        		} );
+							event: e,
+							fileId: this.currentFileId
+						} );
 					} ).bind( this ),
 					crop: ( function( e ) {
 						this.dataHeight = Math.round( e.height );
@@ -174,13 +180,28 @@
 					} ).bind( this )
 				} );
 			},
-			reset:function(){
-				this.image.cropper("destroy");
-				this.mainTabId="0";
-				this.formData={};
+			reset: function() {
+				this.image.cropper( "destroy" );
+				this.mainTabId = "0";
+				this.formData = {};
 			},
-			getImage:function(){
+			getImage: function() {
 				return this.image;
+			},
+			setCurrentFileId: function( fid ) {
+				this.currentFileId = fid;
+			},
+			gotoEditTab: function() {
+				if ( this.currentFileId ) {
+					this.mainTabId = "1";
+				}
+			},
+			replaceImage: function( fileId, file ) {
+				console.log( "replaceImage:", fileId );
+				this.mainTabId = '1';
+				this.image.cropper( "replace", file );
+				this.currentFileId = fileId;
+				this.hasImage = true;
 			},
 			getDimension: function() {
 				return "h:" + this.dataHeight + " w:" + this.dataWidth;
@@ -191,8 +212,10 @@
 				this.mainTabId = '1';
 				var key = Object.keys( data.uploadId )[ 0 ];
 				this.image.cropper( "replace", data.uploadId[ key ] );
+				this.currentFileId = key;
 				this.hasImage = true;
 			},
+			mainTabSelected: function() {},
 			onTapReset: function() {
 				var result = this.image.cropper( "reset" );
 			},
