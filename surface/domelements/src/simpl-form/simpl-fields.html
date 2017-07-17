@@ -2069,7 +2069,7 @@
 			<template is="dom-repeat" index-as="lid" as="line" items="[[lines]]">
 				<div class="line grid row">
 					<template is="dom-repeat" index-as="cid" as="col" items="[[columns]]">
-						<grid-element-renderer id="[[getElementId(lid,cid)]]" style$="[[getColStyle(col.width)]]" class$="[[getColFlex(col.width)]]" item="[[col]]"></grid-element-renderer>
+						<grid-element-renderer id="[[getElementId(lid,cid)]]" data-lid$="[[lid]]" style$="[[getColStyle(col.width)]]" class$="[[getColFlex(col.width)]]" item="[[col]]"></grid-element-renderer>
 					</template>
 					<template is="dom-if" if="[[search]]">
 						<paper-icon-button on-tap="_search" data-lid$="[[lid]]" icon="search"></paper-icon-button>
@@ -2146,12 +2146,34 @@
 					type: String
 				}
 			},
+			listeners: {
+				'value-changed': '_valueChanged',
+				'internal-xaction': '_internalXAction'
+			},
 			observers: [
 				'entityChanged(entity,namespace)'
 			],
 			ready: function() {
 				this.isInvalid = false;
 				this.push( "lines", {} );
+			},
+			_valueChanged: function(e) {
+				var lid = e.target.parentNode.dataset.lid;
+				var data = {};
+				var fields = {};
+				for ( var j = 0; j < this.columns.length; j++ ) {
+					var e = this.querySelector( "#id" + lid + "_" + j );
+					var col = this.columns[ j ];
+					data[col.colname] = e.getValue(  );
+					fields[col.colname] = e;
+				}
+				var keys = Object.keys(this.exprMap);
+				keys.forEach( (function( key ){
+					var expr = this.exprMap[key];
+					var result = this.form._maskedEval( expr, data, "" );
+					console.log("Expr("+expr+"):",result);
+					fields[key].setValue( result );
+				}).bind(this));
 			},
 			getValue: function() {
 				var value = [];
@@ -2220,6 +2242,7 @@
 				return tr("crud2.select_with");
 			},
 			columnsChanged: function() {
+				var exprMap = {};
 				this.columns.each( ( function( c ) {
 					c.regulaConstraints = this._constructRegulaConstraints( c.constraints );
 					c.label = c.display;
@@ -2228,7 +2251,11 @@
 					}
 					c.xf_type = c.type;
 					c.xf_id = c.colname;
+					if( c.parameter && c.parameter.startsWith("expr:")){
+						exprMap[c.colname] =  c.parameter.substring(5);
+					}
 				} ).bind( this ) );
+				this.exprMap = exprMap;
 				//console.debug( "columnsChanged:", this.columns );
 			},
 			addLine: function( e ) {

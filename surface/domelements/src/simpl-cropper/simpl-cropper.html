@@ -72,17 +72,17 @@
 
 
 		<paper-tabs class="flex" selected="{{mainTabId}}" selectables="paper-tab" on-iron-select="mainTabSelected" attr-for-selected="main-item-id" scrollable>
-			<paper-tab class="menu__item_secondary" main-item-id="0">[[tr('dropper.upload')]]</paper-tab>
-			<paper-tab disabled="[[!hasImage]]" class="menu__item_secondary" main-item-id="1">[[tr('dropper.editor')]]</paper-tab>
+			<paper-tab class="menu__item_secondary" main-item-id="0">[[tr('cropper.upload')]]</paper-tab>
+			<paper-tab disabled="[[!hasImage]]" class="menu__item_secondary" main-item-id="1">[[tr('cropper.editor')]]</paper-tab>
 			<!--
-				<paper-tab disabled="[[!hasImage]]" class="menu__item_secondary" main-item-id="2">[[tr('dropper.preview')]]</paper-tab>
+				<paper-tab disabled="[[!hasImage]]" class="menu__item_secondary" main-item-id="2">[[tr('cropper.preview')]]</paper-tab>
 			-->
 		</paper-tabs>
 
 		<div scrollbar style="" class="scrollId container">
 			<neon-animated-pages selected="{{mainTabId}}" attr-for-selected="main-item-id" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
 				<neon-animatable style="position:relative;" main-item-id="0">
-					<simpl-form id="uploadFormId" namespace="global" on-value-changed="onUploadValueChanged" data="[[formData]]" on-xaction="onTapPage1Setup" form-name="dropperUpload.form"></simpl-form>
+					<simpl-form id="uploadFormId" namespace="global" on-value-changed="onUploadValueChanged" data="[[formData]]" on-xaction="onTapPage1Setup" form-name="cropperUpload.form"></simpl-form>
 
 				</neon-animatable>
 				<neon-animatable style="position:relative;" main-item-id="1">
