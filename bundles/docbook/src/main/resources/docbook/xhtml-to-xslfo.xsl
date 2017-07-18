@@ -281,8 +281,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.minimum">0.67em</xsl:attribute>
     <xsl:attribute name="space-after.optimum">0.75em</xsl:attribute>
     <xsl:attribute name="space-after.maximum">0.92em</xsl:attribute>
-    <xsl:attribute name="padding-start">11%</xsl:attribute>
-    <xsl:attribute name="start-indent">11%</xsl:attribute>
+    <xsl:attribute name="padding-start">0em</xsl:attribute>
+    <xsl:attribute name="start-indent">0em</xsl:attribute>
   </xsl:attribute-set>
 
   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -298,7 +298,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.maximum">0.92em</xsl:attribute>
     <xsl:attribute name="relative-align">baseline</xsl:attribute>
     <xsl:attribute name="padding-start">0.28em</xsl:attribute>
-    <xsl:attribute name="start-indent">inherited-property-value(start-indent) + 0.28em</xsl:attribute>
+    <xsl:attribute name="start-indent">0.28em</xsl:attribute>
   </xsl:attribute-set>
 
   <xsl:attribute-set name="ul-nested">
@@ -312,9 +312,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.optimum">0.75em</xsl:attribute>
     <xsl:attribute name="space-after.maximum">0.92em</xsl:attribute>
     <xsl:attribute name="relative-align">baseline</xsl:attribute>
-    <xsl:attribute name="provisional-distance-between-starts">3.16em</xsl:attribute>
-    <xsl:attribute name="padding-start">1.08em</xsl:attribute>
-    <xsl:attribute name="start-indent">inherited-property-value(start-indent) + 1.08em</xsl:attribute>
+    <xsl:attribute name="padding-start">0.28em</xsl:attribute>
+    <xsl:attribute name="start-indent">0.28em</xsl:attribute>
   </xsl:attribute-set>
 
   <xsl:attribute-set name="ol-nested">
