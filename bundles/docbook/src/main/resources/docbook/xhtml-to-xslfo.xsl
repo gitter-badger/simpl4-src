@@ -214,14 +214,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   </xsl:attribute-set>
 
   <xsl:attribute-set name="p">
-    <xsl:attribute name="space-before.minimum">0.67em</xsl:attribute>
-    <xsl:attribute name="space-before.optimum">0.75em</xsl:attribute>
-    <xsl:attribute name="space-before.maximum">0.92em</xsl:attribute>
-    <xsl:attribute name="space-after.minimum">0.67em</xsl:attribute>
-    <xsl:attribute name="space-after.optimum">0.75em</xsl:attribute>
-    <xsl:attribute name="space-after.maximum">0.92em</xsl:attribute>
+    <xsl:attribute name="space-before.minimum">0.0em</xsl:attribute>
+    <xsl:attribute name="space-before.optimum">0.0em</xsl:attribute>
+    <xsl:attribute name="space-before.maximum">0.0em</xsl:attribute>
+    <xsl:attribute name="space-after.minimum">0.0em</xsl:attribute>
+    <xsl:attribute name="space-after.optimum">0.0em</xsl:attribute>
+    <xsl:attribute name="space-after.maximum">0.0em</xsl:attribute>
     <xsl:attribute name="padding-start">0.0em</xsl:attribute>
-    <xsl:attribute name="start-indent">inherited-property-value(start-indent) + 0.0em</xsl:attribute>
+    <xsl:attribute name="start-indent">0.0em</xsl:attribute>
     <!--xsl:attribute name="padding-start">3%</xsl:attribute>
     <xsl:attribute name="start-indent">3%</xsl:attribute-->
   </xsl:attribute-set>
