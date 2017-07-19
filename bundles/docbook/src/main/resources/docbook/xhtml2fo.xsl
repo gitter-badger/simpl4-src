@@ -243,9 +243,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="display-align">center</xsl:attribute>
   </xsl:attribute-set>
   <xsl:attribute-set name="table">
-    <xsl:attribute name="border-collapse">separate</xsl:attribute>
-    <xsl:attribute name="border-spacing">2px</xsl:attribute>
-    <xsl:attribute name="border">1px</xsl:attribute>
+    <!--xsl:attribute name="border-collapse">separate</xsl:attribute-->
+    <xsl:attribute name="border-spacing">0px</xsl:attribute>
+    <xsl:attribute name="border">0px</xsl:attribute>
     <!--
     <xsl:attribute name="border-style">outset</xsl:attribute>
     -->
@@ -260,15 +260,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   <xsl:attribute-set name="tr"></xsl:attribute-set>
   <xsl:attribute-set name="th">
     <xsl:attribute name="font-weight">bolder</xsl:attribute>
+    <xsl:attribute name="border-bottom-style">solid</xsl:attribute>
+    <xsl:attribute name="border-width">0.5pt</xsl:attribute>
     <xsl:attribute name="text-align">center</xsl:attribute>
-    <xsl:attribute name="border">1px</xsl:attribute>
+    <xsl:attribute name="border">0px</xsl:attribute>
     <!--
     <xsl:attribute name="border-style">inset</xsl:attribute>
     -->
     <xsl:attribute name="padding">1px</xsl:attribute>
   </xsl:attribute-set>
   <xsl:attribute-set name="td">
-    <xsl:attribute name="border">1px</xsl:attribute>
+    <xsl:attribute name="border">0px</xsl:attribute>
     <!--
     <xsl:attribute name="border-style">inset</xsl:attribute>
     -->
