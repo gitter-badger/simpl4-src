@@ -214,6 +214,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   </xsl:attribute-set>
 
   <xsl:attribute-set name="p">
+    <xsl:attribute name="linefeed-treatment">preserve</xsl:attribute>
     <xsl:attribute name="space-before.minimum">0.0em</xsl:attribute>
     <xsl:attribute name="space-before.optimum">0.0em</xsl:attribute>
     <xsl:attribute name="space-before.maximum">0.0em</xsl:attribute>

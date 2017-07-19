@@ -35,5 +35,7 @@ dependencies {
 	compile files("${repository}/asciidoctorj-groovy-dsl.bar")
 	compile files("${repository}/vfs/commons-vfs2-2.1.jar")
  	compile files("${repository}/jcabi-1.0.jar")
+ 	compile files("${repository}/commonmark-ext-gfm-tables-0.9.0.bar")
+ 	compile files("${repository}/commonmark-0.9.0.bar")
   compile files('build/classes/main')
 }

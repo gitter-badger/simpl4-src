@@ -37,11 +37,19 @@ import groovy.text.markup.TemplateConfiguration;
 import groovy.text.markup.TemplateResolver;
 import org.ms123.common.data.api.DataLayer;
 import org.osgi.framework.BundleContext;
+import org.commonmark.node.*;
+import org.commonmark.Extension;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.debug;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.apache.commons.io.IOUtils.toString;
+import static org.apache.commons.io.HexDump.dump;
+
+
 
 
 @SuppressWarnings("unchecked")
@@ -97,7 +105,7 @@ public class FOBuilder extends TemplateEvaluator{
 		binding.putAll( json.state as Map);
 		info(this,"FOBuilder.binding:" + binding);
 		String answer = template.make(binding).toString();
-		info(this,"FOBuilder.answer:"+answer);
+		//info(this,"FOBuilder.answer:"+answer);
 
 		return toInputStream( answer );
 	}
@@ -158,24 +166,37 @@ public class FOBuilder extends TemplateEvaluator{
 			List<Map> absoluteBlocks = entry.value['absolute'] as List;
 			List<Map> blocks = flowBlocks + absoluteBlocks;
 			blocks.each{ block ->
-				def text = null;
+				String markdown = null;
+			  String html = null;
 				try{
-					if( block.html ){
-						text = render(block.html as String, bindings);
+					if( block.markdown ){
+						markdown = render(block.markdown as String, bindings);
 					}else{
-						text = "";
+						markdown = "";
 					}
+					info(this,"FOBuilder.groovyRendered:"+markdown);
+					html= markdownToHtml( markdown );
+					info(this,"FOBuilder.markdownToHtml1:"+html);
+					info(this,"FOBuilder.markdownToHtml2:"+block.html);
+
 				}catch(Exception e){
-					text = (block.html as String) + "<div>"+e.getMessage()+"</div>";
+					error(this, "FOBuilder.render:%[exception]s",e);
+					if( markdown ){
+						html = "" + (markdown as String) +":"+e.getMessage()+"";
+					}else{
+						html = "" + (block.markdown as String) +":"+e.getMessage()+"";
+					}
+					html = html.replace( "<", "&lt;");
+					html = html.replace( ">", "&gt;");
 				}
 				try{
-					info(this,"HTML:"+text);
-					block.fo = htmlToFo( "<div>" + HtmlEscape.escape(text) +"</div>"  as String );
+					info(this,"HTML:"+markdown);
+					block.fo = htmlToFo( "<div>" + HtmlEscape.escape(html) +"</div>"  as String );
 					info(this,"FO:"+block.fo);
 				}catch(Exception e){
 					block.fo = "<fo:block>"+block.markdown+":"+e.getMessage()+"</fo:block>";
-					info(this,"Text:"+text);
-					info(this,"Html:"+block.html);
+					info(this,"Text:"+markdown);
+					info(this,"Html:"+html);
 					error(this, "FOBuilder.htmlToFoList:%[exception]s",e);
 				}
 			}
@@ -186,5 +207,18 @@ public class FOBuilder extends TemplateEvaluator{
 		this.transformer.transform(toInputStream(html), bos);
 		return bos.toString("UTF-8");
 	}
+	private String markdownToHtml(String md){
+		List<Extension> extensions = Arrays.asList(TablesExtension.create());
+
+		Parser parser = Parser.builder().
+			extensions(extensions).
+			build();
+		Node document = parser.parse(md);
+		HtmlRenderer renderer = HtmlRenderer.builder().
+			extensions(extensions).
+			build();
+		return renderer.render(document);
+	}
+
 }
 
