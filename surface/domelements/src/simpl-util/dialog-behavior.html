@@ -28,8 +28,16 @@
 				}
 			} )
 		},
-		openDialog: function( dia ) {
-			var width = "80%";
+		destroyDialog: function( dia ) {
+			$( dia ).fadeOut( {
+				duration: 400,
+				complete: function() {
+					$( dia ).dialog( 'destroy' );
+				}
+			} )
+		},
+		openDialog: function( dia, _width ) {
+			var width = _width || "80%";
 			if ( window.matchMedia( '(max-device-width: 480px)' ).matches ) {
 				width = "95%";
 			}
@@ -46,6 +54,7 @@
 				modal: true
 			} );
 			sd.parent().css( "z-index", "555111" );
+			return sd;
 		}
 	}
 
