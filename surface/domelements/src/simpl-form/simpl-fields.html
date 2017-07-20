@@ -2189,6 +2189,10 @@
 			},
 			setValue: function( v ) {
 				if ( !v ) {
+					this.clearLines();
+					this.async( function() {
+						this.setLineValues( {}, 0 );
+					}, 100 );
 					return;
 				}
 				this.clearLines();
