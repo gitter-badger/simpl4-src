@@ -2157,6 +2157,10 @@
 				this.isInvalid = false;
 				this.push( "lines", {} );
 			},
+			clearLines:function(){
+				this.splice("lines", 0, this.lines.length)
+				this.push( "lines", {} );
+			},
 			_valueChanged: function(e) {
 				var lid = e.target.parentNode.dataset.lid;
 				var data = {};
@@ -2171,7 +2175,7 @@
 				keys.forEach( (function( key ){
 					var expr = this.exprMap[key];
 					var result = this.form._maskedEval( expr, data, "" );
-					console.log("Expr("+expr+"):",result);
+//					console.log("Expr("+expr+"):",result);
 					fields[key].setValue( result );
 				}).bind(this));
 			},
@@ -2187,15 +2191,18 @@
 				if ( !v ) {
 					return;
 				}
-				for ( var i = 1; i < v.length; i++ ) {
-					this.push( "lines", {} );
-				}
+				this.clearLines();
 				this.async( function() {
-					for ( var i = 0; i < v.length; i++ ) {
-						var line = v[ i ];
-						this.setLineValues( line, i );
+					for ( var i = 1; i < v.length; i++ ) {
+						this.push( "lines", {} );
 					}
-				}, 10 );
+					this.async( function() {
+						for ( var i = 0; i < v.length; i++ ) {
+							var line = v[ i ];
+							this.setLineValues( line, i );
+						}
+					}, 100 );
+				}, 100 );
 			},
 			getContainerStyle: function() {
 				return "border:0px solid #f5f5f5;padding:2px;min-height:" + this.height + "px";
