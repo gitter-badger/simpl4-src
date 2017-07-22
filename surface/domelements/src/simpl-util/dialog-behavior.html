@@ -38,7 +38,7 @@
 		},
 		openDialog: function( dia, _width ) {
 			var width = _width || "80%";
-			if ( window.matchMedia( '(max-device-width: 480px)' ).matches ) {
+			if ( window.matchMedia( '(max-width: 480px)' ).matches ) {
 				width = "95%";
 			}
 			var sd = $( dia ).dialog( {
