@@ -2055,6 +2055,21 @@
 			max-height: inherit !important;
 			padding: 0 10px;
 		}
+		div.line {
+			margin-bottom: 15px;
+		}
+		@media screen and (max-width: 1200px) {
+			div.line {
+				margin-bottom: 20px;
+    		border-top: 5px solid #BFCBD0;
+			}
+		}
+		@media screen and (max-width: 1024px) {
+			div.line {
+				margin-bottom: 30px;
+    		border-top: 5px solid #BFCBD0;
+			}
+		}
 
 	</style>
   <style is="custom-style" include="simpl-crud-shared-styles"></style>
@@ -2071,15 +2086,17 @@
 					<template is="dom-repeat" index-as="cid" as="col" items="[[columns]]">
 						<grid-element-renderer id="[[getElementId(lid,cid)]]" data-lid$="[[lid]]" style$="[[getColStyle(col.width)]]" class$="[[getColFlex(col.width)]]" item="[[col]]"></grid-element-renderer>
 					</template>
-					<template is="dom-if" if="[[search]]">
-						<paper-icon-button on-tap="_search" data-lid$="[[lid]]" icon="search"></paper-icon-button>
-					</template>
-					<paper-icon-button on-tap="addLine" data-lid$="[[lid]]" icon="add"></paper-icon-button>
-					<paper-icon-button on-tap="removeLine" data-lid$="[[lid]]" icon="remove"></paper-icon-button>
-					<template is="dom-if" if="[[arrows]]">
-						<paper-icon-button on-tap="upLine" data-lid$="[[lid]]" icon="expand-less"></paper-icon-button>
-						<paper-icon-button on-tap="downLine" data-lid$="[[lid]]" icon="expand-more"></paper-icon-button>
-					</template>
+					<div>
+						<template is="dom-if" if="[[search]]">
+							<paper-icon-button on-tap="_search" data-lid$="[[lid]]" icon="search"></paper-icon-button>
+						</template>
+						<paper-icon-button on-tap="addLine" data-lid$="[[lid]]" icon="add"></paper-icon-button>
+						<paper-icon-button on-tap="removeLine" data-lid$="[[lid]]" icon="remove"></paper-icon-button>
+						<template is="dom-if" if="[[arrows]]">
+							<paper-icon-button on-tap="upLine" data-lid$="[[lid]]" icon="expand-less"></paper-icon-button>
+							<paper-icon-button on-tap="downLine" data-lid$="[[lid]]" icon="expand-more"></paper-icon-button>
+						</template>
+					</div>
 				</div>
 			</template>
 
@@ -2340,7 +2357,7 @@
 			},
 			getColStyle:function(w){
 				if( w != null && parseInt(w) > 0){
-					return "max-width:"+w+"px;min-width:"+w+"px;";
+					return "width:"+w+"px;min-width:"+w+"px;";
 				}
 				return "";
 			},
