@@ -1,0 +1,158 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<script>
+	RegistryBehavior = {
+		onRegistrySave: function() {
+			this.debounce( "onRegistrySave", function() {
+				this._onRegistrySave();
+			}, 250 );
+		},
+		_onRegistrySave: function() {
+			this._doSave( this._currentRegistryName );
+		},
+
+		onRegistrySaveUnder: function() {
+			var json = this.getState();
+
+			var prompt = Lobibox.prompt( 'text', {
+				height: 200,
+				title: tr( 'te.enter_name' ),
+				attrs: {
+					pattern: "[A-Za-z0-9]{3,}",
+					value: this._currentRegistryName
+				},
+				callback: ( function( $this, type, ev ) {
+					console.log( "callback:", prompt.getValue() );
+					if ( !_.isEmpty( prompt.getValue() ) ) {
+						this._doSave( prompt.getValue() );
+					}
+				} ).bind( this )
+			} );
+
+		},
+		_doSave: function( name ) {
+			var json = this.getState();
+			this._currentRegistryName = name;
+
+			var attributes = this._registryAttributes;
+			if( attributes == null ){
+				attributes = {
+					subject: this._registrySubject
+				}
+			}
+			var params = {
+				service: "registry",
+				method: "set",
+				parameter: {
+					key: this._registryKey+"/" + name,
+					attributes: attributes,
+					value: JSON.stringify( json )
+				},
+				async: true,
+				context: this,
+				failed: function( e ) {
+					console.error( "_doSave:", e );
+					if ( e == null ) return;
+					this.notify( tr( "error" ), 'error', 8000 );
+				},
+				completed: function( ret ) {
+					this.notify( tr( "registry.saved" ), 'success', 8000 );
+				}
+			}
+			simpl4.util.Rpc.rpcAsync( params );
+		},
+		selectFromList: function( menu, valueList, nameList ) {
+			var win = Lobibox.window( {
+				title: tr( 'registry.select' ),
+				width: 300,
+				height: 400,
+				modal: true,
+				content: function() {
+					return $( menu );
+				},
+				buttons: {
+					select: {
+						text: tr( 'button.select' )
+					},
+					close: {
+						text: tr( 'button.cancel' ),
+						closeOnClick: true
+					}
+				},
+				callback: ( function( $this, type, ev ) {
+					if ( type === 'select' ) {
+						var selected = $this.$el[ 0 ].querySelector( "#registryMenuId" ).selected;
+						if ( selected == null ) {
+							return;
+						}
+						this._currentRegistryName = nameList[ selected ];
+						var state = JSON.parse( valueList[ selected ] );
+						this.setState( state );
+						win.destroy();
+					}
+				} ).bind( this )
+			} );
+		},
+		onRegistryLoad: function() {
+			this.debounce( "onRegistryLoad", function() {
+				this._onRegistryLoad();
+			}, 250 );
+		},
+		_onRegistryLoad: function() {
+			var attributes = this._registryAttributes;
+			if( attributes == null ){
+				attributes = {
+					subject: this._registrySubject
+				}
+			}
+			var params = {
+				service: "registry",
+				method: "getAll",
+				parameter: {
+					attributes: attributes
+				},
+				async: true,
+				context: this,
+				failed: function( e ) {
+					console.error( "getRegistry:", e );
+					this.notify( tr( "error" ), 'error', 8000 );
+				},
+				completed: function( ret ) {
+					console.log( "getRegistry.ret:", ret );
+					var menu = '<paper-menu id="registryMenuId">';
+					var valueList = [];
+					var nameList = [];
+					for ( var i = 0; i < ret.length; i++  ) {
+						var key = ret[ i ].key;
+						var name = key.substring( key.lastIndexOf( '/' ) + 1 );
+						menu += '<paper-item style="min-height:24px; font-size:14px;">' + name + '</paper-item>';
+						valueList.push( ret[ i ].value );
+						nameList.push( name );
+					}
+					menu += '</paper-menu>';
+					this.selectFromList( menu, valueList, nameList );
+				}
+			}
+			simpl4.util.Rpc.rpcAsync( params );
+		}
+	}
+
+</script>
