@@ -149,9 +149,28 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 
 	public Map executeUpdateObject(SessionContext sc, String entityName, String id, Map data){
 		Class clazz = getClass(sc, entityName);
-		def obj = clazz.graphQuery("select from "+id,true);
+		def obj = null;
+		if( id != null && id.startsWith("#") && id.indexOf(":") > 0){
+			obj = clazz.graphQuery("select from "+id,true);
+		}else{
+			def className = this.inflector.getClassNameCamelCase(StoreDesc.getSimpleEntityName(entityName));
+			def idField = entityName+"Id";
+			def idMethod = "get"+this.inflector.capitalizeFirst(entityName)+"Id";
+			if( !methodExists(clazz,idMethod)){
+				idMethod = "getId";
+				idField = "id";
+				if( !methodExists(clazz,idMethod)){
+					return executeInsertObject(sc, entityName, data);
+				}
+			}
+			def sql = "select from "+className + " where "+idField+"='"+id+"'";
+			info(this,"executeUpdateObject.sql:"+sql);
+ 		 	obj = clazz.graphQuery(sql,true);
+			info(this,"executeUpdateObject.obj:"+obj);
+		}
 		if( obj == null){
-			throw new RuntimeException("executeUpdateObject("+id+"):not found");
+			return executeInsertObject(sc, entityName, data);
+			//throw new RuntimeException("executeUpdateObject("+id+"):not found");
 		}
 		_executeUpdateObject( sc, obj, data);
 		return [ id : id ];
@@ -238,6 +257,17 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		info(this,"_getObject("+id+"):"+obj);
 		return obj;
 	}
+  def methodExists(clazz, methodName) {
+    try{
+      info(this,"methodExists("+clazz+","+methodName+")");
+			def method = clazz.metaClass.getMetaMethod(methodName)
+      info(this,"methodExists("+method+"):"+(method!=null));
+      return method!=null;
+    }catch(Exception e){
+      info(this,"methodExists("+methodName+"):false");
+      return false;
+    }
+  }
 	def isLinkedObj( def dt ){
 		def list = ["13"]
 		return list.contains( dt );
