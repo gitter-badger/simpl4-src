@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.Collections;
 import org.ms123.common.libhelper.Inflector;
@@ -35,6 +36,7 @@ import org.ms123.common.store.StoreDesc;
 import org.ms123.common.utils.Inflector;
 import org.ms123.common.data.api.SessionContext;
 
+import com.orientechnologies.orient.core.metadata.schema.OType;
 
 import groovy.transform.CompileStatic;
 import groovy.transform.TypeCheckingMode
@@ -110,7 +112,16 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				}else if( isDate( v.datatype) && data[k] instanceof Long){
 					obj[k] = new Date(data[k]);
 				}else{
-					obj[k] = data[k];
+					if( isDecimal(v.datatype) && data[k] instanceof String){
+						data[k] = replaceComma( data[k] );
+						info(this,"commaReplaced:"+data[k]);
+					}
+					def type = OType.getById(Byte.parseByte(v.datatype));
+					Class javaClass = type.getDefaultJavaType();
+					info(this,"OType("+type+"):"+javaClass);
+					def val = OType.convert( data[k], javaClass);
+					info(this,"NewValue:"+val);
+					obj[k] = val;
 				}
 			}else if( isLinkedObj(v.datatype) && data[k] != null){
 				info(this,"LinkedObj("+entityName+":"+k+"):"+data[k]);
@@ -194,7 +205,16 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				}else if( isDate( v.datatype) && data[k] instanceof Long){
 					obj[k] = new Date(data[k]);
 				}else{
-					obj[k] = data[k];
+					if( isDecimal(v.datatype) && data[k] instanceof String){
+						data[k] = replaceComma( data[k] );
+						info(this,"commaReplaced:"+data[k]);
+					}
+					def type = OType.getById(Byte.parseByte(v.datatype));
+					Class javaClass = type.getDefaultJavaType();
+					info(this,"OType("+type+"):"+javaClass);
+					def val = OType.convert( data[k], javaClass);
+					info(this,"NewValue:"+val);
+					obj[k] = val;
 				}
 			}else if( isLinkedObj(v.datatype) && data[k] != null){
 				info(this,"LinkedObj("+entityName+":"+k+"):"+data[k]);
@@ -320,6 +340,10 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		def list = ["19", "6"]
 		return list.contains( dt );
 	}
+	def isDecimal ( dt ){
+		def list = ["21"]
+		return list.contains( dt );
+	}
 
 	def isSimple( def dt ){
 		def simpleList = ["0", "1", "2", "3", "4", "5", "6", "7", "17", "19", "21"]
@@ -327,6 +351,26 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 	}
 	def parseFromString( String str ){
 		return com.mdimension.jchronic.Chronic.parse(str).beginCalendar.time
+	}
+	def replaceComma(text){
+		if( text == null){
+			return text;
+		}
+		def dot = text.lastIndexOf(".");
+		def comma = text.lastIndexOf(",");
+		double val;
+		if( dot > comma ){
+			text = text.replace( ",", "");
+			def nfIn = NumberFormat.getNumberInstance(Locale.UK);
+			val = nfIn.parse(text).doubleValue();
+		}else{
+			text = text.replace( ".", "");
+			def nfIn = NumberFormat.getNumberInstance(Locale.GERMANY);
+			val = nfIn.parse(text).doubleValue();
+		}
+		def nfOut = NumberFormat.getNumberInstance(Locale.UK);
+		nfOut.setMaximumFractionDigits(3);
+		return nfOut.format(val).replace(",","");
 	}
 }
 
