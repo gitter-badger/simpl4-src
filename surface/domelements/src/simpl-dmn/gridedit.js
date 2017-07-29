@@ -2449,7 +2449,7 @@ console.trace("Cell.formatValue:",value);
             return cell.edit(this.value);
           case 9:
             cell.edit(this.value);
-            return moveTo(table.nextCell());
+            return table.moveTo(table.nextCell());
         }
       };
     };

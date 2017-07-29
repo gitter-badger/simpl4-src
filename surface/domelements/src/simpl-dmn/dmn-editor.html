@@ -137,12 +137,29 @@
 		#gridedit {
 			position: relative;
 		}
+		paper-icon-button {
+			height: 34px !important;
+		}
+		paper-icon-button[disabled] {
+			color: #9c9c9c;
+		}
 
 	</style>
 	<template>
 		<paper-toolbar class="blue">
-			<paper-button style="color:#d32f2f;" on-tap="doSave">
-				<iron-icon icon="save"></iron-icon>[[tr("dmn.save")]]</paper-button>
+			<paper-icon-button id="clearId" disabled="[[!hasFile]]" slot="top" icon="vaadin-icons:refresh" on-tap="resetSelectFields"></paper-icon-button>
+			<paper-tooltip for="clearId" position="bottom">[[tr('dmn.clear')]]</paper-tooltip>
+
+			<paper-icon-button id="saveId" disabled="[[!_currentRegistryName]]" slot="top" icon="vaadin-icons:upload-alt" on-tap="onRegistrySave"></paper-icon-button>
+			<paper-tooltip for="saveId" position="bottom">[[tr('registry.save')]]</paper-tooltip>
+
+			<paper-icon-button id="saveUnderId" disabled="[[!hasFile]]" slot="top" icon="vaadin-icons:upload" on-tap="onRegistrySaveUnder"></paper-icon-button>
+			<paper-tooltip for="saveUnderId" position="bottom">[[tr('registry.save_under')]]</paper-tooltip>
+
+			<paper-icon-button id="loadId" disabled="[[!hasFile]]" slot="top" icon="vaadin-icons:download" on-tap="onRegistryLoad"></paper-icon-button>
+			<paper-tooltip for="loadId" position="bottom">[[tr('registry.load')]]</paper-tooltip>
+
+
 			<paper-button on-tap="doTest">
 				<iron-icon icon="device:wifi-tethering"></iron-icon>[[tr("Test")]]</paper-button>
 			<paper-button on-tap="addInput">
@@ -170,12 +187,21 @@
 			},
 			behaviors: [
 				TranslationsBehavior,
+				RegistryBehavior,
+				LobiboxBehavior,
 				StyleScopeBehavior
 			],
 			observers: [
 				'editValueChanged(editValue)'
 			],
 			attached: function() {
+				this._registryAttributes = {
+					subject: "decision",
+					namespace: this.namespace
+				}
+				this._registryKey = "/decisions";
+				this._currentRegistryName = null;
+
 				this.cols = [];
 				this.rows = [];
 				var ctrlOrCmd = /Mac/.test( navigator.platform ) ? 'Cmd' : 'Ctrl';
@@ -187,8 +213,7 @@
 					element: this.$.gridedit,
 					includeRowHandles: true,
 					includeContextMenu: true,
-					onCellClick: function( e ) {
-					},
+					onCellClick: function( e ) {},
 					contextMenuOrder: [ "undo", "redo", "insertInput", "insertOutput", "removeColumn", "removeRow" ],
 					contextMenuItems: {
 						insertInput: {
@@ -239,7 +264,7 @@
 				} ).bind( this ) )
 				this.gridedit = ge;
 				this.async( function() {
-					this.load();
+					//this.load();
 				}, 50 )
 			},
 			onInputParamDialog: function( e ) {
@@ -309,8 +334,8 @@
 				var len = _.filter( this.cols, function( col ) {
 					return col.kind == 'input'
 				} ).length || 0;
-				if( index < len){
-					index = len;	
+				if ( index < len ) {
+					index = len;
 				}
 				this.$.dmnParamDialogId.open( "output", index );
 			},
@@ -362,12 +387,7 @@
 					}
 				}, 50 )
 			},
-			doSave: function() {
-				this.async( function() {
-					this._doSave();
-				}, 50 )
-			},
-			_doSave: function() {
+			getState: function() {
 				var decision = this.buildDecisionJson();
 				var rows = this.gridedit.data();
 				var data = {
@@ -377,12 +397,16 @@
 						cols: this.cols
 					}
 				}
+				return data;
 				var params = {
 					service: "registry",
 					method: "set",
 					parameter: {
 						key: this.regkey,
-						attributes:{ subject:"decision", namespace:this.namespace},
+						attributes: {
+							subject: "decision",
+							namespace: this.namespace
+						},
 						value: JSON.stringify( data )
 					},
 					async: true,
@@ -398,41 +422,23 @@
 				}
 				simpl4.util.Rpc.rpcAsync( params );
 			},
-			load: function() {
-				var params = {
-					service: "registry",
-					method: "get",
-					parameter: {
-						namespace: this.namespace,
-						key: this.regkey
-					},
-					async: true,
-					context: this,
-					failed: function( e ) {
-						console.error( "registry.get:", e );
-					},
-					completed: function( ret ) {
-						console.log( "ret:", JSON.stringify( ret, null, 2 ) );
-						if ( ret.meta == null ) return;
-						this.cols = ret.meta.cols;
-						var rows = ret.meta.rows;
-						var _rows = [];
-						for ( var i = 0; i < rows.length; i++ ) {
-							var _row = {}
-							for ( var j = 0; j < this.cols.length; j++ ) {
-								_row[ this.cols[ j ].valueKey ] = rows[ i ][ j ];
-							}
-							_rows.push( _row );
-						}
-						this.rows = _rows;
-						this.gridedit.rebuild( {
-							initialize: true,
-							cols: this.cols,
-							rows: this.rows
-						} );
+			setState: function( state ) {
+				this.cols = state.meta.cols;
+				var rows = state.meta.rows;
+				var _rows = [];
+				for ( var i = 0; i < rows.length; i++ ) {
+					var _row = {}
+					for ( var j = 0; j < this.cols.length; j++ ) {
+						_row[ this.cols[ j ].valueKey ] = rows[ i ][ j ];
 					}
+					_rows.push( _row );
 				}
-				simpl4.util.Rpc.rpcAsync( params );
+				this.rows = _rows;
+				this.gridedit.rebuild( {
+					initialize: true,
+					cols: this.cols,
+					rows: this.rows
+				} );
 			},
 			buildValue: function( kind, col, cell ) {
 				if ( kind == "output" ) {
