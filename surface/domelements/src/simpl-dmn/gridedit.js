@@ -1225,10 +1225,12 @@
       var menu;
       this.cell = cell1;
       if (this.active) {
-        if (!this.cell.isActive()) {
+        if (this.cell && !this.cell.isActive()) {
           this.cell.makeActive();
         }
-        this.cells = this.cell.table.activeCells;
+				if( this.cell ){
+					this.cells = this.cell.table.activeCells;
+				}
         GridEdit.Utilities.prototype.setStyles(this.element, {
           left: x,
           top: y

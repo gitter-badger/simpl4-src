@@ -147,7 +147,7 @@
 	</style>
 	<template>
 		<paper-toolbar class="blue">
-			<paper-icon-button id="clearId" disabled="[[!hasFile]]" slot="top" icon="vaadin-icons:refresh" on-tap="resetSelectFields"></paper-icon-button>
+			<paper-icon-button id="clearId" disabled="[[!hasFile]]" slot="top" icon="vaadin-icons:refresh" on-tap="resetAll"></paper-icon-button>
 			<paper-tooltip for="clearId" position="bottom">[[tr('dmn.clear')]]</paper-tooltip>
 
 			<paper-icon-button id="saveId" disabled="[[!_currentRegistryName]]" slot="top" icon="vaadin-icons:upload-alt" on-tap="onRegistrySave"></paper-icon-button>
@@ -378,6 +378,13 @@
 					cols: this.cols
 				} );
 				console.log( "gridRebuild.data:", JSON.stringify( this.gridedit.data(), null, 2 ) );
+			},
+			resetAll: function() {
+				var rows = this.gridedit.data();
+				if ( rows == null ) return;
+				for ( var i = 0; i < rows.length; i++ ) {
+					this.gridedit.removeRow( 0, true );
+				}
 			},
 			doTest: function() {
 				this.async( function() {
