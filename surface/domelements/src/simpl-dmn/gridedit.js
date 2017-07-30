@@ -1859,6 +1859,9 @@
         case 'dmn-date':
           cell = new GridEdit.DMNStringCell(value, this,'dmn-date');
           break;
+        case 'dmn-list':
+          cell = new GridEdit.DMNStringCell(value, this,'dmn-list');
+          break;
         case 'number':
           cell = new GridEdit.NumberCell(value, this);
           break;

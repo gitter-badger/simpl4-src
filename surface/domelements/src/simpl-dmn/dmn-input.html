@@ -51,7 +51,7 @@
 			}
 		},
 		expressionValueChanged: function() {
-			console.log( "expressionValueChanged(" + this.tagName + "):", this.expressionValue );
+			//console.log( "expressionValueChanged(" + this.tagName + "):", this.expressionValue );
 			if ( !this.value ) {
 				this.value = {};
 			}
@@ -59,14 +59,14 @@
 		},
 		operationValueChanged: function() {
 			this.operationValue = this.$.operationSelect.value;
-			console.log( "operationValueChanged(" + this.tagName + "):", this.operationValue );
+			//console.log( "operationValueChanged(" + this.tagName + "):", this.operationValue );
 			if ( !this.value ) {
 				this.value = {};
 			}
 			this.value.op = this.operationValue;
 		},
 		setValue: function( v ) {
-			console.log( "setValue(" + this.tagName + "):", v );
+			//console.log( "setValue(" + this.tagName + "):", v );
 			if ( v ) {
 				this.async( function() {
 					this.$.operationSelect.value = this.getOp( v.op );
@@ -83,12 +83,12 @@
 				op: this.operationValue,
 				expr: this.expressionValue
 			}
-			console.log( "getValue(" + this.tagName + "):", v );
+			//console.log( "getValue(" + this.tagName + "):", v );
 			return v;
 		},
 		getOp: function( op ) {
 			var ret = op || this.items[ 0 ].value;
-			console.log( "getOp(" + this.tagName + "):", ret );
+			//console.log( "getOp(" + this.tagName + "):", ret );
 			return ret;
 		}
 	};
@@ -224,6 +224,34 @@
 				}, {
 					value: "<",
 					label: "<"
+				} ];
+			}
+		} );
+
+	</script>
+</dom-module>
+
+<dom-module id="dmn-list">
+	<template>
+		<style include="dmn-input-styles"></style>
+		<div id="container" class="layout horizontal">
+			<select on-change="operationValueChanged" id="operationSelect" bind-value="{{operationValue}}"> </select>
+			<input spellcheck="false" id="expressionInput" is="iron-input" bind-value="{{expressionValue}}">
+		</div>
+	</template>
+	<script>
+		Polymer( {
+			is: "dmn-list",
+			behaviors: [
+				DmnFieldBehavior
+			],
+			ready: function() {
+				this.items = [ {
+					value: "oneOf",
+					label: "oneOf"
+				}, {
+					value: "notOneOf",
+					label: "notOneOf"
 				} ];
 			}
 		} );
