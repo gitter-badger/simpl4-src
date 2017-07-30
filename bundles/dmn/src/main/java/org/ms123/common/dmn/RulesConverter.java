@@ -157,6 +157,8 @@ public class RulesConverter {
 			transformer = new DateDataTypeTransformer();
 		} else if ("string".equals(type)) {
 			transformer = new StringDataTypeTransformer();
+		} else if ("list".equals(type)) {
+			transformer = new StringDataTypeTransformer();
 		} else {
 			transformer = new StringDataTypeTransformer();
 		}
