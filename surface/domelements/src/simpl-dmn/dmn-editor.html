@@ -411,6 +411,7 @@
 					cols: this.cols
 				} );
 				console.log( "gridRebuild.data:", JSON.stringify( this.gridedit.data(), null, 2 ) );
+				this.refreshResize();
 			},
 			resetAll: function() {
 				var rows = this.gridedit.data();
@@ -457,10 +458,36 @@
 					cols: this.cols,
 					rows: this.rows
 				} );
+				this.initDragTable();
 			},
 			getList: function( expr ) {
 				return "['" + expr.split( /,| / ).join( "','" ) + "']";
 			},
+
+			refreshResize: function() {
+				var table = this.$.gridedit.querySelector( "table.dmnTable" );
+
+				$( ".rc-handle-container", $( this.$.gridedit ) ).remove();
+				this.async( function() {
+					$( table ).resizableColumns( {} );
+				}, 100 )
+			},
+
+			initDragTable: function() {
+				this.refreshResize();
+				return;
+				var table = this.$.gridedit.querySelector( "table.dmnTable" );
+				var self = this;
+				$( table ).dragtable( {
+					placeholder: 'placeholder',
+					helperCells: ':not(.footerrow td)',
+					stop: function() {
+						self.refreshResize();
+					}
+				} );
+				this.refreshResize();
+			},
+
 			buildValue: function( kind, col, cell ) {
 				if ( kind == "output" ) {
 					return cell;
