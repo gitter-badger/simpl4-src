@@ -19,6 +19,16 @@
 				color: #727272 !important;
 				position: relative;
 			}
+			paper-dialog {
+				margin: 0px;
+				padding: 0px !important;
+			}
+			paper-dialog /deep/ paper-dialog-scrollable {
+				margin: 0px !important;
+			}
+			paper-dialog /deep/ paper-dialog-scrollable .scrollable {
+				padding: 0 12px !important;
+			}
 
 		</style>
 		<template>
@@ -30,6 +40,8 @@
 				<div class="buttons">
 					<paper-button raised dialog on-tap="onTap">
 						<iron-icon icon="check"></iron-icon>Ok</paper-button>
+					<paper-button xaised dialog on-tap="close">
+						<iron-icon icon="clear"></iron-icon>[[tr('Cancel')]]</paper-button>
 				</div>
 			</paper-dialog>
 		</template>
@@ -37,13 +49,14 @@
 			Polymer( {
 				is: 'dmn-paramdialog',
 				behaviors: [
+					DialogBehavior,
 					TranslationsBehavior
 				],
 				onTap: function() {
 					if ( this.$.formId.validate() ) {
 						console.log( "val" );
 						var data = this.$.formId.getData();
-						console.log("fire:"+this.type + "paramdialog-ok");
+						console.log( "fire:" + this.type + "paramdialog-ok" );
 						this.fire( this.type + "paramdialog-ok", {
 							index: this.index,
 							data: data
@@ -51,10 +64,10 @@
 					}
 				},
 				close: function( msg ) {
-					this.$.dialogId.close();
+					this.destroyDialog( this.$.dialogId );
 				},
 				open: function( type, index ) {
-					this.formname= "dmn"+type+".form";
+					this.formname = "dmn" + type + ".form";
 					this.type = type;
 					this.index = index;
 					if ( "input" === this.type ) {
@@ -63,7 +76,7 @@
 						this.icon = "icons:file-upload";
 					}
 					this.$.formId.setData( {} );
-					this.$.dialogId.open();
+					this.openDialog( this.$.dialogId, "inherit" );
 				}
 			} );
 

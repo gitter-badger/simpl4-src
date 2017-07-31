@@ -19,6 +19,16 @@
 				color: #727272 !important;
 				position: relative;
 			}
+			paper-dialog {
+				margin: 0px;
+				padding: 0px !important;
+			}
+			#scrollable {
+				margin: 0px !important;
+				max-height: 400px;
+				padding-bottom:20px;
+				overflow-y: auto;
+			}
 			simpl-toast /deep/ span {
 				min-width: 450px;
 				padding-right: 25px;
@@ -35,25 +45,28 @@
 		</style>
 		<template>
 			<paper-dialog with-backdrop id="dialogId">
-				<div class="layout vertical flex">
-					<iron-icon class="error-big" icon="device:wifi-tethering"></iron-icon>
-					<template is="dom-repeat" items="[[decision.columns.conditions]]">
-						<template is="dom-if" if="[[isBoolean(item)]]">
-							<checkbox-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></checkbox-field>
+				<div id="scrollable">
+
+					<div id="inputAreaId" class="layout vertical flex">
+						<iron-icon class="error-big" icon="device:wifi-tethering"></iron-icon>
+						<template is="dom-repeat" items="[[decision.columns.conditions]]">
+							<template is="dom-if" if="[[isBoolean(item)]]">
+								<checkbox-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></checkbox-field>
+							</template>
+							<template is="dom-if" if="[[isString(item)]]">
+								<input-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
+							</template>
+							<template is="dom-if" if="[[isDate(item)]]">
+								<input-field type="date" id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
+							</template>
 						</template>
-						<template is="dom-if" if="[[isString(item)]]">
-							<input-field id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
-						</template>
-						<template is="dom-if" if="[[isDate(item)]]">
-							<input-field type="date" id="[[item.variableName]]" label="[[item.variableName]]" name="[[item.variableName]]"></input-field>
-						</template>
-					</template>
+					</div>
 				</div>
 				<div class="buttons">
 					<paper-button raised dialog on-tap="onTest">
 						<iron-icon icon="device:wifi-tethering"></iron-icon>Test</paper-button>
 					<paper-button raised dialog on-tap="onClose">
-						<iron-icon icon="check"></iron-icon>Close</paper-button>
+						<iron-icon icon="check"></iron-icon>[[tr('Cancel')]]</paper-button>
 				</div>
 				<div id="viewer">
 					<pre>[[testResult]]</pre>
@@ -66,6 +79,7 @@
 			Polymer( {
 				is: 'dmn-testdialog',
 				behaviors: [
+					DialogBehavior,
 					TranslationsBehavior
 				],
 				isBoolean: function( item ) {
@@ -81,7 +95,7 @@
 					var variables = {};
 					for ( var i = 0; i < this.decision.columns.conditions.length; i++ ) {
 						var cond = this.decision.columns.conditions[ i ];
-						var f = this.querySelector( "#" + cond.variableName );
+						var f = this.inputArea.querySelector( "#" + cond.variableName );
 						var val = f.getValue();
 						var def = null;
 						if ( cond.variableType == "string" ) {
@@ -125,7 +139,7 @@
 									this.testResult = e.message.substring( this.getPosition( e.message, ":", 5 ) + 1 );
 								} else {
 									//this.testResult = e.message.split( ":" )[ 2 ];
-									this.testResult = e.message.substring( this.getPosition( e.message, ":", 2 ) + 1 ); 
+									this.testResult = e.message.substring( this.getPosition( e.message, ":", 2 ) + 1 );
 								}
 							} catch ( e ) {}
 						},
@@ -146,11 +160,12 @@
 					return s.split( sub, index ).join( sub ).length;
 				},
 				onClose: function() {
-					this.$.dialogId.close();
+					this.destroyDialog( this.$.dialogId );
 				},
 				open: function( decision ) {
 					this.decision = decision;
-					this.$.dialogId.open();
+					this.inputArea = this.$.inputAreaId;
+					this.openDialog( this.$.dialogId, "inherit" );
 				}
 			} );
 
