@@ -42,6 +42,8 @@ import groovy.transform.CompileStatic;
 import groovy.transform.TypeCheckingMode
 
 import java.io.File;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.ClassUtils.isPrimitiveOrWrapper;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.debug;
@@ -63,7 +65,10 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 		info(this,"List:"+result);
 		return result;
 	}
-	protected Map _objToMap(SessionContext sc, Object obj, dt ){
+	protected Object _objToMap(SessionContext sc, Object obj, dt ){
+		if( isPrimitiveOrWrapper( obj.getClass()) || obj instanceof String ){
+			return obj;
+		}
 		def entityName = this.inflector.lowerFirst(obj.getClass().getSimpleName());
 		Map fields = sc.getPermittedFields(entityName, "read");
 		def cleanData = [:];
@@ -79,7 +84,9 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				int i = 0;
 				for( Object child : obj[k] ){
 					def m = _objToMap(sc,child, v.datatype);
-					m["_id"] = "id"+(i++);
+					if( !isPrimitiveOrWrapper( m.getClass()) && !(m instanceof String) ){
+						m["_id"] = "id"+(i++);
+					}
 					mapList.add( m );
 				}
 				cleanData[k] = mapList;
@@ -147,10 +154,17 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 			}else if( (isEmbeddedSet(v.datatype) || isEmbeddedList( v.datatype )) && data[k] != null){
 				info(this,"EmbeddedMulti("+entityName+":"+k+"):"+data[k]);
 				def cleanList = [];
-				for( Map map : data[k] ){
-					info(this,"map:"+map);
-					def ret = _executeInsertObject(sc, v.linkedclass, map, true );
-					cleanList.add(ret);
+				if( !isEmpty( v.linkedclass)){
+					for( Map map : data[k] ){
+						info(this,"map:"+map);
+						def ret = _executeInsertObject(sc, v.linkedclass, map, true );
+						cleanList.add(ret);
+					}
+				}else{
+					for( def item : data[k] ){
+						info(this,"item:"+item);
+						cleanList.add(item);
+					}
 				}
 				obj[k] = cleanList;
 			}
@@ -245,12 +259,18 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 			}else if( (isEmbeddedSet(v.datatype) || isEmbeddedList( v.datatype )) && data[k] != null){
 				info(this,"EmbeddedMulti("+entityName+":"+k+"):"+data[k]);
 				def objList = [];
-				Class clazz = getClass(sc, v.linkedclass);
-				for( Map childData : data[k] ){
-					def child = clazz.newInstance(  );
-					child.detach();
-					_executeUpdateObject(sc, child, childData );
-					objList.add( child );
+				if( !isEmpty( v.linkedclass)){
+					Class clazz = getClass(sc, v.linkedclass);
+					for( Map childData : data[k] ){
+						def child = clazz.newInstance(  );
+						child.detach();
+						_executeUpdateObject(sc, child, childData );
+						objList.add( child );
+					}
+				}else{
+					for( def item : data[k] ){
+						objList.add( item );
+					}
 				}
 				info(this,"objList:"+objList);
 				obj[k] = objList;
