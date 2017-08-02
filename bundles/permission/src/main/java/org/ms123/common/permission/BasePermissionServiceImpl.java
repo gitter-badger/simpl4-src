@@ -50,8 +50,10 @@ import org.ms123.common.rpc.CallService;
 import org.ms123.common.namespace.NamespaceService;
 import org.springframework.util.AntPathMatcher;
 import static org.apache.commons.io.FileUtils.readFileToString;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.validator.routines.EmailValidator;
 
 /**
  *
@@ -60,6 +62,7 @@ import org.slf4j.LoggerFactory;
 class BasePermissionServiceImpl implements Constants {
 
 	protected AuthService m_authService;
+	protected EmailValidator emailValidator = EmailValidator.getInstance(false,false);
 
 	protected GitService m_gitService;
 	protected CallService m_callService;
@@ -221,10 +224,16 @@ class BasePermissionServiceImpl implements Constants {
 
 	public List<String> getUserRoles( String userid ) {
 		List<String> roleListRet = new ArrayList();
+		if( emailValidator.validate( userid)){
+			roleListRet.add("global.guest");
+			return roleListRet;
+		}
 		if( userid == null) return roleListRet;
 		Map userProps = m_authService.getUserProperties(userid);
 		List<String> roleList = null;
-		if( userProps == null ) return roleListRet;
+		if( userProps == null ) {
+			return roleListRet;
+		}
 		String rs = (String) userProps.get(ROLES);
 		if (rs != null && rs.length() >0) {
 			roleList = Arrays.asList(rs.split("\\s*,\\s*"));
@@ -247,6 +256,9 @@ class BasePermissionServiceImpl implements Constants {
 			roleListRet.addAll( addRoles );
 		}
 		debug("Permission.getUser.roleList("+userid+"):" + roleListRet);
+		Set setItems = new HashSet(roleListRet);
+		roleListRet.clear();
+		roleListRet.addAll(setItems);
 		return roleListRet;
 	} 
 
@@ -320,6 +332,25 @@ class BasePermissionServiceImpl implements Constants {
 		return roles;
 	}
 
+	protected String gainRealUser(String namespace, String userId, String password){
+		String service = (String)m_namespaceService.getBranding().get(GAIN_REAL_USER);
+		info("gainRealUser.service:"+service);
+		if( isEmpty( service)){
+			return null;
+		}
+		service = getFqServiceName( namespace, service );
+		Map<String, String> params = new HashMap<String,String>();
+		params.put("email", userId );
+		params.put("password", password );
+		Map<String,Object> map = (Map)m_callService.callCamel( service, params);
+		info("gainRealUser.ret:"+map);
+		List<String> roles = (List)map.get("roles");
+		String realUser = (String)map.get("mainUserId");
+		if( roles != null){
+			org.ms123.common.system.thread.ThreadContext.getThreadContext().put(ADDITIONAL_ROLES, roles );
+		}
+		return realUser;
+	}
 
 	private String getFqServiceName( String namespace, String service ){
 		if( service.indexOf(".") == -1 &&  !"xyz".equals(namespace)){

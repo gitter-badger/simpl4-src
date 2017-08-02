@@ -28,6 +28,8 @@ public interface Constants {
 	public static String ADDITIONAL_ROLES = "additionalRoles";
 	public static String SUB_LOGIN = "subLogin";
 	public static String SUB_ID = "subId";
+	public static String USER_ID = "userId";
+	public static String GAIN_REAL_USER = "gainRealUser";
 
 	public static String ADMIN_ROLE = "admin";
 

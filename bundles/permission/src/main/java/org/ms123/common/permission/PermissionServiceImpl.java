@@ -70,6 +70,8 @@ import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 import static org.ms123.common.libhelper.Utils.listToList;
+import org.apache.commons.validator.routines.EmailValidator;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /** PermissionService implementation
  */
@@ -202,12 +204,22 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 			org.ms123.common.system.thread.ThreadContext.loadThreadContext(namespace,username);	
 		}
 		Map userProps = null;
+		boolean userIsAuthenticated = false;
 		try {
 			if (noAuth()) {
 				userProps = new HashMap();
 				userProps.put("admin", true);
 				username = m_authService.getAdminUser();
 			} else {
+				info("emailValidator("+username+").isValid:" + emailValidator.isValid(username));
+				if( emailValidator.isValid( username)){
+					String uname = gainRealUser( namespace, username, password);
+					if( !isEmpty(uname)){
+						username=uname;
+						userIsAuthenticated = true;
+					}
+				}
+				info("realUser:"+username);
 				userProps = m_authService.getUserProperties(username);
 			}
 		} catch (Exception e) {
@@ -220,7 +232,7 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 		}
 		debug("login:"+userProps);
 		String _password = (String)userProps.get("password");
-		if( _password != null){
+		if( !userIsAuthenticated && _password != null){
 			if( password == null) password="";
 			if( !_password.trim().equals(password.trim()) &&  !( _password.equals("") && password.equals("admin"))){
 				debug("_password:"+password+"/"+_password+"|");
