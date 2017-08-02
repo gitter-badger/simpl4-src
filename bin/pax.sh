@@ -294,7 +294,7 @@ ${camundabundles} \
   scan-bundle:file:$REPOSITORY/flexjson-2.1.bar \
   scan-bundle:file:$REPOSITORY/guava-10.0-rc3.bar \
   scan-bundle:file:$REPOSITORY/guava-18.0.jar@3 \
-	scan-bundle:file:$REPOSITORY/h2-1.4.187.jar \
+	scan-bundle:file:$REPOSITORY/h2-1.4.196.jar \
   scan-bundle:file:$REPOSITORY/hibernate-5.0.1.jar \
 	scan-bundle:file:$REPOSITORY/hsqldb.jar \
 	scan-bundle:file:$REPOSITORY/itext-2.1.7.bar \
