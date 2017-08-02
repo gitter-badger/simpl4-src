@@ -1180,6 +1180,9 @@ class GroovyProcessor implements Processor {
 		if( main.fieldExists(this.scriptClazz,"entityService")){
 			main.injectField( this.scriptClazz, script, "entityService", main.getService( "org.ms123.common.entity.api.EntityService"))
 		}
+		if( main.fieldExists(this.scriptClazz,"permissionService")){
+			main.injectField( this.scriptClazz, script, "permissionService", main.getService( "org.ms123.common.permission.api.PermissionService"))
+		}
 		if( main.fieldExists(this.scriptClazz,"dataLayer")){
 			main.injectField( this.scriptClazz, script, "dataLayer", main.getDataLayer())
 		}
