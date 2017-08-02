@@ -45,6 +45,7 @@ public interface PermissionService {
 	public boolean hasUserRole(String name);
 
 	public Map getRole( String namespace, String name) throws RpcException;
+	public List getAllRoles( Map mapping, String filter) throws RpcException;
 
 	public List<String> getUserRoles( String name) throws Exception;
 
