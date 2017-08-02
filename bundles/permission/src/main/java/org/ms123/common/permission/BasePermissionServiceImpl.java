@@ -224,7 +224,7 @@ class BasePermissionServiceImpl implements Constants {
 
 	public List<String> getUserRoles( String userid ) {
 		List<String> roleListRet = new ArrayList();
-		if( emailValidator.validate( userid)){
+		if( emailValidator.isValid( userid)){
 			roleListRet.add("global.guest");
 			return roleListRet;
 		}

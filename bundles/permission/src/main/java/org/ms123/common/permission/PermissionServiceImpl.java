@@ -358,6 +358,22 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 		}
 	}
 
+	public List getAllRolesInternal() throws Exception{
+		try {
+			List<Map> result = new ArrayList();
+			List<Map> repoList = m_gitService.getRepositories(new ArrayList(), false);
+			for (Map<String, String> repo : repoList) {
+				String name = repo.get("name");
+				List<Map> r = m_gitMetaData.getRoles(name);
+				result.addAll(r);
+			}
+			addGuestRole(result);
+			return listToList(result, null, null);
+		} catch (Throwable e) {
+			throw new RuntimeException("PermissionServiceImpl.getAllRolesInternal:", e);
+		} finally {
+		}
+	}
 
 	@RequiresRoles("admin")
 	public void deleteRole(
