@@ -478,6 +478,7 @@
 				var lang = simpl4.util.BaseManager.getLanguage()
 				var env = {
 					$mode: this.mode,
+					$uuid: window.uuid,
 					$lang: lang
 				};
 				env = simpl4.util.Merge.merge( true, data, env );
