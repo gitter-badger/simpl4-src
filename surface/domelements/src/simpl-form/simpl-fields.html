@@ -1476,9 +1476,12 @@
 			},
 			valueChanged: function( v ) {
 				//console.log( "select-field(" + this.name + ").valueChanged:", this.value+"/wo:"+this.withoutCheck );
+				if( this._invalueSetting===true) return;
 				this.async( function(){
 					if( this.selectize && this.selectize.getValue() != this.value){
+						this._invalueSetting=true;
 						this.selectize.setValue(this.value);
+						this._invalueSetting=false;
 					}
 				},300);
 				if ( this.isDomReady != true ) return;
