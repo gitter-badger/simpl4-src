@@ -144,7 +144,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		}
 	}
 
-	public List<Map> getUserList( Map mfilter, int startIndex, int numResults){
+	public synchronized List<Map> getUserList( Map mfilter, int startIndex, int numResults){
 		StoreDesc sdesc = getStoreDesc();
 		List<Map> result = new ArrayList();
 		String filter = null;//"userid == '" + id + "'";
@@ -165,6 +165,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 				result.add( b2m.transform(obj, new HashMap()));
 			}
 		} catch( Exception ex){
+			error(this, "getUserList.ex:%[exception]s",ex);
 			throw new RuntimeException(ex);
 		} finally {
 			q.closeAll();
