@@ -44,6 +44,7 @@ public class ThreadContext {
 	private String namespace;
 
 	private String userName;
+	private String subUserName;
 	private Map m_properties = new HashMap();
 	private Date startTime;
 
@@ -123,6 +124,15 @@ public class ThreadContext {
 
 	public String getUserName() {
 		return userName;
+	}
+	public void setUserName(String un) {
+		userName=un;
+	}
+	public String getSubUserName() {
+		return subUserName;
+	}
+	public void setSubUserName(String un) {
+		subUserName=un;
 	}
 	public Date getStartTime() {
 		return startTime;

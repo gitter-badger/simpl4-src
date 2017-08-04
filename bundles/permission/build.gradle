@@ -20,5 +20,6 @@ dependencies {
 	compile files("${repository}/slf4j-api-1.6.1.jar")
   compile files("${repository}/spring/spring-core-3.2.5.RELEASE.jar")
   compile files("${repository}/commons/commons-io-2.5.jar")
+  compile files("${repository}/ostermillerutils_1_07_00.jar")
   compile files("${repository}/commons/commons-validator-1.6.jar")
 }

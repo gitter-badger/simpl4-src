@@ -338,7 +338,9 @@ class BasePermissionServiceImpl implements Constants {
 		if( isEmpty( service)){
 			return null;
 		}
-		service = getFqServiceName( namespace, service );
+		if( !isEmpty( namespace)){
+			service = getFqServiceName( namespace, service );
+		}
 		Map<String, String> params = new HashMap<String,String>();
 		params.put("email", userId );
 		params.put("password", password );

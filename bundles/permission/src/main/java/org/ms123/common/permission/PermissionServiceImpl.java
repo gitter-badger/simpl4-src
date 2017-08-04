@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.io.File;
+import com.Ostermiller.util.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
@@ -45,7 +46,7 @@ import org.apache.shiro.authz.*;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.*;
 import org.apache.shiro.session.Session;
-import org.apache.shiro.util.ThreadContext;
+//import org.apache.shiro.util.ThreadContext;
 import org.ms123.common.auth.api.AuthService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.libhelper.Inflector;
@@ -61,6 +62,7 @@ import org.ms123.common.rpc.PDefaultString;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
+import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.rpc.CallService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
@@ -200,8 +202,8 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 			username = x[0];
 			subId = x[1];
 		}
-		if( org.ms123.common.system.thread.ThreadContext.getThreadContext() == null ){
-			org.ms123.common.system.thread.ThreadContext.loadThreadContext(namespace,username);	
+		if( ThreadContext.getThreadContext() == null ){
+			ThreadContext.loadThreadContext(namespace,username);	
 		}
 		Map userProps = null;
 		boolean userIsAuthenticated = false;
@@ -215,6 +217,8 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 				if( emailValidator.isValid( username)){
 					String uname = gainRealUser( namespace, username, password);
 					if( !isEmpty(uname)){
+						ThreadContext.getThreadContext().setSubUserName( username );
+						ThreadContext.getThreadContext().setUserName( uname);
 						username=uname;
 						userIsAuthenticated = true;
 					}
@@ -231,11 +235,11 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 			return false;
 		}
 		debug("login:"+userProps);
-		String _password = (String)userProps.get("password");
-		if( !userIsAuthenticated && _password != null){
+		String passwordCmp = (String)userProps.get("password");
+		if( !userIsAuthenticated && passwordCmp != null){
 			if( password == null) password="";
-			if( !_password.trim().equals(password.trim()) &&  !( _password.equals("") && password.equals("admin"))){
-				debug("_password:"+password+"/"+_password+"|");
+			if( !passwordCmp.trim().equals(password.trim()) &&  !( passwordCmp.equals("") && password.equals("admin"))){
+				debug("passwordCmp:"+password+"/"+passwordCmp+"|");
 				throw new RuntimeException("Login failed");	
 			}
 		}
@@ -315,8 +319,62 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 		threadState.bind();
 		return subject;
 	}
+	private boolean checkPassword( String password, String passwordCmp ){
+		if( passwordCmp != null){
+			if( password == null) password="";
+			if( !passwordCmp.trim().equals(password.trim()) &&  !( passwordCmp.equals("") && password.equals("admin"))){
+				debug("passwordCmp:"+password+"/"+passwordCmp+"|");
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/* BEGIN JSON-RPC-API*/
+	public Map checkCredentials(
+			@PName("credentials") String credentials ) throws RpcException {
+		try {
+			
+			Map<String,Object> ret = new HashMap<String, Object>();
+			ret.put("ok", false);
+			if( isEmpty( credentials) || credentials.length() < 6 ){
+				return ret;
+			}
+			credentials = Base64.decode(credentials);
+			int ind = credentials.indexOf(":");
+			if (ind != -1) {
+				String username = credentials.substring(0, ind);
+				String password = credentials.substring(ind+1);
+
+				boolean userIsAuthenticated = false;
+				if( emailValidator.isValid( username)){
+					String uname = gainRealUser( null, username, password);
+					if( !isEmpty(uname)){
+						username=uname;
+						userIsAuthenticated = true;
+					}
+				}
+				info("realUser:("+username+"):"+userIsAuthenticated);
+				Map userProps = m_authService.getUserProperties(username);
+				if( userProps == null){
+					info("Username("+username+"):not found");
+					return ret;
+				}
+				String passwordCmp = (String)userProps.get("password");
+				if( !userIsAuthenticated && !checkPassword( password,passwordCmp)){
+					info("Username("+username+"):password not ok");
+					return ret;
+				}
+				List<String> roles = getUserRoles( username);
+				ret.put("ok", true);
+				ret.put("roles", roles);
+				return ret;
+			}
+			return ret;
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "PermissionServiceImpl.checkCredentials:", e);
+		}
+	}
 	@RequiresRoles("admin")
 	public List getRoles(
 			@PName(StoreDesc.NAMESPACE) String namespace, 
