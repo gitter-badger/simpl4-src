@@ -153,18 +153,12 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				width: 30,
 				'value': ""
 			}, {
-				name: "help",
-				type: "TextField",
-				label: this.tr( "structure.help" ),
-				width: 60,
-				'value': ""
-			}, {
-				name: "adoc_include",
-				type: "CheckBox",
-				value: false,
-				width: 5,
-				tooltip: this.tr( "structure.adoc_include_help" ),
-				label: this.tr( "structure.adoc_include" )
+				name: "roles",
+				type: "DoubleSelectBox",
+				value: null,
+				width: 50,
+				options: this._getRoles(),
+				label: this.tr( "structure.roles" )
 			}, {
 				name: "enabled",
 				type: "CheckBox",
@@ -179,6 +173,27 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 				this._columnMap[ name ] = i;
 			}
 			return this._columnModel;
+		},
+		_getRoles: function(  ) {
+			var failed = ( function( details ) {
+				ms123.form.Dialog.alert( this.tr( "structure.getRoles" ) + ":" + details.message );
+			} ).bind( this );
+
+			try {
+				var ret = ms123.util.Remote.rpcSync( "permission:getAllRoles", { } );
+				var roles = [];
+				for( var i=0; i < ret.length;i++){
+					var role = {
+						value : ret[i].name,
+						label : ret[i].name
+					}
+					roles.push(role);
+				}
+				return roles;
+			} catch ( e ) {
+				failed.call( this, e );
+				return;
+			}
 		},
 		_createUseList: function() {
 			this._useList = [ {
@@ -697,7 +712,7 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			} );
 			win.setLayout( new qx.ui.layout.Grow );
 			win.setWidth( 600 );
-			win.setHeight( 300 );
+			win.setHeight( 400 );
 			win.setAllowMaximize( false );
 			win.setAllowMinimize( false );
 			win.setModal( true );
