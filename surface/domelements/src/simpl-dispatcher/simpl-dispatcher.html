@@ -43,10 +43,10 @@
 			},
 			attached: function() {
 				this.async( function() {
-					this._attached();
+					this.initListener();
 				} );
 			},
-			_attached: function() {
+			initListener: function() {
 				var menuEntries = document.querySelectorAll( "a.menuentry" );
 				for ( var i = 0; i < menuEntries.length; i++ ) {
 					var a = menuEntries[ i ];

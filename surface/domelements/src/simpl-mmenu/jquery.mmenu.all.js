@@ -796,7 +796,7 @@
 	{
 		if ( $[ _PLUGIN_ ].glbl )
 		{
-			return;
+//			return;
 		}
 
 		glbl = {
