@@ -212,6 +212,11 @@ class BasePermissionServiceImpl implements Constants {
 			return false;
 		}
 		String	username = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserName();
+		String	subUserName = org.ms123.common.system.thread.ThreadContext.getThreadContext().getSubUserName();
+		info("isUserThis("+userid+"):" + username+"/"+subUserName);
+		if( emailValidator.isValid( userid) && !isEmpty(subUserName) ){
+			return userid.equals(subUserName);
+		}
 		return userid.equals(username);
 	}
 	public boolean hasUserRole(String role){
