@@ -809,13 +809,62 @@ qx.Class.define( "ms123.structureditor.StructureEditor", {
 			}
 			return newArray;
 		},
+		_saveAccessFile: function (content) {
+			var completed = (function (e) {
+			}).bind(this);
+
+			var failed = (function (e) {
+				ms123.form.Dialog.alert(this.tr("structure._save_failed")+":"+e.message);
+			}).bind(this);
+
+			var rpcParams = {
+				reponame:this.storeDesc.getNamespace(),
+				path:".etc/access-rules.json",
+				type:"json",
+				content: content
+			};
+
+			var params = {
+				method:"putContent",
+				service:"git",
+				parameter:rpcParams,
+				async: false,
+				context: this,
+				completed: completed,
+				failed: failed
+			}
+			ms123.util.Remote.rpcAsync(params);
+		},
+		_getAccessRule:function( d){
+			if( d.roles && d.roles.length>0 && d.uri && d.uri.length>0){
+				var pattern = d.uri;
+				if( d.uri.indexOf("/")!=0){
+					pattern = "**/"+d.uri;
+				}
+				var obj = {
+					pattern: pattern,
+					permittedRoles: d.roles,
+					permittedUser: []
+				}
+				this._accessData.push(obj);
+			}
+			if( d.children){
+				for( var i=0; i< d.children.length;i++){
+					this._getAccessRule( d.children[i] );
+				}
+			}
+		},
 		_save: function() {
 			var gd = this._globalForm.getData();
 			this._table.stopEditing();
 			var data = this._dataModel.getData();
 			var res = this._convertBack( data, data[ 0 ] );
+			this._accessData = [];
+			for( var i=0; i< res.length;i++){
+				this._getAccessRule( res[i]);
+			}
+			this._saveAccessFile( JSON.stringify(this._accessData,null,2));
 			res.splice( 0, 0, gd );
-			console.log( "Data:" + JSON.stringify( res, null, 2 ) );
 			this.fireDataEvent( "save", JSON.stringify( res, null, 2 ) );
 		}
 	}
