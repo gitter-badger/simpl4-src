@@ -154,6 +154,7 @@
 			if ( errorList && errorList.length > 0 ) {
 			}
 			this._validateLocal( errorList );
+			this._validateService( errorList );
 			return errorList.length == 0;
 		},
 		_validateLocal: function( errorListGlobal ) {
@@ -188,12 +189,66 @@
 			}
 			this._setGlobalErrorMessage( e );
 		},
+		_validateService: function(errorListGlobal) {
+			var method = this._form.xf_validate_service;
+			var mode = this._form.xf_postprocess_service_mode;
+			if ( this._isEmpty( method ) ) return null;
+			try {
+				if ( method.indexOf( "." ) == -1 ) {
+					method = this.namespace + "." + method;
+				}
+				var lang = simpl4.util.BaseManager.getLanguage()
+				var data = this._getData();
+				var items = simpl4.util.Rpc.rpcSync( "camelRoute:" + method, {
+					data: data,
+					lang: lang,
+					formName: this._removeExtension( this.formName ),
+					mode: this.mode,
+					uuid: window.uuid
+				} );
+				var errorListLocal = [];
+				for ( var i = 0; i < items.length; i++ ) {
+					var item = items[ i ];
+					var errormsg = item.message;
+					var fieldname = item.path;
+					if ( errormsg && errormsg.match( /^[@%]/ ) ) {
+						errormsg = tr( errormsg.substring( 1 ) );
+					}
+					var isErrorSet = false;
+					if( fieldname ){
+						var field = this._getField( fieldname);
+						if( field ){
+							field.setInvalid( true );
+							field.setErrorMessage( errormsg );
+							isErrorSet=true;
+						}
+					}
+					errorListGlobal.push( errormsg );
+					if( !isErrorSet){
+						errorListLocal.push( errormsg );
+					}
+				}
+				var err = "";
+				var br = "";
+				for ( var i = 0; i < errorListLocal.length; i++ ) {
+					err += br + errorListLocal[ i ];
+					br = "<br/>";
+				}
+				this._setGlobalErrorMessage( err );
+			} catch ( e ) {
+				console.error( "_validateServiceForm.call:camelRoute:" + method );
+				console.error( "_validateServiceForm:", e );
+			}
+		},
 		_setGlobalErrorMessage: function( msg ) {
+			if( _.isEmpty( msg)){
+				return;
+			}
 			this._errorMessage = msg;
 			this.async( function() {
 				var error = this.querySelector( "#globalErrorId" );
 				error.innerHTML = msg;
-			}, 10 );
+			}, 50 );
 		},
 		_getExcludes:function(selector){
 			var exclude = [];
