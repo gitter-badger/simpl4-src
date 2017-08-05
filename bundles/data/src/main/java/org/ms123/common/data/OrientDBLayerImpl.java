@@ -61,8 +61,10 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.permission.api.PermissionException;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.git.GitService;
+import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.domainobjects.api.DomainObjectsService;
+import org.ms123.common.rpc.CallService;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.annotation.component.*;
 import java.lang.UnsupportedOperationException;
@@ -82,9 +84,13 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 
 	private GitService gitService;
 
+	private CallService callService;
+
 	private OrientDBService orientdbService;
 
 	private SettingService settingService;
+
+	private CamelService camelService;
 
 	private DomainObjectsService domainObjectsService;
 
@@ -144,6 +150,13 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public Map insertObject(SessionContext sessionContext, Map dataMap, Map filterMap, Map hintsMap, String entityName, String entityNameParent, String idParent) throws Exception {
+		List constraintViolations = validateObject(sessionContext, dataMap, null, entityName, true);
+		if (constraintViolations != null) {
+			Map<String,Object> retMap = new HashMap();
+			retMap.put("constraintViolations", constraintViolations);
+			retMap.put("created", null);
+			return retMap;
+		}
 		StoreDesc sdesc = sessionContext.getStoreDesc();
 		if (entityNameParent != null) {
 			entityName = constructEntityName(sessionContext, entityName, entityNameParent);
@@ -179,7 +192,41 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 	}
 
 	public List validateObject(SessionContext sessionContext, Object objectInsert, Object objectUpdatePre, String entityName, boolean bInsert) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBLayer.validateObject");
+//	Set cv = m_validator.validate(objectInsert);
+		String recordValidation = getRecordValidation(sessionContext,entityName);
+		if( recordValidation != null){
+			Map<String,Object> params = new HashMap();
+//		params.put("constraintViolationList", constructConstraitViolationList(cv));
+			params.put("data", objectInsert);
+			params.put("mode", bInsert ? "add" : "edit");
+			info(this,"validateObject:"+params);
+			String service = getFqServiceName( sessionContext.getStoreDesc().getNamespace(), recordValidation);
+			Object answer = this.callService.callCamel( service, params);
+			info(this,"answer:"+answer);
+			if ( answer != null && ((Collection)answer).size() > 0) {
+				return new ArrayList((Collection)answer);
+			}else{
+				return null;
+			}
+		}else{
+//		if (cv.size() > 0) {
+//			return constructConstraitViolationList(cv);
+//		}
+		}
+		return null; 
+	}
+
+	private String getFqServiceName( String namespace, String service ){
+		if( service.indexOf(".") == -1 &&  !"xyz".equals(namespace)){
+			service = namespace + "."+ service;
+		}
+		return service;
+	}
+
+	private String getRecordValidation(SessionContext sc, String entityName) {
+	  Map m = this.settingService.getPropertiesForEntityView( sc.getStoreDesc().getNamespace(), GLOBAL_SETTINGS, StoreDesc.getFqEntityName(entityName,sc.getStoreDesc()), null);
+		String val = (String)m.get(RECORDVALIDATION);
+		return val;
 	}
 
 	public Object createObject(String namespace, String entityName) {
@@ -511,11 +558,24 @@ public class OrientDBLayerImpl extends BaseOrientDBLayerImpl implements org.ms12
 		info(this, "OrientDBLayer.setOrientDBService:" + paramEntityService);
 	}
 
+	@Reference(dynamic = true, optional = true)
+	public void setCamelService(CamelService paramCamelService) {
+		this.camelService = paramCamelService;
+		info(this,"OrientDBLayer.setCamelService:" + paramCamelService);
+	}
+
 	@Reference
 	public void setDomainObjectsService(DomainObjectsService paramService) {
 		domainObjectsService = paramService;
 		info(this, "OrientDBLayer.setDomainObjectsService:" + paramService);
 	}
+
+	@Reference(dynamic = true, optional=true)
+	public void setCallService(CallService callService) {
+		this.callService = callService;
+		info(this,"OrientDBLayer.setCallService:" + callService);
+	}
+
 
 	@Reference(dynamic = true, optional = true)
 	public void setAuthService(AuthService paramAuthService) {
