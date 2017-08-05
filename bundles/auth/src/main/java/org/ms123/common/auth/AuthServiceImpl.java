@@ -178,6 +178,16 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	private Map getUserByUserid(StoreDesc sdesc, String id) throws Exception {
 		return getUserByFilter(sdesc,id,null);
 	}
+
+	public Map getUserByEmail(String email) throws Exception {
+		StoreDesc sdesc = getStoreDesc();
+		return getUserByFilter(sdesc,null,email);
+	}
+	public Map getUserByUserid(String id) throws Exception {
+		StoreDesc sdesc = getStoreDesc();
+		return getUserByFilter(sdesc,id,null);
+	}
+
 	private Map getUserByFilter(StoreDesc sdesc, String id,String email) throws Exception {
 		String filter = "userid == '" + id + "'";
 		if( email != null){

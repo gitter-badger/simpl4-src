@@ -32,5 +32,7 @@ public interface AuthService {
 	public List<Map> getUserList(Map filter,int startIndex, int numResults);
 	public Map createUser( String userid, Map data);
 	public Map deleteUser( String userid);
+	public Map getUserByEmail(String email) throws Exception;
+	public Map getUserByUserid(String id) throws Exception;
 //	public Map requestUser( String userid, Map data);
 }
