@@ -108,6 +108,7 @@ qx.Class.define("ms123.settings.CommonPropertyEdit", {
 				"record_validation":{
 					'type': "resourceselector",
 					'config':{
+						'editable':true,
 						'type':'sw.camel'
 					},
 					'label': this.tr("data.entity.record_validation"),
