@@ -913,7 +913,10 @@
 					var parammapping = props.xf_parammapping;
 					var resultmapping = props.xf_resultmapping;
 					var varname = props.xf_varname;
-					var namespace = props.xf_namespace || this.namespace;
+					var namespace = props.xf_namespace ;
+					if( !namespace || namespace=="-"){
+						namespace = this.namespace;
+					}
 					if ( !this._isEmpty( varname ) ) {
 						props.items = this.variables[ varname ];
 						if ( !isTreeSelect ) {
