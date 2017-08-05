@@ -691,7 +691,8 @@ CRUD operations for simpl4
 				var idValue = "";
 				var colon = "";
 				for ( var i = 0; i < pkList.length; i++ ) {
-					idValue += colon + data[ pkList[ i ] ];
+					var val = data[ pkList[ i ] ] || "";
+					idValue += colon + val;
 					colon = ":";
 				}
 				return idValue;
@@ -729,7 +730,11 @@ CRUD operations for simpl4
 							var message = "";
 							for ( var i = 0; i < cv.length; i++ ) {
 								var c = cv[ i ];
-								message += this.$.formid._getLabel( c.path ) + " : " + c.message + "<br />";
+								var msg = c.message;
+								if( msg && msg.match(/^[@%].*/)){
+									msg = tr(msg.substring(1));
+								}
+								message += this.$.formid._getLabel( c.path ) + " : " + msg + "<br />";
 							}
 							this.alert( message );
 						} else {
