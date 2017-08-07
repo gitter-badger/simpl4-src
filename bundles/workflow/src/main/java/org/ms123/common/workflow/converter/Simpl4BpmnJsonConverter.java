@@ -30,26 +30,13 @@ import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.activiti.editor.language.json.converter.*;
-import org.ms123.common.stencil.api.StencilService;
 
 /**
  */
 @SuppressWarnings("unchecked")
 public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
 
-	public Simpl4BpmnJsonConverter(String namespace, StencilService stencilService) {
-		/*try{
-			List<Map> additionalStencils = stencilService.getAddonStencils( namespace);
-			for( Map<String,Object> stencil : additionalStencils){
-				String id = (String)stencil.get("id");
-				Class c = stencilService.getConverterClass(namespace,id);
-				System.out.println("Simpl4BpmnJsonConverter.classd("+id+"):"+c);
-				convertersToBpmnMap.put(id, c);
-				DI_RECTANGLES.add(id);
-			}
-		}catch(Exception e){
-			throw new RuntimeException("Simpl4BpmnJsonConverter:",e);
-		}*/
+	public Simpl4BpmnJsonConverter(String namespace) {
 		Simpl4SequenceFlowJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);
 		Simpl4FilterTaskJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);
 		Simpl4CamelTaskJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);

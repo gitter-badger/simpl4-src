@@ -68,7 +68,6 @@ import org.ms123.common.libhelper.FileSystemClassLoader;
 import org.ms123.common.utils.Utils;
 import org.ms123.common.git.GitService;
 import org.ms123.common.system.tm.TransactionService;
-import org.ms123.common.stencil.api.StencilService;
 import org.ms123.common.workflow.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.workflow.tasks.TaskScriptExecutor;
 import javax.servlet.http.*;
@@ -148,7 +147,6 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	protected AuthService m_authService;
 
 	protected GitService m_gitService;
-	protected StencilService m_stencilService;
 
 	private DataLayer m_dataLayer;
 
@@ -338,7 +336,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	}
 
 	private byte[] getBpmnXML(String processJson, String ns, String path) throws Exception {
-		Simpl4BpmnJsonConverter jsonConverter = new Simpl4BpmnJsonConverter(ns,m_stencilService);
+		Simpl4BpmnJsonConverter jsonConverter = new Simpl4BpmnJsonConverter(ns);
 		JsonNode editorNode = new ObjectMapper().readTree(processJson);
 		BpmnModel bpmnModel = jsonConverter.convertToBpmnModel(editorNode);
 		bpmnModel.setTargetNamespace(ns);
@@ -642,11 +640,6 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	public void setActivitiService(ActivitiService paramActivitiService) {
 		this.m_activitiService = paramActivitiService;
 		info("WorkflowServiceImpl.setActivitiService:" + paramActivitiService);
-	}
-	@Reference(multiple = false, dynamic = true, optional = true)
-	public void setStencilService(StencilService paramActivitiService) {
-		this.m_stencilService = paramActivitiService;
-		info("WorkflowServiceImpl.setStencilService:" + paramActivitiService);
 	}
 	@Reference(multiple = false, dynamic = true, optional = true)
 	public void setTransactionService(TransactionService paramActivitiService) {
