@@ -93,12 +93,6 @@ import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 import flexjson.*;
-import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FlowElement;
-import org.activiti.bpmn.model.ActivitiListener;
-import org.activiti.bpmn.model.ImplementationType;
-import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -327,37 +321,6 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		sce.execute(tenantId,processDefinitionKey, pid, script, newVariables, vs,taskName, m_dataLayer,(WorkflowService)this);
 	}
 
-	private ActivitiListener createListener(String event, String clazz) {
-		ActivitiListener listener = new ActivitiListener();
-		listener.setEvent(event);
-		listener.setImplementationType(ImplementationType.IMPLEMENTATION_TYPE_CLASS);
-		listener.setImplementation(clazz);
-		return listener;
-	}
-
-	private byte[] getBpmnXML(String processJson, String ns, String path) throws Exception {
-		Simpl4BpmnJsonConverter jsonConverter = new Simpl4BpmnJsonConverter(ns);
-		JsonNode editorNode = new ObjectMapper().readTree(processJson);
-		BpmnModel bpmnModel = jsonConverter.convertToBpmnModel(editorNode);
-		bpmnModel.setTargetNamespace(ns);
-		for (Process process : bpmnModel.getProcesses()) {
-			if (process.getId() == null) {
-				process.setId(getBasename(path));
-			}
-			process.getExecutionListeners().add(createListener("start", "org.ms123.common.workflow.ProcessStartExecutionListener"));
-			process.getExecutionListeners().add(createListener("end", "org.ms123.common.workflow.ProcessEndExecutionListener"));
-			//Collection<FlowElement> flowElements = process.getFlowElements();
-			//info("flowElements:"+flowElements);
-			//for( FlowElement fe : flowElements){
-				//fe.getExecutionListeners().add(createListener("end", "org.ms123.common.workflow.ProcessEndExecutionListener"));
-			//}
-		}
-		BpmnXMLConverter xmlConverter = new BpmnXMLConverter();
-		//info("WorkflowServiceImpl.bpmnModel:"+m_js.deepSerialize(bpmnModel));
-		byte[] bpmnBytes = xmlConverter.convertToXML(bpmnModel);
-		return bpmnBytes;
-	}
-
 	public Map testRules(
 			@PName("namespace")        String namespace, 
 			@PName("name")             String name, 
@@ -384,7 +347,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 			@PName("path")             String path, HttpServletResponse response) throws RpcException {
 		try {
 			String processJson = m_gitService.getFileContent(namespace, path);
-			byte[] bpmnBytes = getBpmnXML(processJson, namespace, path);
+			byte[] bpmnBytes = Simpl4BpmnJsonConverter.getBpmnXML(processJson, namespace, path);
 			response.setContentType("application/xml");
 			response.addHeader("Content-Disposition", "inline;filename=xxx.bpmn20.xml");
 			IOUtils.write(bpmnBytes, response.getOutputStream());
@@ -428,7 +391,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 					initialParameter = m_js.deepSerialize(new HashMap());
 				}
 			}
-			byte[] bpmnBytes = getBpmnXML(processJson, namespace, path);
+			byte[] bpmnBytes = Simpl4BpmnJsonConverter.getBpmnXML(processJson, namespace, path);
 			InputStream bais = new ByteArrayInputStream(bpmnBytes);
 			DeploymentBuilder deployment = rs.createDeployment();
 			deployment.name(basename);
