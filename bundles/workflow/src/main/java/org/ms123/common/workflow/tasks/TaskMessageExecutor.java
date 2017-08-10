@@ -19,15 +19,15 @@
 package org.ms123.common.workflow.tasks;
 
 import java.util.*;
-import org.activiti.engine.impl.el.Expression;
-import org.activiti.engine.delegate.JavaDelegate;
-import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.runtime.Execution;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.delegate.Expression;
+import org.flowable.engine.delegate.JavaDelegate;
+import org.flowable.engine.delegate.DelegateExecution;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.ms123.common.system.thread.ThreadContext;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
@@ -217,7 +217,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 					} else {
 						runtimeService.signal(execution.getId());
 					}
-				} catch (org.activiti.engine.ActivitiOptimisticLockingException e) {
+				} catch (org.flowable.engine.ActivitiOptimisticLockingException e) {
 					info(this, "SignalThread:" + e);
 					try {
 						Thread.sleep(100L);

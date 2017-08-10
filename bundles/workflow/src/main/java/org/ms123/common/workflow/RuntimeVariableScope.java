@@ -21,8 +21,10 @@ package org.ms123.common.workflow;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import org.activiti.engine.delegate.VariableScope;
-import org.activiti.engine.RuntimeService;
+import org.flowable.engine.delegate.VariableScope;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.persistence.entity.VariableInstance;
 
 public class RuntimeVariableScope implements VariableScope {
 	private RuntimeService m_runtimeService;
@@ -52,6 +54,57 @@ public class RuntimeVariableScope implements VariableScope {
 	public Map<String, Object> getVariablesLocal(Collection<String> variableNames, boolean fetchAllVariables) {
 		throw new RuntimeException("RuntimeVariableScope.getVariablesLocal(Collection) not implemented");
 	}
+
+
+
+	public void setTransientVariable(String variableName, Object variableValue){
+		throw new RuntimeException("RuntimeVariableScope.setTransientVariable not implemented");
+	}
+
+	public void setTransientVariableLocal(String variableName, Object variableValue){
+		throw new RuntimeException("RuntimeVariableScope.setTransientVariableLocal not implemented");
+	}
+
+	public void setTransientVariables(Map<String, Object> transientVariables){
+		throw new RuntimeException("RuntimeVariableScope.setTransientVariables not implemented");
+	}
+
+	public Object getTransientVariable(String variableName){
+		throw new RuntimeException("RuntimeVariableScope.getTransientVariable not implemented");
+	}
+
+	public Map<String, Object> getTransientVariables(){
+		throw new RuntimeException("RuntimeVariableScope.getTransientVariables not implemented");
+	}
+
+	public void setTransientVariablesLocal(Map<String, Object> transientVariables){
+		throw new RuntimeException("RuntimeVariableScope.setTransientVariablesLocal not implemented");
+	}
+
+	public Object getTransientVariableLocal(String variableName){
+		throw new RuntimeException("RuntimeVariableScope.getTransientVariableLocal not implemented");
+	}
+
+	public Map<String, Object> getTransientVariablesLocal(){
+		throw new RuntimeException("RuntimeVariableScope.getTransientVariablesLocal not implemented");
+	}
+
+	public void removeTransientVariableLocal(String variableName){
+		throw new RuntimeException("RuntimeVariableScope.removeTransientVariableLocal not implemented");
+	}
+
+	public void removeTransientVariable(String variableName){
+		throw new RuntimeException("RuntimeVariableScope.removeTransientVariable not implemented");
+	}
+
+	public void removeTransientVariables(){
+		throw new RuntimeException("RuntimeVariableScope.removeTransientVariables not implemented");
+	}
+
+	public void removeTransientVariablesLocal(){
+		throw new RuntimeException("RuntimeVariableScope.removeTransientVariablesLocal not implemented");
+	}
+
 
 	public Map<String, Object> getVariables() {
 		return m_runtimeService.getVariables(m_executionId);
@@ -114,6 +167,10 @@ public class RuntimeVariableScope implements VariableScope {
 		return null;
 	}
 
+	public Object setVariableLocal(String variableName, Object value, ExecutionEntity sourceActivityExecution, boolean fetchAllVariables){
+		throw new RuntimeException("RuntimeVariableScope.setVariableLocal not implemented");
+	}
+
 	public void setVariables(Map<String, ? extends Object> variables) {
 		m_runtimeService.setVariables(m_executionId, variables);
 	}
@@ -170,6 +227,37 @@ public class RuntimeVariableScope implements VariableScope {
 
 	public void removeVariablesLocal() {
 		throw new RuntimeException("RuntimeVariableScope.removeVariablesLocal_not_implemented");
+	}
+
+	public VariableInstance getVariableInstanceLocal(String variableName, boolean fetchAllVariables){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstanceLocal not implemented");
+	}
+	public Map<String, VariableInstance> getVariableInstances(){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstances not implemented");
+	}
+	public Map<String, VariableInstance> getVariableInstances(Collection<String> variableNames){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstances not implemented");
+	}
+	public Map<String, VariableInstance> getVariableInstances(Collection<String> variableNames, boolean fetchAllVariables){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstances not implemented");
+	}
+	public Map<String, VariableInstance> getVariableInstancesLocal(){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstancesLocal not implemented");
+	}
+	public Map<String, VariableInstance> getVariableInstancesLocal(Collection<String> variableNames){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstancesLocal not implemented");
+	}
+	public Map<String, VariableInstance> getVariableInstancesLocal(Collection<String> variableNames, boolean fetchAllVariables){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstancesLocal not implemented");
+	}
+	public VariableInstance getVariableInstance(String variableName){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstance not implemented");
+	}
+	public VariableInstance getVariableInstance(String variableName, boolean fetchAllVariables){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstance not implemented");
+	}
+	public VariableInstance getVariableInstanceLocal(String variableName){
+		throw new RuntimeException("RuntimeVariableScope.getVariableInstanceLocal not implemented");
 	}
 
 }

@@ -19,20 +19,21 @@
 package org.ms123.common.workflow;
 
 
-import org.activiti.engine.delegate.VariableScope;
-import org.activiti.engine.impl.el.ExpressionManager;
-import org.activiti.engine.impl.el.VariableScopeElResolver;
-import org.activiti.engine.impl.javax.el.ArrayELResolver;
-import org.activiti.engine.impl.javax.el.BeanELResolver;
-import org.activiti.engine.impl.javax.el.CompositeELResolver;
-import org.activiti.engine.impl.javax.el.ELResolver;
-import org.activiti.engine.impl.javax.el.ListELResolver;
-import org.activiti.engine.impl.javax.el.MapELResolver;
+import org.flowable.engine.delegate.VariableScope;
+import org.flowable.engine.impl.el.ExpressionManager;
+import org.flowable.engine.impl.el.DefaultExpressionManager;
+import org.flowable.engine.impl.el.VariableScopeElResolver;
+import org.flowable.engine.common.impl.javax.el.ArrayELResolver;
+import org.flowable.engine.common.impl.javax.el.BeanELResolver;
+import org.flowable.engine.common.impl.javax.el.CompositeELResolver;
+import org.flowable.engine.common.impl.javax.el.ELResolver;
+import org.flowable.engine.common.impl.javax.el.ListELResolver;
+import org.flowable.engine.common.impl.javax.el.MapELResolver;
 
 
 /**
  */
-public class WExpressionManager extends ExpressionManager {
+public class WExpressionManager extends DefaultExpressionManager {
   
 	public WExpressionManager() {
 	}

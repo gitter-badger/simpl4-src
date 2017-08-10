@@ -33,21 +33,21 @@ import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Collection;
-//import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
-import org.activiti.spring.SpringProcessEngineConfiguration;
-import org.activiti.engine.impl.scripting.BeansResolverFactory;
-import org.activiti.engine.impl.scripting.ResolverFactory;
-import org.activiti.engine.impl.scripting.ScriptBindingsFactory;
-import org.activiti.engine.impl.scripting.ScriptingEngines;
-import org.activiti.engine.impl.scripting.VariableScopeResolverFactory;
-import org.activiti.engine.impl.interceptor.SessionFactory;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.delegate.VariableScope;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.ProcessEngines;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.repository.DeploymentBuilder;
-import org.activiti.engine.repository.Deployment;
+//import org.flowable.engine.impl.cfg.StandaloneProcessEngineConfiguration;
+import org.flowable.spring.SpringProcessEngineConfiguration;
+import org.flowable.engine.impl.scripting.BeansResolverFactory;
+import org.flowable.engine.impl.scripting.ResolverFactory;
+import org.flowable.engine.impl.scripting.ScriptBindingsFactory;
+import org.flowable.engine.impl.scripting.ScriptingEngines;
+import org.flowable.engine.impl.scripting.VariableScopeResolverFactory;
+import org.flowable.engine.common.impl.interceptor.SessionFactory;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.delegate.VariableScope;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.ProcessEngines;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.DeploymentBuilder;
+import org.flowable.engine.repository.Deployment;
 import org.ms123.common.workflow.processengine.ProcessEngineFactory;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
@@ -96,11 +96,11 @@ import flexjson.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.activiti.bpmn.model.Process;
+import org.flowable.bpmn.model.Process;
 import org.apache.camel.CamelContext;
 import javax.sql.DataSource;
 import org.ms123.common.workflow.api.WorkflowService;
-import org.activiti.engine.impl.interceptor.CommandContextFactory;
+import org.flowable.engine.common.impl.interceptor.CommandContextFactory;
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 
 /** WorkflowService implementation
@@ -123,7 +123,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	private String m_workspace;
 
 	private ProcessEngine m_processEngine = null;
-	private ShiroJobExecutor m_shiroJobExecutor;
+//	private ShiroJobExecutor m_shiroJobExecutor;
 
 	private EventAdmin m_eventAdmin;
 
@@ -177,7 +177,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 
 	protected void deactivate() {
 		info("WorkflowServiceImpl.deactivate");
-		m_shiroJobExecutor.shutdown();
+		//m_shiroJobExecutor.shutdown();
 		if( m_processEngine != null){
 			m_processEngine.close();
 		}
@@ -191,7 +191,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		String sh = System.getProperty("workspace");
 		File[] locations = new File[1];
 		locations[0] = new File(sh + "/java", "classes");
-		return new FileSystemClassLoader(org.activiti.engine.impl.javax.el.ExpressionFactory.class.getClassLoader(), locations);
+		return new FileSystemClassLoader(org.flowable.engine.impl.javax.el.ExpressionFactory.class.getClassLoader(), locations);
 	}
 	private ClassLoader createFsClassLoader2(){
 		String sh = System.getProperty("workspace");
@@ -252,8 +252,8 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		c.setDatabaseSchemaUpdate("true");
 		c.setJdbcMaxActiveConnections(100);
 		c.setJdbcMaxIdleConnections(25);
-		m_shiroJobExecutor = new ShiroJobExecutor(c.getBeans());
-		c.setJobExecutor(m_shiroJobExecutor);
+		//m_shiroJobExecutor = new ShiroJobExecutor(c.getBeans());
+//		c.setJobExecutor(m_shiroJobExecutor);
 
 		c.setClassLoader(createFsClassLoader1());
 		c.setJobExecutorActivate(true);
@@ -285,7 +285,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 			c.getBeans().put(DmnService.DMN_SERVICE, m_dmnService);
 			c.getBeans().put(RegistryService.REGISTRY_SERVICE, m_registryService);
 			exManager.setProcessEngine(m_processEngine);
-			m_shiroJobExecutor.setProcessEngine(m_processEngine);
+			//m_shiroJobExecutor.setProcessEngine(m_processEngine);
 		} catch (Exception e) {
 			m_logger.error("WorkflowServiceImpl.activate.initProcessEngine", e);
 			e.printStackTrace();

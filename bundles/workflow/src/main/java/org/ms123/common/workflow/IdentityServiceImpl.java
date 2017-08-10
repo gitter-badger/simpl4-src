@@ -21,37 +21,37 @@ package org.ms123.common.workflow;
 import java.util.List;
 import java.util.Map;
 
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.identity.Group;
-import org.activiti.engine.identity.GroupQuery;
-import org.activiti.engine.identity.Picture;
-import org.activiti.engine.identity.User;
-import org.activiti.engine.identity.UserQuery;
-import org.activiti.engine.impl.cmd.CheckPassword;
-import org.activiti.engine.impl.cmd.CreateGroupCmd;
-import org.activiti.engine.impl.cmd.CreateGroupQueryCmd;
-import org.activiti.engine.impl.cmd.CreateMembershipCmd;
-import org.activiti.engine.impl.cmd.CreateUserCmd;
-import org.activiti.engine.impl.cmd.CreateUserQueryCmd;
-import org.activiti.engine.impl.cmd.DeleteGroupCmd;
-import org.activiti.engine.impl.cmd.DeleteMembershipCmd;
-import org.activiti.engine.impl.cmd.DeleteUserCmd;
-import org.activiti.engine.impl.cmd.DeleteUserInfoCmd;
-//import org.activiti.engine.impl.cmd.GetUserAccountCmd;
-import org.activiti.engine.impl.cmd.GetUserInfoCmd;
-import org.activiti.engine.impl.cmd.GetUserInfoKeysCmd;
-import org.activiti.engine.impl.cmd.GetUserPictureCmd;
-import org.activiti.engine.impl.cmd.SaveGroupCmd;
-import org.activiti.engine.impl.cmd.SaveUserCmd;
-import org.activiti.engine.impl.cmd.SetUserInfoCmd;
-import org.activiti.engine.impl.cmd.SetUserPictureCmd;
-//import org.activiti.engine.impl.identity.Account;
-import org.activiti.engine.impl.identity.Authentication;
-import org.activiti.engine.impl.persistence.entity.GroupEntity;
-import org.activiti.engine.identity.NativeUserQuery;
-import org.activiti.engine.identity.NativeGroupQuery;
-import org.activiti.engine.impl.persistence.entity.IdentityInfoEntity;
-import org.activiti.engine.impl.*;
+import org.flowable.engine.IdentityService;
+import org.flowable.idm.api.Group;
+import org.flowable.idm.api.GroupQuery;
+import org.flowable.idm.api.Picture;
+import org.flowable.idm.api.User;
+import org.flowable.idm.api.UserQuery;
+import org.flowable.idm.engine.impl.cmd.CheckPassword;
+import org.flowable.idm.engine.impl.cmd.CreateGroupCmd;
+import org.flowable.idm.engine.impl.cmd.CreateGroupQueryCmd;
+import org.flowable.idm.engine.impl.cmd.CreateMembershipCmd;
+import org.flowable.idm.engine.impl.cmd.CreateUserCmd;
+import org.flowable.idm.engine.impl.cmd.CreateUserQueryCmd;
+import org.flowable.idm.engine.impl.cmd.DeleteGroupCmd;
+import org.flowable.idm.engine.impl.cmd.DeleteMembershipCmd;
+import org.flowable.idm.engine.impl.cmd.DeleteUserCmd;
+import org.flowable.idm.engine.impl.cmd.DeleteUserInfoCmd;
+//import org.flowable.engine.impl.cmd.GetUserAccountCmd;
+import org.flowable.idm.engine.impl.cmd.GetUserInfoCmd;
+import org.flowable.idm.engine.impl.cmd.GetUserInfoKeysCmd;
+import org.flowable.idm.engine.impl.cmd.GetUserPictureCmd;
+import org.flowable.idm.engine.impl.cmd.SaveGroupCmd;
+import org.flowable.idm.engine.impl.cmd.SaveUserCmd;
+import org.flowable.idm.engine.impl.cmd.SetUserInfoCmd;
+import org.flowable.idm.engine.impl.cmd.SetUserPictureCmd;
+//import org.flowable.engine.impl.identity.Account;
+import org.flowable.engine.impl.identity.Authentication;
+import org.flowable.idm.engine.impl.persistence.entity.GroupEntity;
+import org.flowable.idm.api.NativeUserQuery;
+import org.flowable.idm.api.NativeGroupQuery;
+import org.flowable.idm.engine.impl.persistence.entity.IdentityInfoEntity;
+import org.flowable.engine.impl.*;
 import static com.jcabi.log.Logger.info;
 
 
@@ -70,6 +70,16 @@ public class IdentityServiceImpl extends ServiceImpl implements IdentityService 
 	}
   public NativeGroupQuery createNativeGroupQuery(){
 		throw new RuntimeException("createNativeGroupQuery bnot implemented");
+	}
+	public  List<Group> getPotentialStarterGroups(String processDefinitionId){
+		throw new RuntimeException("getPotentialStarterGroups bnot implemented");
+	}
+	public List<User> getPotentialStarterUsers(String processDefinitionId){
+		throw new RuntimeException("getPotentialStarterUsers bnot implemented");
+	}
+
+	public void updateUserPassword(User user){
+		throw new RuntimeException("updateUserPassword bnot implemented");
 	}
 
 	public Group newGroup(String groupId) {

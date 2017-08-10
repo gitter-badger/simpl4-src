@@ -22,8 +22,8 @@ package org.ms123.common.workflow;
 import java.beans.FeatureDescriptor;
 import java.util.*;
 
-import org.activiti.engine.impl.javax.el.ELContext;
-import org.activiti.engine.impl.javax.el.ELResolver;
+import org.flowable.engine.common.impl.javax.el.ELContext;
+import org.flowable.engine.common.impl.javax.el.ELResolver;
 import org.osgi.framework.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

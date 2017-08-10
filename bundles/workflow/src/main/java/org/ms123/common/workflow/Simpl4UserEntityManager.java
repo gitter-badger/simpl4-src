@@ -21,19 +21,21 @@ package org.ms123.common.workflow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.identity.User;
-import org.activiti.engine.impl.Page;
-import org.activiti.engine.impl.UserQueryImpl;
-import org.activiti.engine.impl.persistence.entity.UserEntity;
-import org.activiti.engine.impl.persistence.entity.UserEntityManager;
+import org.flowable.idm.api.User;
+import org.flowable.engine.common.impl.Page;
+import org.flowable.idm.engine.impl.UserQueryImpl;
+import org.flowable.idm.engine.impl.persistence.entity.UserEntity;
+import org.flowable.idm.engine.impl.persistence.entity.UserEntityImpl;
+import org.flowable.idm.engine.impl.persistence.entity.UserEntityManager;
+import org.flowable.idm.engine.impl.persistence.entity.UserEntityManagerImpl;
 import org.apache.commons.lang.StringUtils;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.auth.api.AuthService;
+import org.flowable.engine.common.impl.interceptor.Session;
 import flexjson.*;
 
 @SuppressWarnings("unchecked")
-public class Simpl4UserEntityManager extends UserEntityManager {
+public class Simpl4UserEntityManager extends UserEntityManagerImpl implements Session{
 	protected JSONSerializer m_js = new JSONSerializer();
 
 	protected PermissionService m_permissionService;
@@ -41,6 +43,7 @@ public class Simpl4UserEntityManager extends UserEntityManager {
 	protected AuthService m_authService;
 
 	public Simpl4UserEntityManager(AuthService as, PermissionService ps) {
+		super(null,null);
 		m_js.prettyPrint(true);
 		m_authService = as;
 		m_permissionService = ps;
@@ -48,27 +51,27 @@ public class Simpl4UserEntityManager extends UserEntityManager {
 
 	@Override
 	public User createNewUser(String userId) {
-		throw new ActivitiException("My user manager doesn't support creating a new user");
+		throw new RuntimeException("My user manager doesn't support creating a new user");
 	}
 
-	@Override
-	public void insertUser(User user) {
-		throw new ActivitiException("My user manager doesn't support inserting a new user");
-	}
+	//@Override
+	//public void insertUser(User user) {
+	//	throw new RuntimeException("My user manager doesn't support inserting a new user");
+	//}
 
-	@Override
-	public void deleteUser(String userId) {
-		throw new ActivitiException("My user manager doesn't support deleting a user");
-	}
+	//@Override
+	//public void deleteUser(String userId) {
+	//	throw new RuntimeException("My user manager doesn't support deleting a user");
+	//}
 
-	@Override
-	public UserEntity findUserById(String userLogin) {
+	//@Override
+	//public UserEntity findUserById(String userLogin) {
 		//TODO: get my user according to userLogin and convert it to UserEntity
-		throw new ActivitiException("My user manager doesn't support finding a user");
-	}
+	//	throw new RuntimeException("My user manager doesn't support finding a user");
+	//}
 
 	@Override
-	public List<User> findUserByQueryCriteria(UserQueryImpl query, Page page) {
+	public List<User> findUserByQueryCriteria(UserQueryImpl query) {
 		//System.out.println("Simpl4UserEntityManager.findUserByQueryCriteria:"+m_js.deepSerialize(query));
 		List<User> userList = new ArrayList<User>();
 		UserQueryImpl userQuery = (UserQueryImpl) query;
@@ -84,17 +87,22 @@ public class Simpl4UserEntityManager extends UserEntityManager {
 
 	@Override
 	public long findUserCountByQueryCriteria(UserQueryImpl query) {
-		return findUserByQueryCriteria(query, null).size();
+		return findUserByQueryCriteria(query).size();
 	}
 
-	@Override
-	public Boolean checkPassword(String userId, String password) {
+	//@Override
+	//public Boolean checkPassword(String userId, String password) {
 		//TODO: check the password in your domain and return the appropriate boolean
-		return false;
-	}
+	//	return false;
+	//}
 	private User convertToUser(Map<String,String> userProps){
-		User u =new UserEntity();
+		User u =new UserEntityImpl();
 		u.setId( userProps.get("userid"));
 		return u;
+	}
+	public void flush(){
+	}
+
+	public void close(){
 	}
 }

@@ -21,19 +21,21 @@ package org.ms123.common.workflow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.identity.Group;
-import org.activiti.engine.impl.GroupQueryImpl;
-import org.activiti.engine.impl.Page;
-import org.activiti.engine.impl.persistence.entity.GroupEntity;
-import org.activiti.engine.impl.persistence.entity.GroupEntityManager;
+import java.util.Map;
+import org.flowable.idm.api.Group;
+import org.flowable.idm.engine.impl.GroupQueryImpl;
+import org.flowable.idm.api.GroupQuery;
+import org.flowable.idm.engine.impl.persistence.entity.GroupEntity;
+import org.flowable.idm.engine.impl.persistence.entity.GroupEntityImpl;
+import org.flowable.idm.engine.impl.persistence.entity.GroupEntityManagerImpl;
 import org.apache.commons.lang.StringUtils;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.auth.api.AuthService;
+import org.flowable.engine.common.impl.interceptor.Session;
 import flexjson.*;
 
 @SuppressWarnings("unchecked")
-public class Simpl4GroupEntityManager extends GroupEntityManager {
+public class Simpl4GroupEntityManager extends GroupEntityManagerImpl implements Session{
 
 	protected JSONSerializer m_js = new JSONSerializer();
 
@@ -42,6 +44,7 @@ public class Simpl4GroupEntityManager extends GroupEntityManager {
 	protected AuthService m_authService;
 
 	public Simpl4GroupEntityManager(AuthService as, PermissionService ps) {
+		super(null,null);
 		m_js.prettyPrint(true);
 		m_authService = as;
 		m_permissionService = ps;
@@ -49,26 +52,41 @@ public class Simpl4GroupEntityManager extends GroupEntityManager {
 
 	@Override
 	public Group createNewGroup(String groupId) {
-		throw new ActivitiException("My group manager doesn't support creating a new group");
+		throw new RuntimeException("My group manager doesn't support creating a new group");
 	}
 
 	@Override
-	public void insertGroup(Group group) {
-		throw new ActivitiException("My group manager doesn't support inserting a new group");
+	public  List<Group> findGroupsByPrivilegeId(String privilegeId){
+		throw new RuntimeException("findGroupsByPrivilegeId not implemented");
 	}
 
 	@Override
-	public void deleteGroup(String groupId) {
-		throw new ActivitiException("My group manager doesn't support deleting a new group");
+	public boolean isNewGroup(Group group){
+		throw new RuntimeException("isNewGroup not implemented");
+	}
+
+	@Override
+	public long findGroupCountByNativeQuery(Map<String, Object> parameterMap){
+		throw new RuntimeException("findGroupCountByNativeQuery not implemented");
+	}
+
+	@Override
+	public  List<Group> findGroupsByNativeQuery(Map<String, Object> parameterMap){
+		throw new RuntimeException("findGroupsByNativeQuery not implemented");
+	}
+
+	@Override
+  public GroupQuery createNewGroupQuery(){
+		throw new RuntimeException("createNewGroupQuery not implemented");
 	}
 
 	@Override
 	public long findGroupCountByQueryCriteria(GroupQueryImpl query) {
-		return findGroupByQueryCriteria(query, null).size();
+		return findGroupByQueryCriteria(query).size();
 	}
 
 	@Override
-	public List<Group> findGroupByQueryCriteria(GroupQueryImpl query, Page page) {
+	public List<Group> findGroupByQueryCriteria(GroupQueryImpl query) {
 		List<Group> groupList = new ArrayList<Group>();
 		GroupQueryImpl groupQuery = (GroupQueryImpl) query;
 		if (StringUtils.isNotEmpty(groupQuery.getId())) {
@@ -116,8 +134,13 @@ public class Simpl4GroupEntityManager extends GroupEntityManager {
 	}
 
 	private GroupEntity convertToGroup(String id) {
-		GroupEntity g = new GroupEntity();
+		GroupEntity g = new GroupEntityImpl();
 		g.setId(id);
 		return g;
+	}
+	public void flush(){
+	}
+
+	public void close(){
 	}
 }

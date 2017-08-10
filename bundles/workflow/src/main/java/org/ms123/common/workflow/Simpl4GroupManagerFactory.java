@@ -18,10 +18,11 @@
  */
 package org.ms123.common.workflow;
 
-import org.activiti.engine.impl.interceptor.Session;
-import org.activiti.engine.impl.interceptor.SessionFactory;
-import org.activiti.engine.impl.persistence.entity.GroupEntityManager;
-import org.activiti.engine.impl.persistence.entity.GroupIdentityManager;
+import org.flowable.engine.common.impl.interceptor.Session;
+import org.flowable.engine.common.impl.interceptor.SessionFactory;
+import org.flowable.idm.engine.impl.persistence.entity.GroupEntity;
+import org.flowable.idm.engine.impl.persistence.entity.GroupEntityManager;
+import org.flowable.engine.common.impl.interceptor.CommandContext;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.auth.api.AuthService;
 import flexjson.*;
@@ -39,11 +40,11 @@ public class Simpl4GroupManagerFactory implements SessionFactory {
 
 	@Override
 	public Class<?> getSessionType() {
-    return GroupIdentityManager.class;
+    return Simpl4GroupEntityManager.class;
 	}
 
 	@Override
-	public Session openSession() {
+	public Session openSession(CommandContext commandContext) {
 		return new Simpl4GroupEntityManager(m_authService, m_permissionService);
 	}
 }

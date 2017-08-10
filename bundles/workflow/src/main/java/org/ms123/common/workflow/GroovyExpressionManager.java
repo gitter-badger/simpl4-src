@@ -18,18 +18,19 @@
  */
 package org.ms123.common.workflow;
 
-import org.activiti.engine.delegate.VariableScope;
-import org.activiti.engine.impl.el.ExpressionManager;
-import org.activiti.engine.impl.javax.el.CompositeELResolver;
+import org.flowable.engine.delegate.VariableScope;
+import org.flowable.engine.impl.el.ExpressionManager;
+import org.flowable.engine.impl.el.DefaultExpressionManager;
+import org.flowable.engine.common.impl.javax.el.CompositeELResolver;
 import groovy.lang.*;
 import org.codehaus.groovy.control.*;
-//import org.activiti.engine.delegate.Expression;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.impl.el.Expression;
+//import org.flowable.engine.delegate.Expression;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.delegate.Expression;
 
 /**
  */
-public class GroovyExpressionManager extends ExpressionManager {
+public class GroovyExpressionManager extends DefaultExpressionManager {
 	private ProcessEngine m_processEngine;
 
 	public GroovyExpressionManager() {
