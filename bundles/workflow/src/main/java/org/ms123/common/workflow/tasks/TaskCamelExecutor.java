@@ -96,9 +96,9 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 			activitiProperties.put(HISTORY_ACTIVITI_ACTIVITY_KEY, tc.getTenantId() +"/"+tc.getProcessDefinitionName()+"/"+execution.getId()+"/"+execution.getCurrentActivityId());
 			activitiProperties.put(WORKFLOW_ACTIVITY_ID, execution.getCurrentActivityId());
 			activitiProperties.put(WORKFLOW_ACTIVITY_ID, execution.getCurrentActivityId());
-			activitiProperties.put(WORKFLOW_ACTIVITY_NAME, execution.getCurrentActivityName());
+//@@@MS			activitiProperties.put(WORKFLOW_ACTIVITY_NAME, execution.getCurrentActivityName());
 			activitiProperties.put(WORKFLOW_EXECUTION_ID, execution.getId());
-			activitiProperties.put(WORKFLOW_PROCESS_BUSINESS_KEY, execution.getProcessBusinessKey());
+			activitiProperties.put(WORKFLOW_PROCESS_BUSINESS_KEY, execution.getProcessInstanceBusinessKey());
 			activitiProperties.put(WORKFLOW_PROCESS_DEFINITION_ID, execution.getProcessDefinitionId());
 			activitiProperties.put(WORKFLOW_PROCESS_DEFINITION_NAME, tc.getProcessDefinitionName());
 			activitiProperties.put(WORKFLOW_PROCESS_INSTANCE_ID, execution.getProcessInstanceId());

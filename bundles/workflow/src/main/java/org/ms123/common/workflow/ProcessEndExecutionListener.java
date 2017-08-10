@@ -24,7 +24,7 @@ import org.flowable.engine.delegate.ExecutionListener;
 public class ProcessEndExecutionListener implements ExecutionListener {
 
 	@Override
-	public void notify(DelegateExecution execution) throws Exception {
+	public void notify(DelegateExecution execution) {
 		//System.out.println("XrocessStartExecutionListener:"+execution.getCurrentActivityName()+"/"+execution.getCurrentActivityId()+"/"+execution.getId());
 	}
 }

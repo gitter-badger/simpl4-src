@@ -126,7 +126,7 @@ public abstract class TaskBaseExecutor implements Constants {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Namespace:" + tc.getTenantId());
 		sb.append("\nCurrentActivityId:" + d.getCurrentActivityId());
-		sb.append("\nCurrentActivityName:" + d.getCurrentActivityName());
+//@@@MS		sb.append("\nCurrentActivityName:" + d.getCurrentActivityName());
 		sb.append("\nEventName:" + d.getEventName());
 		sb.append("\nId:" + d.getId());
 		sb.append("\nParentId:" + d.getParentId());

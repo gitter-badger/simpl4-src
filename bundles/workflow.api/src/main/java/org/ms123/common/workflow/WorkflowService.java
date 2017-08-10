@@ -17,11 +17,11 @@
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ms123.common.workflow.api;
-import org.activiti.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngine;
 import javax.servlet.http.*;
 import org.apache.camel.CamelContext;
 import java.util.Map;
-import org.activiti.engine.delegate.VariableScope;
+import org.flowable.engine.delegate.VariableScope;
 
 public interface WorkflowService {
 	public static final String WORKFLOW_SERVICE = "workflowService";

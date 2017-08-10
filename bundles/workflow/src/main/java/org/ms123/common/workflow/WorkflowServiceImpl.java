@@ -123,7 +123,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 	private String m_workspace;
 
 	private ProcessEngine m_processEngine = null;
-//	private ShiroJobExecutor m_shiroJobExecutor;
+//@@@MS	private ShiroJobExecutor m_shiroJobExecutor;
 
 	private EventAdmin m_eventAdmin;
 
@@ -177,7 +177,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 
 	protected void deactivate() {
 		info("WorkflowServiceImpl.deactivate");
-		//m_shiroJobExecutor.shutdown();
+		//@@@MS m_shiroJobExecutor.shutdown();
 		if( m_processEngine != null){
 			m_processEngine.close();
 		}
@@ -191,7 +191,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		String sh = System.getProperty("workspace");
 		File[] locations = new File[1];
 		locations[0] = new File(sh + "/java", "classes");
-		return new FileSystemClassLoader(org.flowable.engine.impl.javax.el.ExpressionFactory.class.getClassLoader(), locations);
+		return new FileSystemClassLoader(org.flowable.engine.common.impl.javax.el.ExpressionFactory.class.getClassLoader(), locations);
 	}
 	private ClassLoader createFsClassLoader2(){
 		String sh = System.getProperty("workspace");
@@ -240,10 +240,10 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		List resolverFactories = new ArrayList<ResolverFactory>();
 		resolverFactories.add(new VariableScopeResolverFactory());
 		resolverFactories.add(new BeansResolverFactory());
-		se.setScriptBindingsFactory(new ScriptBindingsFactory(resolverFactories));
+		se.setScriptBindingsFactory(new ScriptBindingsFactory(c, resolverFactories));
 		c.setScriptingEngines(se);
 		CommandContextFactory ccf = createDefaultCommandContextFactory();
-		ccf.setProcessEngineConfiguration(c);
+		//@@@MS ccf.setProcessEngineConfiguration(c);
 		c.setCommandContextFactory(ccf);
 
 		c.setDatabaseType("h2");
@@ -253,10 +253,10 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 		c.setJdbcMaxActiveConnections(100);
 		c.setJdbcMaxIdleConnections(25);
 		//m_shiroJobExecutor = new ShiroJobExecutor(c.getBeans());
-//		c.setJobExecutor(m_shiroJobExecutor);
+//@@@MS		c.setJobExecutor(m_shiroJobExecutor);
 
 		c.setClassLoader(createFsClassLoader1());
-		c.setJobExecutorActivate(true);
+		//@@@MS c.setJobExecutorActivate(true);
 		c.setTransactionManager( m_transactionService.getPlatformTransactionManager());
 		c.setTransactionsExternallyManaged(true);
 		c.setHistory("full");
@@ -285,7 +285,7 @@ public class WorkflowServiceImpl implements org.ms123.common.workflow.api.Workfl
 			c.getBeans().put(DmnService.DMN_SERVICE, m_dmnService);
 			c.getBeans().put(RegistryService.REGISTRY_SERVICE, m_registryService);
 			exManager.setProcessEngine(m_processEngine);
-			//m_shiroJobExecutor.setProcessEngine(m_processEngine);
+			//@@@MS m_shiroJobExecutor.setProcessEngine(m_processEngine);
 		} catch (Exception e) {
 			m_logger.error("WorkflowServiceImpl.activate.initProcessEngine", e);
 			e.printStackTrace();

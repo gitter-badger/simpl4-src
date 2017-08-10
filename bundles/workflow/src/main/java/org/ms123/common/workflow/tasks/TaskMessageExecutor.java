@@ -165,9 +165,9 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 			try {
 				info(this, "doSendSignal(eid:" + pi.getId() + ",pid:" + pi.getProcessInstanceId() + "):"+variables);
 				if (variables != null) {
-					runtimeService.signal(pi.getId(), variables);
+					runtimeService.trigger(pi.getId(), variables);
 				} else {
-					runtimeService.signal(pi.getId());
+					runtimeService.trigger(pi.getId());
 				}
 			} catch (Exception e) {
 				com.jcabi.log.Logger.error(this, "doSendSignal(eid:" + pi.getId() + ",pid:" + pi.getProcessInstanceId() + "):%[exception]s", e);
@@ -213,11 +213,11 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 				try {
 					info(this, "SignalThread.sending signal to -> eid:" + execution.getId() + ",pid:" + execution.getProcessInstanceId() + ",parentId:" + execution.getParentId() + ",activityId:" + execution.getActivityId());
 					if (this.variables != null) {
-						runtimeService.signal(execution.getId(), this.variables);
+						runtimeService.trigger(execution.getId(), this.variables);
 					} else {
-						runtimeService.signal(execution.getId());
+						runtimeService.trigger(execution.getId());
 					}
-				} catch (org.flowable.engine.ActivitiOptimisticLockingException e) {
+				} catch (org.flowable.engine.common.api.FlowableOptimisticLockingException e) {
 					info(this, "SignalThread:" + e);
 					try {
 						Thread.sleep(100L);

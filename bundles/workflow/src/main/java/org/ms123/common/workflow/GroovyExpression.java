@@ -26,7 +26,6 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.delegate.VariableScope;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.impl.pvm.delegate.ActivityExecution;
 import org.flowable.engine.impl.context.Context;
 import groovy.lang.*;
 import org.osgi.framework.BundleContext;
@@ -93,7 +92,7 @@ public class GroovyExpression implements Expression {
 			Binding binding = new Binding(scope.getVariables());
 			if (scope instanceof DelegateExecution) {
 				DelegateExecution e = (DelegateExecution) scope;
-				binding.setVariable("__processBusinessKey", e.getProcessBusinessKey());
+				binding.setVariable("__processBusinessKey", e.getProcessInstanceBusinessKey());
 				binding.setVariable("__processInstanceId", e.getProcessInstanceId());
 				binding.setVariable("__processDefinitionId", e.getProcessDefinitionId());
 			}
@@ -104,7 +103,8 @@ public class GroovyExpression implements Expression {
 			log(">>>>>>>>>>>>" + e);
 			e.printStackTrace();
 			String msg = Utils.formatGroovyException(e, expr);
-			if (scope instanceof ActivityExecution) {
+//@@@MS
+/*			if (scope instanceof ActivityExecution) {
 				ActivityExecution de = (ActivityExecution) scope;
 				String activityId = de.getCurrentActivityId();
 				List<HistoricActivityInstance> activityList = m_processEngine.getHistoryService().createHistoricActivityInstanceQuery().activityId(activityId).list();
@@ -116,7 +116,7 @@ public class GroovyExpression implements Expression {
 					}
 				}
 				msg = activityName + "(" + activityId + ")|" + msg;
-			}
+			}*/
 			throw new RuntimeException(msg);
 		}
 	}
