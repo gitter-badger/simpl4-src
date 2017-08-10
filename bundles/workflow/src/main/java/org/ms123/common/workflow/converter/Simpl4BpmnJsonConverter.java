@@ -29,7 +29,14 @@ import org.activiti.bpmn.model.ServiceTask;
 import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.activiti.editor.language.json.converter.*;
+import org.activiti.bpmn.converter.BpmnXMLConverter;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FlowElement;
+import org.activiti.bpmn.model.ActivitiListener;
+import org.activiti.bpmn.model.ImplementationType;
+import org.activiti.bpmn.model.Process;
 
 /**
  */
@@ -58,5 +65,32 @@ public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
 	private static String TASKPACKAGE="org.ms123.common.workflow.tasks";
 	public  static String getFullnameForTask(String clazz){
 		return TASKPACKAGE + "." + clazz;
+	}
+	public static  byte[] getBpmnXML(String processJson, String ns, String path) throws Exception {
+		Simpl4BpmnJsonConverter jsonConverter = new Simpl4BpmnJsonConverter(ns);
+		JsonNode editorNode = new ObjectMapper().readTree(processJson);
+		BpmnModel bpmnModel = jsonConverter.convertToBpmnModel(editorNode);
+		bpmnModel.setTargetNamespace(ns);
+		for (Process process : bpmnModel.getProcesses()) {
+			if (process.getId() == null) {
+				process.setId(getBasename(path));
+			}
+			process.getExecutionListeners().add(createListener("start", "org.ms123.common.workflow.ProcessStartExecutionListener"));
+			process.getExecutionListeners().add(createListener("end", "org.ms123.common.workflow.ProcessEndExecutionListener"));
+		}
+		BpmnXMLConverter xmlConverter = new BpmnXMLConverter();
+		byte[] bpmnBytes = xmlConverter.convertToXML(bpmnModel);
+		return bpmnBytes;
+	}
+	private static ActivitiListener createListener(String event, String clazz) {
+		ActivitiListener listener = new ActivitiListener();
+		listener.setEvent(event);
+		listener.setImplementationType(ImplementationType.IMPLEMENTATION_TYPE_CLASS);
+		listener.setImplementation(clazz);
+		return listener;
+	}
+	private static String getBasename(String path) {
+		String e[] = path.split("/");
+		return e[e.length - 1];
 	}
 }
