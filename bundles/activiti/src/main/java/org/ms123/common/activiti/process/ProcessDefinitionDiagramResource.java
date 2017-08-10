@@ -19,8 +19,8 @@
 package org.ms123.common.activiti.process;
 
 import java.io.InputStream;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.repository.ProcessDefinition;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.ProcessDefinition;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 import org.ms123.common.activiti.Util;

@@ -20,9 +20,9 @@ package org.ms123.common.activiti.task;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.activiti.engine.impl.TaskQueryProperty;
-import org.activiti.engine.query.QueryProperty;
-import org.activiti.engine.task.TaskQuery;
+import org.flowable.engine.impl.TaskQueryProperty;
+import org.flowable.engine.common.api.query.QueryProperty;
+import org.flowable.engine.task.TaskQuery;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 import org.ms123.common.activiti.Util;
@@ -96,11 +96,11 @@ public class TasksResource extends BaseResource {
 			taskQuery.taskMaxPriority(Util.parseToInteger(strMaxPriority));
 		}
 		if (strDueDate != null) {
-			taskQuery.dueDate(Util.parseToDate(strDueDate));
+			taskQuery.taskDueDate(Util.parseToDate(strDueDate));
 		} else if (strMinDueDate != null) {
-			taskQuery.dueAfter(Util.parseToDate(strMinDueDate));
+			taskQuery.taskDueAfter(Util.parseToDate(strMinDueDate));
 		} else if (strMaxDueDate != null) {
-			taskQuery.dueBefore(Util.parseToDate(strMaxDueDate));
+			taskQuery.taskDueBefore(Util.parseToDate(strMaxDueDate));
 		}
 		if (businessKey != null) {
 			taskQuery.processInstanceBusinessKey(businessKey);

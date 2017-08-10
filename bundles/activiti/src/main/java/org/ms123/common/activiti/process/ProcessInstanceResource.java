@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import org.activiti.engine.history.HistoricActivityInstance;
-import org.activiti.engine.history.HistoricDetail;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.history.HistoricVariableUpdate;
-import org.activiti.engine.runtime.ProcessInstance;
+import org.flowable.engine.history.HistoricActivityInstance;
+import org.flowable.engine.history.HistoricDetail;
+import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.history.HistoricTaskInstance;
+import org.flowable.engine.history.HistoricVariableUpdate;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 import org.ms123.common.activiti.Util;
@@ -100,7 +100,7 @@ public class ProcessInstanceResource extends BaseResource {
 
 	private void addTaskList(String processInstanceId, Map<String, Object> responseJSON) {
 		//@@@MS List<HistoricTaskInstance> taskList = getPE().getHistoryService().createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricTaskInstanceStartTime().asc().list();
-		List<HistoricTaskInstance> taskList = getPE().getHistoryService().createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
+		List<HistoricTaskInstance> taskList = getPE().getHistoryService().createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricTaskInstanceStartTime().asc().list();
 		if (taskList != null && taskList.size() > 0) {
 			ArrayList tasksJSON = new ArrayList();
 			responseJSON.put("tasks", tasksJSON);

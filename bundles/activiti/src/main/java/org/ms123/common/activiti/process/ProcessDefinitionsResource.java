@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.List;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
-import org.activiti.engine.impl.ProcessDefinitionQueryProperty;
-import org.activiti.engine.impl.ProcessDefinitionQueryImpl;
-import org.activiti.engine.query.QueryProperty;
-import org.activiti.engine.repository.ProcessDefinitionQuery;
+import org.flowable.engine.impl.ProcessDefinitionQueryProperty;
+import org.flowable.engine.impl.ProcessDefinitionQueryImpl;
+import org.flowable.engine.common.api.query.QueryProperty;
+import org.flowable.engine.repository.ProcessDefinitionQuery;
 import org.apache.commons.lang.StringUtils;
 
 /**

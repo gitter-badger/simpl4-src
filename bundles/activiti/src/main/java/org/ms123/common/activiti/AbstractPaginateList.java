@@ -21,9 +21,9 @@ package org.ms123.common.activiti;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import org.activiti.engine.impl.AbstractQuery;
-import org.activiti.engine.query.Query;
-import org.activiti.engine.query.QueryProperty;
+import org.flowable.engine.impl.AbstractQuery;
+import org.flowable.engine.common.api.query.Query;
+import org.flowable.engine.common.api.query.QueryProperty;
 
 /**
  */

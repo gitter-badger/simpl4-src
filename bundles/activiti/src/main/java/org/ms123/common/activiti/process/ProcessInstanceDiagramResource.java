@@ -19,18 +19,18 @@
 package org.ms123.common.activiti.process;
 
 import java.io.InputStream;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.repository.ProcessDefinition;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.ProcessDefinition;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 import org.ms123.common.activiti.Util;
 import org.ms123.common.libhelper.Base64;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.image.impl.DefaultProcessDiagramGenerator;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.bpmn.model.BpmnModel;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.flowable.image.impl.DefaultProcessDiagramGenerator;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.impl.RepositoryServiceImpl;
+import org.flowable.bpmn.model.BpmnModel;
 
 @SuppressWarnings("unchecked")
 public class ProcessInstanceDiagramResource extends BaseResource {
@@ -55,7 +55,7 @@ public class ProcessInstanceDiagramResource extends BaseResource {
 		if (pde != null && pde.isGraphicalNotationDefined()) {
 			BpmnModel bpmnModel = getPE().getRepositoryService().getBpmnModel(pde.getId());
 			DefaultProcessDiagramGenerator dp = new DefaultProcessDiagramGenerator();
-			resource = dp.generateDiagram(bpmnModel, "png", getPE().getRuntimeService().getActiveActivityIds(m_processInstanceId),new java.util.ArrayList(),null,null,DefaultProcessDiagramGenerator.class.getClassLoader(),1.0d);
+			resource = dp.generateDiagram(bpmnModel, "png", getPE().getRuntimeService().getActiveActivityIds(m_processInstanceId),new java.util.ArrayList(),null,null,null,DefaultProcessDiagramGenerator.class.getClassLoader(),1.0d);
 		} else {
 			throw new RuntimeException("Process instance with id " + m_processInstanceId + " has no graphic description");
 		}

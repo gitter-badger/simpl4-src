@@ -19,7 +19,7 @@
 package org.ms123.common.activiti.process;
 
 import java.io.Serializable;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.flowable.engine.impl.persistence.entity.ProcessDefinitionEntity;
 
 /**
  */

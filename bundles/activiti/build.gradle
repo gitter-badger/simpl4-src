@@ -1,8 +1,16 @@
 version='1.0.0'
+ext.flowable_version='6.1.2'
 dependencies {
   compile files("${repository}/activiti-5.18/activiti-engine-5.18.0.jar")
   compile files("${repository}/activiti-5.18/activiti-bpmn-model-5.18.0.jar")
   compile files("${repository}/activiti-5.18/activiti-image-generator-5.18.0.jar")
+
+	compile files("${repository}/flowable/flowable-bpmn-model-${flowable_version}.jar")
+	compile files("${repository}/flowable/flowable-engine-${flowable_version}.jar")
+	compile files("${repository}/flowable/flowable-engine-common-${flowable_version}.jar")
+	compile files("${repository}/flowable/flowable-engine-common-api-${flowable_version}.jar")
+  compile files("${repository}/flowable/flowable-image-generator-${flowable_version}.jar")
+
 	compile files("${bundlesBuild}/org.ms123.common.data.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.nucleus.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.rpc-1.0.0.jar")

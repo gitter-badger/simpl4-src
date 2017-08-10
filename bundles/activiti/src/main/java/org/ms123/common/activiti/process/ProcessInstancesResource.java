@@ -20,9 +20,9 @@ package org.ms123.common.activiti.process;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
-import org.activiti.engine.impl.HistoricProcessInstanceQueryProperty;
-import org.activiti.engine.query.QueryProperty;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.impl.HistoricProcessInstanceQueryProperty;
+import org.flowable.engine.common.api.query.QueryProperty;
 import org.ms123.common.activiti.ActivitiService;
 import org.ms123.common.activiti.BaseResource;
 
