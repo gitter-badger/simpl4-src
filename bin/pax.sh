@@ -273,6 +273,7 @@ ${vfsbundles} \
 ${activemqbundles} \
 ${pdfboxbundles} \
 ${scalabundles} \
+${flowablebundles} \
 ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/pax-web-jetty-bundle-4.1.1.jar@3 \
 	scan-bundle:file:$REPOSITORY/pax-web-spi-4.1.1.jar@3 \
