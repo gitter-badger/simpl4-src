@@ -1,0 +1,13 @@
+version=1.0.0
+Export-Package org.ms123.common.process
+Import-Package *
+Bundle-Version:${version}
+Bundle-Vendor: MS123, Org.
+Bundle-Description: Process Service
+Bundle-ManifestVersion: 2
+Bundle-Name: ProcessService Bundle
+Bundle-SymbolicName:org.ms123.common.process
+Bundle-ClassPath: .
+Include-Resource: =src/main/resources/messages
+Service-Component: *
+-metatype: *
