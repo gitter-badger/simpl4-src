@@ -19,8 +19,8 @@
 package org.ms123.common.camel.components.activiti;
 
 import java.util.Map;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.ProcessEngine;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.ProcessEngine;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.DefaultComponent;
@@ -32,7 +32,7 @@ import static com.jcabi.log.Logger.error;
 
 /**
  */
-public class ActivitiComponent extends org.activiti.camel.ActivitiComponent {
+public class ActivitiComponent extends org.flowable.camel.ActivitiComponent {
 
 	private WorkflowService workflowService;
 

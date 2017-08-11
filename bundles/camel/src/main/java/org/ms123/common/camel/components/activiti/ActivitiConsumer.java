@@ -30,38 +30,41 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Set;
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventType;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiActivityEvent;
-import org.activiti.engine.delegate.event.ActivitiCancelledEvent;
-import org.activiti.engine.delegate.event.ActivitiEntityEvent;
-import org.activiti.engine.delegate.event.ActivitiErrorEvent;
-import org.activiti.engine.delegate.event.ActivitiMessageEvent;
-import org.activiti.engine.delegate.event.ActivitiSignalEvent;
-import org.activiti.engine.delegate.event.ActivitiVariableEvent;
-import org.activiti.engine.delegate.event.ActivitiSequenceFlowTakenEvent;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.task.IdentityLink;
-import org.activiti.engine.runtime.ProcessInstanceQuery;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.impl.context.Context;
-import org.activiti.engine.impl.interceptor.CommandContext;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
-import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventType;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.delegate.event.FlowableActivityEvent;
+import org.flowable.engine.delegate.event.FlowableCancelledEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEntityEvent;
+import org.flowable.engine.delegate.event.FlowableErrorEvent;
+import org.flowable.engine.delegate.event.FlowableMessageEvent;
+import org.flowable.engine.delegate.event.FlowableSignalEvent;
+import org.flowable.engine.delegate.event.FlowableVariableEvent;
+import org.flowable.engine.delegate.event.FlowableSequenceFlowTakenEvent;
+import org.flowable.engine.delegate.event.impl.FlowableEventImpl;
+import org.flowable.engine.impl.util.CommandContextUtil;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.task.IdentityLink;
+import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.impl.context.Context;
+import org.flowable.engine.common.impl.interceptor.CommandContext;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.persistence.entity.TaskEntity;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.warn;
 
 @SuppressWarnings({"unchecked","deprecation"})
-public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventListener {
+public class ActivitiConsumer extends DefaultConsumer implements FlowableEventListener {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private JSONSerializer ser = new JSONSerializer();
 	private final ActivitiEndpoint endpoint;
-	ActivitiEventType[]  events = null;
+	FlowableEngineEventType[]  events = null;
 
 	public ActivitiConsumer(ActivitiEndpoint endpoint, Processor processor) {
 		super(endpoint, processor);
@@ -70,10 +73,10 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		if( _events != null && _events.trim().length() > 0){
 			info(this,"_Events:"+_events);
 			String[] arr  = _events.toUpperCase().split(",");
-			this.events = new ActivitiEventType[arr.length];
+			this.events = new FlowableEngineEventType[arr.length];
 			int i=0;
 			for( String elem : arr ){
-				this.events[i++] = ActivitiEventType.valueOf( elem );
+				this.events[i++] = FlowableEngineEventType.valueOf( elem );
 			}
 		}
 			
@@ -84,18 +87,19 @@ public class ActivitiConsumer extends DefaultConsumer implements ActivitiEventLi
 		return false;
 	}
 
-	public void onEvent(ActivitiEvent event){
+	public void onEvent(FlowableEvent event){
 		info(this, "onEvent:"+event);
 		info(this, "onEvent:"+event.getClass());
 		final boolean reply = false;
-		ActivitiEventType type = event.getType();
+		FlowableEventType type = event.getType();
+		FlowableEventImpl eventImpl = (FlowableEventImpl)event;
 		Map result = new HashMap();
-		result.put( "executionId", event.getExecutionId());
-		result.put( "processInstanceId", event.getProcessInstanceId());
-		result.put( "type", event.getType().toString());
+		result.put( "executionId", eventImpl.getExecutionId());
+		result.put( "processInstanceId", eventImpl.getProcessInstanceId());
+		result.put( "type", event.getType().name());
 
 		CommandContext commandContext = Context.getCommandContext();
-		ExecutionEntity ee=				commandContext.getExecutionEntityManager().findExecutionById(event.getExecutionId());
+		ExecutionEntity ee=				CommandContextUtil.getExecutionEntityManager().findExecutionById(eventImpl.getExecutionId());
 		info(this, "ActivitiConsumer.onEvent:"+ ee.getProcessDefinitionId()+"/tasks:"+ ee.getTasks()+"/aid:"+ ee.getCurrentActivityName());
 		result.put( "businessKey", ee.getProcessBusinessKey());
 

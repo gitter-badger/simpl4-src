@@ -22,12 +22,12 @@ import java.util.Map;
 import java.util.HashMap;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
-import org.activiti.engine.impl.context.Context;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.pvm.delegate.ActivityExecution;
+import org.flowable.engine.impl.context.Context;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.ms123.common.camel.api.CamelService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
@@ -38,7 +38,7 @@ import static com.jcabi.log.Logger.error;
 
 //@@@MS kaputt
 @SuppressWarnings({"unchecked","deprecation"})
-public class CamelBehaviorDefaultImpl extends org.activiti.camel.impl.CamelBehaviorDefaultImpl {
+public class CamelBehaviorDefaultImpl extends org.flowable.camel.impl.CamelBehaviorDefaultImpl {
 
 	String m_tenant, m_processDefinitionKey;
 

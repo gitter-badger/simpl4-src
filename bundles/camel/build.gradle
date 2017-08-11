@@ -1,8 +1,15 @@
 version='1.0.0'
 
+ext.flowable_version='6.1.2'
 dependencies {
 	compile files("${repository}/activiti-5.18/activiti-camel-5.18.0.jar")
 	compile files("${repository}/activiti-5.18/activiti-engine-5.18.0.jar")
+
+	compile files("${repository}/flowable/flowable-camel-${flowable_version}.jar")
+	compile files("${repository}/flowable/flowable-engine-${flowable_version}.jar")
+	compile files("${repository}/flowable/flowable-engine-common-${flowable_version}.jar")
+	compile files("${repository}/flowable/flowable-engine-common-api-${flowable_version}.jar")
+
 	compile files("${repository}/camel/camel-core-2.18.0.jar")
 	compile files("${repository}/camel/camel-core-osgi-2.18.0.jar")
 	compile files("${repository}/camel/camel-spring-2.18.0.jar")

@@ -18,8 +18,8 @@
  */
 package org.ms123.common.camel.components.activiti;
 
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.HistoryService;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.HistoryService;
 import org.apache.camel.*;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.ms123.common.permission.api.PermissionService;
@@ -37,7 +37,7 @@ import static com.jcabi.log.Logger.error;
  */
 @SuppressWarnings({"unchecked","deprecation"})
 @UriEndpoint(scheme = "activiti", title = "Activiti", syntax = "activiti:name", consumerClass = ActivitiConsumer.class)
-public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
+public class ActivitiEndpoint extends org.flowable.camel.FlowableEndpoint {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private RuntimeService m_runtimeService;
