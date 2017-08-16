@@ -24,6 +24,8 @@ import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
 import java.io.*;
 import java.util.*;
+import javax.servlet.http.*;
+import org.ms123.common.utils.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.rpc.PDefaultBool;
@@ -36,9 +38,15 @@ import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.permission.api.PermissionService;
 import org.osgi.framework.BundleContext;
+import org.ms123.common.system.orientdb.OrientDBService;
+import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
+import org.ms123.common.git.GitService;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 /** ProcessService implementation
  */
@@ -47,7 +55,7 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	private static final String NAME = "name";
 	private static final String NAMESPACE = "namespace";
 
-	private PermissionService permissionService;
+	protected PermissionService permissionService;
 
 	public ProcessServiceImpl() {
 		this.js.prettyPrint(true);
@@ -62,16 +70,20 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	}
 
 	/* BEGIN JSON-RPC-API*/
-//	@RequiresRoles("admin")
-	public Map deployDMN(
-			@PName(NAMESPACE)               String namespace, 
-			@PName(NAME)                    String name, 
-			@PName("jsonString") @POptional String jsonString) throws RpcException {
+	@RequiresRoles("admin")
+	public void getBpmn(
+			@PName("namespace")        String namespace, 
+			@PName("path")             String path, HttpServletResponse response) throws RpcException {
 		try {
-			return null;
-		} catch (Throwable e) {
-			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessServiceImpl.deployDMN:", e);
-		} finally {
+			String processJson = this.gitService.getFileContent(namespace, path);
+			byte[] bpmnBytes = Simpl4BpmnJsonConverter.getBpmnXML(processJson, namespace, path);
+			response.setContentType("application/xml");
+			response.addHeader("Content-Disposition", "inline;filename=xxx.bpmn20.xml");
+			IOUtils.write(bpmnBytes, response.getOutputStream());
+			response.setStatus(HttpServletResponse.SC_OK);
+			response.getOutputStream().close();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getBpmn:", e);
 		}
 	}
 
@@ -79,5 +91,15 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	@Reference(dynamic = true, optional = true)
 	public void setPermissionService(PermissionService permissionService) {
 		this.permissionService = permissionService;
+	}
+	@Reference(dynamic = true, optional = true)
+	public void setGitService(GitService gitService) {
+		this.gitService = gitService;
+		//m_processEngineConfiguration.getBeans().put("gitService", gitService);
+	}
+	@Reference
+	public void setOrientDBService(OrientDBService paramEntityService) {
+		orientdbService = paramEntityService;
+		info(this, "ProcessServiceImpl.setOrientDBService:" + paramEntityService);
 	}
 }

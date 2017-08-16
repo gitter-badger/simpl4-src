@@ -41,8 +41,11 @@ import java.io.FileInputStream;
 import java.io.Reader;
 import java.lang.reflect.*;
 import org.osgi.framework.wiring.*;
+import org.ms123.common.git.GitService;
 import org.osgi.framework.BundleContext;
 import org.apache.commons.io.IOUtils;
+import org.ms123.common.system.orientdb.OrientDBService;
+import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -54,6 +57,8 @@ import static com.jcabi.log.Logger.error;
 class BaseProcessServiceImpl {
 
 	protected BundleContext bc;
+	protected OrientDBService orientdbService;
+	protected GitService gitService;
 
 	protected JSONDeserializer ds = new JSONDeserializer();
 

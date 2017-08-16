@@ -415,6 +415,7 @@ ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/avalon-framework-4.2.0.bar \
 	scan-bundle:file:$REPOSITORY/sweble-all.1.1.0.bar \
 	scan-bundle:file:$REPOSITORY/javassist-3.18.0-GA.jar \
+	scan-bundle:file:$REPOSITORY/javassist-3.21.0-GA.jar \
 	scan-bundle:file:$REPOSITORY/UserAgentUtils-1.9-snapshot.bar \
 	scan-bundle:file:$REPOSITORY/herold-6.1.0.bar  \
 	scan-bundle:file:$REPOSITORY/xstream-1.4.7.bar  \
@@ -452,6 +453,9 @@ ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/jchronic-0.2.6.bar \
 	scan-bundle:file:$REPOSITORY/commonmark-ext-gfm-tables-0.9.0.bar \
 	scan-bundle:file:$REPOSITORY/commonmark-0.9.0.bar \
+	scan-bundle:file:$REPOSITORY/reflections-0.9.11.jar \
+	scan-bundle:file:$REPOSITORY/guava-21.0.jar \
+	scan-bundle:file:$REPOSITORY/camunda-engine-orientdb-0.0.1.jar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \
 	--workingDirectory=${SERVERDIR} \
