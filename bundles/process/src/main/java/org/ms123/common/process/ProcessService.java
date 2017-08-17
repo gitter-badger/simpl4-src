@@ -18,7 +18,9 @@
  */
 package org.ms123.common.process;
 
-import java.util.*;
+import org.camunda.bpm.engine.ProcessEngine;
 
 public interface ProcessService {
+	public ProcessEngine getRootProcessEngine();
+	public ProcessEngine getProcessEngine();
 }

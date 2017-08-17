@@ -18,16 +18,27 @@
  */
 package org.ms123.common.process;
 
+
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
 import java.io.*;
 import java.util.*;
 import javax.servlet.http.*;
-import org.ms123.common.utils.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.camunda.bpm.engine.impl.cfg.orientdb.OrientdbProcessEngineConfiguration;
+import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.model.bpmn.Bpmn;
+import org.ms123.common.git.GitService;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PDefaultFloat;
 import org.ms123.common.rpc.PDefaultInt;
@@ -36,17 +47,18 @@ import org.ms123.common.rpc.PDefaultString;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
-import org.ms123.common.permission.api.PermissionService;
-import org.osgi.framework.BundleContext;
 import org.ms123.common.system.orientdb.OrientDBService;
-import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
-import org.ms123.common.git.GitService;
+import org.ms123.common.utils.IOUtils;
+import org.osgi.framework.BundleContext;
+import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.ProcessEngineConfiguration;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
-import static com.jcabi.log.Logger.info;
-import static com.jcabi.log.Logger.debug;
-import static com.jcabi.log.Logger.error;
+
 
 /** ProcessService implementation
  */

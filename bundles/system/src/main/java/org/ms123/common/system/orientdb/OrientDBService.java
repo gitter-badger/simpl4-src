@@ -25,6 +25,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 public interface OrientDBService {
 	public OrientGraphFactory getFactory( String db );
 	public OrientGraphFactory getFactory( String db, boolean autoStart );
+	public OrientGraphFactory getUserFactory(String db );
 	public OrientGraph getOrientGraphRoot(String db);
 	public OrientGraph getOrientGraph(String db);
 	public List<Map<String,Object>> executeQuery(OrientGraph graph, String sql, Object ... args);

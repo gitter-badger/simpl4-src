@@ -18,37 +18,24 @@
  */
 package org.ms123.common.process;
 
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import flexjson.*;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.FileInputStream;
-import java.io.Reader;
-import java.lang.reflect.*;
-import org.osgi.framework.wiring.*;
+import org.camunda.bpm.engine.impl.cfg.orientdb.OrientdbProcessEngineConfiguration;
+import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.ms123.common.git.GitService;
-import org.osgi.framework.BundleContext;
-import org.apache.commons.io.IOUtils;
-import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
-import static com.jcabi.log.Logger.info;
+import org.ms123.common.system.orientdb.OrientDBService;
+import org.ms123.common.system.thread.ThreadContext;
+import org.osgi.framework.BundleContext;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 
 /**
  *
@@ -56,13 +43,36 @@ import static com.jcabi.log.Logger.error;
 @SuppressWarnings({ "unchecked", "deprecation" })
 class BaseProcessServiceImpl {
 
+	private static String BPM_DB = "bpmDB";
 	protected BundleContext bc;
 	protected OrientDBService orientdbService;
+	protected Map<String,ProcessEngine> userProcessEngineMap = new HashMap<String,ProcessEngine>();
+	protected ProcessEngine rootProcessEngine;
 	protected GitService gitService;
 
 	protected JSONDeserializer ds = new JSONDeserializer();
 
 	protected JSONSerializer js = new JSONSerializer();
 
+	public synchronized ProcessEngine getRootProcessEngine(){
+		if( this.rootProcessEngine != null){
+			return this.rootProcessEngine;
+		}
+		OrientGraphFactory f = this.orientdbService.getFactory(BPM_DB);
+		this.rootProcessEngine = new OrientdbProcessEngineConfiguration(f).buildProcessEngine();
+		return this.rootProcessEngine;
+	}
+
+	public synchronized ProcessEngine getProcessEngine(){
+		String username = ThreadContext.getThreadContext().getUserName();
+		ProcessEngine pe = this.userProcessEngineMap.get(username);
+		if( pe != null){
+			return pe;
+		}
+		OrientGraphFactory f = this.orientdbService.getUserFactory(BPM_DB);
+		pe = new OrientdbProcessEngineConfiguration(f).buildProcessEngine();
+		this.userProcessEngineMap.put(username,pe);
+		return pe;
+	}
 }
 
