@@ -20,18 +20,22 @@ package org.ms123.common.process.indentity;
 
 import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
 
+import java.util.List;
 import org.camunda.bpm.engine.identity.Group;
 import org.camunda.bpm.engine.identity.GroupQuery;
 import org.camunda.bpm.engine.impl.AbstractQuery;
 import org.camunda.bpm.engine.impl.GroupQueryProperty;
-import org.camunda.bpm.engine.impl.interceptor.CommandExecutor;
+import org.camunda.bpm.engine.impl.interceptor.CommandContext;
+import org.camunda.bpm.engine.impl.Page;
 import org.camunda.bpm.engine.query.QueryProperty;
+import org.ms123.common.auth.api.AuthService;
+import org.ms123.common.permission.api.PermissionService;
 
 
 /**
  * @author Joram Barrez
  */
-public abstract class GroupQueryImpl extends AbstractQuery<GroupQuery, Group> implements GroupQuery {
+public class GroupQueryImpl extends AbstractQuery<GroupQuery, Group> implements GroupQuery {
 
   private static final long serialVersionUID = 1L;
   protected String id;
@@ -42,12 +46,12 @@ public abstract class GroupQueryImpl extends AbstractQuery<GroupQuery, Group> im
   protected String userId;
   protected String procDefId;
   protected String tenantId;
+	protected AuthService authService;
+	protected PermissionService permissionService;
 
-  public GroupQueryImpl() {
-  }
-
-  public GroupQueryImpl(CommandExecutor commandExecutor) {
-    super(commandExecutor);
+  public GroupQueryImpl(AuthService auth, PermissionService ps) {
+		this.authService = auth;
+		this.permissionService = ps;
   }
 
   public GroupQuery groupId(String id) {
@@ -136,4 +140,10 @@ public abstract class GroupQueryImpl extends AbstractQuery<GroupQuery, Group> im
     return tenantId;
   }
 
+	public List<Group> executeList(CommandContext c,Page p){
+		return null;
+	}
+  public  long executeCount(CommandContext commandContext){
+		return -1;
+	}
 }

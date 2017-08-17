@@ -20,6 +20,8 @@ package org.ms123.common.process.indentity;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.identity.Group;
@@ -37,15 +39,17 @@ import org.camunda.bpm.engine.impl.persistence.AbstractManager;
 import org.camunda.bpm.engine.impl.persistence.entity.GroupEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TenantEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.UserEntity;
-import org.camunda.bpm.engine.impl.UserQueryImpl;
 import org.ms123.common.auth.api.AuthService;
 import org.ms123.common.permission.api.PermissionService;
+import org.apache.commons.lang3.StringUtils;
+import static com.jcabi.log.Logger.info;
 
 /**
  *
  * @author Manfred Sattler
  *
  */
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class Simpl4IdentityServiceProvider extends AbstractManager implements ReadOnlyIdentityProvider {
 
 	protected PermissionService permissionService;
@@ -57,28 +61,40 @@ public class Simpl4IdentityServiceProvider extends AbstractManager implements Re
 		this.permissionService = ps;
 	}
 	public boolean	checkPassword(String userId, String password) {
+		info(this,"Simpl4IdentityServiceProvider.checkPassword("+userId+"):"+password);
 		return false;
 	}
 	public GroupQuery	createGroupQuery() {
-		return null;
+		return new GroupQueryImpl(this.authService, this.permissionService);
 	}
 	public GroupQuery	createGroupQuery(CommandContext commandContext) {
-		return null;
+		return new GroupQueryImpl(this.authService, this.permissionService);
 	}
   @Override public NativeUserQuery createNativeUserQuery() {
     return new NativeUserQueryImpl(Context.getProcessEngineConfiguration().getCommandExecutorTxRequired());
   }
 	public UserQuery	createUserQuery() {
-		return null;
+		return new UserQueryImpl(this.authService);
 	}
 	public UserQuery	createUserQuery(CommandContext commandContext) {
-		return null;
+		return new UserQueryImpl(this.authService);
 	}
 	public Group	findGroupById(String groupId) {
+		if (this.permissionService.hasRole(groupId)) {
+			GroupEntity group= convertToGroup(groupId);
+			info(this,"Simpl4IdentityServiceProvider.findGroupById("+groupId+"):"+group);
+			return group;
+		}
 		return null;
 	}
 	public User	findUserById(String userId) {
-		return null;
+		if (StringUtils.isNotEmpty(userId)) {
+			User user = convertToUser(this.authService.getUser(userId));
+			info(this,"Simpl4IdentityServiceProvider.findUserById("+userId+"):"+user);
+			return user;
+		} else {
+			return null;
+		}
 	}
 
 	public TenantQuery	createTenantQuery() {
@@ -91,5 +107,15 @@ public class Simpl4IdentityServiceProvider extends AbstractManager implements Re
 		throw new RuntimeException("Simpl4IdentityServiceProvider.findTenantById:not implemented");
 	}
 
+	private User convertToUser(Map<String,String> userProps){
+		User u =new UserEntity();
+		u.setId( userProps.get("userid"));
+		return u;
+	}
 
+	private GroupEntity convertToGroup(String id) {
+		GroupEntity g = new GroupEntity();
+		g.setId(id);
+		return g;
+	}
 }

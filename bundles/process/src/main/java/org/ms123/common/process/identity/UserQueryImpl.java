@@ -29,6 +29,7 @@ import org.camunda.bpm.engine.impl.interceptor.CommandExecutor;
 import org.camunda.bpm.engine.impl.Page;
 import org.camunda.bpm.engine.impl.UserQueryProperty;
 import org.camunda.bpm.engine.query.QueryProperty;
+import org.ms123.common.auth.api.AuthService;
 
 
 /**
@@ -48,12 +49,10 @@ public class UserQueryImpl extends AbstractQuery<UserQuery, User> implements Use
   protected String groupId;
   protected String procDefId;
   protected String tenantId;
+	protected AuthService authService;
 
-  public UserQueryImpl() {
-  }
-
-  public UserQueryImpl(CommandExecutor commandExecutor) {
-    super(commandExecutor);
+  public UserQueryImpl(AuthService auth) {
+		this.authService=auth;
   }
 
   public UserQuery userId(String id) {
