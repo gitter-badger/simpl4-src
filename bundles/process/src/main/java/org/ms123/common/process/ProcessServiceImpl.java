@@ -113,6 +113,15 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 		return this.eventAdmin;
 	}
 
+	public Map executeTaskOperation( String taskId, String operation, Map<String, Object> startParams, boolean check) {
+		try {
+			TaskOperationResource tr = new TaskOperationResource(this, taskId, operation, startParams, check);
+			return tr.executeTaskOperation();
+		} catch (Exception e) {
+			throw new RuntimeException( "ProcessService.executeTaskOperation:", e);
+		}
+	}
+
 	/* BEGIN JSON-RPC-API*/
 	@RequiresRoles("admin")
 	public void getBpmn(
@@ -143,6 +152,166 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 			return pdr.getProcessDefinitions();
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getProcessDefinitions:", e);
+		}
+	}
+
+	public void setProcessDefinitionCandidates(
+			@PName("processDefinitionId")  @POptional String processDefinitionId, 
+			@PName("candidateUsers")  @POptional List<String> userList, 
+			@PName("candidateGroups")  @POptional List<String> groupList
+			) throws RpcException {
+		try {
+			ProcessDefinitionCandidateResource pdc = new ProcessDefinitionCandidateResource(this,processDefinitionId, userList,groupList);
+			pdc.execute();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.setProcessDefinitionCandidates:", e);
+		}
+	}
+
+	public Map getProcessInstance(
+			@PName("processInstanceId") String processInstanceId) throws RpcException {
+		try {
+			ProcessInstanceResource pir = new ProcessInstanceResource(this, processInstanceId);
+			return pir.getProcessInstance();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getProcessInstance:", e);
+		}finally{
+		}
+	}
+
+	@RequiresRoles("admin")
+	public Map deleteProcessInstance(
+			@PName("processInstanceId") String processInstanceId,
+			@PName("reason")  @POptional String reason 
+				) throws RpcException {
+		try {
+			ProcessInstanceResource pir = new ProcessInstanceResource(this, processInstanceId, reason);
+			return pir.deleteProcessInstance();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.deleteProcessInstance:", e);
+		}finally{
+		}
+	}
+
+	public Map getProcessInstances(
+			@PName("namespace") String namespace, 
+			@PName("processDefinitionId") @POptional String processDefinitionId, 
+			@PName("processDefinitionKey") @POptional String processDefinitionKey, 
+			@PName("businessKey")      @POptional String businessKey, 
+			@PName("unfinished")       @POptional Boolean unfinished, 
+			@PName("finished")         @POptional Boolean finished, 
+			@PName("listParams")       @POptional Map<String, Object> listParams) throws RpcException {
+		try {
+			if (processDefinitionId == null && processDefinitionKey == null) {
+				throw new RuntimeException("getProcessInstance.no processDefinition{Id,Key}");
+			}
+			ProcessInstancesResource pir = new ProcessInstancesResource(this, listParams, processDefinitionId, processDefinitionKey, businessKey, unfinished, finished,namespace);
+			return pir.getProcessInstances();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getProcessInstances:", e);
+		}
+	}
+
+	public Map startProcessInstance(
+			//@PName(StoreDesc.STORE_ID) @POptional String storeId, 
+			@PName("namespace") @POptional String namespace, 
+			@PName("version") @POptional Integer version, 
+			@PName("processDefinitionId") @POptional String processDefinitionId, 
+			@PName("processDefinitionKey") @POptional String processDefinitionKey, 
+			@PName("processDefinitionName") @POptional String processDefinitionName, 
+			@PName("messageName") @POptional String messageName, 
+			@PName("businessKey")      @POptional String businessKey, 
+			@PName("startParams")      @POptional Map<String, Object> startParams) throws RpcException {
+		try {
+			if (processDefinitionId == null && processDefinitionKey == null && processDefinitionName == null && messageName == null) {
+				throw new RuntimeException("startProcessInstance.no processDefinition{Id,Key,Name,MessageName}");
+			}
+			StartProcessInstanceResource spir = new StartProcessInstanceResource(this, namespace,version, processDefinitionId, processDefinitionKey, processDefinitionName,messageName, businessKey, startParams);
+			return spir.startProcessInstance();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.startProcessInstance:", e);
+		}
+	}
+
+	public Map getVariables(
+			@PName("namespace")      String namespace,
+			@PName("formId")      String formId,
+			@PName("executionId")      String executionId) throws RpcException {
+		try {
+			Set<String> vars = this.formService.getFormInputVariables(namespace,formId);
+			return this.getPE().getRuntimeService().getVariables(executionId,vars);
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getVariables:", e);
+		}finally{
+		}
+	}
+
+	public Map getTasks(
+			@PName("queryParams")      @POptional Map<String, Object> queryParams, 
+			@PName("listParams")       @POptional Map<String, Object> listParams) throws RpcException {
+		try {
+			TasksResource tr = new TasksResource(this, listParams, queryParams);
+			return tr.getTasks();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getTasks:", e);
+		}finally{
+		}
+	}
+
+	public Map getTaskFormProperties(
+			@PName("executionId")      String executionId, 
+			@PName("taskId")           String taskId) throws RpcException {
+		try {
+			TaskFormPropertiesResource tr = new TaskFormPropertiesResource(this, executionId, taskId);
+			return tr.getTaskFormProperties();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getTaskFormProperties:", e);
+		}finally{
+		}
+	}
+
+	public Map executeTaskOperation(
+			@PName("taskId")           String taskId, 
+			@PName("operation")        String operation, 
+			@PName("startParams")      @POptional Map<String, Object> startParams) throws RpcException {
+		try {
+			TaskOperationResource tr = new TaskOperationResource(this, taskId, operation, startParams);
+			return tr.executeTaskOperation();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.executeTaskOperation:", e);
+		}
+	}
+
+	public String getDefinitionDiagram(
+			@PName("processDefinitionId") String processDefinitionId) throws RpcException {
+		try {
+			ProcessDefinitionDiagramResource pir = new ProcessDefinitionDiagramResource(this, processDefinitionId);
+			return pir.getDiagram();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getDefintionDiagram:", e);
+		}
+	}
+
+	public String getInstanceDiagram(
+			@PName("processInstanceId") String processInstanceId) throws RpcException {
+		try {
+			ProcessInstanceDiagramResource pir = new ProcessInstanceDiagramResource(this, processInstanceId);
+			return pir.getDiagram();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getInstanceDiagram:", e);
+		}
+	}
+
+	@RequiresRoles("admin")
+	public Map deleteDeployments(
+			@PName("deploymentIds") List<String> deploymentIds,
+			@PName("cascade")         @POptional @PDefaultBool(false) Boolean cascade 
+				) throws RpcException {
+		try {
+			DeploymentsDeleteResource ddr = new DeploymentsDeleteResource(this, deploymentIds, cascade);
+			return ddr.execute();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.deleteDeployments:", e);
 		}
 	}
 

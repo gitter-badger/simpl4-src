@@ -24,6 +24,9 @@ import org.ms123.common.git.GitService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
 import org.osgi.service.event.EventAdmin;
+import org.ms123.common.rpc.RpcException;
+import java.util.Map;
+import java.util.List;
 
 public interface ProcessService {
 	public ProcessEngine getRootProcessEngine();
@@ -34,4 +37,37 @@ public interface ProcessService {
 	public PermissionService getPermissionService();
 	public DataLayer getDataLayer();
 	public EventAdmin getEventAdmin();
+	public Map startProcessInstance(
+			String namespace, 
+			Integer  version,
+			String processDefinitionId, 
+			String processDefinitionKey, 
+			String processDefinitionName, 
+			String messageName, 
+			String businessKey, 
+			Map<String, Object> startParams) throws RpcException;
+
+	public Map getProcessDefinitions(
+			String namespace, 
+			String key, 
+			String name, 
+			Integer version, 
+			String user, 
+			String group, 
+			Map<String, Object> listParams) throws RpcException;
+
+	public void setProcessDefinitionCandidates(
+			String processDefinitionId, 
+			List<String> userList, 
+			List<String> groupList) throws RpcException;
+
+	public Map executeTaskOperation(
+			String taskId, 
+			String operation, 
+			Map<String, Object> startParams) throws RpcException;
+
+	public Map executeTaskOperation(
+			String taskId, 
+			String operation, 
+			Map<String, Object> startParams, boolean check) throws RpcException;
 }

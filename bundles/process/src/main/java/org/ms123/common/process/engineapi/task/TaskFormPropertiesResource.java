@@ -29,7 +29,6 @@ import org.codehaus.groovy.control.*;
 import flexjson.*;
 import org.ms123.common.process.ProcessService;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.ms123.common.process.engineapi.ActivitiService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 import static com.jcabi.log.Logger.info;
