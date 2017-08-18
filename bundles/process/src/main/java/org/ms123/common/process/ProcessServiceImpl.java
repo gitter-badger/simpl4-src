@@ -94,9 +94,6 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 		System.out.println("ProcessServiceImpl deactivate");
 	}
 
-	public ProcessEngine getPE() {
-		return null;//@@@MS;
-	}
 	public PermissionService getPermissionService(){
 		return this.permissionService;
 	}
@@ -240,7 +237,7 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 			@PName("executionId")      String executionId) throws RpcException {
 		try {
 			Set<String> vars = this.formService.getFormInputVariables(namespace,formId);
-			return this.getPE().getRuntimeService().getVariables(executionId,vars);
+			return this.getProcessEngine().getRuntimeService().getVariables(executionId,vars);
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getVariables:", e);
 		}finally{

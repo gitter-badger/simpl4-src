@@ -31,7 +31,6 @@ import java.util.List;
 public interface ProcessService {
 	public ProcessEngine getRootProcessEngine();
 	public ProcessEngine getProcessEngine();
-	public ProcessEngine getPE();
 	public FormService getFormService();
 	public GitService getGitService();
 	public PermissionService getPermissionService();

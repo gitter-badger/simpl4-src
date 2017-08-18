@@ -36,38 +36,41 @@ import flexjson.*;
 @SuppressWarnings("unchecked")
 public class BaseResource {
 
-	protected ProcessService m_ps;
+	protected ProcessService processService;
 	protected JSONSerializer m_js = new JSONSerializer();
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 
 	protected Map<String, Object> m_listParams;
 
 	public BaseResource(ProcessService ps, Map<String, Object> lp) {
-		m_ps = ps;
+		this.processService = ps;
 		m_listParams = lp != null ? lp : new HashMap();
 		m_js.prettyPrint(true);
 	}
 
 	public ProcessEngine getPE() {
-		return m_ps.getPE();
+		return this.processService.getProcessEngine();
+	}
+	public ProcessEngine getRootPE() {
+		return this.processService.getRootProcessEngine();
 	}
 	public ProcessService getProcessService() {
-		return m_ps;
+		return this.processService;
 	}
 	public PermissionService getPermissionService() {
-		return m_ps.getPermissionService();
+		return this.processService.getPermissionService();
 	}
 	public GitService getGitService() {
-		return m_ps.getGitService();
+		return this.processService.getGitService();
 	}
 	public FormService getFormService() {
-		return m_ps.getFormService();
+		return this.processService.getFormService();
 	}
 	public DataLayer getDataLayer() {
-		return m_ps.getDataLayer();
+		return this.processService.getDataLayer();
 	}
 	public EventAdmin getEventAdmin() {
-		return m_ps.getEventAdmin();
+		return this.processService.getEventAdmin();
 	}
 	protected boolean isUser( String user){
 		return getPermissionService().isUserThis(user);
