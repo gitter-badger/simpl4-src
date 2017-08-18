@@ -21,7 +21,7 @@ package org.ms123.common.process.engineapi.process;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import org.ms123.common.process.engineapi.ActivitiService;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.camunda.bpm.engine.impl.ProcessDefinitionQueryProperty;
 import org.camunda.bpm.engine.impl.ProcessDefinitionQueryImpl;
@@ -42,7 +42,7 @@ public class ProcessDefinitionsResource extends BaseResource {
 
 	private Map<String, QueryProperty> properties = new HashMap<String, QueryProperty>();
 
-	public ProcessDefinitionsResource(ActivitiService as, Map<String, Object> listParams, String namespace, String key, String name, Integer version,String startableByUser,String startableByGroup) {
+	public ProcessDefinitionsResource(ProcessService as, Map<String, Object> listParams, String namespace, String key, String name, Integer version,String startableByUser,String startableByGroup) {
 		super(as, listParams);
 		m_startableByUser = startableByUser;
 		m_startableByGroup = startableByGroup;

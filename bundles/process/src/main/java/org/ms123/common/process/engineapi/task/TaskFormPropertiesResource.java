@@ -27,6 +27,7 @@ import org.ms123.common.libhelper.Utils;
 import groovy.lang.*;
 import org.codehaus.groovy.control.*;
 import flexjson.*;
+import org.ms123.common.process.ProcessService;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.ms123.common.process.engineapi.ActivitiService;
 import org.ms123.common.process.engineapi.BaseResource;
@@ -49,8 +50,8 @@ public class TaskFormPropertiesResource extends BaseResource {
 
 	/**
 	 */
-	public TaskFormPropertiesResource(ActivitiService as, String executionId, String taskId) {
-		super(as, null);
+	public TaskFormPropertiesResource(ProcessService ps, String executionId, String taskId) {
+		super(ps, null);
 		m_executionId = executionId;
 		m_taskId = taskId;
 	}

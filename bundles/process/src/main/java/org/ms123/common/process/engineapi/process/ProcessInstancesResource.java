@@ -23,7 +23,7 @@ import java.util.Map;
 import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
 import org.camunda.bpm.engine.impl.HistoricProcessInstanceQueryProperty;
 import org.camunda.bpm.engine.query.QueryProperty;
-import org.ms123.common.process.engineapi.ActivitiService;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 
 /**
@@ -42,8 +42,8 @@ public class ProcessInstancesResource extends BaseResource {
 
 	private Boolean m_finished;
 
-	public ProcessInstancesResource(ActivitiService as, Map<String, Object> listParams, String processDefinitionId, String processDefinitionKey,String businessKey, Boolean unfinished, Boolean finished, String namespace) {
-		super(as, listParams);
+	public ProcessInstancesResource(ProcessService ps, Map<String, Object> listParams, String processDefinitionId, String processDefinitionKey,String businessKey, Boolean unfinished, Boolean finished, String namespace) {
+		super(ps, listParams);
 		m_processDefinitionId = processDefinitionId;
 		m_processDefinitionKey = processDefinitionKey;
 		m_businessKey = businessKey;

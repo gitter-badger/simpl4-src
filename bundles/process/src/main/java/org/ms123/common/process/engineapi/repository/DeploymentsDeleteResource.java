@@ -21,7 +21,7 @@ package org.ms123.common.process.engineapi.repository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import org.ms123.common.process.engineapi.ActivitiService;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 
@@ -32,8 +32,8 @@ public class DeploymentsDeleteResource extends BaseResource {
 	List<String> m_deploymentIds;
 	boolean m_cascade;
 
-	public DeploymentsDeleteResource(ActivitiService as, List<String> deploymentIds, boolean cascade) {
-		super(as, null);
+	public DeploymentsDeleteResource(ProcessService ps, List<String> deploymentIds, boolean cascade) {
+		super(ps, null);
 		m_deploymentIds = deploymentIds;
 		m_cascade = cascade;
 	}

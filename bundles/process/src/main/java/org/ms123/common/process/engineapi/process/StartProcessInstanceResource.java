@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.io.InputStream;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.ms123.common.process.engineapi.ActivitiService;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.repository.Deployment;
@@ -68,8 +68,8 @@ public class StartProcessInstanceResource extends BaseResource {
 
 	private Map<String, Object> m_startParams;
 
-	public StartProcessInstanceResource(ActivitiService as, String namespace, Integer version, String processDefinitionId, String processDefinitionKey, String processDefinitionName, String messageName, String businessKey, Map<String, Object> startParams) {
-		super(as, null);
+	public StartProcessInstanceResource(ProcessService ps, String namespace, Integer version, String processDefinitionId, String processDefinitionKey, String processDefinitionName, String messageName, String businessKey, Map<String, Object> startParams) {
+		super(ps, null);
 		m_namespace = namespace;
 		m_processDefinitionId = processDefinitionId;
 		m_processDefinitionKey = processDefinitionKey;

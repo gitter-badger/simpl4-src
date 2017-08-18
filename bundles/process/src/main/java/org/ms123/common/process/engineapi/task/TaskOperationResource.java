@@ -31,6 +31,7 @@ import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 import org.camunda.bpm.engine.form.TaskFormData;
 import org.ms123.common.form.FormService;
+import org.ms123.common.process.ProcessService;
 import org.camunda.bpm.engine.form.FormProperty;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.task.IdentityLink;
@@ -54,12 +55,12 @@ public class TaskOperationResource extends BaseResource {
 
 	private Map<String, Object> m_startParams;
 
-	public TaskOperationResource(ActivitiService as, String taskId, String operation, Map<String, Object> startParams) {
-		this(as, taskId, operation, startParams, true);
+	public TaskOperationResource(ProcessService ps, String taskId, String operation, Map<String, Object> startParams) {
+		this(ps, taskId, operation, startParams, true);
 	}
 
-	public TaskOperationResource(ActivitiService as, String taskId, String operation, Map<String, Object> startParams, boolean check) {
-		super(as, null);
+	public TaskOperationResource(ProcessService ps, String taskId, String operation, Map<String, Object> startParams, boolean check) {
+		super(ps, null);
 		m_taskId = taskId;
 		m_operation = operation;
 		m_startParams = startParams;

@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.camunda.bpm.engine.ProcessEngine;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.form.FormService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
@@ -35,34 +36,34 @@ import flexjson.*;
 @SuppressWarnings("unchecked")
 public class BaseResource {
 
-	protected ActivitiService m_as;
+	protected ProcessService m_ps;
 	protected JSONSerializer m_js = new JSONSerializer();
 
 	protected Map<String, Object> m_listParams;
 
-	public BaseResource(ActivitiService as, Map<String, Object> lp) {
-		m_as = as;
+	public BaseResource(ProcessService ps, Map<String, Object> lp) {
+		m_ps = ps;
 		m_listParams = lp != null ? lp : new HashMap();
 		m_js.prettyPrint(true);
 	}
 
 	public ProcessEngine getPE() {
-		return m_as.getPE();
+		return m_ps.getPE();
 	}
 	public PermissionService getPermissionService() {
-		return m_as.getPermissionService();
+		return m_ps.getPermissionService();
 	}
 	public GitService getGitService() {
-		return m_as.getGitService();
+		return m_ps.getGitService();
 	}
 	public FormService getFormService() {
-		return m_as.getFormService();
+		return m_ps.getFormService();
 	}
 	public DataLayer getDataLayer() {
-		return m_as.getDataLayer();
+		return m_ps.getDataLayer();
 	}
 	public EventAdmin getEventAdmin() {
-		return m_as.getEventAdmin();
+		return m_ps.getEventAdmin();
 	}
 	protected boolean isUser( String user){
 		return getPermissionService().isUserThis(user);

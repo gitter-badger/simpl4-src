@@ -29,6 +29,10 @@ import org.camunda.bpm.engine.impl.cfg.orientdb.OrientdbProcessEngineConfigurati
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.ms123.common.git.GitService;
+import org.ms123.common.data.api.DataLayer;
+import org.osgi.service.event.EventAdmin;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.form.FormService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.system.thread.ThreadContext;
@@ -48,7 +52,11 @@ class BaseProcessServiceImpl {
 	protected OrientDBService orientdbService;
 	protected Map<String,ProcessEngine> userProcessEngineMap = new HashMap<String,ProcessEngine>();
 	protected ProcessEngine rootProcessEngine;
+	protected PermissionService permissionService;
 	protected GitService gitService;
+	protected DataLayer dataLayer;
+	protected EventAdmin eventAdmin;
+	protected FormService formService;
 
 	protected JSONDeserializer ds = new JSONDeserializer();
 

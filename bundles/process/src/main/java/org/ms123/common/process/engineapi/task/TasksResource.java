@@ -23,6 +23,7 @@ import java.util.Map;
 import org.camunda.bpm.engine.impl.TaskQueryProperty;
 import org.camunda.bpm.engine.query.QueryProperty;
 import org.camunda.bpm.engine.task.TaskQuery;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.ActivitiService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
@@ -37,8 +38,8 @@ public class TasksResource extends BaseResource {
 
 	private Map<String, Object> m_queryParams = new HashMap();
 
-	public TasksResource(ActivitiService as, Map<String, Object> listParams, Map<String, Object> queryParams) {
-		super(as, listParams);
+	public TasksResource(ProcessService ps, Map<String, Object> listParams, Map<String, Object> queryParams) {
+		super(ps, listParams);
 		m_queryParams = queryParams;
 		properties.put("id", TaskQueryProperty.TASK_ID);
 		properties.put("name", TaskQueryProperty.NAME);

@@ -23,8 +23,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.ms123.common.process.engineapi.ActivitiService;
 import org.ms123.common.process.engineapi.BaseResource;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.Util;
 import org.camunda.bpm.engine.task.IdentityLink;
 
@@ -35,8 +35,8 @@ public class ProcessDefinitionCandidateResource extends BaseResource {
 	private List<String> m_groupList;
 	private String m_processDefinitionId;
 
-	public ProcessDefinitionCandidateResource(ActivitiService as,String processDefinitionId,List<String> userList,List<String> groupList) {
-		super(as, null);
+	public ProcessDefinitionCandidateResource(ProcessService ps,String processDefinitionId,List<String> userList,List<String> groupList) {
+		super(ps, null);
 		m_processDefinitionId = processDefinitionId;
 		m_userList = userList;
 		m_groupList = groupList;

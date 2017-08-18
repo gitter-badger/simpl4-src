@@ -21,7 +21,7 @@ package org.ms123.common.process.engineapi.process;
 import java.io.InputStream;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
-import org.ms123.common.process.engineapi.ActivitiService;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 import org.ms123.common.libhelper.Base64;
@@ -37,8 +37,8 @@ public class ProcessInstanceDiagramResource extends BaseResource {
 
 	String m_processInstanceId;
 
-	public ProcessInstanceDiagramResource(ActivitiService as, String processInstanceId) {
-		super(as, null);
+	public ProcessInstanceDiagramResource(ProcessService ps, String processInstanceId) {
+		super(ps, null);
 		m_processInstanceId = processInstanceId;
 	}
 

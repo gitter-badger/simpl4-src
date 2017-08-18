@@ -28,7 +28,7 @@ import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.history.HistoricVariableUpdate;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.ms123.common.process.engineapi.ActivitiService;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 import static com.jcabi.log.Logger.info;
@@ -44,12 +44,12 @@ public class ProcessInstanceResource extends BaseResource {
 	private String m_reason;
 	private Map m_activityNameIdMap = new HashMap();
 
-	public ProcessInstanceResource(ActivitiService as, String processInstanceId) {
-		super(as, null);
+	public ProcessInstanceResource(ProcessService ps, String processInstanceId) {
+		super(ps, null);
 		m_processInstanceId = processInstanceId;
 	}
-	public ProcessInstanceResource(ActivitiService as, String processInstanceId, String reason) {
-		super(as, null);
+	public ProcessInstanceResource(ProcessService ps, String processInstanceId, String reason) {
+		super(ps, null);
 		m_processInstanceId = processInstanceId;
 		m_reason = reason;
 	}

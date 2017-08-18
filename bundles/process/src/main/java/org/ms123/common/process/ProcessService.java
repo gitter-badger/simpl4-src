@@ -19,8 +19,19 @@
 package org.ms123.common.process;
 
 import org.camunda.bpm.engine.ProcessEngine;
+import org.ms123.common.form.FormService;
+import org.ms123.common.git.GitService;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.data.api.DataLayer;
+import org.osgi.service.event.EventAdmin;
 
 public interface ProcessService {
 	public ProcessEngine getRootProcessEngine();
 	public ProcessEngine getProcessEngine();
+	public ProcessEngine getPE();
+	public FormService getFormService();
+	public GitService getGitService();
+	public PermissionService getPermissionService();
+	public DataLayer getDataLayer();
+	public EventAdmin getEventAdmin();
 }

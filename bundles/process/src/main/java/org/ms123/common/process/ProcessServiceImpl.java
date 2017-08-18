@@ -32,13 +32,27 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.camunda.bpm.engine.impl.cfg.orientdb.OrientdbProcessEngineConfiguration;
 import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.model.bpmn.Bpmn;
+import org.ms123.common.data.api.DataLayer;
+import org.ms123.common.form.FormService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
+import org.ms123.common.process.engineapi.process.ProcessDefinitionCandidateResource;
+import org.ms123.common.process.engineapi.process.ProcessDefinitionDiagramResource;
+import org.ms123.common.process.engineapi.process.ProcessDefinitionsResource;
+import org.ms123.common.process.engineapi.process.ProcessInstanceDiagramResource;
+import org.ms123.common.process.engineapi.process.ProcessInstanceResource;
+import org.ms123.common.process.engineapi.process.ProcessInstancesResource;
+import org.ms123.common.process.engineapi.process.StartProcessInstanceResource;
+import org.ms123.common.process.engineapi.repository.DeploymentsDeleteResource;
+import org.ms123.common.process.engineapi.task.TaskFormPropertiesResource;
+import org.ms123.common.process.engineapi.task.TaskOperationResource;
+import org.ms123.common.process.engineapi.task.TasksResource;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PDefaultFloat;
 import org.ms123.common.rpc.PDefaultInt;
@@ -50,8 +64,7 @@ import org.ms123.common.rpc.RpcException;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.utils.IOUtils;
 import org.osgi.framework.BundleContext;
-import org.camunda.bpm.engine.ProcessEngine;
-import org.camunda.bpm.engine.ProcessEngineConfiguration;
+import org.osgi.service.event.EventAdmin;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -67,7 +80,6 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	private static final String NAME = "name";
 	private static final String NAMESPACE = "namespace";
 
-	protected PermissionService permissionService;
 
 	public ProcessServiceImpl() {
 		this.js.prettyPrint(true);
@@ -79,6 +91,26 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 
 	protected void deactivate() throws Exception {
 		System.out.println("ProcessServiceImpl deactivate");
+	}
+
+	public ProcessEngine getPE() {
+		return null;//@@@MS;
+	}
+	public PermissionService getPermissionService(){
+		return this.permissionService;
+	}
+
+	public FormService getFormService(){
+		return this.formService;
+	}
+	public GitService getGitService(){
+		return this.gitService;
+	}
+	public DataLayer getDataLayer(){
+		return this.dataLayer;
+	}
+	public EventAdmin getEventAdmin(){
+		return this.eventAdmin;
 	}
 
 	/* BEGIN JSON-RPC-API*/
@@ -98,6 +130,21 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getBpmn:", e);
 		}
 	}
+	public Map getProcessDefinitions(
+			@PName("namespace")  @POptional String namespace, 
+			@PName("key")  @POptional String key, 
+			@PName("name")  @POptional String name, 
+			@PName("version")  @POptional Integer version, 
+			@PName("startableByUser")  @POptional String user, 
+			@PName("startableByGroup")  @POptional String group, 
+			@PName("listParams")       @POptional Map<String, Object> listParams) throws RpcException {
+		try {
+			ProcessDefinitionsResource pdr = new ProcessDefinitionsResource(this, listParams, namespace,key, name,version, user,group);
+			return pdr.getProcessDefinitions();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getProcessDefinitions:", e);
+		}
+	}
 
 	/* END JSON-RPC-API*/
 	@Reference(dynamic = true, optional = true)
@@ -113,5 +160,19 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	public void setOrientDBService(OrientDBService paramEntityService) {
 		orientdbService = paramEntityService;
 		info(this, "ProcessServiceImpl.setOrientDBService:" + paramEntityService);
+	}
+	@Reference(target = "(kind=jdo)", dynamic = true, optional = true)
+	public void setDataLayer(DataLayer dataLayer) {
+		this.dataLayer = dataLayer;
+	}
+
+	@Reference(dynamic = true,optional=true)
+	public void setFormService(FormService paramFormService) {
+		this.formService = paramFormService;
+	}
+
+	@Reference(dynamic = true,optional=true)
+	public void setEventAdmin(EventAdmin paramEventAdmin) {
+		this.eventAdmin = paramEventAdmin;
 	}
 }
