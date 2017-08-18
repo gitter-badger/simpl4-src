@@ -531,7 +531,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 
 			var params = {
 				method:prefix+"deployProcess",
-				service:"workflow",
+				service:"process",
 				parameter:rpcParams,
 				async: false,
 				context: this,

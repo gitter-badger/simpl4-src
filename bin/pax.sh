@@ -360,6 +360,7 @@ ${camundabundles} \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.utils-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.management-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.stencil.api-1.0.0.jar \
+  scan-bundle:file:$BUNDLESBUILD/org.ms123.common.process-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.workflow-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.workflow.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.activiti-1.0.0.jar \
@@ -453,8 +454,9 @@ ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/jchronic-0.2.6.bar \
 	scan-bundle:file:$REPOSITORY/commonmark-ext-gfm-tables-0.9.0.bar \
 	scan-bundle:file:$REPOSITORY/commonmark-0.9.0.bar \
-	scan-bundle:file:$REPOSITORY/reflections-0.9.11.jar \
-	scan-bundle:file:$REPOSITORY/guava-21.0.jar \
+	scan-bundle:file:$REPOSITORY/reflections-0.9.11.bar \
+	scan-bundle:file:$REPOSITORY/guava-20.0.jar \
+	scan-bundle:file:$REPOSITORY/java-uuid-generator-3.1.3.jar \
 	scan-bundle:file:$REPOSITORY/camunda-engine-orientdb-0.0.1.jar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
 	--executor=script \

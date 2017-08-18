@@ -67,6 +67,8 @@ class BaseProcessServiceImpl {
 			return this.rootProcessEngine;
 		}
 		OrientGraphFactory f = this.orientdbService.getFactory(BPM_DB);
+		f.setStandardElementConstraints(false);
+
 		this.rootProcessEngine = new OrientdbProcessEngineConfiguration(f).buildProcessEngine();
 		return this.rootProcessEngine;
 	}
@@ -78,6 +80,7 @@ class BaseProcessServiceImpl {
 			return pe;
 		}
 		OrientGraphFactory f = this.orientdbService.getUserFactory(BPM_DB);
+		f.setStandardElementConstraints(false);
 		pe = new OrientdbProcessEngineConfiguration(f).buildProcessEngine();
 		this.userProcessEngineMap.put(username,pe);
 		return pe;
