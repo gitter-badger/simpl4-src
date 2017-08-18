@@ -38,6 +38,7 @@ public class BaseResource {
 
 	protected ProcessService m_ps;
 	protected JSONSerializer m_js = new JSONSerializer();
+	protected JSONDeserializer m_ds = new JSONDeserializer();
 
 	protected Map<String, Object> m_listParams;
 
@@ -49,6 +50,9 @@ public class BaseResource {
 
 	public ProcessEngine getPE() {
 		return m_ps.getPE();
+	}
+	public ProcessService getProcessService() {
+		return m_ps;
 	}
 	public PermissionService getPermissionService() {
 		return m_ps.getPermissionService();

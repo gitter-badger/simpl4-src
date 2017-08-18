@@ -53,6 +53,7 @@ import org.ms123.common.process.engineapi.repository.DeploymentsDeleteResource;
 import org.ms123.common.process.engineapi.task.TaskFormPropertiesResource;
 import org.ms123.common.process.engineapi.task.TaskOperationResource;
 import org.ms123.common.process.engineapi.task.TasksResource;
+import org.ms123.common.process.engineapi.repository.DeploymentResource;
 import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.PDefaultFloat;
 import org.ms123.common.rpc.PDefaultInt;
@@ -315,6 +316,47 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 		}
 	}
 
+	@RequiresRoles("admin")
+	public Object deployProcess(
+			@PName("namespace")        String namespace, 
+			@PName("path")             String path) throws RpcException {
+		try {
+			DeploymentResource dp = new DeploymentResource(this);
+			return dp.deployProcess(namespace, path, true, false);
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.deployProcess:", e);
+		} finally {
+		}
+	}
+
+	@RequiresRoles("admin")
+	public Object undeployProcess(
+			@PName("namespace")        String namespace, 
+			@PName("path")             String path, 
+			@PName("all")              @PDefaultBool(false) @POptional Boolean all) throws RpcException {
+		try {
+			DeploymentResource dp = new DeploymentResource(this);
+			return dp.deployProcess(namespace, path, false, all);
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.undeployProcess:", e);
+		} finally {
+		}
+	}
+
+	@RequiresRoles("admin")
+	public Object saveProcess(
+			@PName("namespace")        String namespace, 
+			@PName("path")             String path, 
+			@PName("data")             Map data) throws RpcException {
+		try {
+			this.gitService.putContent(namespace, path, "sw.process", this.js.deepSerialize(data));
+			DeploymentResource dp = new DeploymentResource(this);
+			return dp.deployProcess(namespace, path, true, false);
+		} catch (Throwable e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.saveProcess:", e);
+		} finally {
+		}
+	}
 	/* END JSON-RPC-API*/
 	@Reference(dynamic = true, optional = true)
 	public void setPermissionService(PermissionService permissionService) {
