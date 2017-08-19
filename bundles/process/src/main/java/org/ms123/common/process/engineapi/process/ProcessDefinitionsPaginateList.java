@@ -28,6 +28,8 @@ import org.ms123.common.process.engineapi.AbstractPaginateList;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.persistence.entity.IdentityLinkEntity;
 import org.camunda.bpm.engine.task.IdentityLink;
+import static com.jcabi.log.Logger.info;
+
 
 /**
  */
@@ -43,6 +45,7 @@ public class ProcessDefinitionsPaginateList extends AbstractPaginateList {
 	}
 
 	protected List processList(List list) {
+		info(this,"ProcessDefinitionsPaginateList("+m_starterGroup+"):"+list);
 		List<ProcessDefinitionResponse> responseProcessDefinitions = new ArrayList<ProcessDefinitionResponse>();
 		for (Object definition : list) {
 			if( m_starterGroup != null){
@@ -50,12 +53,12 @@ public class ProcessDefinitionsPaginateList extends AbstractPaginateList {
       	List<IdentityLink> links = m_pe.getRepositoryService().getIdentityLinksForProcessDefinition(((ProcessDefinitionEntity) definition).getId());
 				//List<IdentityLinkEntity> links = ((ProcessDefinitionEntity)definition).getIdentityLinks();
 				for(IdentityLink il : links){
-					System.out.println("IdentityLink:"+il.getGroupId()+"/"+il.getUserId()+"/"+m_starterGroup);
+					info(this, "IdentityLink:"+il.getGroupId()+"/"+il.getUserId()+"/"+m_starterGroup);
 					if(il.getGroupId() != null && il.getGroupId().equals(m_starterGroup)){
 						ok=true;
 					}
 				}
-				System.out.println("ok:"+ok);
+				info(this, "ok:"+ok);
 				if(!ok) continue;
 			}
 			ProcessDefinitionResponse processDefinition = new ProcessDefinitionResponse((ProcessDefinitionEntity) definition);

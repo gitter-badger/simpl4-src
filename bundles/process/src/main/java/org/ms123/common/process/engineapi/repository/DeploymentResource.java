@@ -87,7 +87,7 @@ public class DeploymentResource extends BaseResource {
 			m_js.prettyPrint(true);
 			info(this,"PList:" + m_js.deepSerialize(pList));
 			if (pList.size() != 1) {
-				throw new RuntimeException("WorkflowService.deployProcess(" + namespace + "," + basename + "):not " + (pList.size() == 0 ? "found" : "uniqe"));
+				throw new RuntimeException("ProcessService.deployProcess(" + namespace + "," + basename + "):not " + (pList.size() == 0 ? "found" : "uniqe"));
 			}
 			String processdefinitionId = pList.get(0).getId();
 			String groups = (String) properties.get("startablegroups");
