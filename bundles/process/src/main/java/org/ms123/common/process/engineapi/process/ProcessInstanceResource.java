@@ -26,6 +26,7 @@ import org.camunda.bpm.engine.history.HistoricActivityInstance;
 import org.camunda.bpm.engine.history.HistoricDetail;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
+import org.camunda.bpm.engine.history.HistoricVariableInstance;
 import org.camunda.bpm.engine.history.HistoricVariableUpdate;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.ms123.common.process.ProcessService;
@@ -155,8 +156,8 @@ public class ProcessInstanceResource extends BaseResource {
 				Map<String, Object> activityJSON = new HashMap();
 				activityJSON.put("activityId", historicActivityInstance.getActivityId());
 				activityJSON.put("executionId", historicActivityInstance.getExecutionId());
-				if (historicActivityInstance.getActivityName() != null) {
-					activityJSON.put("activityName", historicActivityInstance.getActivityName());
+				if (historicActivityInstance.getActivityId() != null) {
+					activityJSON.put("activityName", historicActivityInstance.getActivityId());
 				} else {
 					activityJSON.put("activityName", null);
 				}
@@ -173,41 +174,56 @@ public class ProcessInstanceResource extends BaseResource {
 					activityJSON.put("duration", historicActivityInstance.getDurationInMillis());
 				}
 				activitiesJSON.add(activityJSON);
-				m_activityNameIdMap.put(historicActivityInstance.getId(), historicActivityInstance.getActivityName());
+				m_activityNameIdMap.put(historicActivityInstance.getExecutionId(), historicActivityInstance.getActivityId());
 			}
 		}
 	}
 
 	private void addVariableList(String processInstanceId, Map<String, Object> responseJSON) {
-		ProcessInstance processInstance = getPE().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-		if( processInstance != null){
-			Map<String, Object> variableMap = getPE().getRuntimeService().getVariables(processInstanceId);
-			if (variableMap != null && variableMap.size() > 0) {
-				ArrayList variablesJSON = new ArrayList();
-				responseJSON.put("variables", variablesJSON);
-				for (String key : variableMap.keySet()) {
-					Object variableValue = variableMap.get(key);
-					Map<String, Object> variableJSON = new HashMap();
-					variableJSON.put("variableName", key);
-					if (variableValue != null) {
-						if (variableValue instanceof Boolean) {
-							variableJSON.put("variableValue", (Boolean) variableValue);
-						} else if (variableValue instanceof Long) {
-							variableJSON.put("variableValue", (Long) variableValue);
-						} else if (variableValue instanceof Double) {
-							variableJSON.put("variableValue", (Double) variableValue);
-						} else if (variableValue instanceof Float) {
-							variableJSON.put("variableValue", (Float) variableValue);
-						} else if (variableValue instanceof Integer) {
-							variableJSON.put("variableValue", (Integer) variableValue);
-						} else {
-							variableJSON.put("variableValue", variableValue);
-						}
+		List<HistoricVariableInstance> variableList = getPE().getHistoryService().createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
+		info(this,"variableList:"+variableList);
+		info(this,"m_activityNameIdMap:"+m_activityNameIdMap);
+		if( variableList != null){
+			ArrayList variablesJSON = new ArrayList();
+			responseJSON.put("variables", variablesJSON);
+			for( HistoricVariableInstance vi : variableList){
+				String name = vi.getName();
+				Object value = vi.getValue();
+				Map<String, Object> variableJSON = new HashMap();
+				variableJSON.put("variableName", name);
+				if (value != null) {
+					if (value instanceof Boolean) {
+						variableJSON.put("variableValue", (Boolean) value);
+					} else if (value instanceof Long) {
+						variableJSON.put("variableValue", (Long) value);
+					} else if (value instanceof Double) {
+						variableJSON.put("variableValue", (Double) value);
+					} else if (value instanceof Float) {
+						variableJSON.put("variableValue", (Float) value);
+					} else if (value instanceof Integer) {
+						variableJSON.put("variableValue", (Integer) value);
 					} else {
-						variableJSON.put("variableValue", null);
+						variableJSON.put("variableValue", value);
 					}
-					variablesJSON.add(variableJSON);
+				} else {
+					variableJSON.put("variableValue", null);
 				}
+				variableJSON.put("variableType", vi.getVariableTypeName());
+				variableJSON.put("executionId", vi.getExecutionId());
+//				variableJSON.put("revision", vi.getRevision());
+				variableJSON.put("taskId", vi.getTaskId());
+				variableJSON.put("activityInstanceId", vi.getActivityInstanceId());
+				//variableJSON.put("time", vi.getTime().getTime());
+				if( m_activityNameIdMap.get(vi.getActivityInstanceId()) != null){
+					variableJSON.put("activityName", m_activityNameIdMap.get(vi.getActivityInstanceId()));
+				}else if ( vi.getActivityInstanceId() != null){
+					variableJSON.put("activityName", vi.getActivityInstanceId());
+				}else if ( vi.getTaskId() != null){
+					variableJSON.put("activityName", vi.getTaskId());
+				}else{
+					variableJSON.put("activityName", vi.getActivityInstanceId());
+				}
+				variablesJSON.add(variableJSON);
 			}
 		}
 		List<HistoricDetail> historyVariableList = getPE().getHistoryService().createHistoricDetailQuery().processInstanceId(processInstanceId).variableUpdates().orderByTime().asc().list();
