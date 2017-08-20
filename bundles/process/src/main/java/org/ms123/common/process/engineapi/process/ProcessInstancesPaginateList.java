@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.ms123.common.process.engineapi.AbstractPaginateList;
 import org.ms123.common.process.engineapi.BaseResource;
@@ -57,6 +59,17 @@ public class ProcessInstancesPaginateList extends AbstractPaginateList {
 			responseMap.put("startUserId", processInstance.getStartUserId());
 			processResponseList.add(responseMap);
 		}
+		Collections.sort( processResponseList, new ListMapComparator());
 		return processResponseList;
+	}
+	private class ListMapComparator implements Comparator {
+		public int compare(Object o1, Object o2) {
+			return compare( (Map<String,Object>) o1, (Map<String,Object>) o2);
+		}
+		public int compare(Map<String,Object> m1, Map<String,Object> m2) {
+			Long starttime1 = (Long)m1.get("_startTime");
+			Long starttime2 = (Long)m2.get("_startTime");
+			return starttime1.compareTo(starttime2);
+		}
 	}
 }

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import org.camunda.bpm.engine.history.HistoricActivityInstance;
 import org.camunda.bpm.engine.history.HistoricDetail;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
@@ -176,9 +178,20 @@ public class ProcessInstanceResource extends BaseResource {
 				activitiesJSON.add(activityJSON);
 				m_activityNameIdMap.put(historicActivityInstance.getExecutionId(), historicActivityInstance.getActivityId());
 			}
+			Collections.sort( activitiesJSON, new ListMapComparator());
 		}
 	}
 
+	private class ListMapComparator implements Comparator {
+		public int compare(Object o1, Object o2) {
+			return compare( (Map<String,Object>) o1, (Map<String,Object>) o2);
+		}
+		public int compare(Map<String,Object> m1, Map<String,Object> m2) {
+			Long starttime1 = (Long)m1.get("startTime");
+			Long starttime2 = (Long)m2.get("startTime");
+			return starttime1.compareTo(starttime2);
+		}
+	}
 	private void addVariableList(String processInstanceId, Map<String, Object> responseJSON) {
 		List<HistoricVariableInstance> variableList = getPE().getHistoryService().createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
 		info(this,"variableList:"+variableList);

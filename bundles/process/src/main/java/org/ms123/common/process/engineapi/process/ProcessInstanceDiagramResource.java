@@ -47,7 +47,7 @@ public class ProcessInstanceDiagramResource extends BaseResource {
 			throw new RuntimeException("No process Instance id provided");
 		}
 		ExecutionEntity pi = (ExecutionEntity) getPE().getRuntimeService().createProcessInstanceQuery().processInstanceId(m_processInstanceId).singleResult();
-		if (pi == null) {
+		if (true) {
 			return "data:image/png;base64," + notfound;
 		}
 		ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl) getPE().getRepositoryService()).getDeployedProcessDefinition(pi.getProcessDefinitionId());

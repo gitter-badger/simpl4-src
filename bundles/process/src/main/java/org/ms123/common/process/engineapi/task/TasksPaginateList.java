@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import org.camunda.bpm.engine.form.TaskFormData;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.ProcessEngine;
@@ -49,6 +51,7 @@ public class TasksPaginateList extends AbstractPaginateList {
 			Map<String, Object> taskResponse = new HashMap();
 			taskResponse.put("assignee", task.getAssignee());
 			taskResponse.put("createTime", Util.dateToString(task.getCreateTime()));
+			taskResponse.put("_createTime", task.getCreateTime().getTime());
 			taskResponse.put("delegationState", task.getDelegationState());
 			taskResponse.put("description", task.getDescription());
 			taskResponse.put("dueDate", Util.dateToString(task.getDueDate()));
@@ -70,6 +73,17 @@ public class TasksPaginateList extends AbstractPaginateList {
 			taskResponse.put("processTenantId", pde.getTenantId());
 			responseList.add(taskResponse);
 		}
+		Collections.sort( responseList, new ListMapComparator());
 		return responseList;
+	}
+	private class ListMapComparator implements Comparator {
+		public int compare(Object o1, Object o2) {
+			return compare( (Map<String,Object>) o1, (Map<String,Object>) o2);
+		}
+		public int compare(Map<String,Object> m1, Map<String,Object> m2) {
+			Long starttime1 = (Long)m1.get("_createTime");
+			Long starttime2 = (Long)m2.get("_createTime");
+			return starttime1.compareTo(starttime2);
+		}
 	}
 }
