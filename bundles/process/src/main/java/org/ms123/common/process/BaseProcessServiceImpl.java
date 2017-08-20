@@ -36,6 +36,8 @@ import org.ms123.common.form.FormService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.system.thread.ThreadContext;
+import org.ms123.common.process.jobs.Simpl4JobExecutor;
+import org.ms123.common.process.expressions.GroovyExpressionManager;
 import org.osgi.framework.BundleContext;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -50,7 +52,7 @@ class BaseProcessServiceImpl {
 	private static String BPM_DB = "bpmDB";
 	protected BundleContext bc;
 	protected OrientDBService orientdbService;
-	protected Map<String,ProcessEngine> userProcessEngineMap = new HashMap<String,ProcessEngine>();
+	protected Map<String, ProcessEngine> userProcessEngineMap = new HashMap<String, ProcessEngine>();
 	protected ProcessEngine rootProcessEngine;
 	protected PermissionService permissionService;
 	protected GitService gitService;
@@ -62,27 +64,33 @@ class BaseProcessServiceImpl {
 
 	protected JSONSerializer js = new JSONSerializer();
 
-	public synchronized ProcessEngine getRootProcessEngine(){
-		if( this.rootProcessEngine != null){
+	public synchronized ProcessEngine getRootProcessEngine() {
+		if (this.rootProcessEngine != null) {
 			return this.rootProcessEngine;
 		}
 		OrientGraphFactory f = this.orientdbService.getFactory(BPM_DB);
 		f.setStandardElementConstraints(false);
 
-		this.rootProcessEngine = new OrientdbProcessEngineConfiguration(f).buildProcessEngine();
+		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
+		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
+		c.setJobExecutor(simpl4JobExecutor);
+
+		GroovyExpressionManager groovyExpressionManager = new GroovyExpressionManager();
+		c.setExpressionManager(groovyExpressionManager);
+		this.rootProcessEngine = c.buildProcessEngine();
 		return this.rootProcessEngine;
 	}
 
-	public synchronized ProcessEngine getProcessEngine(){
+	public synchronized ProcessEngine getProcessEngine() {
 		String username = ThreadContext.getThreadContext().getUserName();
 		ProcessEngine pe = this.userProcessEngineMap.get(username);
-		if( pe != null){
+		if (pe != null) {
 			return pe;
 		}
 		OrientGraphFactory f = this.orientdbService.getUserFactory(BPM_DB);
 		f.setStandardElementConstraints(false);
 		pe = new OrientdbProcessEngineConfiguration(f).buildProcessEngine();
-		this.userProcessEngineMap.put(username,pe);
+		this.userProcessEngineMap.put(username, pe);
 		return pe;
 	}
 }
