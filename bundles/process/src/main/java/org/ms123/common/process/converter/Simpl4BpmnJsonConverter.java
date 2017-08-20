@@ -75,8 +75,8 @@ public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
 			if (process.getId() == null) {
 				process.setId(getBasename(path));
 			}
-			process.getExecutionListeners().add(createListener("start", "org.ms123.common.workflow.ProcessStartExecutionListener"));
-			process.getExecutionListeners().add(createListener("end", "org.ms123.common.workflow.ProcessEndExecutionListener"));
+			process.getExecutionListeners().add(createListener("start", "org.ms123.common.process.listener.ProcessStartExecutionListener"));
+			process.getExecutionListeners().add(createListener("end", "org.ms123.common.process.listener.ProcessEndExecutionListener"));
 		}
 		BpmnXMLConverter xmlConverter = new BpmnXMLConverter();
 		byte[] bpmnBytes = xmlConverter.convertToXML(bpmnModel);

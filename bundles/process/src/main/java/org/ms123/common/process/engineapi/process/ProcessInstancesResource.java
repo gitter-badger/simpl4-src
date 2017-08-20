@@ -25,6 +25,7 @@ import org.camunda.bpm.engine.impl.HistoricProcessInstanceQueryProperty;
 import org.camunda.bpm.engine.query.QueryProperty;
 import org.ms123.common.process.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
+import static com.jcabi.log.Logger.info;
 
 /**
  */
@@ -59,6 +60,7 @@ public class ProcessInstancesResource extends BaseResource {
 	}
 
 	public Map getProcessInstances() {
+		info(this,"getProcessInstances:"+m_processDefinitionId+"/"+m_finished+"/"+m_unfinished);
 		HistoricProcessInstanceQuery query = getPE().getHistoryService().createHistoricProcessInstanceQuery();
 		//@@@MS query = query.processInstanceTenantId(m_namespace);
 		if (m_unfinished != null) {

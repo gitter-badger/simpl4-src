@@ -28,6 +28,7 @@ import org.camunda.bpm.engine.impl.ProcessDefinitionQueryImpl;
 import org.camunda.bpm.engine.query.QueryProperty;
 import org.camunda.bpm.engine.repository.ProcessDefinitionQuery;
 import org.apache.commons.lang3.StringUtils;
+import static com.jcabi.log.Logger.info;
 
 /**
  */

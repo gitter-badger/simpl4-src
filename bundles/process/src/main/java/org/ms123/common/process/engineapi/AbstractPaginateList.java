@@ -24,6 +24,7 @@ import java.util.HashMap;
 import org.camunda.bpm.engine.impl.AbstractQuery;
 import org.camunda.bpm.engine.query.Query;
 import org.camunda.bpm.engine.query.QueryProperty;
+import static com.jcabi.log.Logger.info;
 
 /**
  */
@@ -59,6 +60,7 @@ public abstract class AbstractPaginateList {
 			}
 		}
 		// Get result and set pagination parameters
+		info(this,"paginateList");
 		List list = processList(query.listPage(start, size));
 		Map response = new HashMap();
 		response.put("start", start);
