@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.List;
 
 public interface ProcessService {
+	public static final String PROCESS_ENGINE = "processEngine";
+
 	public ProcessEngine getRootProcessEngine();
 	public ProcessEngine getProcessEngine();
 	public FormService getFormService();

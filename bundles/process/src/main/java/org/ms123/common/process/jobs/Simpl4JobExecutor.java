@@ -32,6 +32,7 @@ import org.camunda.bpm.engine.runtime.*;
 import org.camunda.bpm.engine.runtime.Job;
 import org.ms123.common.permission.api.PermissionService;
 import org.osgi.service.event.EventAdmin;
+import org.camunda.bpm.engine.impl.ProcessEngineImpl;
 import static com.jcabi.log.Logger.info;
 
 /**
@@ -56,6 +57,7 @@ public class Simpl4JobExecutor extends DefaultJobExecutor {
 	}
 
 	public void setProcessEngine(ProcessEngine pe) {
+		registerProcessEngine((ProcessEngineImpl)pe);
 		m_pe = pe;
 	}
 

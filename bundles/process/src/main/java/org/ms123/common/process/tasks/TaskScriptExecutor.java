@@ -1,7 +1,7 @@
 /**
  * This file is part of SIMPL4(http://simpl4.org).
  *
- * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
  *
  * SIMPL4 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 package org.ms123.common.process.tasks;
 
 import flexjson.*;
-import java.util.*;
 import java.math.BigInteger;
-import javax.transaction.UserTransaction;
+import java.util.*;
+import org.apache.commons.beanutils.*;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.camunda.bpm.engine.delegate.VariableScope;
@@ -33,15 +33,9 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
-import org.apache.commons.beanutils.*;
-import org.ms123.common.data.api.DataLayer;
-import org.ms123.common.data.api.SessionContext;
-import org.ms123.common.store.StoreDesc;
 import org.ms123.common.process.tasks.GroovyTaskDsl;
 import org.osgi.service.event.EventAdmin;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.transaction.TransactionStatus;
+import static com.jcabi.log.Logger.info;
 
 @SuppressWarnings("unchecked")
 public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate {
@@ -49,7 +43,6 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 	private Expression script;
 
 	public TaskScriptExecutor() {
-		m_js.prettyPrint(true);
 	}
 
 	@Override
@@ -63,7 +56,7 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 		_execute(tc, null);
 	}
 
-	public void execute(String namespace, String processDefinitionKey, String pid, String script, final Map addVars, VariableScope variableScope, String hint, DataLayer dataLayer) {
+	public void execute(String namespace, String processDefinitionKey, String pid, String script, final Map addVars, VariableScope variableScope, String hint) {
 		if (script == null) {
 			return;
 		}
@@ -74,13 +67,11 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 		tc.setPid(pid);
 		tc.setScript(script);
 		tc.setExecution(variableScope);
-		setDataLayer(dataLayer);
 
 		_execute(tc, addVars);
 	}
 
 	private void _execute(TaskContext tc, Map addVars) {
-		m_js.prettyPrint(true);
 		debug("TaskScriptExecutor._execute:" + tc.getScript());
 		printInfo(tc);
 		Map<String, Set<String>> scriptVars = GroovyVariablesVisitor.getVariables(tc.getScript());
@@ -95,7 +86,6 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 		}
 
 		showVariablenNames(tc);
-		SessionContext sc = getSessionContext(tc);
 		Map<String, Object> vars = new HashMap(tc.getExecution().getVariables());
 		if (addVars != null) {
 			vars.putAll(addVars);
@@ -105,39 +95,28 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 		vars.put("lvars", lvars);
 		vars.put("gvars", gvars);
 		vars.put("execution", tc.getExecution());
-		GroovyTaskDsl dsl = getGroovyTaskDsl(tc, sc, vars);
-		UserTransaction tx = sc.getUserTransaction();
+		GroovyTaskDsl dsl = getGroovyTaskDsl(tc, null, vars);
 		Object ret = null;
 		try {
-			debug("transaction.status:" + tx.getStatus() + "/" + org.ms123.common.system.thread.ThreadContext.getThreadContext());
 			ret = dsl.eval(tc.getScript());
-			debug("TaskScriptExecutor.gvars:" + gvars);
-			debug("TaskScriptExecutor.bindingVariables:" + dsl.getVariables());
+			debug("gvars:" + gvars);
+			debug("bindingVariables:" + dsl.getVariables());
 			tc.getExecution().setVariables(gvars);
 			tc.getExecution().setVariablesLocal(lvars);
 			for (String varName : scriptVars.get("unbound")) {
 				if (!"gvars".equals(varName) && !"lvars".equals(varName) && dsl.hasVariable(varName)) {
 					Object value = dsl.getVariable(varName);
 					BigInteger dValueChecksum = checksum(value);
-					log("\tVAR(" + varName + "):" + value + " -> " + dValueChecksum + " , " + unboundChecksums.get(varName));
+					log("\tVariable(" + varName + "):" + value + " -> " + dValueChecksum + " , " + unboundChecksums.get(varName));
 					if (!dValueChecksum.equals(unboundChecksums.get(varName))) {
-						log("\t\tsettingProcessVariable:" + varName + " -> " + value);
+						log("\t\tSettingProcessVariable:" + varName + " -> " + value);
 						tc.getExecution().setVariable(varName, value);
 					}
 				}
 			}
-			for (Object o : dsl.getCreatedObjects()) {
-				log(tc, "createdObject:" + o);
-				sc.retrieve(o);
-			}
-			for (Object o : dsl.getQueriedObjects()) {
-				log(tc, "queriedObject:" + o);
-				sc.retrieve(o);
-			}
 		} catch (Exception e) {
-			sc.handleException(tx, e);
+			e.printStackTrace();
 		} finally {
-			sc.handleFinally(tx);
 		}
 	}
 }

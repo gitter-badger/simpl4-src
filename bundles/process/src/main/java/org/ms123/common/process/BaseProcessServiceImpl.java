@@ -74,10 +74,15 @@ class BaseProcessServiceImpl {
 		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
 		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
 		c.setJobExecutor(simpl4JobExecutor);
+		c.setJobExecutorActivate(true);
+		simpl4JobExecutor.setAutoActivate(true);
 
 		GroovyExpressionManager groovyExpressionManager = new GroovyExpressionManager();
 		c.setExpressionManager(groovyExpressionManager);
 		this.rootProcessEngine = c.buildProcessEngine();
+		c.getBeans().put(ProcessService.PROCESS_ENGINE, this.rootProcessEngine);
+		simpl4JobExecutor.setProcessEngine( this.rootProcessEngine);
+
 		return this.rootProcessEngine;
 	}
 
@@ -89,7 +94,20 @@ class BaseProcessServiceImpl {
 		}
 		OrientGraphFactory f = this.orientdbService.getUserFactory(BPM_DB);
 		f.setStandardElementConstraints(false);
-		pe = new OrientdbProcessEngineConfiguration(f).buildProcessEngine();
+
+		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
+		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
+		c.setJobExecutor(simpl4JobExecutor);
+		c.setJobExecutorActivate(true);
+		simpl4JobExecutor.setAutoActivate(true);
+
+		GroovyExpressionManager groovyExpressionManager = new GroovyExpressionManager();
+		c.setExpressionManager(groovyExpressionManager);
+
+		pe  = c.buildProcessEngine();
+		simpl4JobExecutor.setProcessEngine( pe);
+		c.getBeans().put(ProcessService.PROCESS_ENGINE, pe);
+
 		this.userProcessEngineMap.put(username, pe);
 		return pe;
 	}

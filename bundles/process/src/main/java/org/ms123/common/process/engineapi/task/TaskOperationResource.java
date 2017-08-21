@@ -173,7 +173,9 @@ public class TaskOperationResource extends BaseResource {
 			}
 
 			info(this,"newVariables:"+js.deepSerialize(newVariables));
+			info(this,"task.complete:"+m_taskId);
 			getPE().getTaskService().complete(m_taskId, newVariables);
+			info(this,"task.completed:"+m_taskId);
 		} else if ("assign".equals(m_operation)) {
 			String userId = org.ms123.common.system.thread.ThreadContext.getThreadContext().getUserName();
 			getPE().getTaskService().setAssignee(m_taskId, userId);

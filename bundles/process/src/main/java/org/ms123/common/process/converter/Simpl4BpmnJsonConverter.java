@@ -62,7 +62,7 @@ public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
 		DI_RECTANGLES.add("DocumentTask");
 	}
 
-	private static String TASKPACKAGE="org.ms123.common.workflow.tasks";
+	private static String TASKPACKAGE="org.ms123.common.process.tasks";
 	public  static String getFullnameForTask(String clazz){
 		return TASKPACKAGE + "." + clazz;
 	}

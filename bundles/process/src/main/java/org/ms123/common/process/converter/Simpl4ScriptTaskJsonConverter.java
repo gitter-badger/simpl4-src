@@ -58,7 +58,7 @@ public class Simpl4ScriptTaskJsonConverter extends BaseBpmnJsonConverter {
 		task.setImplementation(clazz);
 		FieldExtension field = new FieldExtension();
 		field.setFieldName(SCRIPT);
-		field.setStringValue(checkNull2(SCRIPT, propMap.get(SCRIPT_PROP)));
+		field.setExpression(checkNull2(SCRIPT, propMap.get(SCRIPT_PROP)));
 		task.getFieldExtensions().add(field);
 		return task;
 	}

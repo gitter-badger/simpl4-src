@@ -1,7 +1,7 @@
 /**
  * This file is part of SIMPL4(http://simpl4.org).
  *
- * 	Copyright [2014] [Manfred Sattler] <manfred@ms123.org>
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
  *
  * SIMPL4 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.dmn.DmnService;
 import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.process.tasks.GroovyTaskDsl;
+import org.ms123.common.process.ProcessService;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.docbook.DocbookService;
 import org.ms123.common.rpc.CallService;
@@ -71,13 +72,12 @@ import java.util.Collections;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import groovy.lang.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings("unchecked")
 public abstract class TaskBaseExecutor implements Constants {
-	private static final Logger m_logger = LoggerFactory.getLogger(TaskBaseExecutor.class);
-
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected JSONSerializer m_js = new JSONSerializer();
 	private DataLayer m_dataLayer;
@@ -264,9 +264,9 @@ public abstract class TaskBaseExecutor implements Constants {
 		if (_execution instanceof DelegateExecution) {
 			DelegateExecution execution = (DelegateExecution) _execution;
 			String processDefinitionId = ((ExecutionEntity) execution).getProcessDefinitionId();
-			dsl = new GroovyTaskDsl(sc, getEventAdmin(execution), tc.getTenantId(), tc.getProcessDefinitionKey(), execution.getProcessInstanceId(), getInfo(tc), vars);
+			dsl = new GroovyTaskDsl(getEventAdmin(execution), tc.getTenantId(), tc.getProcessDefinitionKey(), execution.getProcessInstanceId(), getInfo(tc), vars);
 		} else {
-			dsl = new GroovyTaskDsl(sc, null, tc.getTenantId(), tc.getProcessDefinitionKey(), tc.getPid(), tc.getHint(), vars);
+			dsl = new GroovyTaskDsl(null, tc.getTenantId(), tc.getProcessDefinitionKey(), tc.getPid(), tc.getHint(), vars);
 		}
 		return dsl;
 	}
@@ -304,7 +304,7 @@ public abstract class TaskBaseExecutor implements Constants {
 	protected void setProcessDefinition(TaskContext tc, VariableScope execution) {
 		if (execution instanceof DelegateExecution) {
 			Map beans = Context.getProcessEngineConfiguration().getBeans();
-			ProcessEngine pe = null;//@@@MS(ProcessEngine) beans.get(WorkflowService.PROCESS_ENGINE); //@@@MS
+			ProcessEngine pe = (ProcessEngine) beans.get(ProcessService.PROCESS_ENGINE);
 			String processDefinitionId = ((ExecutionEntity) execution).getProcessDefinitionId();
 			RepositoryService repositoryService = pe.getRepositoryService();
 			ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
@@ -342,7 +342,6 @@ public abstract class TaskBaseExecutor implements Constants {
 		return script.run();
 	}
 
-
 	private String getString(TaskContext tc, String key, String expr) {
 		return expr;
 	}
@@ -375,7 +374,7 @@ public abstract class TaskBaseExecutor implements Constants {
 	}
 
 	protected boolean isEmpty(Object s) {
-		if (s == null || "".equals(((String)s).trim())) {
+		if (s == null || "".equals(((String) s).trim())) {
 			return true;
 		}
 		return false;
@@ -399,7 +398,7 @@ public abstract class TaskBaseExecutor implements Constants {
 		return BigInteger.ZERO;
 	}
 
-	protected String getValueFromRegistry( String key ){
+	protected String getValueFromRegistry(String key) {
 		return getRegistryService().get(key);
 	}
 
@@ -567,32 +566,31 @@ public abstract class TaskBaseExecutor implements Constants {
 		}
 	}
 
-
 	protected void log(String message) {
-		m_logger.info(message);
+		info(this, message);
 		System.err.println(message);
 	}
 
 	protected void debug(String message) {
-		m_logger.debug(message);
+		com.jcabi.log.Logger.debug(this, message);
 		System.err.println(message);
 	}
 
 	protected void log(TaskContext tc, String message) {
 		message = getlogMessage(tc, message);
-		m_logger.info(message);
+		info(this, message);
 		System.err.println(message);
 	}
 
 	protected void debug(TaskContext tc, String message) {
 		message = getlogMessage(tc, message);
-		m_logger.debug(message);
+		com.jcabi.log.Logger.debug(this, message);
 		System.err.println(message);
 	}
 
 	protected void error(TaskContext tc, String message, Exception e) {
 		message = getlogMessage(tc, message);
-		m_logger.error(message, e);
+		com.jcabi.log.Logger.error(this, message, e);
 		System.err.println(message);
 		e.printStackTrace();
 	}

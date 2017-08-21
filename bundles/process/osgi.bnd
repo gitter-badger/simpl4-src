@@ -9,5 +9,6 @@ Bundle-Name: ProcessService Bundle
 Bundle-SymbolicName:org.ms123.common.process
 Bundle-ClassPath: .
 Include-Resource: =src/main/resources/messages
+DynamicImport-Package: *
 Service-Component: *
 -metatype: *
