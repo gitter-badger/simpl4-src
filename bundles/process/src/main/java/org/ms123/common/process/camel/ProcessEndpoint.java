@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import flexjson.*;
 import org.apache.camel.spi.UriEndpoint;
-import org.ms123.common.process.camel.base.BaseEndpoint;
+import org.apache.camel.impl.DefaultEndpoint;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -38,7 +38,7 @@ import static com.jcabi.log.Logger.error;
  */
 @SuppressWarnings({"unchecked","deprecation"})
 @UriEndpoint(scheme = "process", title = "Process", syntax = "process:name", consumerClass = ProcessConsumer.class)
-public class ProcessEndpoint extends BaseEndpoint {
+public class ProcessEndpoint extends DefaultEndpoint {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private RuntimeService m_runtimeService;
@@ -68,7 +68,6 @@ public class ProcessEndpoint extends BaseEndpoint {
 		super(uri, camelContext);
 		m_runtimeService = processService.getProcessEngine().getRuntimeService();
 		m_historyService = processService.getProcessEngine().getHistoryService();
-		setRuntimeService(m_runtimeService);
 		m_permissionService = ps;
 		this.processService = processService;
 	}

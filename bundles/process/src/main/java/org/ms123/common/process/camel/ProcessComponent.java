@@ -29,11 +29,11 @@ import org.ms123.common.process.api.ProcessService;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
-import org.ms123.common.process.camel.base.BaseComponent;
+import org.apache.camel.impl.DefaultComponent;
 
 /**
  */
-public class ProcessComponent extends BaseComponent {
+public class ProcessComponent extends DefaultComponent {
 
 	private ProcessService processService;
 

@@ -74,7 +74,6 @@ import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.beanutils.ConvertUtils;
-import org.ms123.common.process.camel.base.BaseProducer;
 import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
 import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
 import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
@@ -88,19 +87,15 @@ import static org.ms123.common.system.history.HistoryService.ACC_ACTIVITI_ID;
 import static org.ms123.common.system.history.HistoryService.ACC_ROUTE_INSTANCE_ID;
 import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_ACTIVITY_KEY;
 import static org.ms123.common.system.history.HistoryService.CAMEL_ROUTE_DEFINITION_KEY;
+import org.apache.camel.impl.DefaultProducer;
 
-import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_ACTIVITY_ID;
-import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_EXECUTION_ID;
-import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_BUSINESS_KEY;
-import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_INSTANCE_ID;
-import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_ACTIVITY_NAME;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings({"unchecked", "deprecation"})
-public class ProcessProducer extends BaseProducer implements ProcessConstants {
+public class ProcessProducer extends DefaultProducer implements ProcessConstants {
 
 	protected JSONSerializer js = new JSONSerializer();
 	protected JSONDeserializer ds = new JSONDeserializer();
@@ -137,7 +132,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 	private String activitiKey;
 
 	public ProcessProducer(ProcessEndpoint endpoint, ProcessService processService, PermissionService permissionService) {
-		super(endpoint, -1, 100);
+		super(endpoint);
 		this.endpoint = endpoint;
 		this.permissionService = permissionService;
 		this.processService = processService;
@@ -149,7 +144,6 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 		this.processService = (ProcessService) endpoint.getCamelContext().getRegistry().lookupByName(ProcessService.class.getName());
 		info(this,"ProcessProducer.camelService:" + this.camelService);
-		setRuntimeService(this.runtimeService);
 		String[] path = endpoint.getEndpointKey().split(":");
 		this.operation = ProcessOperation.valueOf(path[1].replace("//", ""));
 		this.namespace = endpoint.getNamespace();
