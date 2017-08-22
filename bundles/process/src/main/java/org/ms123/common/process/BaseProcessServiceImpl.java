@@ -25,20 +25,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.orientdb.OrientdbProcessEngineConfiguration;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngineConfiguration;
-import org.ms123.common.git.GitService;
 import org.ms123.common.data.api.DataLayer;
-import org.osgi.service.event.EventAdmin;
-import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.form.FormService;
+import org.ms123.common.git.GitService;
+import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
+import org.ms123.common.process.expressions.GroovyExpressionManager;
+import org.ms123.common.process.jobs.Simpl4JobExecutor;
+import org.ms123.common.process.listener.OSGiEventDistributor;
+import org.ms123.common.process.listener.RegisterAllBpmnParseListener;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.system.thread.ThreadContext;
-import org.ms123.common.process.jobs.Simpl4JobExecutor;
-import org.ms123.common.process.expressions.GroovyExpressionManager;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.event.EventAdmin;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -96,6 +99,7 @@ class BaseProcessServiceImpl {
 		f.setStandardElementConstraints(false);
 
 		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
+		addEventDistributor( c, username);
 		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
 		c.setJobExecutor(simpl4JobExecutor);
 		c.setJobExecutorActivate(true);
@@ -110,6 +114,19 @@ class BaseProcessServiceImpl {
 
 		this.userProcessEngineMap.put(username, pe);
 		return pe;
+	}
+
+	private void addEventDistributor(OrientdbProcessEngineConfiguration c, String tenant){
+		OSGiEventDistributor dis1 = new OSGiEventDistributor(this.eventAdmin, tenant);
+		OSGiEventDistributor dis2 = new OSGiEventDistributor(this.eventAdmin, tenant);
+		RegisterAllBpmnParseListener allParseListener = new RegisterAllBpmnParseListener( dis1, dis2);
+
+  	List<BpmnParseListener> preParseListeners = c.getCustomPreBPMNParseListeners();
+    if(preParseListeners == null) {
+      preParseListeners = new ArrayList<BpmnParseListener>();
+    }
+    preParseListeners.add(allParseListener);
+    c.setCustomPreBPMNParseListeners(preParseListeners);
 	}
 }
 

@@ -10,6 +10,7 @@ import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.camunda.bpm.engine.delegate.TaskListener;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+import static com.jcabi.log.Logger.info;
 
 /**
  * @author Ronny Bräunlich
@@ -19,9 +20,11 @@ public class OSGiEventDistributor implements TaskListener, ExecutionListener, Se
 	private static final long serialVersionUID = -3778622638807349820L;
 
 	private EventAdmin eventAdmin;
+	private String tenant;
 
-	public OSGiEventDistributor(EventAdmin eventAdmin) {
+	public OSGiEventDistributor(EventAdmin eventAdmin, String tenant) {
 		this.eventAdmin = eventAdmin;
+		this.tenant = tenant;
 	}
 
 	@Override
@@ -39,13 +42,15 @@ public class OSGiEventDistributor implements TaskListener, ExecutionListener, Se
 	private Event createEvent(DelegateTask delegateTask) {
 		Dictionary<String, String> properties = new Hashtable<String, String>();
 		BusinessProcessEventPropertiesFiller.fillDictionary(properties, delegateTask);
-		return new Event(Topics.TASK_EVENT_TOPIC, properties);
+info(this,"OSGiEventDistributor.createTaskEvent:"+properties);
+		return new Event(Topics.TASK_EVENT_TOPIC+"/"+this.tenant, properties);
 	}
 
 	private Event createEvent(DelegateExecution execution) {
 		Dictionary<String, String> properties = new Hashtable<String, String>();
 		BusinessProcessEventPropertiesFiller.fillDictionary(properties, execution);
-		return new Event(Topics.EXECUTION_EVENT_TOPIC, properties);
+info(this,"OSGiEventDistributor.createExecutionEvent:"+properties);
+		return new Event(Topics.EXECUTION_EVENT_TOPIC+"/"+this.tenant, properties);
 	}
 }
 
