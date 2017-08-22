@@ -100,7 +100,7 @@ import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings({"unchecked", "deprecation"})
-public class ActivitiProducer extends BaseProducer implements ActivitiConstants {
+public class ProcessProducer extends BaseProducer implements ProcessConstants {
 
 	protected JSONSerializer js = new JSONSerializer();
 	protected JSONDeserializer ds = new JSONDeserializer();
@@ -114,8 +114,8 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 	private CamelService camelService;
 	private ProcessService processService;
 
-	private ActivitiOperation operation;
-	private ActivitiEndpoint endpoint;
+	private ProcessOperation operation;
+	private ProcessEndpoint endpoint;
 
 	private Map<String, String> processCriteria;
 	private Map<String, String> taskCriteria;
@@ -137,7 +137,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 	private Map options;
 	private String activitiKey;
 
-	public ActivitiProducer(ActivitiEndpoint endpoint, WorkflowService workflowService, PermissionService permissionService) {
+	public ProcessProducer(ProcessEndpoint endpoint, WorkflowService workflowService, PermissionService permissionService) {
 		super(endpoint, -1, 100);
 		this.endpoint = endpoint;
 		this.permissionService = permissionService;
@@ -149,10 +149,10 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 		this.formService = workflowService.getProcessEngine().getFormService();
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 		this.processService = (ProcessService) endpoint.getCamelContext().getRegistry().lookupByName(ProcessService.class.getName());
-		info(this,"ActivitiProducer.camelService:" + this.camelService);
+		info(this,"ProcessProducer.camelService:" + this.camelService);
 		setRuntimeService(this.runtimeService);
 		String[] path = endpoint.getEndpointKey().split(":");
-		this.operation = ActivitiOperation.valueOf(path[1].replace("//", ""));
+		this.operation = ProcessOperation.valueOf(path[1].replace("//", ""));
 		this.namespace = endpoint.getNamespace();
 		this.signalName = endpoint.getSignalName();
 		this.headerFields = endpoint.getHeaderFields();
@@ -181,7 +181,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 		if (isEmpty(this.namespace)) {
 			this.namespace = (String) exchange.getProperty("_namespace");
 		}
-		info(this,"ActivitiProducer.operation:" + this.operation+"/namespace:"+this.namespace);
+		info(this,"ProcessProducer.operation:" + this.operation+"/namespace:"+this.namespace);
 		invokeOperation(this.operation, exchange);
 		/* final CamelService camelService = (CamelService) exchange.getContext().getRegistry().lookupByName(CamelService.class.getName());
 		 exchange.setProperty(WORKFLOW_ACTIVITY_NAME, this.activityId);
@@ -196,7 +196,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 	 * @param exchange
 	 * @throws Exception
 	 */
-	private void invokeOperation(ActivitiOperation operation, Exchange exchange) throws Exception {
+	private void invokeOperation(ProcessOperation operation, Exchange exchange) throws Exception {
 		switch (operation) {
 		case sendMessageEvent:
 			doSendMessageEvent(exchange);
@@ -223,7 +223,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 			doExecuteTaskOperation(exchange);
 			break;
 		default:
-			throw new RuntimeException("ActivitiProducer.Operation not supported. Value: " + operation);
+			throw new RuntimeException("ProcessProducer.Operation not supported. Value: " + operation);
 		}
 	}
 
@@ -634,7 +634,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 			return InvokerHelper.createScript(groovyClassLoader.parseClass(gcs,false), new Binding());
 		}catch(Exception e){
 			e.printStackTrace();
-			throw new RuntimeException("ActivitiProducer.parse:"+e.getMessage()+" -> "+ expr);
+			throw new RuntimeException("ProcessProducer.parse:"+e.getMessage()+" -> "+ expr);
 		}
 	}
 
@@ -750,7 +750,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 			List<ProcessInstance> executionList = (List) eq.list();
 			info(this,"getProcessInstances:" + executionList);
 			if (exception && (executionList == null || executionList.size() == 0)) {
-				throw new RuntimeException("ActivitiProducer.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
+				throw new RuntimeException("ProcessProducer.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
 			}
 			return executionList;
 		}
@@ -822,7 +822,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 
 		ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processInstance.getProcessDefinitionId()).singleResult();
 		if (processDefinition == null) {
-			throw new RuntimeException("ActivitiProducer:getProcessDefinition:processDefinition not found:" + processInstance);
+			throw new RuntimeException("ProcessProducer:getProcessDefinition:processDefinition not found:" + processInstance);
 		}
 		info(this,"getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
 		return processDefinition;
@@ -857,7 +857,7 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 	private void createLogEntry(Exchange exchange, ProcessDefinition processDefinition, Exception e) {
 		EventAdmin eventAdmin = (EventAdmin) exchange.getContext().getRegistry().lookupByName(EventAdmin.class.getName());
 		Map props = new HashMap();
-		if (this.operation == ActivitiOperation.startProcess) {
+		if (this.operation == ProcessOperation.startProcess) {
 			String key = processDefinition.getTenantId() + "/" + processDefinition.getId();
 			props.put(HISTORY_KEY, key);
 			props.put(HISTORY_TYPE, HISTORY_ACTIVITI_START_PROCESS_EXCEPTION);
@@ -963,8 +963,8 @@ public class ActivitiProducer extends BaseProducer implements ActivitiConstants 
 		return list;
 	}
 
-	protected ActivitiEndpoint getActivitiEndpoint() {
-		return (ActivitiEndpoint) getEndpoint();
+	protected ProcessEndpoint getProcessEndpoint() {
+		return (ProcessEndpoint) getEndpoint();
 	}
 }
 

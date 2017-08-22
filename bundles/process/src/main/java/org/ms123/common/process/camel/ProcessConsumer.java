@@ -36,13 +36,13 @@ import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.warn;
 
 @SuppressWarnings({"unchecked","deprecation"})
-public class ActivitiConsumer extends DefaultConsumer  {
+public class ProcessConsumer extends DefaultConsumer  {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private JSONSerializer ser = new JSONSerializer();
-	private final ActivitiEndpoint endpoint;
+	private final ProcessEndpoint endpoint;
 
-	public ActivitiConsumer(ActivitiEndpoint endpoint, Processor processor) {
+	public ProcessConsumer(ProcessEndpoint endpoint, Processor processor) {
 		super(endpoint, processor);
 	}
 

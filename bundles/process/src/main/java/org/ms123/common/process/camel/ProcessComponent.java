@@ -33,13 +33,13 @@ import org.ms123.common.process.camel.base.BaseComponent;
 
 /**
  */
-public class ActivitiComponent extends BaseComponent {
+public class ProcessComponent extends BaseComponent {
 
 	private WorkflowService workflowService;
 
 	private PermissionService permissionService;
 
-	public ActivitiComponent() {
+	public ProcessComponent() {
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class ActivitiComponent extends BaseComponent {
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
 		CamelContext cc = getCamelContext();
 		getServices(cc);
-		ActivitiEndpoint endpoint = new ActivitiEndpoint(uri, cc, this.workflowService, this.permissionService);
+		ProcessEndpoint endpoint = new ProcessEndpoint(uri, cc, this.workflowService, this.permissionService);
 		info(this,"createEndpoint("+uri+"):"+parameters);
 		setProperties(endpoint, parameters);
 		return endpoint;

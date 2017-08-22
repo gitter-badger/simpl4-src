@@ -37,8 +37,8 @@ import static com.jcabi.log.Logger.error;
 /**
  */
 @SuppressWarnings({"unchecked","deprecation"})
-@UriEndpoint(scheme = "activiti", title = "Activiti", syntax = "activiti:name", consumerClass = ActivitiConsumer.class)
-public class ActivitiEndpoint extends BaseEndpoint {
+@UriEndpoint(scheme = "process", title = "Process", syntax = "process:name", consumerClass = ProcessConsumer.class)
+public class ProcessEndpoint extends BaseEndpoint {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private RuntimeService m_runtimeService;
@@ -64,7 +64,7 @@ public class ActivitiEndpoint extends BaseEndpoint {
 	private PermissionService m_permissionService;
 	private WorkflowService m_workflowService;
 
-	public ActivitiEndpoint(String uri, CamelContext camelContext, WorkflowService ws, PermissionService ps) {
+	public ProcessEndpoint(String uri, CamelContext camelContext, WorkflowService ws, PermissionService ps) {
 		super(uri, camelContext);
 		m_runtimeService = ws.getProcessEngine().getRuntimeService();
 		m_historyService = ws.getProcessEngine().getHistoryService();
@@ -74,13 +74,13 @@ public class ActivitiEndpoint extends BaseEndpoint {
 	}
 
 	public Producer createProducer() throws Exception {
-		info(this, "ActivitiEndpoint.createProducer");
-		return new org.ms123.common.process.camel.ActivitiProducer(this, m_workflowService, m_permissionService);
+		info(this, "ProcessEndpoint.createProducer");
+		return new org.ms123.common.process.camel.ProcessProducer(this, m_workflowService, m_permissionService);
 	}
 
 	public Consumer createConsumer(Processor processor) throws Exception {
-		info(this, "ActivitiEndpoint.createConsumer");
-		ActivitiConsumer consumer = new ActivitiConsumer(this, processor);
+		info(this, "ProcessEndpoint.createConsumer");
+		ProcessConsumer consumer = new ProcessConsumer(this, processor);
 		configureConsumer(consumer);
 		return consumer;
 	}
@@ -88,7 +88,7 @@ public class ActivitiEndpoint extends BaseEndpoint {
 		return true;
 	}
 	public void configureProperties(Map<String, Object> options) {
-		info(this, "ActivitiEndpoint:" + options);
+		info(this, "ProcessEndpoint:" + options);
 		m_options = options;
 	}
 

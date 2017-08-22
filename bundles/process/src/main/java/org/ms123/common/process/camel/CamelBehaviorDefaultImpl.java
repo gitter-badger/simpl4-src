@@ -54,15 +54,15 @@ public class CamelBehaviorDefaultImpl extends org.ms123.common.process.camel.bas
 		//info(this,"camelContextObj:" + camelContextObj);
 	}
 
-	protected ActivitiEndpoint getEndpoint(String key) {
+	protected ProcessEndpoint getEndpoint(String key) {
 		info(this,"getEndpoint.key:" + key);
 		for (Endpoint e : camelContextObj.getEndpoints()) {
 			info(this,"\tgetEndpoint.e:" + e + "/" + e.getEndpointKey());
-			if (e.getEndpointKey().equals(key) && (e instanceof ActivitiEndpoint)) {
-				return (ActivitiEndpoint) e;
+			if (e.getEndpointKey().equals(key) && (e instanceof ProcessEndpoint)) {
+				return (ProcessEndpoint) e;
 			}
 		}
-		throw new RuntimeException("Activiti endpoint not defined for " + key);
+		throw new RuntimeException("Process endpoint not defined for " + key);
 	}
 
 	protected void setTenantAndName(ActivityExecution execution) {

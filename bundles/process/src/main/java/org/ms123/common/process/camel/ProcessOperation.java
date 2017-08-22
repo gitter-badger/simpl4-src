@@ -18,19 +18,8 @@
  */
 package org.ms123.common.process.camel;
 
-public interface ActivitiConstants {
+public enum ProcessOperation {
 
-	public static final String NAMESPACE = "namespace";
-	public static final String PROCESS_DEFINITION_ID = "processDefinitionId";
-	public static final String PROCESS_DEFINITION_KEY = "processDefinitionKey";
-	public static final String PROCESS_INSTANCE_ID = "processInstanceId";
-	public static final String BUSINESS_KEY = "businessKey";
-	public static final String ACTIVITY_ID = "activityId";
-	public static final String EXECUTION_ID = "executionId";
-	public static final String PROCESSVARIABLE = "processVariable";
-	public static final String FINISHED = "finished";
-	public static final String EVENTS = "events";
-
-	public static final String LAST_ERROR = "lastError";
+	sendMessageEvent, sendSignalEvent, sendSignalToReceiveTask, startProcess, getProcessVariables, queryProcessInstances, queryTasks, executeTaskOperation
 }
 
