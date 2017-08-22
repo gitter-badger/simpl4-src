@@ -83,7 +83,8 @@ public class BaseProducer extends DefaultProducer {
 
 		if (returnVars != null && returnVars.size() > 0) {
 
-			Map<String, Object> processVariables = ((ExecutionEntity) pi).getVariableValues();
+//			Map<String, Object> processVariables = ((ExecutionEntity) pi).getVariableValues();
+			Map<String, Object> processVariables = runtimeService.getVariables(pi.getProcessInstanceId());
 			if (processVariables != null) {
 				for (String variableName : returnVars.keySet()) {
 					if (processVariables.containsKey(variableName)) {

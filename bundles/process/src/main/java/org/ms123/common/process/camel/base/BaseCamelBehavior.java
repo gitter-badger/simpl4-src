@@ -176,13 +176,11 @@ public abstract class BaseCamelBehavior extends AbstractBpmnActivityBehavior imp
   }
 
   protected String getProcessDefinitionKey(ActivityExecution execution) {
-    PvmProcessDefinition processDefinition = execution.getActivity().getProcessDefinition();
-    return processDefinition.getKey();
+    return execution.getProcessDefinitionId();
+//@@@MS    PvmProcessDefinition processDefinition = execution.getActivity().getProcessDefinition();
+//@@@MS    return processDefinition.getKey();
   }
   
-  protected boolean isASync(ActivityExecution execution) {
-     return execution.getActivity().isAsync();
-  }
   
   abstract protected void setAppropriateCamelContext(ActivityExecution execution);
   

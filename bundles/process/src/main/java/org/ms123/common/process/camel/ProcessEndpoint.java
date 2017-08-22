@@ -23,7 +23,7 @@ import org.camunda.bpm.engine.HistoryService;
 import org.apache.camel.*;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.ms123.common.permission.api.PermissionService;
-import org.ms123.common.workflow.api.WorkflowService;
+import org.ms123.common.process.ProcessService;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -62,20 +62,20 @@ public class ProcessEndpoint extends BaseEndpoint {
 	private String businessKey;
 
 	private PermissionService m_permissionService;
-	private WorkflowService m_workflowService;
+	private ProcessService processService;
 
-	public ProcessEndpoint(String uri, CamelContext camelContext, WorkflowService ws, PermissionService ps) {
+	public ProcessEndpoint(String uri, CamelContext camelContext, ProcessService processService, PermissionService ps) {
 		super(uri, camelContext);
-		m_runtimeService = ws.getProcessEngine().getRuntimeService();
-		m_historyService = ws.getProcessEngine().getHistoryService();
+		m_runtimeService = processService.getProcessEngine().getRuntimeService();
+		m_historyService = processService.getProcessEngine().getHistoryService();
 		setRuntimeService(m_runtimeService);
 		m_permissionService = ps;
-		m_workflowService = ws;
+		this.processService = processService;
 	}
 
 	public Producer createProducer() throws Exception {
 		info(this, "ProcessEndpoint.createProducer");
-		return new org.ms123.common.process.camel.ProcessProducer(this, m_workflowService, m_permissionService);
+		return new org.ms123.common.process.camel.ProcessProducer(this, processService, m_permissionService);
 	}
 
 	public Consumer createConsumer(Processor processor) throws Exception {

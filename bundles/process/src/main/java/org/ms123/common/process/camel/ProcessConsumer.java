@@ -40,7 +40,7 @@ public class ProcessConsumer extends DefaultConsumer  {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private JSONSerializer ser = new JSONSerializer();
-	private final ProcessEndpoint endpoint;
+	private ProcessEndpoint endpoint;
 
 	public ProcessConsumer(ProcessEndpoint endpoint, Processor processor) {
 		super(endpoint, processor);

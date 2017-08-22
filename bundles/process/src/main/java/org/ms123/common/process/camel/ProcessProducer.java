@@ -22,7 +22,7 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.runtime.Execution;
 import org.camunda.bpm.engine.runtime.ExecutionQuery;
-import org.camunda.bpm.engine.runtime.ProcessInstanceBuilder;
+import org.camunda.bpm.engine.runtime.ProcessInstantiationBuilder;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
@@ -110,7 +110,6 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 	private FormService formService;
 	private RepositoryService repositoryService;
 	private PermissionService permissionService;
-	private WorkflowService workflowService;
 	private CamelService camelService;
 	private ProcessService processService;
 
@@ -137,16 +136,16 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 	private Map options;
 	private String activitiKey;
 
-	public ProcessProducer(ProcessEndpoint endpoint, WorkflowService workflowService, PermissionService permissionService) {
+	public ProcessProducer(ProcessEndpoint endpoint, ProcessService processService, PermissionService permissionService) {
 		super(endpoint, -1, 100);
 		this.endpoint = endpoint;
 		this.permissionService = permissionService;
-		this.workflowService = workflowService;
-		this.runtimeService = workflowService.getProcessEngine().getRuntimeService();
-		this.historyService = workflowService.getProcessEngine().getHistoryService();
-		this.repositoryService = workflowService.getProcessEngine().getRepositoryService();
-		this.taskService = workflowService.getProcessEngine().getTaskService();
-		this.formService = workflowService.getProcessEngine().getFormService();
+		this.processService = processService;
+		this.runtimeService = processService.getProcessEngine().getRuntimeService();
+		this.historyService = processService.getProcessEngine().getHistoryService();
+		this.repositoryService = processService.getProcessEngine().getRepositoryService();
+		this.taskService = processService.getProcessEngine().getTaskService();
+		this.formService = processService.getProcessEngine().getFormService();
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 		this.processService = (ProcessService) endpoint.getCamelContext().getRegistry().lookupByName(ProcessService.class.getName());
 		info(this,"ProcessProducer.camelService:" + this.camelService);
@@ -233,16 +232,17 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 
 		List<Map<String,Object>> retList = new ArrayList<Map<String,Object>>();
 		for( ProcessInstance pi : processInstanceList){
-			pi = 	runtimeService.createProcessInstanceQuery().includeProcessVariables().processInstanceId( pi.getId()).singleResult();
+			pi = 	runtimeService.createProcessInstanceQuery()/*@@@MS.includeProcessVariables()*/.processInstanceId( pi.getId()).singleResult();
 			if( pi == null){
 				continue;
 			}
 			info(this,"doGetProcessVariables.processInstance:" + pi);
-			info(this,"doGetProcessVariables.variables:" + pi.getProcessVariables());
+			Map<String, Object> processVariables = runtimeService.getVariables(pi.getProcessInstanceId());
+			info(this,"doGetProcessVariables.variables:" + processVariables);
 			String variableNames = getString(exchange, "variableNames", this.variableNames);
 			if( isEmpty(variableNames)){
 				Map<String,Object> m = new HashMap<String,Object>();
-				m.putAll( pi.getProcessVariables() );
+				m.putAll( processVariables );
 				if( withMetadata){
 					m.put("_processInstanceId", pi.getProcessInstanceId());
 					m.put("_processDefinitionId", pi.getProcessDefinitionId());
@@ -252,7 +252,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 			}else{
 				List<String> nameList = Arrays.asList(variableNames.split(","));
 				debug(this,"doGetProcessVariables:nameList:" + nameList);
-				Map<String,Object> vars = pi.getProcessVariables();
+				Map<String,Object> vars = processVariables;
 				Map<String,Object> ret = new HashMap();
 				for (Map.Entry<String, Object> entry : vars.entrySet()) {
 					if( nameList.indexOf( entry.getKey()) > -1){
@@ -314,7 +314,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 				}
 			}
 		}
-		taskQuery.taskTenantId(trimToEmpty(this.namespace));
+		//@@@MS taskQuery.taskTenantId(trimToEmpty(this.namespace));
 		List<Task> taskList = taskQuery.list();
 		info(this,"taskList:");
 		List<Map> ret = new ArrayList<Map>();
@@ -522,13 +522,13 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 					}else{
 						runtimeService.signal(execution.getId());
 					}
-				} catch (org.camunda.bpm.engine.ActivitiOptimisticLockingException e) {
+				/*@@@MS} catch (org.camunda.bpm.engine.ActivitiOptimisticLockingException e) {
 					info(this,"SignalThread:" + e);
 					try {
 						Thread.sleep(100L);
 					} catch (Exception x) {
 					}
-					continue;
+					continue;*/
 				} catch (Exception e) {
 					createLogEntry(exchange, this.processDefinition, e);
 					error(this, "SignalThread::%[exception]s", e);
@@ -548,12 +548,12 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 		ThreadContext.loadThreadContext(this.namespace, "admin");
 		this.permissionService.loginInternal(this.namespace);
 		try {
-			ProcessInstanceBuilder pib = this.runtimeService.createProcessInstanceBuilder();
+			ProcessInstantiationBuilder pib = null;
 			String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));
 			if (!isEmpty(processDefinitionId)) {
 				info(this,"ExecuteProcess:processDefinitionId:" + processDefinitionId);
-				pib.processDefinitionId(processDefinitionId);
-				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionId(processDefinitionId).processDefinitionTenantId(this.namespace).singleResult();
+				pib = this.runtimeService.createProcessInstanceById(processDefinitionId);
+				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionId(processDefinitionId)/*@@@MS .processDefinitionTenantId(this.namespace)*/.singleResult();
 				if (processDefinition == null) {
 					throw new RuntimeException("No process with processDefinitionId(" + processDefinitionId + ") in namespace(" + this.namespace + ")");
 				}
@@ -561,11 +561,14 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 			String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 			if (!isEmpty(processDefinitionKey)) {
 				info(this,"ExecuteProcess:processDefinitionKey:" + processDefinitionKey);
-				pib.processDefinitionKey(processDefinitionKey);
-				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(processDefinitionKey).processDefinitionTenantId(this.namespace).singleResult();
+				pib = this.runtimeService.createProcessInstanceByKey(processDefinitionKey);
+				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(processDefinitionKey)/*@@@MS .processDefinitionTenantId(this.namespace)*/.singleResult();
 				if (processDefinition == null) {
 					throw new RuntimeException("No process with processDefinitionKey(" + processDefinitionKey + ") in namespace(" + this.namespace + ")");
 				}
+			}
+			if( pib == null){
+					throw new RuntimeException("No process with processDefinitionId("+processDefinitionId+") or processDefinitionKey(" + processDefinitionKey + ") in namespace(" + this.namespace + ")");
 			}
 			String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
 			if (!isEmpty(businessKey)) {
@@ -575,19 +578,19 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 
 			for (Map.Entry<String, Object> entry : vars.entrySet()) {
 				info(this,"ExecuteProcess:var:" + entry.getKey()+"="+entry.getValue());
-				pib.addVariable(entry.getKey(), entry.getValue());
+				pib.setVariable(entry.getKey(), entry.getValue());
 			}
 			info(this,"ExecuteProcess:tenant:" + this.namespace);
-			pib.tenantId(this.namespace);
+			//@@@MS pib.tenantId(this.namespace);
 			setInitialParameter( processDefinition, pib );
-			return pib.start();
+			return pib.execute();
 		} finally {
 			ThreadContext.getThreadContext().finalize(null);
 			info(this,"EndProcess:" + this.processCriteria + "/" + this.namespace);
 		}
 	}
 
-	private void setInitialParameter(ProcessDefinition processDefinition, ProcessInstanceBuilder pib){
+	private void setInitialParameter(ProcessDefinition processDefinition, ProcessInstantiationBuilder pib){
 		String deploymentId = processDefinition.getDeploymentId();
 		RepositoryService rs = this.repositoryService;
 		try {
@@ -609,12 +612,12 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 						}
 					}
 					info(this,"ExecuteProcess.initialVar:" + name + "=" + value);
-					pib.addVariable(name, value);
+					pib.setVariable(name, value);
 				}
 			}
 			//pib.addVariable("__currentUser", uid);
 			//pib.addVariable("__startingUser", uid);
-			pib.addVariable("__namespace", this.namespace);
+			pib.setVariable("__namespace", this.namespace);
 		} catch (Exception e) {
 			if (e instanceof NullPointerException) {
 				e.printStackTrace();
@@ -713,7 +716,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 			businessKey = getString(exchange, BUSINESS_KEY, this.processCriteria.get(BUSINESS_KEY));
 		}
 		if (!isEmpty(businessKey)) {
-			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,exchange)),childProcesses);
+			eq.processInstanceBusinessKey(trimToEmpty(eval(businessKey,exchange))/*@@@MS,childProcesses*/);
 			info(this,"getProcessInstances.businessKey:"+trimToEmpty(eval(businessKey,exchange)));
 			hasCriteria=true;
 		}
@@ -733,7 +736,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 			processVariable = trimToEmpty(processVariable);
 			List<String> tokens = splitByCommasNotInQuotes( processVariable);
 			if( tokens.size() == 1){
-				eq.processVariableValueEquals(trimToEmpty(eval(tokens.get(0),exchange)));
+				eq.processVariableValueEquals(processVariable, trimToEmpty(eval(tokens.get(0),exchange)));
 			}else{
 				debug(this,"p1eval:"+eval(tokens.get(1),exchange));
 				eq.processVariableValueEquals(
@@ -746,7 +749,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 
 		if( hasCriteria ){
 			info(this,"getProcessInstances.namespace:"+this.namespace);
-			eq.executionTenantId(trimToEmpty(this.namespace));
+			//@@@MS eq.executionTenantId(trimToEmpty(this.namespace));
 			List<ProcessInstance> executionList = (List) eq.list();
 			info(this,"getProcessInstances:" + executionList);
 			if (exception && (executionList == null || executionList.size() == 0)) {
@@ -802,7 +805,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 			processVariable = trimToEmpty(processVariable);
 			List<String> tokens = splitByCommasNotInQuotes( processVariable);
 			if( tokens.size() == 1){
-				hq.variableValueEquals(trimToEmpty(eval(tokens.get(0),exchange)));
+				hq.variableValueEquals(processVariable,trimToEmpty(eval(tokens.get(0),exchange)));
 			}else{
 				hq.variableValueEquals(
 					trimToEmpty(tokens.get(0)),
@@ -811,7 +814,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 			}
 		}
 
-		hq.processInstanceTenantId(trimToEmpty(this.namespace));
+//@@@MS		hq.processInstanceTenantId(trimToEmpty(this.namespace));
 		List<HistoricProcessInstance> piList = (List) hq.list();
 		info(this,"getHistoricProcessInstances:" + piList);
 		return piList;
@@ -831,7 +834,7 @@ public class ProcessProducer extends BaseProducer implements ProcessConstants {
 	private void saveActivitiCamelCorrelationHistory(Exchange exchange, ProcessInstance processInstance) {
 		EventAdmin eventAdmin = (EventAdmin) exchange.getContext().getRegistry().lookupByName(EventAdmin.class.getName());
 
-		String aci = this.namespace + "/" + processInstance.getProcessDefinitionKey() + "/" + processInstance.getId() + "/" + this.activityId;
+		String aci = this.namespace + "/" + processInstance.getProcessDefinitionId()/*@@@MS*/ + "/" + processInstance.getId() + "/" + this.activityId;
 		exchange.setProperty(HISTORY_ACTIVITI_ACTIVITY_KEY, aci);
 
 		String bc = (String) exchange.getIn().getHeader(Exchange.BREADCRUMB_ID);
