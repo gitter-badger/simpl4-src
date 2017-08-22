@@ -65,10 +65,12 @@ public class Simpl4JobExecutor extends DefaultJobExecutor {
 		return m_pe;
 	}
 
-	public void executeJobs(List<String> jobIds) {
+	@Override
+	public void executeJobs(List<String> jobIds, ProcessEngineImpl pimpl) {
 		ManagementService ms = m_pe.getManagementService();
 		Job job = ms.createJobQuery().jobId(jobIds.get(0)).singleResult();
 		info(this, "------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + job.getTenantId());
+		System.err.println("------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + job.getTenantId());
 		Map<String, String> info = getInfo(job.getProcessInstanceId(), job.getProcessDefinitionId(), job.getTenantId());
 		try {
 			threadPoolExecutor.execute(new Simpl4ExecuteJobsRunnable(this, info, jobIds));
