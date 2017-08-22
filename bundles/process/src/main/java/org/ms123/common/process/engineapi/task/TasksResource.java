@@ -23,7 +23,7 @@ import java.util.Map;
 import org.camunda.bpm.engine.impl.TaskQueryProperty;
 import org.camunda.bpm.engine.query.QueryProperty;
 import org.camunda.bpm.engine.task.TaskQuery;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 import org.ms123.common.permission.api.PermissionService;

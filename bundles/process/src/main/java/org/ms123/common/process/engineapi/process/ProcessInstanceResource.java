@@ -31,7 +31,7 @@ import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.history.HistoricVariableInstance;
 import org.camunda.bpm.engine.history.HistoricVariableUpdate;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 import static com.jcabi.log.Logger.info;

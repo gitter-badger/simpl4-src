@@ -27,7 +27,7 @@ import org.ms123.common.libhelper.Utils;
 import groovy.lang.*;
 import org.codehaus.groovy.control.*;
 import flexjson.*;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;

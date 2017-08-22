@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.camunda.bpm.engine.ProcessEngine;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.form.FormService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;

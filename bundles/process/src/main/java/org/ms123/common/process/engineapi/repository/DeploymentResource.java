@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.process.engineapi.Util;

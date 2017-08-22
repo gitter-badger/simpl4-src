@@ -1,0 +1,13 @@
+version=1.0.0
+Export-Package org.ms123.common.process.api
+Import-Package *
+Bundle-Version:${version}
+Bundle-Vendor: MS123, Org.
+Bundle-Description: Process Service Api
+Bundle-ManifestVersion: 2
+Bundle-Name: ProcessServiceApi Bundle
+Bundle-SymbolicName:org.ms123.common.process.api
+DynamicImport-Package: *
+Bundle-ClassPath: .
+Service-Component: *
+-metatype: *

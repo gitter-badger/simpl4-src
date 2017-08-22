@@ -44,7 +44,7 @@ import org.apache.camel.MessageHistory;
 import org.apache.camel.impl.DefaultProducer;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.camel.api.CamelService;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.workflow.api.WorkflowService;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.camel.api.ExchangeUtils;

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.io.InputStream;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.repository.Deployment;

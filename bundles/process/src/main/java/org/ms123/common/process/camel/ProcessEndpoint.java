@@ -23,7 +23,7 @@ import org.camunda.bpm.engine.HistoryService;
 import org.apache.camel.*;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.ms123.common.permission.api.PermissionService;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;

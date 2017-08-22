@@ -16,6 +16,7 @@ dependencies {
 	compile files("${repository}/commons/commons-lang3-3.6.jar")
 	compile files("${bundlesBuild}/org.ms123.common.auth.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.data.api-1.0.0.jar")
+	compile files("${bundlesBuild}/org.ms123.common.process.api-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.libhelper-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.datamapper-1.0.0.jar")
 	compile files("${bundlesBuild}/org.ms123.common.namespace-1.0.0.jar")

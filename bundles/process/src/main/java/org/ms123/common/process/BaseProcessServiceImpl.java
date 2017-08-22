@@ -32,6 +32,7 @@ import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.form.FormService;
 import org.ms123.common.git.GitService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.process.expressions.GroovyExpressionManager;
@@ -42,6 +43,7 @@ import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.system.thread.ThreadContext;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.event.EventAdmin;
+import org.apache.camel.Component;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -127,6 +129,10 @@ class BaseProcessServiceImpl {
     }
     preParseListeners.add(allParseListener);
     c.setCustomPreBPMNParseListeners(preParseListeners);
+	}
+
+	public Component getProcessComponent(){
+		return new org.ms123.common.process.camel.ProcessComponent();
 	}
 }
 

@@ -21,7 +21,7 @@ package org.ms123.common.process.engineapi.repository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 

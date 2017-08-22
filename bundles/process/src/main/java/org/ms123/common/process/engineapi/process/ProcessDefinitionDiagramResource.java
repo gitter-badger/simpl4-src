@@ -21,7 +21,7 @@ package org.ms123.common.process.engineapi.process;
 import java.io.InputStream;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
 import org.ms123.common.libhelper.Base64;

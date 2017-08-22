@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ms123.common.process;
+package org.ms123.common.process.api;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.ms123.common.form.FormService;
@@ -27,9 +27,11 @@ import org.osgi.service.event.EventAdmin;
 import org.ms123.common.rpc.RpcException;
 import java.util.Map;
 import java.util.List;
+import org.apache.camel.Component;
 
 public interface ProcessService {
 	public static final String PROCESS_ENGINE = "processEngine";
+	public static final String PROCESS_SERVICE = "processService";
 
 	public ProcessEngine getRootProcessEngine();
 	public ProcessEngine getProcessEngine();
@@ -71,4 +73,6 @@ public interface ProcessService {
 			String taskId, 
 			String operation, 
 			Map<String, Object> startParams, boolean check) throws RpcException;
+
+	public Component getProcessComponent();
 }

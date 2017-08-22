@@ -25,7 +25,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.DefaultComponent;
 import org.ms123.common.permission.api.PermissionService;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;

@@ -56,7 +56,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.dmn.DmnService;
 import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.process.tasks.GroovyTaskDsl;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.docbook.DocbookService;
 import org.ms123.common.rpc.CallService;

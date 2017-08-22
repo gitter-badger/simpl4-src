@@ -23,7 +23,7 @@ import java.util.Map;
 import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
 import org.camunda.bpm.engine.impl.HistoricProcessInstanceQueryProperty;
 import org.camunda.bpm.engine.query.QueryProperty;
-import org.ms123.common.process.ProcessService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.BaseResource;
 import static com.jcabi.log.Logger.info;
 
