@@ -30,17 +30,28 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import org.ms123.common.system.thread.ThreadContext;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
+import static org.ms123.common.process.listener.Topics.*;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.warn;
 
 @SuppressWarnings({"unchecked","deprecation"})
-public class ProcessConsumer extends DefaultConsumer  {
+public class ProcessConsumer extends DefaultConsumer  implements EventHandler{
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private JSONSerializer ser = new JSONSerializer();
 	private ProcessEndpoint endpoint;
+	private ServiceRegistration serviceRegistration;
+	private String tenant;
 
 	public ProcessConsumer(ProcessEndpoint endpoint, Processor processor) {
 		super(endpoint, processor);
@@ -50,12 +61,25 @@ public class ProcessConsumer extends DefaultConsumer  {
 		return false;
 	}
 
+	public void handleEvent(Event event) {
+		info(this, "HandleEvent.onEvent "+ event);
+	}
   @Override
 	protected void doStart() throws Exception {
+		this.tenant = ThreadContext.getThreadContext().getUserName();
+		info(this, "Registering EventHandler handler fore tenant:"+this.tenant);
+		String[] topics = new String[] { TASK_EVENT_TOPIC + "/" +this.tenant, EXECUTION_EVENT_TOPIC + "/"+ this.tenant };
+		Dictionary dict = new Hashtable();
+		dict.put(EventConstants.EVENT_TOPIC, topics);
+		this.serviceRegistration = this.endpoint.getBundleContext().registerService(EventHandler.class.getName(), this, dict);
+		super.doStart();
 	}
 
   @Override
 	protected void doStop() throws Exception {
+		info(this, "Unregistering EventHandler handler fore tenant:"+ this.tenant);
+		this.serviceRegistration.unregister();
+		super.doStop();
 	}
 	private boolean isEmpty(String s) {
 		return (s == null || "".equals(s.trim()));

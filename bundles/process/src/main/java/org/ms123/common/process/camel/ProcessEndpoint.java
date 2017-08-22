@@ -30,6 +30,11 @@ import java.util.List;
 import flexjson.*;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.impl.DefaultEndpoint;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.event.EventAdmin;
+import org.apache.camel.core.osgi.utils.BundleContextUtils;
+import org.osgi.framework.BundleContext;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
@@ -41,8 +46,8 @@ import static com.jcabi.log.Logger.error;
 public class ProcessEndpoint extends DefaultEndpoint {
 
 	private JSONDeserializer ds = new JSONDeserializer();
-	private RuntimeService m_runtimeService;
-	private HistoryService m_historyService;
+	private RuntimeService runtimeService;
+	private HistoryService historyService;
 	private Map m_options;
 	private Map<String, String> processCriteria = new HashMap<String, String>();
 	private Map<String, String> taskCriteria = new HashMap<String, String>();
@@ -61,20 +66,24 @@ public class ProcessEndpoint extends DefaultEndpoint {
 	private String taskId;
 	private String businessKey;
 
-	private PermissionService m_permissionService;
+	private PermissionService permissionService;
 	private ProcessService processService;
+	private BundleContext bundleContext;
+	private EventAdmin eventAdmin;
 
 	public ProcessEndpoint(String uri, CamelContext camelContext, ProcessService processService, PermissionService ps) {
 		super(uri, camelContext);
-		m_runtimeService = processService.getProcessEngine().getRuntimeService();
-		m_historyService = processService.getProcessEngine().getHistoryService();
-		m_permissionService = ps;
+		this.runtimeService = processService.getProcessEngine().getRuntimeService();
+		this.historyService = processService.getProcessEngine().getHistoryService();
+		this.permissionService = ps;
 		this.processService = processService;
+		this.bundleContext = BundleContextUtils.getBundleContext(ProcessEndpoint.class);
+		this.eventAdmin = lookupServiceByClass(EventAdmin.class);
 	}
 
 	public Producer createProducer() throws Exception {
 		info(this, "ProcessEndpoint.createProducer");
-		return new org.ms123.common.process.camel.ProcessProducer(this, processService, m_permissionService);
+		return new org.ms123.common.process.camel.ProcessProducer(this, processService, this.permissionService);
 	}
 
 	public Consumer createConsumer(Processor processor) throws Exception {
@@ -95,11 +104,32 @@ public class ProcessEndpoint extends DefaultEndpoint {
 		return m_options;
 	}
 	public RuntimeService getRuntimeService(){
-		return m_runtimeService;
+		return this.runtimeService;
 	}
 	public HistoryService getHistoryService(){
-		return m_historyService;
+		return this.historyService;
 	}
+
+	public <T> T lookupServiceByClass(Class<T> clazz) {
+		T service = null;
+		ServiceReference sr = this.bundleContext.getServiceReference(clazz);
+		if (sr != null) {
+			service = (T) this.bundleContext.getService(sr);
+		}
+		if (service == null) {
+			throw new RuntimeException("ProcessEndpoint.Cannot resolve service:" + clazz);
+		}
+		return service;
+	}
+
+	public EventAdmin getEventAdmin() {
+		return this.eventAdmin;
+	}
+
+	public BundleContext getBundleContext() {
+		return this.bundleContext;
+	}
+
 
 	public void setNamespace(String data) {
 		this.namespace = data;
