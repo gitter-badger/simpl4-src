@@ -27,6 +27,7 @@ import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
 import org.apache.camel.core.osgi.OsgiServiceRegistry;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.CompositeRegistry;
+import org.apache.camel.Component;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.management.event.ExchangeCompletedEvent;
 import org.apache.camel.management.event.ExchangeCreatedEvent;
@@ -94,6 +95,9 @@ public class CamelContextBuilder {
 		OsgiServiceRegistry or = new OsgiServiceRegistry(bc);
 		PermissionService permissionService = (PermissionService) or.lookupByName(PermissionService.class.getName());
 		ProcessService processService = (ProcessService) or.lookupByName(ProcessService.class.getName());
+		info("createCamelContext.processService:"+processService);
+		Component processComponent = processService.getProcessComponent();
+		info("createCamelContext.processComponent:"+processComponent);
 
 		JNDIContextManager jndiContextManager = (JNDIContextManager) or.lookupByName(JNDIContextManager.class.getName());
 		info("createCamelContext.JNDIContextManager:"+jndiContextManager);
@@ -114,7 +118,7 @@ public class CamelContextBuilder {
 		sr.put("eventbus", new org.ms123.common.camel.components.eventbus.EventBusComponent());
 		sr.put("websocket", new org.ms123.common.camel.components.websocket.WebsocketComponent());
 		sr.put("vfs", new org.ms123.common.camel.components.vfs.VfsComponent());
-		sr.put("process", processService.getProcessComponent());
+		sr.put("process", processComponent);
 		sr.put("direct", new DirectComponent());
 		sr.put("xdocreport", new XDocReportComponent());
 		sr.put("wawidoc", new WawiDocComponent());

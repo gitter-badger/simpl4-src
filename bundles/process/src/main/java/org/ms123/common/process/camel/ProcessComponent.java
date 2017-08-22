@@ -19,17 +19,12 @@
 package org.ms123.common.process.camel;
 
 import java.util.Map;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.ProcessEngine;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.DefaultComponent;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.api.ProcessService;
 import static com.jcabi.log.Logger.info;
-import static com.jcabi.log.Logger.debug;
-import static com.jcabi.log.Logger.error;
-import org.apache.camel.impl.DefaultComponent;
 
 /**
  */
@@ -40,6 +35,7 @@ public class ProcessComponent extends DefaultComponent {
 	private PermissionService permissionService;
 
 	public ProcessComponent() {
+		info(this,"new ProcessComponent");
 	}
 
 	@Override
@@ -63,10 +59,10 @@ public class ProcessComponent extends DefaultComponent {
 
 	@Override
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
+		info(this,"createEndpoint("+uri+"):"+parameters);
 		CamelContext cc = getCamelContext();
 		getServices(cc);
 		ProcessEndpoint endpoint = new ProcessEndpoint(uri, cc, this.processService, this.permissionService);
-		info(this,"createEndpoint("+uri+"):"+parameters);
 		setProperties(endpoint, parameters);
 		return endpoint;
 	}

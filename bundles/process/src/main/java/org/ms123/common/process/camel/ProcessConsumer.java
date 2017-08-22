@@ -52,9 +52,16 @@ public class ProcessConsumer extends DefaultConsumer  implements EventHandler{
 	private ProcessEndpoint endpoint;
 	private ServiceRegistration serviceRegistration;
 	private String tenant;
+	private String events[];
 
 	public ProcessConsumer(ProcessEndpoint endpoint, Processor processor) {
 		super(endpoint, processor);
+		this.endpoint = endpoint;
+		String _events = this.endpoint.getEvents();
+		if( _events != null && _events.trim().length() > 0){
+			info(this,"_Events:"+_events);
+			this.events  = _events.toUpperCase().split(",");
+		}
 	}
 
 	public boolean isFailOnException() {
@@ -63,6 +70,15 @@ public class ProcessConsumer extends DefaultConsumer  implements EventHandler{
 
 	public void handleEvent(Event event) {
 		info(this, "HandleEvent.onEvent "+ event);
+		String[] propertyNames = event.getPropertyNames();
+		for( String name : propertyNames){
+			info(this, " - "+name+": "+ event.getProperty(name));
+		}
+		String type = (String)event.getProperty("type");
+		if( event.getTopic().startsWith(TASK_EVENT_TOPIC)){
+		}else if( event.getTopic().startsWith(EXECUTION_EVENT_TOPIC)){
+		}
+		
 	}
   @Override
 	protected void doStart() throws Exception {

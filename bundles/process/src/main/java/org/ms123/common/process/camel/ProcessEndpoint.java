@@ -18,26 +18,24 @@
  */
 package org.ms123.common.process.camel;
 
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.HistoryService;
-import org.apache.camel.*;
-import org.apache.camel.impl.DefaultEndpoint;
-import org.ms123.common.permission.api.PermissionService;
-import org.ms123.common.process.api.ProcessService;
-import java.util.Map;
+import flexjson.*;
 import java.util.HashMap;
 import java.util.List;
-import flexjson.*;
-import org.apache.camel.spi.UriEndpoint;
+import java.util.Map;
+import org.apache.camel.*;
+import org.apache.camel.core.osgi.utils.BundleContextUtils;
 import org.apache.camel.impl.DefaultEndpoint;
+import org.apache.camel.spi.UriEndpoint;
+import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.RuntimeService;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.process.api.ProcessService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.event.EventAdmin;
-import org.apache.camel.core.osgi.utils.BundleContextUtils;
-import org.osgi.framework.BundleContext;
-import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 
 /**
  */
