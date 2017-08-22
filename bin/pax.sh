@@ -361,6 +361,7 @@ ${camundabundles} \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.management-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.stencil.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.process-1.0.0.jar \
+  scan-bundle:file:$BUNDLESBUILD/org.ms123.common.process.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.workflow-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.workflow.api-1.0.0.jar \
   scan-bundle:file:$BUNDLESBUILD/org.ms123.common.activiti-1.0.0.jar \

@@ -109,7 +109,10 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 		return this.dataLayer;
 	}
 	public EventAdmin getEventAdmin(){
-		return this.eventAdmin;
+		return eventAdmin;
+	}
+	public static EventAdmin getEventAdminStatic(){
+		return eventAdmin;
 	}
 
 	public Map executeTaskOperation( String taskId, String operation, Map<String, Object> startParams, boolean check) {

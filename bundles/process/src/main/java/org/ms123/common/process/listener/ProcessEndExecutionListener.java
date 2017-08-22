@@ -18,13 +18,26 @@
  */
 package org.ms123.common.process.listener;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
+import org.ms123.common.process.ProcessServiceImpl;
+import org.ms123.common.system.thread.ThreadContext;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import static com.jcabi.log.Logger.info;
 
-public class ProcessEndExecutionListener implements ExecutionListener {
+public class ProcessEndExecutionListener extends BaseListener implements ExecutionListener {
 
 	@Override
 	public void notify(DelegateExecution execution) throws Exception {
-		//System.out.println("XrocessStartExecutionListener:"+execution.getCurrentActivityName()+"/"+execution.getCurrentActivityId());
+		String tenant = ThreadContext.getThreadContext().getUserName();
+		Dictionary<String, String> properties = new Hashtable<String, String>();
+		fillDictionary( execution, properties, false);
+		info(this,"ProcessEndExecutionListener.createExecutionEvent("+tenant+"):"+properties);
+		properties.put("__type", "processEnd");
+		Event event = new Event(Topics.EXECUTION_EVENT_TOPIC+"/"+tenant, properties);
+		ProcessServiceImpl.getEventAdminStatic().postEvent(event);
 	}
 }

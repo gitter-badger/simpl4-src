@@ -62,7 +62,7 @@ class BaseProcessServiceImpl {
 	protected PermissionService permissionService;
 	protected GitService gitService;
 	protected DataLayer dataLayer;
-	protected EventAdmin eventAdmin;
+	protected static EventAdmin eventAdmin;
 	protected FormService formService;
 
 	protected JSONDeserializer ds = new JSONDeserializer();
