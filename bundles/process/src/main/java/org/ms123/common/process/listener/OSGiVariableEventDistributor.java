@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.camunda.bpm.engine.delegate.DelegateVariableInstance;
-import org.camunda.bpm.engine.delegate.VariableListener;
+import org.camunda.bpm.engine.impl.cfg.orientdb.VariableListener;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import static com.jcabi.log.Logger.info;
@@ -27,17 +27,9 @@ public class OSGiVariableEventDistributor extends BaseListener implements Variab
 	}
 
 	@Override
-	public void notify(DelegateVariableInstance variable) {
-		Event event = createEvent(variable);
+	public void notify(Map<String,Object> properties) {
+		Event event = new Event(Topics.VARIABLE_EVENT_TOPIC + "/" + this.tenant, properties);
 		eventAdmin.postEvent(event);
 	}
-
-	private Event createEvent(DelegateVariableInstance delegateVariableInstance) {
-		Map<String, Object> properties = new HashMap<String, Object>();
-		fillDictionary(delegateVariableInstance, properties, false);
-		info(this, "OSGiVariableEventDistributor.createVariableEvent(" + delegateVariableInstance.getValue() + "):" + properties);
-		return new Event(Topics.VARIABLE_EVENT_TOPIC + "/" + this.tenant, properties);
-	}
-
 }
 

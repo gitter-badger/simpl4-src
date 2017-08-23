@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.camel.Component;
-import org.camunda.bpm.engine.delegate.VariableListener;
+import org.camunda.bpm.engine.impl.cfg.orientdb.VariableListener;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.orientdb.OrientdbProcessEngineConfiguration;
 import org.camunda.bpm.engine.ProcessEngine;
@@ -72,7 +72,7 @@ class BaseProcessServiceImpl {
 	protected ProcessengineJDBC peJdbc = new ProcessengineJDBC();
 
 	protected JSONSerializer js = new JSONSerializer();
-	private boolean isJdbc = true;
+	private boolean isJdbc = false;
 
 	public synchronized ProcessEngine getRootProcessEngine() {
 		if (isJdbc) {
