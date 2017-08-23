@@ -190,6 +190,7 @@ public class StartProcessInstanceResource extends BaseResource {
 			response.put("processDefinitionId", processInstance.getProcessDefinitionId());
 			return response;
 		} catch (Exception e) {
+e.printStackTrace();
 			createLogEntry(processDefinition,uid, e);
 			if (e instanceof RuntimeException)
 				throw (RuntimeException) e;

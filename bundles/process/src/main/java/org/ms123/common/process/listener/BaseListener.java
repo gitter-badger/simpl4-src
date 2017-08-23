@@ -28,7 +28,6 @@ public class BaseListener  {
 			String baseName = getBaseName(getter);
 			String prefix = getGetterPrefix(getter);
 			if (!Modifier.isStatic(m.getModifiers()) && prefix != null && isPrimitiveOrPrimitiveWrapperOrString(returnType)) {
-				Map<String, Object> map = new HashMap<String, Object>();
 				try{
 					Method method = clazz.getMethod(getter);
 					Object value = method.invoke(o);

@@ -38,6 +38,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.process.expressions.GroovyExpressionManager;
+import org.ms123.common.process.jdbc.ProcessengineJDBC;
 import org.ms123.common.process.jobs.Simpl4JobExecutor;
 import org.ms123.common.process.listener.OSGiEventDistributor;
 import org.ms123.common.process.listener.OSGiVariableEventDistributor;
@@ -68,13 +69,19 @@ class BaseProcessServiceImpl {
 	protected FormService formService;
 
 	protected JSONDeserializer ds = new JSONDeserializer();
+	protected ProcessengineJDBC peJdbc = new ProcessengineJDBC();
 
 	protected JSONSerializer js = new JSONSerializer();
+	private boolean isJdbc = true;
 
 	public synchronized ProcessEngine getRootProcessEngine() {
+		if (isJdbc) {
+			return getProcessengineJDBC();
+		}
 		if (this.rootProcessEngine != null) {
 			return this.rootProcessEngine;
 		}
+
 		OrientGraphFactory f = this.orientdbService.getFactory(BPM_DB);
 		f.setStandardElementConstraints(false);
 
@@ -94,6 +101,9 @@ class BaseProcessServiceImpl {
 	}
 
 	public synchronized ProcessEngine getProcessEngine() {
+		if (isJdbc) {
+			return getProcessengineJDBC();
+		}
 		String username = ThreadContext.getThreadContext().getUserName();
 		ProcessEngine pe = this.userProcessEngineMap.get(username);
 		if (pe != null) {
@@ -150,5 +160,12 @@ class BaseProcessServiceImpl {
 		return new org.ms123.common.process.camel.ProcessComponent();
 	}
 
+	private ProcessEngine getProcessengineJDBC() {
+		if (this.rootProcessEngine != null) {
+			return this.rootProcessEngine;
+		}
+		this.rootProcessEngine = peJdbc.getRootProcessEngine();
+		return this.rootProcessEngine;
+	}
 }
 

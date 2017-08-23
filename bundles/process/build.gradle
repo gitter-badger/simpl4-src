@@ -36,6 +36,7 @@ dependencies {
 	compile files("${repository}/slf4j-api-1.6.1.jar")
  	compile files("${repository}/jcabi-1.0.jar")
 	compile files("${repository}/jta-1.1.jar")
+		compile files("${repository}/h2-1.3.170.jar")
 	compile files("${repository}/mvel2-2.1.RC1.jar")
 	compile files("${repository}/spring/spring-tx-3.2.5.RELEASE.jar")
   compile files("${repository}/commons/commons-email-1.3.1.jar")
