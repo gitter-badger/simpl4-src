@@ -16,7 +16,7 @@ import static com.jcabi.log.Logger.info;
 @SuppressWarnings({"unchecked", "deprecation"})
 public class BaseListener  {
 
-	protected void fillDictionary(Object o,Dictionary properties, boolean isTask) {
+	protected void fillDictionary(Object o,java.util.Map<String,Object> properties, boolean isTask) {
 		Class clazz = o.getClass();
 		if( isTask ){
 			initializeFormKey(o,clazz);
@@ -42,7 +42,7 @@ public class BaseListener  {
 		}
 	}
 	private boolean isPrimitiveOrPrimitiveWrapperOrString(Class<?> type) {
-		return (type.isPrimitive() && type != void.class) || type == Double.class || type == Float.class || type == Long.class || type == Integer.class || type == Short.class || type == Character.class || type == Byte.class || type == Boolean.class || type == String.class || type == java.util.Date.class || type == byte[].class;
+		return (type.isPrimitive() && type != void.class) || type == Object.class || type == Double.class || type == Float.class || type == Long.class || type == Integer.class || type == Short.class || type == Character.class || type == Byte.class || type == Boolean.class || type == String.class || type == java.util.Date.class || type == byte[].class;
 	}
 
 	private void initializeFormKey(Object o, Class clazz){

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.camel.Component;
+import org.camunda.bpm.engine.delegate.VariableListener;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.orientdb.OrientdbProcessEngineConfiguration;
 import org.camunda.bpm.engine.ProcessEngine;
@@ -39,11 +40,10 @@ import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.process.expressions.GroovyExpressionManager;
 import org.ms123.common.process.jobs.Simpl4JobExecutor;
 import org.ms123.common.process.listener.OSGiEventDistributor;
+import org.ms123.common.process.listener.OSGiVariableEventDistributor;
 import org.ms123.common.process.listener.RegisterAllBpmnParseListener;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.system.thread.ThreadContext;
-import org.camunda.bpm.engine.delegate.VariableListener;
-import org.camunda.bpm.engine.delegate.DelegateVariableInstance;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.event.EventAdmin;
 import static com.jcabi.log.Logger.debug;
@@ -104,7 +104,7 @@ class BaseProcessServiceImpl {
 
 		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
 		addEventDistributor(c, username);
-		addVariablesDistributor(c, username);
+		addVariableEventDistributor(c, username);
 		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
 		c.setJobExecutor(simpl4JobExecutor);
 		c.setJobExecutorActivate(true);
@@ -134,14 +134,14 @@ class BaseProcessServiceImpl {
 		c.setCustomPreBPMNParseListeners(preParseListeners);
 	}
 
-	private void addVariablesDistributor(OrientdbProcessEngineConfiguration c, String tenant) {
-		VariableListenerImpl lis = new VariableListenerImpl();
+	private void addVariableEventDistributor(OrientdbProcessEngineConfiguration c, String tenant) {
+		OSGiVariableEventDistributor dis = new OSGiVariableEventDistributor(this.eventAdmin, tenant);
 
 		List<VariableListener> variableListeners = c.getVariableListeners();
 		if (variableListeners == null) {
 			variableListeners = new ArrayList<VariableListener>();
 		}
-		variableListeners.add(lis);
+		variableListeners.add(dis);
 		c.setVariableListeners(variableListeners);
 	}
 
@@ -150,21 +150,5 @@ class BaseProcessServiceImpl {
 		return new org.ms123.common.process.camel.ProcessComponent();
 	}
 
-	private class VariableListenerImpl implements VariableListener {
-
-		@Override
-		public void notify(DelegateVariableInstance var) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			try {
-				info(this, "notify(" + var.getName() + ":" + var.getValue());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			info(this, "VariableListenerImpl.notify:" + map);
-			//		Event event = createEvent(delegateTask);
-			//		eventAdmin.postEvent(event);
-		}
-	}
 }
 

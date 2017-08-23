@@ -1,8 +1,8 @@
 package org.ms123.common.process.listener;
 
 import java.io.Serializable;
-import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateTask;
@@ -15,7 +15,7 @@ import static com.jcabi.log.Logger.info;
 /**
  * @author Ronny Bräunlich
  */
-@SuppressWarnings({"unchecked", "deprecation"})
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class OSGiEventDistributor extends BaseListener implements TaskListener, ExecutionListener, Serializable {
 
 	private static final long serialVersionUID = -3778622638807349820L;
@@ -41,17 +41,17 @@ public class OSGiEventDistributor extends BaseListener implements TaskListener, 
 	}
 
 	private Event createEvent(DelegateTask delegateTask) {
-		Dictionary<String, String> properties = new Hashtable<String, String>();
-		fillDictionary( delegateTask, properties, true);
-		info(this,"OSGiEventDistributor.createTaskEvent:"+properties);
-		return new Event(Topics.TASK_EVENT_TOPIC+"/"+this.tenant, properties);
+		Map<String, Object> properties = new HashMap<String, Object>();
+		fillDictionary(delegateTask, properties, true);
+		info(this, "OSGiEventDistributor.createTaskEvent:" + properties);
+		return new Event(Topics.TASK_EVENT_TOPIC + "/" + this.tenant, properties);
 	}
 
 	private Event createEvent(DelegateExecution execution) {
-		Dictionary<String, String> properties = new Hashtable<String, String>();
-		fillDictionary( execution, properties, false);
-		info(this,"OSGiEventDistributor.createExecutionEvent:"+properties);
-		return new Event(Topics.EXECUTION_EVENT_TOPIC+"/"+this.tenant, properties);
+		Map<String, Object> properties = new HashMap<String, Object>();
+		fillDictionary(execution, properties, false);
+		info(this, "OSGiEventDistributor.createExecutionEvent:" + properties);
+		return new Event(Topics.EXECUTION_EVENT_TOPIC + "/" + this.tenant, properties);
 	}
 
 }

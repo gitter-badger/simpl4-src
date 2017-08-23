@@ -18,8 +18,8 @@
  */
 package org.ms123.common.process.listener;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.HashMap;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.ms123.common.process.ProcessServiceImpl;
@@ -33,11 +33,11 @@ public class ProcessStartExecutionListener extends BaseListener implements Execu
 	@Override
 	public void notify(DelegateExecution execution) throws Exception {
 		String tenant = ThreadContext.getThreadContext().getUserName();
-		Dictionary<String, String> properties = new Hashtable<String, String>();
+		Map<String, Object> properties = new HashMap<String, Object>();
 		fillDictionary( execution, properties, false);
 		info(this,"ProcessStartExecutionListener.createExecutionEvent("+tenant+"):"+properties);
 		properties.put("type", "processStart");
-		Event event = new Event(Topics.EXECUTION_EVENT_TOPIC+"/"+tenant, properties);
+		Event event = new Event(Topics.PROCESS_EVENT_TOPIC+"/"+tenant, properties);
 		ProcessServiceImpl.getEventAdminStatic().postEvent(event);
 	}
 }
