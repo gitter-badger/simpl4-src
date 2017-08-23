@@ -42,6 +42,8 @@ import org.ms123.common.process.listener.OSGiEventDistributor;
 import org.ms123.common.process.listener.RegisterAllBpmnParseListener;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.ms123.common.system.thread.ThreadContext;
+import org.camunda.bpm.engine.delegate.VariableListener;
+import org.camunda.bpm.engine.delegate.DelegateVariableInstance;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.event.EventAdmin;
 import static com.jcabi.log.Logger.debug;
@@ -86,7 +88,7 @@ class BaseProcessServiceImpl {
 		c.setExpressionManager(groovyExpressionManager);
 		this.rootProcessEngine = c.buildProcessEngine();
 		c.getBeans().put(ProcessService.PROCESS_ENGINE, this.rootProcessEngine);
-		simpl4JobExecutor.setProcessEngine( this.rootProcessEngine);
+		simpl4JobExecutor.setProcessEngine(this.rootProcessEngine);
 
 		return this.rootProcessEngine;
 	}
@@ -101,7 +103,8 @@ class BaseProcessServiceImpl {
 		f.setStandardElementConstraints(false);
 
 		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
-		addEventDistributor( c, username);
+		addEventDistributor(c, username);
+		addVariablesDistributor(c, username);
 		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
 		c.setJobExecutor(simpl4JobExecutor);
 		c.setJobExecutorActivate(true);
@@ -110,30 +113,58 @@ class BaseProcessServiceImpl {
 		GroovyExpressionManager groovyExpressionManager = new GroovyExpressionManager();
 		c.setExpressionManager(groovyExpressionManager);
 
-		pe  = c.buildProcessEngine();
-		simpl4JobExecutor.setProcessEngine( pe);
+		pe = c.buildProcessEngine();
+		simpl4JobExecutor.setProcessEngine(pe);
 		c.getBeans().put(ProcessService.PROCESS_ENGINE, pe);
 
 		this.userProcessEngineMap.put(username, pe);
 		return pe;
 	}
 
-	private void addEventDistributor(OrientdbProcessEngineConfiguration c, String tenant){
+	private void addEventDistributor(OrientdbProcessEngineConfiguration c, String tenant) {
 		OSGiEventDistributor dis1 = new OSGiEventDistributor(this.eventAdmin, tenant);
 		OSGiEventDistributor dis2 = new OSGiEventDistributor(this.eventAdmin, tenant);
-		RegisterAllBpmnParseListener allParseListener = new RegisterAllBpmnParseListener( dis1, dis2);
+		RegisterAllBpmnParseListener allParseListener = new RegisterAllBpmnParseListener(dis1, dis2);
 
-  	List<BpmnParseListener> preParseListeners = c.getCustomPreBPMNParseListeners();
-    if(preParseListeners == null) {
-      preParseListeners = new ArrayList<BpmnParseListener>();
-    }
-    preParseListeners.add(allParseListener);
-    c.setCustomPreBPMNParseListeners(preParseListeners);
+		List<BpmnParseListener> preParseListeners = c.getCustomPreBPMNParseListeners();
+		if (preParseListeners == null) {
+			preParseListeners = new ArrayList<BpmnParseListener>();
+		}
+		preParseListeners.add(allParseListener);
+		c.setCustomPreBPMNParseListeners(preParseListeners);
 	}
 
-	public Component getProcessComponent(){
-		info(this,"BaseProcessServiceImpl.getProcessComponent");
+	private void addVariablesDistributor(OrientdbProcessEngineConfiguration c, String tenant) {
+		VariableListenerImpl lis = new VariableListenerImpl();
+
+		List<VariableListener> variableListeners = c.getVariableListeners();
+		if (variableListeners == null) {
+			variableListeners = new ArrayList<VariableListener>();
+		}
+		variableListeners.add(lis);
+		c.setVariableListeners(variableListeners);
+	}
+
+	public Component getProcessComponent() {
+		info(this, "BaseProcessServiceImpl.getProcessComponent");
 		return new org.ms123.common.process.camel.ProcessComponent();
+	}
+
+	private class VariableListenerImpl implements VariableListener {
+
+		@Override
+		public void notify(DelegateVariableInstance var) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			try {
+				info(this, "notify(" + var.getName() + ":" + var.getValue());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			info(this, "VariableListenerImpl.notify:" + map);
+			//		Event event = createEvent(delegateTask);
+			//		eventAdmin.postEvent(event);
+		}
 	}
 }
 

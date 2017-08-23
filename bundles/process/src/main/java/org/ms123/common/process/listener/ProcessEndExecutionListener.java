@@ -36,7 +36,7 @@ public class ProcessEndExecutionListener extends BaseListener implements Executi
 		Dictionary<String, String> properties = new Hashtable<String, String>();
 		fillDictionary( execution, properties, false);
 		info(this,"ProcessEndExecutionListener.createExecutionEvent("+tenant+"):"+properties);
-		properties.put("__type", "processEnd");
+		properties.put("type", "processEnd");
 		Event event = new Event(Topics.EXECUTION_EVENT_TOPIC+"/"+tenant, properties);
 		ProcessServiceImpl.getEventAdminStatic().postEvent(event);
 	}
