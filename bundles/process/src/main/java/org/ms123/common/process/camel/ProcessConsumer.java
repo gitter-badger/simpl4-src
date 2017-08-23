@@ -44,8 +44,8 @@ import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.warn;
 
-@SuppressWarnings({"unchecked","deprecation"})
-public class ProcessConsumer extends DefaultConsumer  implements EventHandler{
+@SuppressWarnings({ "unchecked", "deprecation" })
+public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private JSONSerializer ser = new JSONSerializer();
@@ -58,9 +58,9 @@ public class ProcessConsumer extends DefaultConsumer  implements EventHandler{
 		super(endpoint, processor);
 		this.endpoint = endpoint;
 		String _events = this.endpoint.getEvents();
-		if( _events != null && _events.trim().length() > 0){
-			info(this,"_Events:"+_events);
-			this.events  = _events.toUpperCase().split(",");
+		if (_events != null && _events.trim().length() > 0) {
+			info(this, "_Events:" + _events);
+			this.events = _events.toUpperCase().split(",");
 		}
 	}
 
@@ -69,43 +69,51 @@ public class ProcessConsumer extends DefaultConsumer  implements EventHandler{
 	}
 
 	public void handleEvent(Event event) {
-		info(this, "HandleEvent.onEvent "+ event);
+		info(this, "HandleEvent.onEvent " + event);
 		String[] propertyNames = event.getPropertyNames();
-		for( String name : propertyNames){
-			info(this, " - "+name+": "+ event.getProperty(name));
+		for (String name : propertyNames) {
+			info(this, " - " + name + ": " + event.getProperty(name));
 		}
-		String type = (String)event.getProperty("type");
-		if( event.getTopic().startsWith(TASK_EVENT_TOPIC)){
-		}else if( event.getTopic().startsWith(EXECUTION_EVENT_TOPIC)){
+		String type = (String) event.getProperty("type");
+		if (event.getTopic().startsWith(TASK_EVENT_TOPIC)) {
+		} else if (event.getTopic().startsWith(EXECUTION_EVENT_TOPIC)) {
 		}
-		
+
 	}
-  @Override
+
+	@Override
 	protected void doStart() throws Exception {
 		this.tenant = ThreadContext.getThreadContext().getUserName();
 		info(this, "Registering EventHandler handler fore tenant:"+this.tenant);
-		String[] topics = new String[] { TASK_EVENT_TOPIC + "/" +this.tenant, EXECUTION_EVENT_TOPIC + "/"+ this.tenant };
+		String[] topics = new String[] { TASK_EVENT_TOPIC + "/" +this.tenant, 
+																			EXECUTION_EVENT_TOPIC + "/"+ this.tenant,
+																			VARIABLE_EVENT_TOPIC + "/"+ this.tenant,
+																			PROCESS_EVENT_TOPIC + "/"+ this.tenant 
+															};
 		Dictionary dict = new Hashtable();
 		dict.put(EventConstants.EVENT_TOPIC, topics);
 		this.serviceRegistration = this.endpoint.getBundleContext().registerService(EventHandler.class.getName(), this, dict);
 		super.doStart();
 	}
 
-  @Override
+	@Override
 	protected void doStop() throws Exception {
-		info(this, "Unregistering EventHandler handler fore tenant:"+ this.tenant);
+		info(this, "Unregistering EventHandler handler fore tenant:" + this.tenant);
 		this.serviceRegistration.unregister();
 		super.doStop();
 	}
+
 	private boolean isEmpty(String s) {
 		return (s == null || "".equals(s.trim()));
 	}
+
 	private String getVariableType(String s) {
 		int lastIndexDot = s.lastIndexOf(".");
 		int lastIndexAt = s.lastIndexOf("@");
-		if( lastIndexAt == -1){
+		if (lastIndexAt == -1) {
 			lastIndexDot = s.length();
 		}
-		return s.substring(lastIndexDot+1,lastIndexAt);
+		return s.substring(lastIndexDot + 1, lastIndexAt);
 	}
 }
+
