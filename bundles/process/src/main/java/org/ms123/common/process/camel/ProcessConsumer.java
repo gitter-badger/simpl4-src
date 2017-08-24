@@ -140,7 +140,7 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 				to = "Execution";
 			}
 			String en = we.split( "_")[1];
-			if( to.equals("Process") && en.equals("completed")){
+			if( (to.equals("Process") || to.equals("Execution")) && en.equals("completed")){
 				en = "end";
 				cmpLen = 3;
 			}
