@@ -27,16 +27,18 @@ import org.camunda.bpm.engine.impl.ProcessDefinitionQueryProperty;
 import org.camunda.bpm.engine.impl.ProcessDefinitionQueryImpl;
 import org.camunda.bpm.engine.query.QueryProperty;
 import org.camunda.bpm.engine.repository.ProcessDefinitionQuery;
+import org.ms123.common.process.Constants;
 import org.apache.commons.lang3.StringUtils;
 import static com.jcabi.log.Logger.info;
 
 /**
  */
-public class ProcessDefinitionsResource extends BaseResource {
+public class ProcessDefinitionsResource extends BaseResource implements Constants{
 
 	private String m_startableByUser;
 	private String m_startableByGroup;
 	private String m_name;
+	private String m_namespace;
 	private String m_key;
 	private Integer m_version;
 
@@ -47,6 +49,7 @@ public class ProcessDefinitionsResource extends BaseResource {
 		m_startableByUser = startableByUser;
 		m_startableByGroup = startableByGroup;
 		m_name = name;
+		m_namespace = namespace;
 		m_key = key;
 		m_version = version;
 		properties.put("id", ProcessDefinitionQueryProperty.PROCESS_DEFINITION_ID);
@@ -63,6 +66,8 @@ public class ProcessDefinitionsResource extends BaseResource {
 		}
 		if( m_key != null){
 			query = query.processDefinitionKey(this.m_key);
+		}else{
+			query = query.processDefinitionKeyLike(this.m_namespace+NAMESPACE_DELIMITER+"%");
 		}
 		if( m_version != null){
 			if( m_version != -1){

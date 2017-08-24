@@ -34,6 +34,7 @@ import org.camunda.bpm.engine.repository.DeploymentBuilder;
 import org.ms123.common.process.engineapi.process.ProcessDefinitionResponse;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.RepositoryService;
+import org.ms123.common.process.Constants;
 import static com.jcabi.log.Logger.info;
 
 
@@ -41,7 +42,7 @@ import static com.jcabi.log.Logger.info;
 /**
  */
 @SuppressWarnings({"unchecked","deprecation"})
-public class DeploymentResource extends BaseResource {
+public class DeploymentResource extends BaseResource implements Constants{
 
 	public DeploymentResource(ProcessService ps) {
 		super(ps, null);
@@ -74,7 +75,6 @@ public class DeploymentResource extends BaseResource {
 		InputStream bais = new ByteArrayInputStream(bpmnBytes);
 		DeploymentBuilder deployment = rs.createDeployment();
 		deployment.name(deployName);
-		deployment.tenantId(namespace);
 		deployment.addString("initialParameter", initialParameter);
 		deploymentId = deployment.addInputStream(deployName + ".bpmn20.xml", bais).deploy().getId();
 		info(this,"deploymentId:" + deploymentId);
@@ -110,6 +110,6 @@ public class DeploymentResource extends BaseResource {
 		return e[e.length - 1];
 	}
 	private String getDeploymentName( String ns, String name){
-		return ns + ":" + name;
+		return ns + NAMESPACE_DELIMITER + name;
 	}
 }

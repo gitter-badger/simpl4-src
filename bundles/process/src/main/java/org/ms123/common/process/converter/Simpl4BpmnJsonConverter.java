@@ -37,11 +37,13 @@ import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.ActivitiListener;
 import org.activiti.bpmn.model.ImplementationType;
 import org.activiti.bpmn.model.Process;
+import org.ms123.common.process.Constants;
+import static com.jcabi.log.Logger.info;
 
 /**
  */
 @SuppressWarnings("unchecked")
-public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
+public class Simpl4BpmnJsonConverter extends BpmnJsonConverter implements Constants {
 
 	public Simpl4BpmnJsonConverter(String namespace) {
 		Simpl4SequenceFlowJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);
@@ -72,8 +74,9 @@ public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
 		BpmnModel bpmnModel = jsonConverter.convertToBpmnModel(editorNode);
 		bpmnModel.setTargetNamespace(ns);
 		for (Process process : bpmnModel.getProcesses()) {
+			info(Simpl4BpmnJsonConverter.class,"Simpl4BpmnJsonConverter.id:"+process.getId());
 			if (process.getId() == null) {
-				process.setId(getBasename(path));
+				process.setId(getDeploymentName(ns,getBasename(path)));
 			}
 			process.getExecutionListeners().add(createListener("start", "org.ms123.common.process.listener.ProcessStartExecutionListener"));
 			process.getExecutionListeners().add(createListener("end", "org.ms123.common.process.listener.ProcessEndExecutionListener"));
@@ -92,5 +95,8 @@ public class Simpl4BpmnJsonConverter extends BpmnJsonConverter {
 	private static String getBasename(String path) {
 		String e[] = path.split("/");
 		return e[e.length - 1];
+	}
+	private static String getDeploymentName( String ns, String name){
+		return ns + NAMESPACE_DELIMITER + name;
 	}
 }
