@@ -36,8 +36,7 @@ public class ProcessEndExecutionListener extends BaseListener implements Executi
 		Map<String, Object> properties = new HashMap<String, Object>();
 		fillDictionary( execution, properties, false);
 		info(this,"ProcessEndExecutionListener.createExecutionEvent("+tenant+"):"+properties);
-		properties.put("type", "processEnd");
-		Event event = new Event(Topics.EXECUTION_EVENT_TOPIC+"/"+tenant, properties);
+		Event event = new Event(Topics.PROCESS_EVENT_TOPIC+"/"+tenant, properties);
 		ProcessServiceImpl.getEventAdminStatic().postEvent(event);
 	}
 }

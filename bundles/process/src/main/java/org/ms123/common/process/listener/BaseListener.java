@@ -41,6 +41,9 @@ public class BaseListener  {
 		}
 		Method[] methods = clazz.getMethods();
 		for (Method m : methods) {
+			if(m.getParameterTypes().length > 0){
+				continue;
+			}
 			Class returnType = m.getReturnType();
 			String getter = m.getName();
 			String baseName = getBaseName(getter);

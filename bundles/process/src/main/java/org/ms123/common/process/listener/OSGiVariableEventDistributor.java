@@ -45,6 +45,7 @@ public class OSGiVariableEventDistributor extends BaseListener implements Variab
 
 	@Override
 	public void notify(Map<String,Object> properties) {
+		properties.put("eventName", properties.remove("eventType"));
 		info(this,"OSGiVariableEventDistributor.notify:"+properties);
 		Event event = new Event(Topics.VARIABLE_EVENT_TOPIC + "/" + this.tenant, properties);
 		eventAdmin.postEvent(event);

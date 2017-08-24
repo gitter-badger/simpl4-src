@@ -82,7 +82,7 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 
 		Map<String,Object> properties = getPropertyMap( event );
 
-		info(this, "ProcessConsumer.onEvent.properties:"+ properties);
+		info(this, "onEvent.properties:");
 		for( String key : properties.keySet()){
 			info(this, " - " + key + ": " + properties.get(key));
 		}
@@ -134,39 +134,31 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 
 	private boolean isEventWanted( String topic, String eventName){
 		for( String we : this.wantedEvents){
+			int cmpLen = 5;
+			String to = firstToUpper(we.split( "_")[0]);
+			if( to.equals("Activity")){
+				to = "Execution";
+			}
 			String en = we.split( "_")[1];
-			if( en.regionMatches(0, eventName, 0, 5) ){
+			if( to.equals("Process") && en.equals("completed")){
+				en = "end";
+				cmpLen = 3;
+			}
+			if( topic.indexOf(to)>0 && en.regionMatches(0, eventName, 0, cmpLen) ){
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private List<String> taskExcludeList = new ArrayList<>(Arrays.asList("variablesLocal", "hCode", "persistentState", "variablesLocal"));
-	private List<String> processExcludeList = new ArrayList<>(Arrays.asList());
-	private List<String> variableExcludeList = new ArrayList<>(Arrays.asList());
-	private List<String> activityExcludeList = new ArrayList<>(Arrays.asList());
+	private List<String> propertyExcludeList = new ArrayList<>(Arrays.asList("scopeActivityInstanceId", "eventScope","skipCustomListeners", "processInstanceStartContext", "activityInstanceState", "preserveScope", "completeScope", "skipIoMappings", "scope", "cachedEntityStateRaw", "executingScopeLeafActivity", "listenerIndex","deleteRoot", "sequenceCounter", "replacedByParent", "concurrent", "cachedEntityState", "revision","event.topics","variablesLocal", "hCode", "persistentState", "variableScopeKey", "suspensionState", "variables", "suspended", "deleted", "tenantId", "revisionNext"));
 	private Map<String,Object> getPropertyMap( Event event){
 		String topic = event.getTopic();
 		String[] propertyNames = event.getPropertyNames();
 		Map<String,Object> properties = new HashMap<String,Object>();
 		for (String name : propertyNames) {
-			if (topic.startsWith(TASK_EVENT_TOPIC)) {
-				if( taskExcludeList.contains(name)){
-					continue;
-				}
-			} else if (topic.startsWith(EXECUTION_EVENT_TOPIC)) {
-				if( activityExcludeList.contains(name)){
-					continue;
-				}
-			} else if (topic.startsWith(VARIABLE_EVENT_TOPIC)) {
-				if( variableExcludeList.contains(name)){
-					continue;
-				}
-			} else if (topic.startsWith(PROCESS_EVENT_TOPIC)) {
-				if( processExcludeList.contains(name)){
-					continue;
-				}
+			if( propertyExcludeList.contains(name)){
+				continue;
 			}
 			properties.put( name, event.getProperty(name));
 		}
@@ -177,6 +169,11 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		return (s == null || "".equals(s.trim()));
 	}
 
+	protected String firstToUpper(String s) {
+		char c[] = s.toCharArray();
+		c[0] = Character.toUpperCase(c[0]);
+		return new String(c);
+	}
 	private String getVariableType(String s) {
 		int lastIndexDot = s.lastIndexOf(".");
 		int lastIndexAt = s.lastIndexOf("@");

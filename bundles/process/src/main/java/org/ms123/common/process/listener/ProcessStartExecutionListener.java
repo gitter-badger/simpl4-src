@@ -36,7 +36,6 @@ public class ProcessStartExecutionListener extends BaseListener implements Execu
 		Map<String, Object> properties = new HashMap<String, Object>();
 		fillDictionary( execution, properties, false);
 		info(this,"ProcessStartExecutionListener.createExecutionEvent("+tenant+"):"+properties);
-		properties.put("type", "processStart");
 		Event event = new Event(Topics.PROCESS_EVENT_TOPIC+"/"+tenant, properties);
 		ProcessServiceImpl.getEventAdminStatic().postEvent(event);
 	}
