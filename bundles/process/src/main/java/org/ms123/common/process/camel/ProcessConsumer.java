@@ -77,6 +77,8 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		String type = (String) event.getProperty("type");
 		if (event.getTopic().startsWith(TASK_EVENT_TOPIC)) {
 		} else if (event.getTopic().startsWith(EXECUTION_EVENT_TOPIC)) {
+		} else if (event.getTopic().startsWith(VARIABLE_EVENT_TOPIC)) {
+		} else if (event.getTopic().startsWith(PROCESS_EVENT_TOPIC)) {
 		}
 
 	}

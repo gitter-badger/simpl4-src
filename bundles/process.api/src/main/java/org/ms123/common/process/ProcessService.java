@@ -20,6 +20,7 @@ package org.ms123.common.process.api;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.ms123.common.form.FormService;
+import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
@@ -36,6 +37,7 @@ public interface ProcessService {
 	public ProcessEngine getRootProcessEngine();
 	public ProcessEngine getProcessEngine();
 	public FormService getFormService();
+	public RegistryService getRegistryService();
 	public GitService getGitService();
 	public PermissionService getPermissionService();
 	public DataLayer getDataLayer();

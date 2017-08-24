@@ -36,6 +36,7 @@ import org.ms123.common.form.FormService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.api.ProcessService;
+import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.process.expressions.GroovyExpressionManager;
 import org.ms123.common.process.jdbc.ProcessengineJDBC;
@@ -64,6 +65,7 @@ class BaseProcessServiceImpl {
 	protected ProcessEngine rootProcessEngine;
 	protected PermissionService permissionService;
 	protected GitService gitService;
+	protected RegistryService registryService;
 	protected DataLayer dataLayer;
 	protected static EventAdmin eventAdmin;
 	protected FormService formService;

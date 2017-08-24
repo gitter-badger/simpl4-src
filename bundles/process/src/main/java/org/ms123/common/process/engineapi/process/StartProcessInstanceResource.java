@@ -103,38 +103,26 @@ public class StartProcessInstanceResource extends BaseResource {
 			if (m_processDefinitionKey != null) {
 				ProcessDefinitionQuery query = getPE().getRepositoryService().createProcessDefinitionQuery();
 				query = addVersion(query);
-				processDefinition = (ProcessDefinitionEntity) query.
-					processDefinitionKey(m_processDefinitionKey).
-					//@@@MS processDefinitionTenantId(m_namespace).
-					singleResult();
+				processDefinition = (ProcessDefinitionEntity) query.processDefinitionKey(m_processDefinitionKey).singleResult();
 				if (processDefinition == null) {
-					throw new RuntimeException("No process with processDefinitionKey(" + m_processDefinitionKey + ") in namespace(" + m_namespace + ")");
+					throw new RuntimeException("No process with processDefinitionKey(" + m_processDefinitionKey + ")");
 				}
 			} else if (m_messageName != null) {
 				ProcessDefinitionQuery query =  getPE().getRepositoryService().createProcessDefinitionQuery();
 				query = addVersion(query);
-				processDefinition = (ProcessDefinitionEntity)query.
-					messageEventSubscriptionName(m_messageName).
-					//@@@MS processDefinitionTenantId(m_namespace).
-					singleResult();
+				processDefinition = (ProcessDefinitionEntity)query.messageEventSubscriptionName(m_messageName).singleResult();
 				if (processDefinition == null) {
-					throw new RuntimeException("No process with messageName(" + m_messageName + ") in namespace(" + m_namespace + ")");
+					throw new RuntimeException("No process with messageName(" + m_messageName + ")");
 				}
 			} else if (m_processDefinitionName != null) {
-				processDefinition = (ProcessDefinitionEntity) getPE().getRepositoryService().createProcessDefinitionQuery().
-					processDefinitionName(m_processDefinitionName).
-					//@@@MS processDefinitionTenantId(m_namespace).
-					singleResult();
+				processDefinition = (ProcessDefinitionEntity) getPE().getRepositoryService().createProcessDefinitionQuery().processDefinitionName(m_processDefinitionName).singleResult();
 				if (processDefinition == null) {
-					throw new RuntimeException("No process with processDefinitionName(" + m_processDefinitionName + ") in namespace(" + m_namespace + ")");
+					throw new RuntimeException("No process with processDefinitionName(" + m_processDefinitionName + ")");
 				}
 			} else {
-				processDefinition = (ProcessDefinitionEntity) getPE().getRepositoryService().createProcessDefinitionQuery().
-					processDefinitionId(m_processDefinitionId).
-					//@@@MS processDefinitionTenantId(m_namespace).
-					singleResult();
+				processDefinition = (ProcessDefinitionEntity) getPE().getRepositoryService().createProcessDefinitionQuery().processDefinitionId(m_processDefinitionId).singleResult();
 				if (processDefinition == null) {
-					throw new RuntimeException("No process with processDefinitionId(" + m_processDefinitionId + ") in namespace(" + m_namespace + ")");
+					throw new RuntimeException("No process with processDefinitionId(" + m_processDefinitionId + ")");
 				}
 			}
 			if (m_processDefinitionId == null) {
@@ -143,12 +131,9 @@ public class StartProcessInstanceResource extends BaseResource {
 			List<IdentityLink> links = getPE().getRepositoryService().getIdentityLinksForProcessDefinition(m_processDefinitionId);
 			info(this,"CandidateLinks:" + links);
 			if (links.size() > 0) {
-				processDefinition = (ProcessDefinitionEntity) getPE().getRepositoryService().createProcessDefinitionQuery().
-					processDefinitionId(processDefinition.getId()).
-					startableByUser(uid).
-					singleResult();
+				processDefinition = (ProcessDefinitionEntity) getPE().getRepositoryService().createProcessDefinitionQuery().processDefinitionId(processDefinition.getId()).startableByUser(uid).singleResult();
 				if (processDefinition == null) {
-					throw new RuntimeException("User(" + uid + ") not allowed to start process with processDefinitionId(" + m_processDefinitionId + ") in namespace(" + m_namespace + ")");
+					throw new RuntimeException("User(" + uid + ") not allowed to start process with processDefinitionId(" + m_processDefinitionId + ")");
 				}
 			}
 			String deploymentId = processDefinition.getDeploymentId();
@@ -213,7 +198,7 @@ e.printStackTrace();
 		Map props = new HashMap();
 		Map hint = new HashMap();
 		props.put(HISTORY_TYPE, HISTORY_ACTIVITI_STARTPROCESS_EXCEPTION);
-		props.put(HISTORY_KEY, m_namespace+"/"+processDefinition.getId());
+		props.put(HISTORY_KEY, processDefinition.getId());
 		info(this,"createLogEntry.props:" + props);
 		Throwable r = getRootCause(e);
 		props.put(HISTORY_MSG, r != null ? getStackTrace(r) : getStackTrace(e));

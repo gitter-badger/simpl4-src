@@ -25,6 +25,7 @@ import java.util.Map;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.form.FormService;
+import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.git.GitService;
@@ -65,6 +66,10 @@ public class BaseResource {
 	}
 	public FormService getFormService() {
 		return this.processService.getFormService();
+	}
+
+	public RegistryService getRegistryService() {
+		return this.processService.getRegistryService();
 	}
 	public DataLayer getDataLayer() {
 		return this.processService.getDataLayer();

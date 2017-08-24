@@ -39,9 +39,11 @@ import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.form.FormService;
+import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.git.GitService;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.process.converter.Simpl4BpmnJsonConverter;
 import org.ms123.common.process.engineapi.process.ProcessDefinitionCandidateResource;
 import org.ms123.common.process.engineapi.process.ProcessDefinitionDiagramResource;
@@ -99,6 +101,9 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 		return this.permissionService;
 	}
 
+	public RegistryService getRegistryService(){
+		return this.registryService;
+	}
 	public FormService getFormService(){
 		return this.formService;
 	}
@@ -381,6 +386,11 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	@Reference(dynamic = true,optional=true)
 	public void setFormService(FormService paramFormService) {
 		this.formService = paramFormService;
+	}
+
+	@Reference(dynamic = true,optional=true)
+	public void setRegistryService(RegistryService paramRegistryService) {
+		this.registryService = paramRegistryService;
 	}
 
 	@Reference(dynamic = true,optional=true)

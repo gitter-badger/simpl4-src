@@ -48,69 +48,68 @@ public class DeploymentResource extends BaseResource {
 	}
 
 	public Object deployProcess(String namespace, String path, boolean deploy, boolean all) throws Exception {
+		if (!deploy) {
+			throw new RuntimeException("DeploymentResource.deployProcess:unDeploy not supported");
+		}
 		info(this,"deployProcess:"+namespace+"/path:"+path);
 		String processJson = getGitService().getFileContent(namespace, path);
 		String deploymentId = null;
-		String basename = getBasename(path);
+		String deployName = getDeploymentName(namespace,getBasename(path));
 		RepositoryService rs = getRootPE().getRepositoryService();
-		List<Deployment> dl = null;
-		if (all) {
-			dl = rs.createDeploymentQuery().deploymentName(basename).list();
-		} else {
-			//@@@MS dl = rs.createDeploymentQuery().deploymentName(basename).deploymentTenantId(namespace).list();
-			dl = rs.createDeploymentQuery().deploymentName(basename).list();
-		}
+		List<Deployment> dl = rs.createDeploymentQuery().deploymentName(deployName).list();
 		info(this,"Deployment:" + dl);
-		if (deploy) {
-			Map shape = (Map) m_ds.deserialize(processJson);
-			Map<String, Object> properties = (Map) shape.get("properties");
-			Object m = properties.get("initialparameter");
-			String initialParameter = null;
-			if (m instanceof Map) {
-				initialParameter = m_js.deepSerialize(m);
-			} else {
-				initialParameter = (String) properties.get("initialparameter");
-				if (initialParameter == null) {
-					initialParameter = m_js.deepSerialize(new HashMap());
-				}
-			}
-			byte[] bpmnBytes = Simpl4BpmnJsonConverter.getBpmnXML(processJson, namespace, path);
-			InputStream bais = new ByteArrayInputStream(bpmnBytes);
-			DeploymentBuilder deployment = rs.createDeployment();
-			deployment.name(basename);
-			deployment.tenantId(namespace);
-			deployment.addString("initialParameter", initialParameter);
-			deploymentId = deployment.addInputStream(basename + ".bpmn20.xml", bais).deploy().getId();
-			info(this,"deploymentId:" + deploymentId);
-			Map pdefs = getProcessService().getProcessDefinitions(namespace, basename, null, -1, null, null, null);
-			List<ProcessDefinitionResponse> pList = (List) pdefs.get("data");
-			m_js.prettyPrint(true);
-			info(this,"PList:" + m_js.deepSerialize(pList));
-			if (pList.size() != 1) {
-				throw new RuntimeException("ProcessService.deployProcess(" + namespace + "," + basename + "):not " + (pList.size() == 0 ? "found" : "uniqe"));
-			}
-			String processdefinitionId = pList.get(0).getId();
-			String groups = (String) properties.get("startablegroups");
-			List groupList = null;
-			if (groups != null && groups.trim().length() > 0) {
-				groupList = new ArrayList<String>(Arrays.asList(groups.split(",")));
-			}
-			List userList = null;
-			String users = (String) properties.get("startableusers");
-			if (users != null && users.trim().length() > 0) {
-				userList = new ArrayList<String>(Arrays.asList(users.split(",")));
-			}
-			info(this,"userList:" + userList + "/grList:" + groupList);
-			getProcessService().setProcessDefinitionCandidates(processdefinitionId, userList, groupList);
+		Map shape = (Map) m_ds.deserialize(processJson);
+		Map<String, Object> properties = (Map) shape.get("properties");
+		Object m = properties.get("initialparameter");
+		String initialParameter = null;
+		if (m instanceof Map) {
+			initialParameter = m_js.deepSerialize(m);
 		} else {
-			deploymentId = null;
+			initialParameter = (String) properties.get("initialparameter");
+			if (initialParameter == null) {
+				initialParameter = m_js.deepSerialize(new HashMap());
+			}
 		}
-		Map map = new HashMap();
-		map.put("deploymentId", deploymentId);
-		return map;
+		byte[] bpmnBytes = Simpl4BpmnJsonConverter.getBpmnXML(processJson, namespace, path);
+		InputStream bais = new ByteArrayInputStream(bpmnBytes);
+		DeploymentBuilder deployment = rs.createDeployment();
+		deployment.name(deployName);
+		deployment.tenantId(namespace);
+		deployment.addString("initialParameter", initialParameter);
+		deploymentId = deployment.addInputStream(deployName + ".bpmn20.xml", bais).deploy().getId();
+		info(this,"deploymentId:" + deploymentId);
+		Map pdefs = getProcessService().getProcessDefinitions(namespace, deployName, null, -1, null, null, null);
+		List<ProcessDefinitionResponse> pList = (List) pdefs.get("data");
+		m_js.prettyPrint(true);
+		info(this,"PList:" + m_js.deepSerialize(pList));
+		if (pList.size() != 1) {
+			throw new RuntimeException("ProcessService.deployProcess(" + deployName + "):not " + (pList.size() == 0 ? "found" : "uniqe"));
+		}
+		String processdefinitionId = pList.get(0).getId();
+		Map<String,String> attr = new HashMap<String,String>();
+		attr.put("subject", "namespaceProcDefAssoc");
+		getRegistryService().set(processdefinitionId,namespace, attr);
+		String groups = (String) properties.get("startablegroups");
+		List groupList = null;
+		if (groups != null && groups.trim().length() > 0) {
+			groupList = new ArrayList<String>(Arrays.asList(groups.split(",")));
+		}
+		List userList = null;
+		String users = (String) properties.get("startableusers");
+		if (users != null && users.trim().length() > 0) {
+			userList = new ArrayList<String>(Arrays.asList(users.split(",")));
+		}
+		info(this,"userList:" + userList + "/grList:" + groupList);
+		getProcessService().setProcessDefinitionCandidates(processdefinitionId, userList, groupList);
+		Map retMap = new HashMap();
+		retMap.put("deploymentId", deploymentId);
+		return retMap;
 	}
 	private String getBasename(String path) {
 		String e[] = path.split("/");
 		return e[e.length - 1];
+	}
+	private String getDeploymentName( String ns, String name){
+		return ns + ":" + name;
 	}
 }

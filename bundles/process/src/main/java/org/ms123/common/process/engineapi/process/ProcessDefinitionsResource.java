@@ -36,7 +36,6 @@ public class ProcessDefinitionsResource extends BaseResource {
 
 	private String m_startableByUser;
 	private String m_startableByGroup;
-	private String m_namespace;
 	private String m_name;
 	private String m_key;
 	private Integer m_version;
@@ -47,7 +46,6 @@ public class ProcessDefinitionsResource extends BaseResource {
 		super(as, listParams);
 		m_startableByUser = startableByUser;
 		m_startableByGroup = startableByGroup;
-		m_namespace = namespace;
 		m_name = name;
 		m_key = key;
 		m_version = version;
@@ -56,14 +54,10 @@ public class ProcessDefinitionsResource extends BaseResource {
 		properties.put("version", ProcessDefinitionQueryProperty.PROCESS_DEFINITION_VERSION);
 		properties.put("deploymentId", ProcessDefinitionQueryProperty.DEPLOYMENT_ID);
 		properties.put("name", ProcessDefinitionQueryProperty.PROCESS_DEFINITION_NAME);
-		//@@@MS properties.put("tenantId", ProcessDefinitionQueryProperty.PROCESS_DEFINITION_TENANT_ID);
 	}
 
 	public Map getProcessDefinitions() {
 		ProcessDefinitionQuery query = getPE().getRepositoryService().createProcessDefinitionQuery();
-		if( m_namespace != null){
-			//@@@MS query = query.processDefinitionTenantId(this.m_namespace);
-		}
 		if( m_name != null){
 			query = query.processDefinitionName(this.m_name);
 		}
@@ -79,9 +73,6 @@ public class ProcessDefinitionsResource extends BaseResource {
 		}
 		if (StringUtils.isNotEmpty(m_startableByUser)) {
 			query = query.startableByUser(m_startableByUser);
-		}
-		if( m_namespace == null){
-			query = query.orderByTenantId();
 		}
 		if( m_key == null){
 			query = query.orderByProcessDefinitionKey();

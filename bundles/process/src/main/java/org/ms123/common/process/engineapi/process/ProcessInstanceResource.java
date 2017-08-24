@@ -102,7 +102,6 @@ public class ProcessInstanceResource extends BaseResource {
 	}
 
 	private void addTaskList(String processInstanceId, Map<String, Object> responseJSON) {
-		//@@@MS List<HistoricTaskInstance> taskList = getPE().getHistoryService().createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricTaskInstanceStartTime().asc().list();
 		List<HistoricTaskInstance> taskList = getPE().getHistoryService().createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
 		if (taskList != null && taskList.size() > 0) {
 			ArrayList tasksJSON = new ArrayList();
