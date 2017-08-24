@@ -151,7 +151,7 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		return false;
 	}
 
-	private List<String> propertyExcludeList = new ArrayList<>(Arrays.asList("scopeActivityInstanceId", "eventScope","skipCustomListeners", "processInstanceStartContext", "activityInstanceState", "preserveScope", "completeScope", "skipIoMappings", "scope", "cachedEntityStateRaw", "executingScopeLeafActivity", "listenerIndex","deleteRoot", "sequenceCounter", "replacedByParent", "concurrent", "cachedEntityState", "revision","event.topics","variablesLocal", "hCode", "persistentState", "variableScopeKey", "suspensionState", "variables", "suspended", "deleted", "tenantId", "revisionNext"));
+	private List<String> propertyExcludeList = new ArrayList<>(Arrays.asList("replacedParent", "scopeActivityInstanceId", "eventScope","skipCustomListeners", "processInstanceStartContext", "activityInstanceState", "preserveScope", "completeScope", "skipIoMappings", "scope", "cachedEntityStateRaw", "executingScopeLeafActivity", "listenerIndex","deleteRoot", "sequenceCounter", "replacedByParent", "concurrent", "cachedEntityState", "revision","event.topics","variablesLocal", "hCode", "persistentState", "variableScopeKey", "suspensionState", "variables", "suspended", "deleted", "tenantId", "revisionNext"));
 	private Map<String,Object> getPropertyMap( Event event){
 		String topic = event.getTopic();
 		String[] propertyNames = event.getPropertyNames();
