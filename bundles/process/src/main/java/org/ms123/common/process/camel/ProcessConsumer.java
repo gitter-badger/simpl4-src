@@ -68,15 +68,6 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 	public boolean isFailOnException() {
 		return false;
 	}
-	private boolean isEventWanted( String topic, String eventName){
-		for( String we : this.wantedEvents){
-			String en = we.split( "_")[1];
-			if( en.regionMatches(0, eventName, 0, 5) ){
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public void handleEvent(Event event) {
 		String eventName = (String) event.getProperty("eventName");
@@ -89,19 +80,12 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		}
 		info(this,"Event("+topic+","+eventName+") wanted");
 
-		String[] propertyNames = event.getPropertyNames();
-		Map<String,Object> properties = new HashMap<String,Object>();
-		for (String name : propertyNames) {
-			info(this, " - " + name + ": " + event.getProperty(name));
-			properties.put( name, event.getProperty(name));
-		}
+		Map<String,Object> properties = getPropertyMap( event );
 
-		if (topic.startsWith(TASK_EVENT_TOPIC)) {
-		} else if (topic.startsWith(EXECUTION_EVENT_TOPIC)) {
-		} else if (topic.startsWith(VARIABLE_EVENT_TOPIC)) {
-		} else if (topic.startsWith(PROCESS_EVENT_TOPIC)) {
-		}
 		info(this, "ProcessConsumer.onEvent.properties:"+ properties);
+		for( String key : properties.keySet()){
+			info(this, " - " + key + ": " + properties.get(key));
+		}
 		final Exchange exchange = endpoint.createExchange(ExchangePattern.InOnly);
 		exchange.getIn().setBody(properties);
 		try {
@@ -146,6 +130,47 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		info(this, "Unregistering EventHandler handler fore tenant:" + this.tenant);
 		this.serviceRegistration.unregister();
 		super.doStop();
+	}
+
+	private boolean isEventWanted( String topic, String eventName){
+		for( String we : this.wantedEvents){
+			String en = we.split( "_")[1];
+			if( en.regionMatches(0, eventName, 0, 5) ){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private List<String> taskExcludeList = new ArrayList<>(Arrays.asList("variablesLocal", "hCode", "persistentState", "variablesLocal"));
+	private List<String> processExcludeList = new ArrayList<>(Arrays.asList());
+	private List<String> variableExcludeList = new ArrayList<>(Arrays.asList());
+	private List<String> activityExcludeList = new ArrayList<>(Arrays.asList());
+	private Map<String,Object> getPropertyMap( Event event){
+		String topic = event.getTopic();
+		String[] propertyNames = event.getPropertyNames();
+		Map<String,Object> properties = new HashMap<String,Object>();
+		for (String name : propertyNames) {
+			if (topic.startsWith(TASK_EVENT_TOPIC)) {
+				if( taskExcludeList.contains(name)){
+					continue;
+				}
+			} else if (topic.startsWith(EXECUTION_EVENT_TOPIC)) {
+				if( activityExcludeList.contains(name)){
+					continue;
+				}
+			} else if (topic.startsWith(VARIABLE_EVENT_TOPIC)) {
+				if( variableExcludeList.contains(name)){
+					continue;
+				}
+			} else if (topic.startsWith(PROCESS_EVENT_TOPIC)) {
+				if( processExcludeList.contains(name)){
+					continue;
+				}
+			}
+			properties.put( name, event.getProperty(name));
+		}
+		return properties;
 	}
 
 	private boolean isEmpty(String s) {
