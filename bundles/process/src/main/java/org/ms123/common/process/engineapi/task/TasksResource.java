@@ -105,9 +105,6 @@ public class TasksResource extends BaseResource {
 		if (businessKey != null) {
 			taskQuery.processInstanceBusinessKey(businessKey);
 		}
-		if (tenantId != null) {
-			//@@@MS taskQuery.taskTenantId(tenantId);
-		}
 		Map dataResponse = new TasksPaginateList(this).paginateList(m_listParams, taskQuery, "id", properties);
 		return dataResponse;
 	}
