@@ -88,7 +88,7 @@ public class DeploymentResource extends BaseResource {
 		String processdefinitionId = pList.get(0).getId();
 		Map<String,String> attr = new HashMap<String,String>();
 		attr.put("subject", "namespaceProcDefAssoc");
-		getRegistryService().set(processdefinitionId,namespace, attr);
+		//@@@MS getRegistryService().set(processdefinitionId,namespace, attr);
 		String groups = (String) properties.get("startablegroups");
 		List groupList = null;
 		if (groups != null && groups.trim().length() > 0) {

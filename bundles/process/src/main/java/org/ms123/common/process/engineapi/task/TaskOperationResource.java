@@ -34,6 +34,9 @@ import org.ms123.common.process.api.ProcessService;
 import org.camunda.bpm.engine.form.FormProperty;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.task.IdentityLink;
+import org.ms123.common.process.tasks.TaskScriptExecutor;
+import org.ms123.common.process.tasks.TaskScriptVariableScope;
+import org.camunda.bpm.engine.delegate.VariableScope;
 import flexjson.*;
 import org.apache.commons.beanutils.*;
 import static com.jcabi.log.Logger.info;
@@ -147,7 +150,7 @@ public class TaskOperationResource extends BaseResource {
 						setMapping(newVariables,  data, variablesMapping, executionId);
 						String script = (String)ret.get("postProcess");
 						if( script!=null && script.trim().length()> 2){
-							//@@@MS getWorkflowService().executeScriptTask( executionId, tenantId, processDefinitionKey, pid, script, newVariables, taskName );
+							executeScriptTask( executionId, tenantId, processDefinitionKey, pid, script, newVariables, taskName );
 							if( data.get("errors") != null ){
 								Object _errors = data.get("errors");
 								Map successNode = new HashMap();
@@ -185,6 +188,11 @@ public class TaskOperationResource extends BaseResource {
 		Map successNode = new HashMap();
 		successNode.put("success", true);
 		return successNode;
+	}
+	private void executeScriptTask( String executionId, String tenantId, String processDefinitionKey, String pid, String script, Map newVariables, String taskName ){
+		TaskScriptExecutor sce = new TaskScriptExecutor();
+		VariableScope vs = new TaskScriptVariableScope(getPE().getRuntimeService(), executionId);
+		sce.execute(tenantId,processDefinitionKey, pid, script, newVariables, vs,taskName);
 	}
 	private void setMapping(Map<String,Object> newVariables, Map formData, String variablesMapping, String executionId){
 		info(this,"setMapping.newVariables:"+newVariables);

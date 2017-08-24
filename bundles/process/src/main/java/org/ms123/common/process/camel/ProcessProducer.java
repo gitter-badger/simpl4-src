@@ -174,6 +174,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		if (isEmpty(this.namespace)) {
 			this.namespace = (String) exchange.getProperty("_namespace");
 		}
+		this.namespace = trimToEmpty( this.namespace);
 		info(this,"ProcessProducer.operation:" + this.operation+"/namespace:"+this.namespace);
 		invokeOperation(this.operation, exchange);
 		/* final CamelService camelService = (CamelService) exchange.getContext().getRegistry().lookupByName(CamelService.class.getName());
@@ -226,7 +227,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 
 		List<Map<String,Object>> retList = new ArrayList<Map<String,Object>>();
 		for( ProcessInstance pi : processInstanceList){
-			pi = 	runtimeService.createProcessInstanceQuery()/*@@@MS.includeProcessVariables()*/.processInstanceId( pi.getId()).singleResult();
+			pi = 	runtimeService.createProcessInstanceQuery().processInstanceId( pi.getId()).singleResult();
 			if( pi == null){
 				continue;
 			}
@@ -308,12 +309,14 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				}
 			}
 		}
-		//@@@MS taskQuery.taskTenantId(trimToEmpty(this.namespace));
 		List<Task> taskList = taskQuery.list();
 		info(this,"taskList:");
 		List<Map> ret = new ArrayList<Map>();
 		for( Task task : taskList){
-			info(this,"\t"+task.getName()+"/"+task.getId()+"/"+task.getTaskDefinitionKey());
+			info(this,"\tTaskName:"+task.getName()+"/taskId"+task.getId()+"/taskDefKey:"+task.getTaskDefinitionKey()+"/processDefId:"+task.getProcessDefinitionId());
+			if( !task.getProcessDefinitionId().startsWith(this.namespace)){
+				continue;
+			}
 			Map<String, Object> taskMap = new HashMap();
 			taskMap.put("assignee", task.getAssignee());
 			taskMap.put("createTime", task.getCreateTime());
@@ -547,22 +550,22 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			if (!isEmpty(processDefinitionId)) {
 				info(this,"ExecuteProcess:processDefinitionId:" + processDefinitionId);
 				pib = this.runtimeService.createProcessInstanceById(processDefinitionId);
-				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionId(processDefinitionId)/*@@@MS .processDefinitionTenantId(this.namespace)*/.singleResult();
+				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionId(processDefinitionId).singleResult();
 				if (processDefinition == null) {
-					throw new RuntimeException("No process with processDefinitionId(" + processDefinitionId + ") in namespace(" + this.namespace + ")");
+					throw new RuntimeException("No process with processDefinitionId(" + processDefinitionId + ")");
 				}
 			}
 			String processDefinitionKey = getString(exchange, PROCESS_DEFINITION_KEY, this.processCriteria.get(PROCESS_DEFINITION_KEY));
 			if (!isEmpty(processDefinitionKey)) {
 				info(this,"ExecuteProcess:processDefinitionKey:" + processDefinitionKey);
 				pib = this.runtimeService.createProcessInstanceByKey(processDefinitionKey);
-				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(processDefinitionKey)/*@@@MS .processDefinitionTenantId(this.namespace)*/.singleResult();
+				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(processDefinitionKey).singleResult();
 				if (processDefinition == null) {
-					throw new RuntimeException("No process with processDefinitionKey(" + processDefinitionKey + ") in namespace(" + this.namespace + ")");
+					throw new RuntimeException("No process with processDefinitionKey(" + processDefinitionKey + ")");
 				}
 			}
 			if( pib == null){
-					throw new RuntimeException("No process with processDefinitionId("+processDefinitionId+") or processDefinitionKey(" + processDefinitionKey + ") in namespace(" + this.namespace + ")");
+					throw new RuntimeException("No process with processDefinitionId("+processDefinitionId+") or processDefinitionKey(" + processDefinitionKey + ")");
 			}
 			String businessKey = getString(exchange, BUSINESS_KEY, this.businessKey);
 			if (!isEmpty(businessKey)) {
@@ -574,8 +577,6 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				info(this,"ExecuteProcess:var:" + entry.getKey()+"="+entry.getValue());
 				pib.setVariable(entry.getKey(), entry.getValue());
 			}
-			info(this,"ExecuteProcess:tenant:" + this.namespace);
-			//@@@MS pib.tenantId(this.namespace);
 			setInitialParameter( processDefinition, pib );
 			return pib.execute();
 		} finally {
@@ -743,13 +744,20 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 
 		if( hasCriteria ){
 			info(this,"getProcessInstances.namespace:"+this.namespace);
-			//@@@MS eq.executionTenantId(trimToEmpty(this.namespace));
 			List<ProcessInstance> executionList = (List) eq.list();
 			info(this,"getProcessInstances:" + executionList);
 			if (exception && (executionList == null || executionList.size() == 0)) {
 				throw new RuntimeException("ProcessProducer.findProcessInstance:Could not find processInstance with criteria " + processCriteria);
 			}
-			return executionList;
+			List<ProcessInstance> retList = new ArrayList<ProcessInstance>();
+			for( ProcessInstance pi : executionList){
+				if( !pi.getProcessDefinitionId().startsWith(this.namespace)){
+					info(this,"getProcessInstances:processDefinitionId("+pi.getProcessDefinitionId()+")  don't starts with namespace(" + this.namespace+")");
+					continue;
+				}
+				retList.add( pi );
+			}
+			return retList;
 		}
 		return null;
 	}
@@ -808,10 +816,17 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			}
 		}
 
-//@@@MS		hq.processInstanceTenantId(trimToEmpty(this.namespace));
 		List<HistoricProcessInstance> piList = (List) hq.list();
 		info(this,"getHistoricProcessInstances:" + piList);
-		return piList;
+		List<HistoricProcessInstance> retList = new ArrayList<HistoricProcessInstance>();
+		for( HistoricProcessInstance pi : piList){
+			if( !pi.getProcessDefinitionKey().startsWith(trimToEmpty(this.namespace))){
+				info(this,"getHistoricProcessInstances:processDefinitionId("+pi.getProcessDefinitionKey()+")  don't starts with namespace(" + trimToEmpty(this.namespace)+")");
+				continue;
+			}
+			retList.add( pi );
+		}
+		return retList;
 	}
 
 	private ProcessDefinition getProcessDefinition(ProcessInstance processInstance) {
