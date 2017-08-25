@@ -48,7 +48,7 @@ qx.Class.define("ms123.processexplorer.plugins.DefinitionDiagram", {
 	 */
 	members: {
 		_showDiagram:function(){
-			var source = ms123.util.Remote.rpcSync("activiti:getDefinitionDiagram", {
+			var source = ms123.util.Remote.rpcSync("process:getDefinitionDiagram", {
 					processDefinitionId:this._processDefinition.id
 				});
 			var image = new qx.ui.basic.Image(source);

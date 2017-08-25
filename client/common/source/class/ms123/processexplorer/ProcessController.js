@@ -223,7 +223,7 @@ console.log("processVariables:",processVariables);
 
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("activiti:getTaskFormProperties", {
+				result = ms123.util.Remote.rpcSync("process:getTaskFormProperties", {
 					executionId:processInstanceId,
 					taskId: tid
 				});
@@ -241,7 +241,7 @@ console.log("processVariables:",processVariables);
 		_getProcessVariables: function (processTenantId, formId, pid) {
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("activiti:getVariables", {
+				result = ms123.util.Remote.rpcSync("process:getVariables", {
 					executionId:pid,
 					namespace:processTenantId,
 					formId:formId
@@ -306,7 +306,7 @@ console.log("processVariables:",processVariables);
 			var params = null; 
 			if( task == null ){
 				params = {
-					service: "activiti",
+					service: "process",
 					method: "startProcessInstance",
 					parameter: {
 						namespace: this._namespace ? this._namespace : ms123.StoreDesc.getCurrentNamespace(),
@@ -357,7 +357,7 @@ console.log("processVariables:",processVariables);
 			}).bind(this);
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("activiti:executeTaskOperation", {
+				result = ms123.util.Remote.rpcSync("process:executeTaskOperation", {
 					taskId:taskId,
 					operation: "complete",
 					startParams: processVariables
@@ -382,7 +382,7 @@ console.log("processVariables:",processVariables);
 		_getTasks: function (processInstanceId) {
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("activiti:getTasks", {
+				result = ms123.util.Remote.rpcSync("process:getTasks", {
 					queryParams:{
 						assignee:this.userid,
 						processInstanceId: processInstanceId
@@ -401,7 +401,7 @@ console.log("processVariables:",processVariables);
 		_getProcessDefinition: function (namespace,name) {
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("activiti:getProcessDefinitions", {
+				result = ms123.util.Remote.rpcSync("process:getProcessDefinitions", {
 					namespace:namespace ? namespace : ms123.StoreDesc.getCurrentNamespace(),
 					version:-1,
 					key:name

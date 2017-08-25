@@ -87,8 +87,7 @@
 			start: function( processDefinition, parameter, finishCallback ) {
 				this.processDefinition = processDefinition;
 				this.processName = processDefinition.name;
-				var pid = this.processDefinition.id;
-				this.namespace = pid.substring(0, pid.indexOf('-'))
+				this.namespace = this.processDefinition.id.substring(0, this.processDefinition.id.indexOf('-'))
 				console.log( "Start:" + JSON.stringify( processDefinition, null, 2 ) );
 				console.log( "startFormResourceKey:" + this.processDefinition.startFormResourceKey );
 				if ( this.processDefinition.startFormResourceKey ) {
@@ -108,12 +107,14 @@
 				var processName = null;
 				if ( task == null ) {
 					formResourceKey = this.processDefinition.startFormResourceKey;
+					this.namespace = this.processDefinition.id.substring(0, this.processDefinition.id.indexOf('-'))
 					processName = this.processName;
 				} else {
 					formResourceKey = task.formResourceKey;
 					if ( task.processName ) this.processName = task.processName;
 					processName = this.processName;
 					taskName = task.name;
+					this.namespace = task.processDefinitionId.substring(0, task.processDefinitionId.indexOf('-'))
 				}
 				if ( formResourceKey == null ) {
 					this.handleExecuteButton( null, task, null, null, finishCallback );
@@ -123,6 +124,7 @@
 				console.log( "{task,process}Name:" + taskName + "/" + processName );
 				console.log( "formResourceKey:" + formResourceKey );
 				console.log( "formName:" + formName );
+				console.log( "namespace:" + this.namespace );
 				var self = this;
 				this.actionCallback = function( e ) {
 					console.log( "ProcessController.actionCallback:", e.detail );
@@ -166,6 +168,7 @@
 				this.formName = 'empty';
 				this.async( function() {
 					this.formName = formName;
+					console.log("formName:",formName);
 					this.async( function() {
 						var form = this.querySelector( "#formid" );
 						console.log("form:",form);
