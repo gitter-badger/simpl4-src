@@ -43,10 +43,10 @@ public class DeploymentsDeleteResource extends BaseResource {
       Boolean cascade = m_cascade;
       for (String deploymentId : m_deploymentIds) {
         if (cascade) {
-          getPE().getRepositoryService().deleteDeployment(deploymentId, true);
+          getRootPE().getRepositoryService().deleteDeployment(deploymentId, true);
         }
         else {
-          getPE().getRepositoryService().deleteDeployment(deploymentId);
+          getRootPE().getRepositoryService().deleteDeployment(deploymentId);
         }
       }
 			Map successNode = new HashMap();

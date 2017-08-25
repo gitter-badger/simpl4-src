@@ -38,8 +38,9 @@ import org.ms123.common.libhelper.Utils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.camunda.bpm.engine.delegate.BaseDelegateExecution;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.jcabi.log.Logger.debug;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
 
 /**
  * 
@@ -47,7 +48,6 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class GroovyExpression implements Expression {
-	private static final Logger m_logger = LoggerFactory.getLogger(GroovyExpression.class);
 	protected JSONDeserializer ds = new JSONDeserializer();
 	protected String m_expressionText;
 	protected GroovyShell m_shell;
@@ -56,7 +56,7 @@ public class GroovyExpression implements Expression {
 	private static ConcurrentMap<String, Script> m_scriptCache = new ConcurrentLinkedHashMap.Builder<String, Script>().maximumWeightedCapacity(100).build();
 
 	public GroovyExpression(GroovyShell shell, ProcessEngine pe, String expressionText) {
-		debug("GroovyExpression:" + expressionText);
+		debug(this, "GroovyExpression:" + expressionText);
 		m_shell = shell;
 		m_processEngine = pe;
 		m_expressionText = expressionText;
@@ -64,24 +64,26 @@ public class GroovyExpression implements Expression {
 
 	public synchronized Object getValue(VariableScope variableScope) {
 		long start = new Date().getTime();
-		debug("GroovyExpression.getValue-->" + m_expressionText);
+		debug(this, "GroovyExpression.getValue-->" + m_expressionText);
 		Object o = expandString(m_expressionText, variableScope);
-		long end = new Date().getTime();
-		debug("GroovyExpression.getValue<---:" + o);
-		debug("TIME:" + (end - start));
+		debug(this, "GroovyExpression.getValue<---:" + o);
 		return o;
 	}
 
 	public void setValue(Object value, VariableScope variableScope) {
-		debug("GroovyExpression.setValue:" + value);
+		info(this, "GroovyExpression.setValue:" + value);
 	}
+
 	public void setValue(Object value, VariableScope variableScope, BaseDelegateExecution e) {
-		throw new RuntimeException("GroovyExpression.setValue(Object,VariableScope,BaseDelegateExecution) not implemented");
+		info(this, "GroovyExpression.setValue.BaseDelegateExecution(" + e + "):" + value);
 	}
+
 	public Object getValue(VariableScope variableScope, BaseDelegateExecution e) {
-		throw new RuntimeException("GroovyExpression.getValue(VariableScope,BaseDelegateExecution) not implemented");
+		info(this, "GroovyExpression.getValue(" + e + "):" + variableScope);
+		return getValue(variableScope);
 	}
-	public boolean isLiteralText(){
+
+	public boolean isLiteralText() {
 		throw new RuntimeException("GroovyExpression.isLiteralText() not implemented");
 	}
 
@@ -106,10 +108,9 @@ public class GroovyExpression implements Expression {
 				binding.setVariable("__processDefinitionId", e.getProcessDefinitionId());
 			}
 			script.setBinding(binding);
-			debug("GroovyExpression.vars:" + binding.getVariables());
+			debug(this, "GroovyExpression.vars:" + binding.getVariables());
 			return script.run();
 		} catch (Throwable e) {
-			log(">>>>>>>>>>>>" + e);
 			e.printStackTrace();
 			String msg = Utils.formatGroovyException(e, expr);
 			if (scope instanceof ActivityExecution) {
@@ -118,7 +119,6 @@ public class GroovyExpression implements Expression {
 				List<HistoricActivityInstance> activityList = m_processEngine.getHistoryService().createHistoricActivityInstanceQuery().activityId(activityId).list();
 				String activityName = "";
 				for (HistoricActivityInstance h : activityList) {
-					log("h:" + h.getActivityName());
 					if ("".equals(activityName)) {
 						activityName = h.getActivityName();
 					}
@@ -137,7 +137,7 @@ public class GroovyExpression implements Expression {
 		try {
 			return ds.deserialize(str);
 		} catch (Exception e) {
-			error("GroovyExpression.getJSON", e);
+			error(this, "GroovyExpression.getJSON", e);
 			return str;
 		}
 	}
@@ -212,16 +212,5 @@ public class GroovyExpression implements Expression {
 		return false;
 	}
 
-	private void debug(String message) {
-		m_logger.debug(message);
-	}
-
-	private void log(String message) {
-		m_logger.info(message);
-	}
-
-	private void error(String message, Throwable t) {
-		m_logger.error(message, t);
-	}
 }
 
