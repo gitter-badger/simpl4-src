@@ -87,9 +87,9 @@
 			start: function( processDefinition, parameter, finishCallback ) {
 				this.processDefinition = processDefinition;
 				this.processName = processDefinition.name;
-				this.namespace = processDefinition.tenantId;
-				console.log( "Start:" + JSON.stringify( processDefinition, null, 2 ) );
 				var pid = this.processDefinition.id;
+				this.namespace = pid.substring(0, pid.indexOf('-'))
+				console.log( "Start:" + JSON.stringify( processDefinition, null, 2 ) );
 				console.log( "startFormResourceKey:" + this.processDefinition.startFormResourceKey );
 				if ( this.processDefinition.startFormResourceKey ) {
 					this.showForm( null, finishCallback );
@@ -106,19 +106,14 @@
 				var formResourceKey = null;
 				var taskName = null;
 				var processName = null;
-				var processTenantId = null;
 				if ( task == null ) {
 					formResourceKey = this.processDefinition.startFormResourceKey;
 					processName = this.processName;
 				} else {
 					formResourceKey = task.formResourceKey;
 					if ( task.processName ) this.processName = task.processName;
-					processTenantId = task.processTenantId;
 					processName = this.processName;
 					taskName = task.name;
-				}
-				if ( !processTenantId ) {
-					processTenantId = simpl4.util.BaseManager.getNamespace();
 				}
 				if ( formResourceKey == null ) {
 					this.handleExecuteButton( null, task, null, null, finishCallback );
@@ -157,7 +152,7 @@
 				var processVariables = {};
 				var mappedFormValues = null;
 				if ( task != null ) {
-					processVariables = this.getProcessVariables( processTenantId, formResourceKey, task.processInstanceId );
+					processVariables = this.getProcessVariables( this.namespace, formResourceKey, task.processInstanceId );
 					mappedFormValues = this.getMappedFormValues( task.id, task.processInstanceId );
 				} else {
 					processVariables[ "__namespace" ] = simpl4.util.BaseManager.getNamespace();
@@ -168,12 +163,12 @@
 					this.panelHeader = tr( processName );
 				}
 				this.variables = processVariables;
-				this.namespace = processTenantId;
-				var form = this.querySelector( "#formid" );
 				this.formName = 'empty';
 				this.async( function() {
 					this.formName = formName;
 					this.async( function() {
+						var form = this.querySelector( "#formid" );
+						console.log("form:",form);
 						form.setData( mappedFormValues );
 					}, 300 );
 				}, 100 );
@@ -223,7 +218,7 @@
 
 				var result = null;
 				try {
-					result = simpl4.util.Rpc.rpcSync( "activiti:getTaskFormProperties", {
+					result = simpl4.util.Rpc.rpcSync( "process:getTaskFormProperties", {
 						executionId: processInstanceId,
 						taskId: tid
 					} );
@@ -242,7 +237,7 @@
 			getProcessVariables: function( namespace, formId, pid ) {
 				var result = null;
 				try {
-					result = simpl4.util.Rpc.rpcSync( "activiti:getVariables", {
+					result = simpl4.util.Rpc.rpcSync( "process:getVariables", {
 						namespace: namespace,
 						formId: formId,
 						executionId: pid
@@ -301,7 +296,7 @@
 				var params = null;
 				if ( task == null ) {
 					params = {
-						service: "activiti",
+						service: "process",
 						method: "startProcessInstance",
 						parameter: {
 							namespace: this.namespace ? this.namespace : simpl4.util.BaseManager.getNamespace(),
@@ -352,7 +347,7 @@
 				} ).bind( this );
 				var result = null;
 				try {
-					result = simpl4.util.Rpc.rpcSync( "activiti:executeTaskOperation", {
+					result = simpl4.util.Rpc.rpcSync( "process:executeTaskOperation", {
 						taskId: taskId,
 						operation: "complete",
 						startParams: processVariables
@@ -377,7 +372,7 @@
 				var result = null;
 				var userid = simpl4.util.BaseManager.getUser();
 				try {
-					result = simpl4.util.Rpc.rpcSync( "activiti:getTasks", {
+					result = simpl4.util.Rpc.rpcSync( "process:getTasks", {
 						queryParams: {
 							assignee: userid,
 							processInstanceId: processInstanceId
@@ -396,7 +391,7 @@
 			getProcessDefinition: function( namespace, name ) {
 				var result = null;
 				try {
-					result = simpl4.util.Rpc.rpcSync( "activiti:getProcessDefinitions", {
+					result = simpl4.util.Rpc.rpcSync( "process:getProcessDefinitions", {
 						namespace: namespace ? namespace : simpl4.util.BaseManager.getNamespace(),
 						version: -1,
 						key: name

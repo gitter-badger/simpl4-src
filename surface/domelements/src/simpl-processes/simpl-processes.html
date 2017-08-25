@@ -114,7 +114,7 @@
 				var result = null;
 				var namespace = this.namespace || simpl4.util.BaseManager.getNamespace();
 				try {
-					result = simpl4.util.Rpc.rpcSync( "activiti:getProcessDefinitions", {
+					result = simpl4.util.Rpc.rpcSync( "process:getProcessDefinitions", {
 						namespace: namespace,
 						version: -1
 					} );
