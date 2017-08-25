@@ -59,7 +59,7 @@ import static com.jcabi.log.Logger.info;
 class BaseProcessServiceImpl {
 
 	private static String BPM_DB = "bpmDB";
-	protected BundleContext bc;
+	protected BundleContext bundleContext;
 	protected OrientDBService orientdbService;
 	protected Map<String, ProcessEngine> userProcessEngineMap = new HashMap<String, ProcessEngine>();
 	protected ProcessEngine rootProcessEngine;
@@ -98,6 +98,9 @@ class BaseProcessServiceImpl {
 		c.setExpressionManager(groovyExpressionManager);
 		this.rootProcessEngine = c.buildProcessEngine();
 		c.getBeans().put(ProcessService.PROCESS_ENGINE, this.rootProcessEngine);
+		c.getBeans().put("bundleContext", this.bundleContext);
+		c.getBeans().put(PermissionService.PERMISSION_SERVICE, this.permissionService);
+		c.getBeans().put(RegistryService.REGISTRY_SERVICE, this.registryService);
 		simpl4JobExecutor.setProcessEngine(this.rootProcessEngine);
 
 		return this.rootProcessEngine;
@@ -130,6 +133,9 @@ class BaseProcessServiceImpl {
 		pe = c.buildProcessEngine();
 		simpl4JobExecutor.setProcessEngine(pe);
 		c.getBeans().put(ProcessService.PROCESS_ENGINE, pe);
+		c.getBeans().put("bundleContext", this.bundleContext);
+		c.getBeans().put(PermissionService.PERMISSION_SERVICE, this.permissionService);
+		c.getBeans().put(RegistryService.REGISTRY_SERVICE, this.registryService);
 
 		this.userProcessEngineMap.put(username, pe);
 		return pe;

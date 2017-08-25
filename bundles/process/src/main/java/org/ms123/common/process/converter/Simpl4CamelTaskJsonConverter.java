@@ -82,22 +82,22 @@ public class Simpl4CamelTaskJsonConverter extends BaseBpmnJsonConverter {
 
 		field = new FieldExtension();
 		field.setFieldName(NAMESPACE);
-		field.setStringValue(getValue(NAMESPACE, propMap.get(NAMESPACE_PROP)));
+		field.setExpression(getValue(NAMESPACE, propMap.get(NAMESPACE_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(ROUTENAME);
-		field.setStringValue(getValue(ROUTENAME, propMap.get(ROUTENAME_PROP)));
+		field.setExpression(getValue(ROUTENAME, propMap.get(ROUTENAME_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(ROUTEVARNAME);
-		field.setStringValue(getValue(ROUTEVARNAME, propMap.get(ROUTEVARNAME_PROP)));
+		field.setExpression(getValue(ROUTEVARNAME, propMap.get(ROUTEVARNAME_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(RETURNVARIABLE);
-		field.setStringValue(checkNull(RETURNVARIABLE, propMap.get(RETURNVARIABLE_PROP)));
+		field.setExpression(checkNull(RETURNVARIABLE, propMap.get(RETURNVARIABLE_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();

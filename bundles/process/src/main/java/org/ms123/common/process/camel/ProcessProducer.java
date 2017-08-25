@@ -174,7 +174,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			this.namespace = (String) exchange.getProperty("_namespace");
 		}
 		this.namespace = trimToEmpty( this.namespace);
-		info(this,"ProcessProducer.operation:" + this.operation+"/namespace:"+this.namespace);
+		info(this,"ProcessProducer("+isSingleton()+").operation:" + this.operation+"/namespace:"+this.namespace);
 		invokeOperation(this.operation, exchange);
 		/* final CamelService camelService = (CamelService) exchange.getContext().getRegistry().lookupByName(CamelService.class.getName());
 		 exchange.setProperty(WORKFLOW_ACTIVITY_NAME, this.activityId);

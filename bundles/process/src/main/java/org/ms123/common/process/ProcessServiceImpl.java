@@ -90,7 +90,7 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	}
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
-		this.bc = bundleContext;
+		this.bundleContext = bundleContext;
 	}
 
 	protected void deactivate() throws Exception {

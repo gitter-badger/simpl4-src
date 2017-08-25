@@ -74,7 +74,7 @@ public class ProcessEndpoint extends DefaultEndpoint {
 	}
 
 	public Producer createProducer() throws Exception {
-		info(this, "ProcessEndpoint.createProducer");
+		info(this, "ProcessEndpoint("+isSingleton()+").createProducer");
 		return new org.ms123.common.process.camel.ProcessProducer(this, processService, this.permissionService);
 	}
 

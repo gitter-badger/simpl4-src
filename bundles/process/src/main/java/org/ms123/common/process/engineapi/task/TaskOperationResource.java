@@ -28,6 +28,7 @@ import org.camunda.bpm.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.engineapi.Util;
+import org.ms123.common.process.Constants;
 import org.camunda.bpm.engine.form.TaskFormData;
 import org.ms123.common.form.FormService;
 import org.ms123.common.process.api.ProcessService;
@@ -46,7 +47,7 @@ import static com.jcabi.log.Logger.error;
 /**
  */
 @SuppressWarnings("unchecked")
-public class TaskOperationResource extends BaseResource {
+public class TaskOperationResource extends BaseResource implements Constants{
 
 	private String m_taskId;
 	private boolean m_check=true;
@@ -105,11 +106,10 @@ public class TaskOperationResource extends BaseResource {
 				String pid = task.getProcessInstanceId();
 				String processDefinitionId = task.getProcessDefinitionId();
 				ProcessDefinition processDefinition = getPE().getRepositoryService().createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
-				String tenantId = processDefinition.getTenantId();
+				String namespace = processDefinitionId.substring(0, processDefinitionId.indexOf(NAMESPACE_DELIMITER));
 				String processDefinitionKey = processDefinition.getKey();
 
-				String namespace=tenantId;
-				info(this,"TaskOperationResource.formVar:"+formVar);
+				info(this,"TaskOperationResource.formVar("+namespace+"):"+formVar);
 				if( formVar == null || formVar.length()==0 ){
 					formVar = getFormVar(namespace,formKey);
 				}
@@ -150,7 +150,7 @@ public class TaskOperationResource extends BaseResource {
 						setMapping(newVariables,  data, variablesMapping, executionId);
 						String script = (String)ret.get("postProcess");
 						if( script!=null && script.trim().length()> 2){
-							executeScriptTask( executionId, tenantId, processDefinitionKey, pid, script, newVariables, taskName );
+							executeScriptTask( executionId, namespace, processDefinitionKey, pid, script, newVariables, taskName );
 							if( data.get("errors") != null ){
 								Object _errors = data.get("errors");
 								Map successNode = new HashMap();
@@ -189,10 +189,10 @@ public class TaskOperationResource extends BaseResource {
 		successNode.put("success", true);
 		return successNode;
 	}
-	private void executeScriptTask( String executionId, String tenantId, String processDefinitionKey, String pid, String script, Map newVariables, String taskName ){
+	private void executeScriptTask( String executionId, String namespace, String processDefinitionKey, String pid, String script, Map newVariables, String taskName ){
 		TaskScriptExecutor sce = new TaskScriptExecutor();
 		VariableScope vs = new TaskScriptVariableScope(getPE().getRuntimeService(), executionId);
-		sce.execute(tenantId,processDefinitionKey, pid, script, newVariables, vs,taskName);
+		sce.execute(namespace,processDefinitionKey, pid, script, newVariables, vs,taskName);
 	}
 	private void setMapping(Map<String,Object> newVariables, Map formData, String variablesMapping, String executionId){
 		info(this,"setMapping.newVariables:"+newVariables);
