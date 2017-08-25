@@ -26,8 +26,6 @@ import org.apache.camel.*;
 import org.apache.camel.core.osgi.utils.BundleContextUtils;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.spi.UriEndpoint;
-import org.camunda.bpm.engine.HistoryService;
-import org.camunda.bpm.engine.RuntimeService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.api.ProcessService;
 import org.osgi.framework.BundleContext;
@@ -44,8 +42,6 @@ import static com.jcabi.log.Logger.info;
 public class ProcessEndpoint extends DefaultEndpoint {
 
 	private JSONDeserializer ds = new JSONDeserializer();
-	private RuntimeService runtimeService;
-	private HistoryService historyService;
 	private Map m_options;
 	private Map<String, String> processCriteria = new HashMap<String, String>();
 	private Map<String, String> taskCriteria = new HashMap<String, String>();
@@ -71,8 +67,6 @@ public class ProcessEndpoint extends DefaultEndpoint {
 
 	public ProcessEndpoint(String uri, CamelContext camelContext, ProcessService processService, PermissionService ps) {
 		super(uri, camelContext);
-		this.runtimeService = processService.getProcessEngine().getRuntimeService();
-		this.historyService = processService.getProcessEngine().getHistoryService();
 		this.permissionService = ps;
 		this.processService = processService;
 		this.bundleContext = BundleContextUtils.getBundleContext(ProcessEndpoint.class);
@@ -100,12 +94,6 @@ public class ProcessEndpoint extends DefaultEndpoint {
 
 	public Map getOptions() {
 		return m_options;
-	}
-	public RuntimeService getRuntimeService(){
-		return this.runtimeService;
-	}
-	public HistoryService getHistoryService(){
-		return this.historyService;
 	}
 
 	public <T> T lookupServiceByClass(Class<T> clazz) {

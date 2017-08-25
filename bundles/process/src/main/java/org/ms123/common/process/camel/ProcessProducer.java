@@ -136,13 +136,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		this.endpoint = endpoint;
 		this.permissionService = permissionService;
 		this.processService = processService;
-		this.runtimeService = processService.getProcessEngine().getRuntimeService();
-		this.historyService = processService.getProcessEngine().getHistoryService();
-		this.repositoryService = processService.getProcessEngine().getRepositoryService();
-		this.taskService = processService.getProcessEngine().getTaskService();
-		this.formService = processService.getProcessEngine().getFormService();
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
-		this.processService = (ProcessService) endpoint.getCamelContext().getRegistry().lookupByName(ProcessService.class.getName());
 		info(this,"ProcessProducer.camelService:" + this.camelService);
 		String[] path = endpoint.getEndpointKey().split(":");
 		this.operation = ProcessOperation.valueOf(path[1].replace("//", ""));
@@ -166,6 +160,11 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 	}
 
 	public void process(Exchange exchange) throws Exception {
+		this.runtimeService = getRuntimeService();
+		this.historyService = getHistoryService();
+		this.repositoryService = getRepositoryService();
+		this.taskService = getTaskService();
+		this.formService = getFormService();
 		this.activityId = getString(exchange, ACTIVITY_ID, this.activityId);
 		this.namespace = getString(exchange, NAMESPACE, this.namespace);
 		if (isEmpty(this.namespace)) {
@@ -977,6 +976,21 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 
 	protected ProcessEndpoint getProcessEndpoint() {
 		return (ProcessEndpoint) getEndpoint();
+	}
+	private FormService getFormService(){
+		return this.processService.getProcessEngine().getFormService();
+	}
+	private TaskService getTaskService(){
+		return this.processService.getProcessEngine().getTaskService();
+	}
+	private RepositoryService getRepositoryService(){
+		return this.processService.getProcessEngine().getRepositoryService();
+	}
+	private RuntimeService getRuntimeService(){
+		return this.processService.getProcessEngine().getRuntimeService();
+	}
+	private HistoryService getHistoryService(){
+		return this.processService.getProcessEngine().getHistoryService();
 	}
 }
 

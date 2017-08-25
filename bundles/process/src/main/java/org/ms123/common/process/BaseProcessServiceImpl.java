@@ -77,6 +77,7 @@ class BaseProcessServiceImpl {
 	private boolean isJdbc = false;
 
 	public synchronized ProcessEngine getRootProcessEngine() {
+		info(this,"BaseProcessServiceImpl.getRootProcessEngine");
 		if (isJdbc) {
 			return getProcessengineJDBC();
 		}
@@ -108,6 +109,7 @@ class BaseProcessServiceImpl {
 		}
 		String username = ThreadContext.getThreadContext().getUserName();
 		ProcessEngine pe = this.userProcessEngineMap.get(username);
+		info(this,"BaseProcessServiceImpl.getProcessEngine("+username+")");
 		if (pe != null) {
 			return pe;
 		}
