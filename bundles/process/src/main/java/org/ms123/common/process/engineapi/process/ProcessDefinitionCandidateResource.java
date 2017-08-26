@@ -27,6 +27,7 @@ import org.ms123.common.process.engineapi.BaseResource;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.engineapi.Util;
 import org.camunda.bpm.engine.task.IdentityLink;
+import static com.jcabi.log.Logger.info;
 
 /**
  */
@@ -63,7 +64,7 @@ public class ProcessDefinitionCandidateResource extends BaseResource {
 		}
 		links = getPE().getRepositoryService().getIdentityLinksForProcessDefinition(m_processDefinitionId);
 		for( IdentityLink il : links){
-			//System.out.println("ProcessDefinitionCandidateResource(group:"+il.getGroupId()+"/user:"+il.getUserId()+")");
+			info(this, "ProcessDefinitionCandidateResource(group:"+il.getGroupId()+",user:"+il.getUserId()+")");
 		}
 	}
 }
