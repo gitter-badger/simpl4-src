@@ -175,7 +175,7 @@ public class StartProcessInstanceResource extends BaseResource {
 			response.put("processDefinitionId", processInstance.getProcessDefinitionId());
 			return response;
 		} catch (Exception e) {
-e.printStackTrace();
+			e.printStackTrace();
 			createLogEntry(processDefinition,uid, e);
 			if (e instanceof RuntimeException)
 				throw (RuntimeException) e;
@@ -198,14 +198,20 @@ e.printStackTrace();
 		Map props = new HashMap();
 		Map hint = new HashMap();
 		props.put(HISTORY_TYPE, HISTORY_ACTIVITI_STARTPROCESS_EXCEPTION);
-		props.put(HISTORY_KEY, processDefinition.getId());
+		if( processDefinition != null){
+			props.put(HISTORY_KEY, processDefinition.getId());
+		}else{
+			props.put(HISTORY_KEY, m_processDefinitionId);
+		}
 		info(this,"createLogEntry.props:" + props);
 		Throwable r = getRootCause(e);
 		props.put(HISTORY_MSG, r != null ? getStackTrace(r) : getStackTrace(e));
-		hint.put("processDefinitionId", processDefinition.getId());
-		hint.put("processDefinitionKey", processDefinition.getKey());
-		hint.put("processDefinitionName", processDefinition.getName());
-		hint.put("processDeploymentId", processDefinition.getDeploymentId());
+		if( processDefinition!=null){
+			hint.put("processDefinitionId", processDefinition.getId());
+			hint.put("processDefinitionKey", processDefinition.getKey());
+			hint.put("processDefinitionName", processDefinition.getName());
+			hint.put("processDeploymentId", processDefinition.getDeploymentId());
+		}
 		hint.put("startUserId", uid);
 		props.put(HISTORY_HINT, m_js.deepSerialize(hint));
 		getEventAdmin().sendEvent(new Event(HISTORY_TOPIC, props));

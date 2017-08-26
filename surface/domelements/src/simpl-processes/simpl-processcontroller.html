@@ -278,7 +278,11 @@
 
 				var failed = ( function( ret ) {
 					console.log( "ret:" + JSON.stringify( ret ) );
-					ret = ret.toString();
+					if( ret.message){
+						ret = ret.message;
+					}else{
+						ret = ret.toString();
+					}
 					var msg = ret.replace( /\|/g, "<br/>" );
 					var msg = msg.replace( /Script.*groovy: [0-9]{0,4}:/g, "<br/><br/>" );
 					var msg = msg.replace( / for class: Script[0-9]{1,2}/g, "" );
@@ -290,7 +294,7 @@
 
 					msg = simpl4.util.Text.explode( msg, 100 );
 					var message = "<b>" + tr( "processes." + ( ( task != null ) ? "taskform" : "startform" ) + ".notstarted" ) + ": </b><pre style='font-size:10px'>" + msg + "</pre>";
-					this.alert( message );
+					this.alert( message,"large" );
 					if ( task != null ) {
 						this.showForm( task, finishCallback );
 					}
@@ -413,8 +417,10 @@
 					callback();
 				}, 500 );
 			},
-			alert: function( message ) {
+			alert: function( message, size ) {
+				var s = size || "normal";
 				Lobibox.notify( 'error', {
+					size:s,
 					delay: 6000,
 					icon: "vaadin-icons:exclamation",
 					msg: message

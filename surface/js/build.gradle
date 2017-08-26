@@ -4,6 +4,7 @@ task stage (type:Task) {
 	ant.concat(destfile:"${surfaceBuild}/${jsLibs}") {
 		fileset(file:'libs/modernizr.js')
 		fileset(file:'libs/detectizr.js')
+		fileset(file:'libs/error.js')
 		fileset(file:'libs/debug-ie-dummy.js')
 		fileset(file:'libs/require-dummy.js')
 		fileset(file:'libs/xregexp-all.js')
