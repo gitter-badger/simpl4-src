@@ -74,7 +74,7 @@ class BaseProcessServiceImpl {
 	protected ProcessengineJDBC peJdbc = new ProcessengineJDBC();
 
 	protected JSONSerializer js = new JSONSerializer();
-	private boolean isJdbc = false;
+	private boolean isJdbc = true;
 
 	public synchronized ProcessEngine getRootProcessEngine() {
 		info(this,"BaseProcessServiceImpl.getRootProcessEngine");
@@ -174,7 +174,7 @@ class BaseProcessServiceImpl {
 		if (this.rootProcessEngine != null) {
 			return this.rootProcessEngine;
 		}
-		this.rootProcessEngine = peJdbc.getRootProcessEngine();
+		this.rootProcessEngine = peJdbc.getRootProcessEngine((ProcessService)this, this.bundleContext);
 		return this.rootProcessEngine;
 	}
 }

@@ -26,9 +26,12 @@ import javax.sql.DataSource;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngineConfiguration;
+import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.process.expressions.GroovyExpressionManager;
 import org.ms123.common.process.jobs.Simpl4JobExecutor;
+import org.ms123.common.system.registry.RegistryService;
+import org.osgi.framework.BundleContext;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -41,12 +44,16 @@ public class ProcessengineJDBC {
 
 	protected Map<String, ProcessEngine> userProcessEngineMap = new HashMap<String, ProcessEngine>();
 	protected ProcessEngine rootProcessEngine;
+	protected ProcessService processService;
+	protected BundleContext bundleContext;
 	protected DataSource dataSource;
 
-	public synchronized ProcessEngine getRootProcessEngine() {
+	public synchronized ProcessEngine getRootProcessEngine(ProcessService ps, BundleContext bc) {
 		if (this.rootProcessEngine != null) {
 			return this.rootProcessEngine;
 		}
+		this.processService = ps;
+		this.bundleContext = bc;
 
 		ProcessEngineConfigurationImpl c = (ProcessEngineConfigurationImpl) ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
 		c.setDatabaseSchemaUpdate("true");
@@ -64,6 +71,9 @@ public class ProcessengineJDBC {
 		c.setExpressionManager(groovyExpressionManager);
 		this.rootProcessEngine = c.buildProcessEngine();
 		c.getBeans().put(ProcessService.PROCESS_ENGINE, this.rootProcessEngine);
+		c.getBeans().put("bundleContext", this.bundleContext);
+		c.getBeans().put(PermissionService.PERMISSION_SERVICE, this.processService.getPermissionService());
+		c.getBeans().put(RegistryService.REGISTRY_SERVICE, this.processService.getRegistryService());
 		//simpl4JobExecutor.setProcessEngine(this.rootProcessEngine);
 
 		return this.rootProcessEngine;
