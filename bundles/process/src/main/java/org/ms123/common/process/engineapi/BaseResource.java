@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.form.FormService;
@@ -76,6 +77,13 @@ public class BaseResource {
 	}
 	public EventAdmin getEventAdmin() {
 		return this.processService.getEventAdmin();
+	}
+	protected List<String> getUserRoles( String user){
+		try{
+			return getPermissionService().getUserRoles(user);
+		}catch(Exception e){
+			return new ArrayList<String>();
+		}
 	}
 	protected boolean isUser( String user){
 		return getPermissionService().isUserThis(user);

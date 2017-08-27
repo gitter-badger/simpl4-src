@@ -42,6 +42,7 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_BUS
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_DEFINITION_ID;
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_DEFINITION_NAME;
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_INSTANCE_ID;
+import static com.jcabi.log.Logger.info;
 
 @SuppressWarnings({"unchecked","deprecation"})
 public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate {
@@ -106,8 +107,10 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 				ns = tc.getTenantId();
 			}
 			Object answer = getCallService().callCamel( ns+"."+methodname, fparams);
+			info(this,"TaskCamelExecutor.answer("+returnvariable+"):"+answer);
 			if( returnvariable != null){
 				String rvar = returnvariable.getValue(execution).toString();
+			info(this,"TaskCamelExecutor.rvar:"+rvar);
 				execution.setVariable(rvar, answer);
 			}
 			if( returnmapping != null && answer instanceof Map){
