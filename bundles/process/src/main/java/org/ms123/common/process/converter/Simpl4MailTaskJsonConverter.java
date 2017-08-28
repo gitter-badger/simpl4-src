@@ -95,7 +95,7 @@ public class Simpl4MailTaskJsonConverter extends BaseBpmnJsonConverter {
 			if ((value.contains("${") || value.contains("#{")) && value.contains("}")) {
 				field.setExpression(value);
 			} else {
-				field.setStringValue(value);
+				field.setExpression(value);
 			}
 		}
 		task.getFieldExtensions().add(field);

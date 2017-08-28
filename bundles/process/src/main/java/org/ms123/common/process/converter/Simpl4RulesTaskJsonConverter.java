@@ -76,12 +76,12 @@ public class Simpl4RulesTaskJsonConverter extends BaseBpmnJsonConverter {
 
 		field = new FieldExtension();
 		field.setFieldName(RULESNAME);
-		field.setStringValue(getValue(RULESNAME, propMap.get(RULESNAME_PROP)));
+		field.setExpression(getValue(RULESNAME, propMap.get(RULESNAME_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(RULESKEY);
-		field.setStringValue(getValue(RULESKEY, propMap.get(RULESKEY_PROP)));
+		field.setExpression(getValue(RULESKEY, propMap.get(RULESKEY_PROP)));
 		task.getFieldExtensions().add(field);
 		return task;
 	}

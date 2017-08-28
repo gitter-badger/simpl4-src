@@ -75,17 +75,17 @@ public class Simpl4FilterTaskJsonConverter extends BaseBpmnJsonConverter {
 
 		field = new FieldExtension();
 		field.setFieldName(FILTERNAME);
-		field.setStringValue(getValue(FILTERNAME, propMap.get(FILTERNAME_PROP)));
+		field.setExpression(getValue(FILTERNAME, propMap.get(FILTERNAME_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(FILTEROBJECT);
-		field.setStringValue(getValue(FILTEROBJECT, propMap.get(FILTEROBJECT_PROP)));
+		field.setExpression(getValue(FILTEROBJECT, propMap.get(FILTEROBJECT_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(FILTERVARNAME);
-		field.setStringValue(checkNull(FILTERVARNAME, propMap.get(FILTERVARNAME_PROP)));
+		field.setExpression(checkNull(FILTERVARNAME, propMap.get(FILTERVARNAME_PROP)));
 		task.getFieldExtensions().add(field);
 		return task;
 	}

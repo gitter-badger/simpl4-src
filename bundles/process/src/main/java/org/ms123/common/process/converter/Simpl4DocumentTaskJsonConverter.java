@@ -97,11 +97,7 @@ public class Simpl4DocumentTaskJsonConverter extends BaseBpmnJsonConverter {
 		field.setFieldName(name);
 		String value = getPropertyValueAsString(name, elementNode);
 		if (StringUtils.isNotEmpty(value)) {
-			if ((value.contains("${") || value.contains("#{")) && value.contains("}")) {
-				field.setExpression(value);
-			} else {
-				field.setStringValue(value);
-			}
+			field.setExpression(value);
 		}
 		task.getFieldExtensions().add(field);
 	}

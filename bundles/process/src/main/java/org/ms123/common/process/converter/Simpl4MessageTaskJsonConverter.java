@@ -76,17 +76,17 @@ public class Simpl4MessageTaskJsonConverter extends BaseBpmnJsonConverter {
 
 		field = new FieldExtension();
 		field.setFieldName(PROCESSCRITERIA);
-		field.setStringValue(getValue(PROCESSCRITERIA, js.deepSerialize(propMap.get(PROCESSCRITERIA_PROP))));
+		field.setExpression(getValue(PROCESSCRITERIA, js.deepSerialize(propMap.get(PROCESSCRITERIA_PROP))));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(MESSAGENAME);
-		field.setStringValue(getValue(MESSAGENAME, propMap.get(MESSAGENAME_PROP)));
+		field.setExpression(getValue(MESSAGENAME, propMap.get(MESSAGENAME_PROP)));
 		task.getFieldExtensions().add(field);
 
 		field = new FieldExtension();
 		field.setFieldName(SIGNALNAME);
-		field.setStringValue(getValue(SIGNALNAME, propMap.get(SIGNALNAME_PROP)));
+		field.setExpression(getValue(SIGNALNAME, propMap.get(SIGNALNAME_PROP)));
 		task.getFieldExtensions().add(field);
 
 		return task;
