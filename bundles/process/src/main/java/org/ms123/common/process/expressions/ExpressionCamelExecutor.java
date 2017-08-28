@@ -42,7 +42,7 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_DEF
 import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_INSTANCE_ID;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
-public class ExpressionCamelExecutor {
+public class ExpressionCamelExecutor  implements org.ms123.common.process.Constants{
 
 	public static Object execute(Map<String, Object> methodDefinition, VariableScope scope) {
 		try {
@@ -52,7 +52,9 @@ public class ExpressionCamelExecutor {
 
 			ProcessInstance pi = (ProcessInstance) scope;
 			Map<String, String> activitiProperties = new TreeMap<String, String>();
-			activitiProperties.put(HISTORY_ACTIVITI_PROCESS_KEY, pi.getTenantId() + "/" + getProcessName(pi.getProcessDefinitionId()) + "/" + pi.getProcessInstanceId());
+			String pdId = pi.getProcessDefinitionId();
+			String namespace = pdId.substring(0, pdId.indexOf(NAMESPACE_DELIMITER));
+			activitiProperties.put(HISTORY_ACTIVITI_PROCESS_KEY, namespace + "/" + getProcessName(pi.getProcessDefinitionId()) + "/" + pi.getProcessInstanceId());
 //@@@MS			activitiProperties.put(HISTORY_ACTIVITI_ACTIVITY_KEY, pi.getTenantId() + "/" + getProcessName(pi.getProcessDefinitionId()) + "/" + pi.getId() + "/" + pi.getActivityId());
 //@@@MS			activitiProperties.put(WORKFLOW_ACTIVITY_ID, pi.getActivityId());
 //@@@MS			activitiProperties.put(WORKFLOW_ACTIVITY_NAME, pi.getName());
@@ -64,8 +66,7 @@ public class ExpressionCamelExecutor {
 			fparams.put(ACTIVITI_CAMEL_PROPERTIES, activitiProperties);
 			info(ExpressionCamelExecutor.class, "ExpressionCamelExecutor(" + methodname + "):" + fparams);
 
-			String ns = pi.getTenantId();
-			Object answer = getCallService().callCamel(ns + "." + methodname, fparams);
+			Object answer = getCallService().callCamel(namespace + "." + methodname, fparams);
 			info(ExpressionCamelExecutor.class, "ExpressionCamelExecutor.answer:" + answer);
 
 			return answer;

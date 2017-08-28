@@ -74,7 +74,7 @@ class BaseProcessServiceImpl {
 	protected ProcessengineJDBC peJdbc = new ProcessengineJDBC();
 
 	protected JSONSerializer js = new JSONSerializer();
-	private boolean isJdbc = true;
+	private boolean isJdbc = false;
 
 	public synchronized ProcessEngine getRootProcessEngine() {
 		info(this,"BaseProcessServiceImpl.getRootProcessEngine");
@@ -89,8 +89,8 @@ class BaseProcessServiceImpl {
 		f.setStandardElementConstraints(false);
 
 		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
-		c.setHistory(ProcessEngineConfiguration.HISTORY_NONE);
-		//c.setHistory(ProcessEngineConfiguration.HISTORY_FULL);
+		//c.setHistory(ProcessEngineConfiguration.HISTORY_NONE);
+		c.setHistory(ProcessEngineConfiguration.HISTORY_FULL);
 		c.setDatabaseSchemaUpdate("true");
 		c.setAuthorizationEnabled(false);
 		c.setTenantCheckEnabled(false);
@@ -116,9 +116,6 @@ class BaseProcessServiceImpl {
 		if (isJdbc) {
 			return getProcessengineJDBC();
 		}
-		if (this.rootProcessEngine != null) {
-			return getRootProcessEngine();
-		}
 		String username = ThreadContext.getThreadContext().getUserName();
 		ProcessEngine pe = this.userProcessEngineMap.get(username);
 		info(this,"BaseProcessServiceImpl.getProcessEngine("+username+")");
@@ -129,8 +126,8 @@ class BaseProcessServiceImpl {
 		f.setStandardElementConstraints(false);
 
 		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);
-		c.setHistory(ProcessEngineConfiguration.HISTORY_NONE);
-		//c.setHistory(ProcessEngineConfiguration.HISTORY_FULL);
+		//c.setHistory(ProcessEngineConfiguration.HISTORY_NONE);
+		c.setHistory(ProcessEngineConfiguration.HISTORY_FULL);
 		c.setAuthorizationEnabled(false);
 		c.setTenantCheckEnabled(false);
 		c.setEnableExpressionsInAdhocQueries(true);

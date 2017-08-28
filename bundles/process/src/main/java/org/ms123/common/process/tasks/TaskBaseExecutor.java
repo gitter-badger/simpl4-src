@@ -77,7 +77,7 @@ import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings("unchecked")
-public abstract class TaskBaseExecutor implements Constants {
+public abstract class TaskBaseExecutor implements Constants,org.ms123.common.process.Constants {
 	protected JSONDeserializer m_ds = new JSONDeserializer();
 	protected JSONSerializer m_js = new JSONSerializer();
 	private DataLayer m_dataLayer;
@@ -121,7 +121,7 @@ public abstract class TaskBaseExecutor implements Constants {
 		DelegateExecution d = (DelegateExecution) execution;
 		String processDefinitionId = ((ExecutionEntity) d).getProcessDefinitionId();
 		StringBuffer sb = new StringBuffer();
-		sb.append("Namespace:" + tc.getTenantId());
+		sb.append("Namespace:" + tc.getNamespace());
 		sb.append("\nCurrentActivityId:" + d.getCurrentActivityId());
 		sb.append("\nCurrentActivityName:" + d.getCurrentActivityName());
 		sb.append("\nEventName:" + d.getEventName());
@@ -136,13 +136,13 @@ public abstract class TaskBaseExecutor implements Constants {
 		VariableScope execution = tc.getExecution();
 		SessionContext sc = null;
 		if (m_dataLayer != null) {
-			StoreDesc sdesc = StoreDesc.getNamespaceData(tc.getTenantId());
+			StoreDesc sdesc = StoreDesc.getNamespaceData(tc.getNamespace());
 			sc = m_dataLayer.getSessionContext(sdesc);
 		} else {
 			Map beans = Context.getProcessEngineConfiguration().getBeans();
 			DataLayer dataLayer = (DataLayer) beans.get(DataLayer.DATA_LAYER);
-			log(tc, "Category:" + tc.getTenantId());
-			StoreDesc sdesc = StoreDesc.getNamespaceData(tc.getTenantId());
+			log(tc, "Category:" + tc.getNamespace());
+			StoreDesc sdesc = StoreDesc.getNamespaceData(tc.getNamespace());
 			log(tc, "Sdesc:" + sdesc);
 			sc = dataLayer.getSessionContext(sdesc);
 		}
@@ -264,9 +264,9 @@ public abstract class TaskBaseExecutor implements Constants {
 		if (_execution instanceof DelegateExecution) {
 			DelegateExecution execution = (DelegateExecution) _execution;
 			String processDefinitionId = ((ExecutionEntity) execution).getProcessDefinitionId();
-			dsl = new GroovyTaskDsl(getEventAdmin(execution), tc.getTenantId(), tc.getProcessDefinitionKey(), execution.getProcessInstanceId(), getInfo(tc), vars);
+			dsl = new GroovyTaskDsl(getEventAdmin(execution), tc.getNamespace(), tc.getProcessDefinitionKey(), execution.getProcessInstanceId(), getInfo(tc), vars);
 		} else {
-			dsl = new GroovyTaskDsl(null, tc.getTenantId(), tc.getProcessDefinitionKey(), tc.getPid(), tc.getHint(), vars);
+			dsl = new GroovyTaskDsl(null, tc.getNamespace(), tc.getProcessDefinitionKey(), tc.getPid(), tc.getHint(), vars);
 		}
 		return dsl;
 	}
@@ -310,7 +310,8 @@ public abstract class TaskBaseExecutor implements Constants {
 			ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
 			tc.setProcessDefinitionKey(processDefinition.getKey());
 			tc.setProcessDefinitionName(processDefinition.getName());
-			tc.setTenantId(processDefinition.getTenantId());
+			String namespace = processDefinitionId.substring(0, processDefinitionId.indexOf(NAMESPACE_DELIMITER));
+			tc.setNamespace(namespace);
 			tc.setPE(pe);
 			tc.setPermissionService(getPermissionService());
 		}
@@ -462,8 +463,8 @@ public abstract class TaskBaseExecutor implements Constants {
 		}
 
 		if (hasCriteria) {
-			log("getProcessInstances.namespace:" + tc.getTenantId());
-			//@@@MS eq.executionTenantId(trimToEmpty(tc.getTenantId()));
+			log("getProcessInstances.namespace:" + tc.getNamespace());
+			//@@@MS eq.executionTenantId(trimToEmpty(tc.getNamespace()));
 			List<ProcessInstance> executionList = (List) eq.list();
 			log("getProcessInstances:" + executionList);
 			if (exception && (executionList == null || executionList.size() == 0)) {
@@ -476,7 +477,7 @@ public abstract class TaskBaseExecutor implements Constants {
 
 	protected class TaskContext {
 		protected VariableScope m_execution;
-		protected String m_tenantId;
+		protected String m_namespace;
 		protected String m_processDefinitionKey;
 		protected String m_processDefinitionName;
 		protected String m_hint;
@@ -533,8 +534,8 @@ public abstract class TaskBaseExecutor implements Constants {
 			m_processDefinitionKey = pd;
 		}
 
-		public void setTenantId(String c) {
-			m_tenantId = c;
+		public void setNamespace(String c) {
+			m_namespace = c;
 		}
 
 		public VariableScope getExecution() {
@@ -561,8 +562,8 @@ public abstract class TaskBaseExecutor implements Constants {
 			return m_processDefinitionName;
 		}
 
-		public String getTenantId() {
-			return m_tenantId;
+		public String getNamespace() {
+			return m_namespace;
 		}
 	}
 

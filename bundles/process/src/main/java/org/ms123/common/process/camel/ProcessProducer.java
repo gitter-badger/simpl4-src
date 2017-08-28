@@ -95,7 +95,7 @@ import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings({"unchecked", "deprecation"})
-public class ProcessProducer extends DefaultProducer implements ProcessConstants {
+public class ProcessProducer extends DefaultProducer implements ProcessConstants,org.ms123.common.process.Constants {
 
 	protected JSONSerializer js = new JSONSerializer();
 	protected JSONDeserializer ds = new JSONDeserializer();
@@ -835,7 +835,8 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		if (processDefinition == null) {
 			throw new RuntimeException("ProcessProducer:getProcessDefinition:processDefinition not found:" + processInstance);
 		}
-		info(this,"getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
+		String namespace = processDefinition.getId().substring(0, processDefinition.getId().indexOf(NAMESPACE_DELIMITER));
+		info(this,"getProcessDefinition:" + processDefinition + "/" + namespace);
 		return processDefinition;
 	}
 
@@ -869,7 +870,8 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		EventAdmin eventAdmin = (EventAdmin) exchange.getContext().getRegistry().lookupByName(EventAdmin.class.getName());
 		Map props = new HashMap();
 		if (this.operation == ProcessOperation.startProcess) {
-			String key = processDefinition.getTenantId() + "/" + processDefinition.getId();
+			String namespace = processDefinition.getId().substring(0, processDefinition.getId().indexOf(NAMESPACE_DELIMITER));
+			String key = namespace + "/" + processDefinition.getId();
 			props.put(HISTORY_KEY, key);
 			props.put(HISTORY_TYPE, HISTORY_ACTIVITI_START_PROCESS_EXCEPTION);
 			Map hint = new HashMap();

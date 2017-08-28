@@ -49,7 +49,7 @@ public class TaskDocumentExecutor extends TaskBaseExecutor implements JavaDelega
 		TaskContext tc = new TaskContext(execution);
 		showVariablenNames(tc);
 		DocbookService ds = getDocbookService(execution);
-		String namespace = tc.getTenantId();
+		String namespace = tc.getNamespace();
 		String fn = getName(documentname.getValue(execution).toString());
 		List ret = null;
 		try {

@@ -39,7 +39,7 @@ import static com.jcabi.log.Logger.info;
  * 
  */
 @SuppressWarnings("unchecked")
-public class Simpl4JobExecutor extends DefaultJobExecutor {
+public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.common.process.Constants {
 
 	ProcessEngine m_pe;
 	Map m_beans;
@@ -69,9 +69,12 @@ public class Simpl4JobExecutor extends DefaultJobExecutor {
 	public void executeJobs(List<String> jobIds, ProcessEngineImpl pimpl) {
 		ManagementService ms = m_pe.getManagementService();
 		Job job = ms.createJobQuery().jobId(jobIds.get(0)).singleResult();
-		info(this, "------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + job.getTenantId());
-		System.err.println("------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + job.getTenantId());
-		Map<String, String> info = getInfo(job.getProcessInstanceId(), job.getProcessDefinitionId(), job.getTenantId());
+
+		String pdId = job.getProcessDefinitionId();
+		String namespace = pdId.substring(0, pdId.indexOf(NAMESPACE_DELIMITER));
+		info(this, "------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
+		System.err.println("------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
+		Map<String, String> info = getInfo(job.getProcessInstanceId(), job.getProcessDefinitionId(), namespace);
 		try {
 			threadPoolExecutor.execute(new Simpl4ExecuteJobsRunnable(this, info, jobIds));
 		} catch (RejectedExecutionException e) {
@@ -99,9 +102,10 @@ public class Simpl4JobExecutor extends DefaultJobExecutor {
 			info.put("user", "admin");
 		}
 		RepositoryService repositoryService = m_pe.getRepositoryService();
-		ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId)./*processDefinitionTenantId(tenantId).*/singleResult();
-		info(this, "getInfo.namespace:" + processDefinition.getTenantId());
-		info.put("namespace", processDefinition.getTenantId());
+		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId)./*processDefinitionTenantId(tenantId).*/singleResult();
+		String namespace = pd.getId().substring(0, pd.getId().indexOf(NAMESPACE_DELIMITER));
+		info(this, "getInfo.namespace:" + namespace);
+		info.put("namespace", namespace);
 		return info;
 	}
 }

@@ -61,7 +61,7 @@ public class TaskScriptExecutor extends TaskBaseExecutor implements JavaDelegate
 			return;
 		}
 		final TaskContext tc = new TaskContext();
-		tc.setTenantId(namespace);
+		tc.setNamespace(namespace);
 		tc.setProcessDefinitionKey(processDefinitionKey);
 		tc.setHint(hint);
 		tc.setPid(pid);

@@ -88,8 +88,8 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 			}
 			
 			Map<String,String> activitiProperties = new TreeMap<String,String>();
-			activitiProperties.put(HISTORY_ACTIVITI_PROCESS_KEY, tc.getTenantId() +"/"+tc.getProcessDefinitionName()+"/"+execution.getProcessInstanceId());
-			activitiProperties.put(HISTORY_ACTIVITI_ACTIVITY_KEY, tc.getTenantId() +"/"+tc.getProcessDefinitionName()+"/"+execution.getId()+"/"+execution.getCurrentActivityId());
+			activitiProperties.put(HISTORY_ACTIVITI_PROCESS_KEY, tc.getNamespace() +"/"+tc.getProcessDefinitionName()+"/"+execution.getProcessInstanceId());
+			activitiProperties.put(HISTORY_ACTIVITI_ACTIVITY_KEY, tc.getNamespace() +"/"+tc.getProcessDefinitionName()+"/"+execution.getId()+"/"+execution.getCurrentActivityId());
 			activitiProperties.put(WORKFLOW_ACTIVITY_ID, execution.getCurrentActivityId());
 			activitiProperties.put(WORKFLOW_ACTIVITY_ID, execution.getCurrentActivityId());
 			activitiProperties.put(WORKFLOW_ACTIVITY_NAME, execution.getCurrentActivityName());
@@ -104,7 +104,7 @@ public class TaskCamelExecutor extends TaskBaseExecutor implements JavaDelegate 
 
 			String ns = namespace.getValue(execution).toString();
 			if( "-".equals(ns)){
-				ns = tc.getTenantId();
+				ns = tc.getNamespace();
 			}
 			Object answer = getCallService().callCamel( ns+"."+methodname, fparams);
 			info(this,"TaskCamelExecutor.answer("+returnvariable+"):"+answer);

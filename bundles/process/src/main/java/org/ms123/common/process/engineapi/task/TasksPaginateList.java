@@ -36,7 +36,7 @@ import org.camunda.bpm.engine.impl.RepositoryServiceImpl;
 /**
  */
 @SuppressWarnings("unchecked")
-public class TasksPaginateList extends AbstractPaginateList {
+public class TasksPaginateList extends AbstractPaginateList implements org.ms123.common.process.Constants{
 
 	private ProcessEngine m_pe;
 
@@ -69,8 +69,10 @@ public class TasksPaginateList extends AbstractPaginateList {
 				taskResponse.put("formResourceKey", taskFormData.getFormKey());
 			}
 			ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl) m_pe.getRepositoryService()).getDeployedProcessDefinition(task.getProcessDefinitionId());
+			String namespace = pde.getId().substring(0, pde.getId().indexOf(NAMESPACE_DELIMITER));
 			taskResponse.put("processName", pde.getName());
-			taskResponse.put("processTenantId", pde.getTenantId());
+			taskResponse.put("processTenantId", namespace);
+			taskResponse.put("processNamespace", namespace);
 			responseList.add(taskResponse);
 		}
 		Collections.sort( responseList, new ListMapComparator());

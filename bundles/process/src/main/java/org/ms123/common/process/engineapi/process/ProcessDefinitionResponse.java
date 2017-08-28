@@ -55,7 +55,6 @@ public class ProcessDefinitionResponse implements Serializable {
 		this.setDeploymentId(processDefinition.getDeploymentId());
 		this.setResourceName(processDefinition.getResourceName());
 		this.setDiagramResourceName(processDefinition.getDiagramResourceName());
-		this.setTenantId(processDefinition.getTenantId());
 	}
 
 	public String getId() {
@@ -130,11 +129,4 @@ public class ProcessDefinitionResponse implements Serializable {
 		this.startFormResourceKey = startFormResourceKey;
 	}
 
-	public String getTenantId() {
-		return tenantId;
-	}
-
-	public void setTenantId(String tenantId) {
-		this.tenantId = tenantId;
-	}
 }

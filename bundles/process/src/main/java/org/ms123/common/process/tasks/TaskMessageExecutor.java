@@ -50,7 +50,7 @@ import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
-public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegate {
+public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegate,org.ms123.common.process.Constants  {
 
 	protected JSONDeserializer ds = new JSONDeserializer();
 	protected JSONSerializer js = new JSONSerializer();
@@ -184,7 +184,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 	}
 
 	private void signal(TaskContext tc, ProcessInstance execution, Map<String, Object> variables) {
-		String ns = tc.getTenantId();
+		String ns = tc.getNamespace();
 		Map<String, Object> pv = variables;
 		new SignalThread(tc, ns, getProcessDefinition(tc, execution), execution, pv).start();
 	}
@@ -240,7 +240,8 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		EventAdmin eventAdmin = (EventAdmin) beans.get("eventAdmin");
 		Map props = new HashMap();
 
-		String key = pd.getTenantId() + "/" + getProcessName(pd.getId()) + "/" + pi.getId();
+		String namespace = pd.getId().substring(0, pd.getId().indexOf(NAMESPACE_DELIMITER));
+		String key = namespace + "/" + getProcessName(pd.getId()) + "/" + pi.getId();
 		props.put(HISTORY_KEY, key);
 		props.put(HISTORY_TYPE, HISTORY_ACTIVITI_JOB_EXCEPTION);
 		info(this, "createLogEntry.props:" + props);
@@ -263,7 +264,8 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		if (processDefinition == null) {
 			throw new RuntimeException("TaskMessageExecutor:getProcessDefinition:processDefinition not found:" + processInstance);
 		}
-		info(this, "getProcessDefinition:" + processDefinition + "/" + processDefinition.getTenantId());
+		String namespace = processDefinition.getId().substring(0, processDefinition.getId().indexOf(NAMESPACE_DELIMITER));
+		info(this, "getProcessDefinition:" + processDefinition + "/" + namespace);
 		return processDefinition;
 	}
 
