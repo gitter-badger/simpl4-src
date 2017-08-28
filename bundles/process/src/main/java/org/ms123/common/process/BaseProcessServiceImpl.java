@@ -107,6 +107,7 @@ class BaseProcessServiceImpl {
 		c.getBeans().put("bundleContext", this.bundleContext);
 		c.getBeans().put(PermissionService.PERMISSION_SERVICE, this.permissionService);
 		c.getBeans().put(RegistryService.REGISTRY_SERVICE, this.registryService);
+		c.getBeans().put("gitService", this.gitService);
 		simpl4JobExecutor.setProcessEngine(this.rootProcessEngine);
 
 		return this.rootProcessEngine;
@@ -147,6 +148,7 @@ class BaseProcessServiceImpl {
 		c.getBeans().put("bundleContext", this.bundleContext);
 		c.getBeans().put(PermissionService.PERMISSION_SERVICE, this.permissionService);
 		c.getBeans().put(RegistryService.REGISTRY_SERVICE, this.registryService);
+		c.getBeans().put("gitService", this.gitService);
 
 		this.userProcessEngineMap.put(username, pe);
 		return pe;
