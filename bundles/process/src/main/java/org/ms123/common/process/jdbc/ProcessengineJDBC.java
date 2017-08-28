@@ -56,6 +56,9 @@ public class ProcessengineJDBC {
 		this.bundleContext = bc;
 
 		ProcessEngineConfigurationImpl c = (ProcessEngineConfigurationImpl) ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
+		c.setEnableExpressionsInAdhocQueries(true);
+		c.setHistory(ProcessEngineConfiguration.HISTORY_NONE);
+		//c.setHistory(ProcessEngineConfiguration.HISTORY_FULL);
 		c.setDatabaseSchemaUpdate("true");
 		c.setDataSource(getDataSource("jdbc:h2:file:/opt/simpl4/workspace/camunda/h2;DB_CLOSE_DELAY=1000;TRACE_LEVEL_FILE=2"));
 		//		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
@@ -65,7 +68,6 @@ public class ProcessengineJDBC {
 
 		c.setAuthorizationEnabled(false);
 		c.setTenantCheckEnabled(false);
-		c.setHistory(ProcessEngineConfiguration.HISTORY_FULL);
 
 		GroovyExpressionManager groovyExpressionManager = new GroovyExpressionManager();
 		c.setExpressionManager(groovyExpressionManager);
