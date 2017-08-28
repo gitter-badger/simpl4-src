@@ -70,8 +70,8 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 		ManagementService ms = m_pe.getManagementService();
 		Job job = ms.createJobQuery().jobId(jobIds.get(0)).singleResult();
 
-		String pdId = job.getProcessDefinitionId();
-		String namespace = pdId.substring(0, pdId.indexOf(NAMESPACE_DELIMITER));
+		String pdKey = job.getProcessDefinitionKey();
+		String namespace = pdKey.substring(0, pdKey.indexOf(NAMESPACE_DELIMITER));
 		info(this, "------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
 		System.err.println("------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
 		Map<String, String> info = getInfo(job.getProcessInstanceId(), job.getProcessDefinitionId(), namespace);

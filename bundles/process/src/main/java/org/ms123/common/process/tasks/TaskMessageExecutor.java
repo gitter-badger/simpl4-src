@@ -240,7 +240,7 @@ public class TaskMessageExecutor extends TaskBaseExecutor implements JavaDelegat
 		EventAdmin eventAdmin = (EventAdmin) beans.get("eventAdmin");
 		Map props = new HashMap();
 
-		String namespace = pd.getId().substring(0, pd.getId().indexOf(NAMESPACE_DELIMITER));
+		String namespace = pd.getKey().substring(0, pd.getKey().indexOf(NAMESPACE_DELIMITER));
 		String key = namespace + "/" + getProcessName(pd.getId()) + "/" + pi.getId();
 		props.put(HISTORY_KEY, key);
 		props.put(HISTORY_TYPE, HISTORY_ACTIVITI_JOB_EXCEPTION);

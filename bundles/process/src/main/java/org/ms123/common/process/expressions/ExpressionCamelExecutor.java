@@ -29,7 +29,9 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.ms123.common.rpc.CallService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.camunda.bpm.engine.ProcessEngine;
 import static com.jcabi.log.Logger.info;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import static org.ms123.common.rpc.CallService.ACTIVITI_CAMEL_PROPERTIES;
 import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_ACTIVITY_KEY;
 import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_PROCESS_KEY;
@@ -44,7 +46,7 @@ import static org.ms123.common.workflow.api.WorkflowService.WORKFLOW_PROCESS_INS
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class ExpressionCamelExecutor  implements org.ms123.common.process.Constants{
 
-	public static Object execute(Map<String, Object> methodDefinition, VariableScope scope) {
+	public static Object execute(Map<String, Object> methodDefinition, VariableScope scope, ProcessEngine pe) {
 		try {
 			String methodname = (String) methodDefinition.get("method");
 			List<Map<String, String>> variablesmapping = (List) methodDefinition.get("parameter");
@@ -52,8 +54,9 @@ public class ExpressionCamelExecutor  implements org.ms123.common.process.Consta
 
 			ProcessInstance pi = (ProcessInstance) scope;
 			Map<String, String> activitiProperties = new TreeMap<String, String>();
-			String pdId = pi.getProcessDefinitionId();
-			String namespace = pdId.substring(0, pdId.indexOf(NAMESPACE_DELIMITER));
+			ProcessDefinition processDefinition = pe.getRepositoryService().createProcessDefinitionQuery().processDefinitionId(pi.getProcessDefinitionId()).singleResult();
+			String pdKey = processDefinition.getKey();
+			String namespace = pdKey.substring(0, pdKey.indexOf(NAMESPACE_DELIMITER));
 			activitiProperties.put(HISTORY_ACTIVITI_PROCESS_KEY, namespace + "/" + getProcessName(pi.getProcessDefinitionId()) + "/" + pi.getProcessInstanceId());
 //@@@MS			activitiProperties.put(HISTORY_ACTIVITI_ACTIVITY_KEY, pi.getTenantId() + "/" + getProcessName(pi.getProcessDefinitionId()) + "/" + pi.getId() + "/" + pi.getActivityId());
 //@@@MS			activitiProperties.put(WORKFLOW_ACTIVITY_ID, pi.getActivityId());

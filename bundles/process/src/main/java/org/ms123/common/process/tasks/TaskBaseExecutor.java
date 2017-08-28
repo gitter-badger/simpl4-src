@@ -310,7 +310,7 @@ public abstract class TaskBaseExecutor implements Constants,org.ms123.common.pro
 			ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
 			tc.setProcessDefinitionKey(processDefinition.getKey());
 			tc.setProcessDefinitionName(processDefinition.getName());
-			String namespace = processDefinitionId.substring(0, processDefinitionId.indexOf(NAMESPACE_DELIMITER));
+			String namespace = processDefinition.getKey().substring(0, processDefinition.getKey().indexOf(NAMESPACE_DELIMITER));
 			tc.setNamespace(namespace);
 			tc.setPE(pe);
 			tc.setPermissionService(getPermissionService());

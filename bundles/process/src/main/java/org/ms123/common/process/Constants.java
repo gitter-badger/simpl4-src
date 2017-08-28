@@ -22,5 +22,5 @@ import java.util.*;
 
 public interface Constants {
 
-	public static String NAMESPACE_DELIMITER = "-";
+	public static String NAMESPACE_DELIMITER = "_";
 }

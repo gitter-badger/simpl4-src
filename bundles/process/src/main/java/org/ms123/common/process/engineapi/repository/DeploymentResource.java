@@ -58,7 +58,7 @@ public class DeploymentResource extends BaseResource implements Constants{
 		String deployName = getDeploymentName(namespace,getBasename(path));
 		RepositoryService rs = getRootPE().getRepositoryService();
 		List<Deployment> dl = rs.createDeploymentQuery().deploymentName(deployName).list();
-		info(this,"Deployment:" + dl);
+		info(this,"Deployment("+deployName+"):" + dl);
 		Map shape = (Map) m_ds.deserialize(processJson);
 		Map<String, Object> properties = (Map) shape.get("properties");
 		Object m = properties.get("initialparameter");

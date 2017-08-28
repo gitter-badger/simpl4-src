@@ -164,7 +164,7 @@ public class GroovyExpression implements Expression {
 		if (str.startsWith("pc:{")) {
 			Object obj = getJSON(str.substring(3));
 			if (obj instanceof Map) {
-				return ExpressionCamelExecutor.execute((Map) obj, scope);
+				return ExpressionCamelExecutor.execute((Map) obj, scope, m_processEngine);
 			}
 		}
 		int countRepl = 0;

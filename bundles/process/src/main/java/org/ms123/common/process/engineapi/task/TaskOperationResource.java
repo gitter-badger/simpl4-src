@@ -106,8 +106,8 @@ public class TaskOperationResource extends BaseResource implements Constants{
 				String pid = task.getProcessInstanceId();
 				String processDefinitionId = task.getProcessDefinitionId();
 				ProcessDefinition processDefinition = getPE().getRepositoryService().createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
-				String namespace = processDefinitionId.substring(0, processDefinitionId.indexOf(NAMESPACE_DELIMITER));
 				String processDefinitionKey = processDefinition.getKey();
+				String namespace = processDefinitionKey.substring(0, processDefinitionKey.indexOf(NAMESPACE_DELIMITER));
 
 				info(this,"TaskOperationResource.formVar("+namespace+"):"+formVar);
 				if( formVar == null || formVar.length()==0 ){

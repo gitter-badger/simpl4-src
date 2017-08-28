@@ -835,7 +835,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		if (processDefinition == null) {
 			throw new RuntimeException("ProcessProducer:getProcessDefinition:processDefinition not found:" + processInstance);
 		}
-		String namespace = processDefinition.getId().substring(0, processDefinition.getId().indexOf(NAMESPACE_DELIMITER));
+		String namespace = processDefinition.getKey().substring(0, processDefinition.getKey().indexOf(NAMESPACE_DELIMITER));
 		info(this,"getProcessDefinition:" + processDefinition + "/" + namespace);
 		return processDefinition;
 	}
@@ -870,7 +870,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		EventAdmin eventAdmin = (EventAdmin) exchange.getContext().getRegistry().lookupByName(EventAdmin.class.getName());
 		Map props = new HashMap();
 		if (this.operation == ProcessOperation.startProcess) {
-			String namespace = processDefinition.getId().substring(0, processDefinition.getId().indexOf(NAMESPACE_DELIMITER));
+			String namespace = processDefinition.getKey().substring(0, processDefinition.getKey().indexOf(NAMESPACE_DELIMITER));
 			String key = namespace + "/" + processDefinition.getId();
 			props.put(HISTORY_KEY, key);
 			props.put(HISTORY_TYPE, HISTORY_ACTIVITI_START_PROCESS_EXCEPTION);

@@ -69,9 +69,10 @@ public class TasksPaginateList extends AbstractPaginateList implements org.ms123
 				taskResponse.put("formResourceKey", taskFormData.getFormKey());
 			}
 			ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl) m_pe.getRepositoryService()).getDeployedProcessDefinition(task.getProcessDefinitionId());
-			String namespace = pde.getId().substring(0, pde.getId().indexOf(NAMESPACE_DELIMITER));
+			String namespace = pde.getKey().substring(0, pde.getKey().indexOf(NAMESPACE_DELIMITER));
 			taskResponse.put("processName", pde.getName());
 			taskResponse.put("processTenantId", namespace);
+			taskResponse.put("processDefinitionKey", pde.getKey());
 			taskResponse.put("processNamespace", namespace);
 			responseList.add(taskResponse);
 		}
