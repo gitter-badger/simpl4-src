@@ -30,6 +30,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.image.impl.DefaultProcessDiagramGenerator;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.impl.RepositoryServiceImpl;
+import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.activiti.bpmn.model.BpmnModel;
 
 @SuppressWarnings("unchecked")
@@ -46,7 +47,7 @@ public class ProcessInstanceDiagramResource extends BaseResource {
 		if (m_processInstanceId == null) {
 			throw new RuntimeException("No process Instance id provided");
 		}
-		ExecutionEntity pi = (ExecutionEntity) getPE().getRuntimeService().createProcessInstanceQuery().processInstanceId(m_processInstanceId).singleResult();
+		HistoricProcessInstance pi = (HistoricProcessInstance) getPE().getHistoryService().createHistoricProcessInstanceQuery().processInstanceId(m_processInstanceId).singleResult();
 		if (true) {
 			return "data:image/png;base64," + notfound;
 		}
