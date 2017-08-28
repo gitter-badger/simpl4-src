@@ -91,9 +91,9 @@ public class TasksResource extends BaseResource {
 			} else {
 				List<String> candidateRoles = getUserRoles(candidateTaskUserId);
 				String candidateGroupExpression = candidateRoles.size() > 0 ? join(candidateRoles,",") : null;
-				if( !isEmpty(candidateGroupExpression)){
+				if( candidateRoles.size()>0){
 					info(this,"taskResponse.candidateGroupExpression:"+candidateGroupExpression);
-					taskQuery = buildTaskQuery(null, candidateGroupExpression);
+					taskQuery = buildTaskQuery(null, candidateRoles);
 				}else{
 					throw new RuntimeException("TasksResource: no valid candidateTaskUserId nor candidateGroupExpression");
 				}
@@ -110,7 +110,7 @@ public class TasksResource extends BaseResource {
 		return dataResponse;
 	}
 
-	private TaskQuery buildTaskQuery(String candidateTaskUserId, String candidateGroupExpression) {
+	private TaskQuery buildTaskQuery(String candidateTaskUserId, List<String> candidateGroups) {
 		TaskQuery taskQuery = getPE().getTaskService().createTaskQuery();
 
 		if (!isEmpty(this.personalTaskUserId)) {
@@ -124,8 +124,8 @@ public class TasksResource extends BaseResource {
 			taskQuery.taskInvolvedUser(this.involvedTaskUserId);
 		} else if (!isEmpty(candidateTaskUserId)) {
 			taskQuery.taskCandidateUser(candidateTaskUserId);
-		} else if (!isEmpty(candidateGroupExpression)) {
-			taskQuery.taskCandidateGroupExpression(candidateGroupExpression);
+		} else if (candidateGroups!=null && candidateGroups.size()>0) {
+			taskQuery.taskCandidateGroupIn(candidateGroups);
 		} else if (!isEmpty(this.candidateGroupId)) {
 			taskQuery.taskCandidateGroup(this.candidateGroupId);
 		}
