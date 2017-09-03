@@ -541,7 +541,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			if (!isEmpty(processDefinitionId)) {
 				info(this,"ExecuteProcess:processDefinitionId:" + processDefinitionId);
 				pib = this.runtimeService.createProcessInstanceById(processDefinitionId);
-				processDefinition = this.repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionId(processDefinitionId).singleResult();
+				processDefinition = this.repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
 				if (processDefinition == null) {
 					throw new RuntimeException("No process with processDefinitionId(" + processDefinitionId + ")");
 				}
@@ -742,8 +742,9 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			}
 			List<ProcessInstance> retList = new ArrayList<ProcessInstance>();
 			for( ProcessInstance pi : executionList){
-				if( !pi.getProcessDefinitionId().startsWith(this.namespace)){
-					info(this,"getProcessInstances:processDefinitionId("+pi.getProcessDefinitionId()+")  don't starts with namespace(" + this.namespace+")");
+				ProcessDefinition pd = this.repositoryService.createProcessDefinitionQuery().processDefinitionId(pi.getProcessDefinitionId()).singleResult();
+				if( !pd.getKey().startsWith(this.namespace)){
+					info(this,"getProcessInstances:processDefinitionKey("+pd.getKey()+")  don't starts with namespace(" + this.namespace+")");
 					continue;
 				}
 				retList.add( pi );
