@@ -325,6 +325,15 @@ abstract class BaseCallServiceImpl {
 		return null;
 	}
 
+	protected void debugCall(String namespace, String methodName, Map<String,Object> methodParams) {
+		info(this,"--------------------------------------------");
+		info(this,"==========>>calling:" + namespace +"."+ methodName);
+		for ( String pname : methodParams.keySet()) {
+			Object pvalue = methodParams.get(pname);
+			info(this,"\t" + pname + " : " + pvalue);
+		}
+		info(this,"---------------------------------------\n");
+	}
 	protected List<String> getUserRoles(String userName) {
 		List<String> userRoleList = null;
 		try {

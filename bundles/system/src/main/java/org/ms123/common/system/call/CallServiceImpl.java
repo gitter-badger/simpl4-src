@@ -178,7 +178,8 @@ public class CallServiceImpl extends BaseCallServiceImpl implements org.ms123.co
 		debug(this,"paramList:" + paramList);
 		debug(this,"properties:" + properties);
 		debug(this,"headers:" + headers);
-
+	
+		debugCall( namespace, methodName, methodParams);
 
 		String returnSpec = getString(shape, "rpcReturn", "body");
 		List<String> returnHeaderList = new ArrayList();
