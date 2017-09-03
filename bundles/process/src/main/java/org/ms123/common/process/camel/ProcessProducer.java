@@ -18,81 +18,73 @@
  */
 package org.ms123.common.process.camel;
 
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.HistoryService;
-import org.camunda.bpm.engine.runtime.Execution;
-import org.camunda.bpm.engine.runtime.ExecutionQuery;
-import org.camunda.bpm.engine.runtime.ProcessInstantiationBuilder;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.engine.ProcessEngine;
+
+import flexjson.*;
+import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.camel.Exchange;
+import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.MessageHistory;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.io.IOUtils;
+import org.camunda.bpm.engine.FormService;
+import org.camunda.bpm.engine.form.TaskFormData;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
-import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.TaskService;
-import org.camunda.bpm.engine.FormService;
-import org.camunda.bpm.engine.task.TaskQuery;
-import org.camunda.bpm.engine.task.Task;
-
-
-import org.camunda.bpm.engine.form.TaskFormData;
-import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.camunda.bpm.engine.impl.RepositoryServiceImpl;
-
+import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
-import org.apache.camel.Exchange;
-import org.apache.camel.MessageHistory;
-import org.apache.camel.impl.DefaultProducer;
-import org.ms123.common.permission.api.PermissionService;
+import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.runtime.Execution;
+import org.camunda.bpm.engine.runtime.ExecutionQuery;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.runtime.ProcessInstantiationBuilder;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.task.Task;
+import org.camunda.bpm.engine.task.TaskQuery;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.ms123.common.camel.api.CamelService;
-import org.ms123.common.process.api.ProcessService;
-import org.ms123.common.workflow.api.WorkflowService;
-import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.camel.trace.ExchangeFormatter;
 import org.ms123.common.camel.trace.MessageHelper;
-import java.io.InputStream;
-import java.util.Map;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import flexjson.*;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
+import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.process.api.ProcessService;
+import org.ms123.common.system.thread.ThreadContext;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
-import groovy.lang.Binding;
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.GroovyClassLoader;
-import org.codehaus.groovy.control.*;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.beanutils.ConvertUtils;
-import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
-import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
-import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
-import static org.ms123.common.system.history.HistoryService.HISTORY_HINT;
-import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_START_PROCESS_EXCEPTION;
-import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_JOB_EXCEPTION;
-import static org.ms123.common.system.history.HistoryService.HISTORY_TOPIC;
-
-import static org.ms123.common.system.history.HistoryService.ACTIVITI_CAMEL_CORRELATION_TYPE;
-import static org.ms123.common.system.history.HistoryService.ACC_ACTIVITI_ID;
-import static org.ms123.common.system.history.HistoryService.ACC_ROUTE_INSTANCE_ID;
-import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_ACTIVITY_KEY;
-import static org.ms123.common.system.history.HistoryService.CAMEL_ROUTE_DEFINITION_KEY;
-import org.apache.camel.impl.DefaultProducer;
-
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.ms123.common.system.history.HistoryService.ACC_ACTIVITI_ID;
+import static org.ms123.common.system.history.HistoryService.ACC_ROUTE_INSTANCE_ID;
+import static org.ms123.common.system.history.HistoryService.ACTIVITI_CAMEL_CORRELATION_TYPE;
+import static org.ms123.common.system.history.HistoryService.CAMEL_ROUTE_DEFINITION_KEY;
+import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_ACTIVITY_KEY;
+import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_JOB_EXCEPTION;
+import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_START_PROCESS_EXCEPTION;
+import static org.ms123.common.system.history.HistoryService.HISTORY_HINT;
+import static org.ms123.common.system.history.HistoryService.HISTORY_KEY;
+import static org.ms123.common.system.history.HistoryService.HISTORY_MSG;
+import static org.ms123.common.system.history.HistoryService.HISTORY_TOPIC;
+import static org.ms123.common.system.history.HistoryService.HISTORY_TYPE;
 
 @SuppressWarnings({"unchecked", "deprecation"})
 public class ProcessProducer extends DefaultProducer implements ProcessConstants,org.ms123.common.process.Constants {
@@ -137,8 +129,8 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		this.permissionService = permissionService;
 		this.processService = processService;
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
-		info(this,"ProcessProducer.camelService:" + this.camelService);
-		String[] path = endpoint.getEndpointKey().split(":");
+		String[] path = endpoint.getEndpointKey().split("(:|\\?)");
+		info(this,"ProcessProducer.operation:" + (path[1].replace("//", "")));
 		this.operation = ProcessOperation.valueOf(path[1].replace("//", ""));
 		this.namespace = endpoint.getNamespace();
 		this.signalName = endpoint.getSignalName();
@@ -312,8 +304,9 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		info(this,"taskList:");
 		List<Map> ret = new ArrayList<Map>();
 		for( Task task : taskList){
-			info(this,"\tTaskName:"+task.getName()+"/taskId"+task.getId()+"/taskDefKey:"+task.getTaskDefinitionKey()+"/processDefId:"+task.getProcessDefinitionId());
-			if( !task.getProcessDefinitionId().startsWith(this.namespace)){
+			ProcessDefinition pd = this.repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+			info(this,"\tTaskName:"+task.getName()+"/taskId"+task.getId()+"/taskDefKey:"+task.getTaskDefinitionKey()+"/processDefId:"+task.getProcessDefinitionId()+"/pdKey:"+pd.getKey());
+			if( !pd.getKey().startsWith(this.namespace)){
 				continue;
 			}
 			Map<String, Object> taskMap = new HashMap();
@@ -335,8 +328,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			if (taskFormData != null) {
 				taskMap.put("formResourceKey", taskFormData.getFormKey());
 			}
-			ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl) this.repositoryService).getDeployedProcessDefinition(task.getProcessDefinitionId());
-			taskMap.put("processName", pde.getName());
+			taskMap.put("processName", pd.getName());
 			ret.add(taskMap);
 		}
 		exchange.getIn().setBody(ret);
