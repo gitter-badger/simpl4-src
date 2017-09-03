@@ -27,7 +27,6 @@ import org.ms123.common.process.engineapi.Util;
 import org.ms123.common.libhelper.Base64;
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.image.impl.DefaultProcessDiagramGenerator;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.impl.RepositoryServiceImpl;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
