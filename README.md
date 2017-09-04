@@ -7,7 +7,7 @@ If you're only interested in a installation, go to [*simpl4-deployed*](https://g
 
 ##### Open-Source- development environment
 
-simpl4 is licenced under GPLV3 (General Public License), and because of this  it can be used free of any.
+simpl4 is licenced under Apache 2.0, and because of this  it can be used free of any.
 
 ##### Flexible responsive applications because of HTML5-Frontend for Smartphones, Tablets and Desktops
 Create a application, and use it on +
