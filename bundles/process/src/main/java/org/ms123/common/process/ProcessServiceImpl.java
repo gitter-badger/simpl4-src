@@ -91,6 +91,7 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 
 	protected void activate(BundleContext bundleContext, Map<?, ?> props) {
 		this.bundleContext = bundleContext;
+		getRootProcessEngine();
 	}
 
 	protected void deactivate() throws Exception {
