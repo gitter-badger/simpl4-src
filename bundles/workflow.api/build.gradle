@@ -1,7 +1,7 @@
 version='1.0.0'
 ext.activiti_version='5.18'
 dependencies {
-		compile files("${repository}/activiti-${activiti_version}/activiti-engine-${activiti_version}.jar")
+		compile files("${repository}/activiti-${activiti_version}/activiti-engine-5.18.0.jar")
 		compile files("${repository}/camel/camel-core-2.18.0.jar")
   	compile files("${repository}/commons/commons-beanutils-1.9.2.jar")
 		compile files("${bundlesBuild}/org.ms123.common.data.api-1.0.0.jar")
