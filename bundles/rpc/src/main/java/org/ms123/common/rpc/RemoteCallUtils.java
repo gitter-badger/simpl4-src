@@ -60,7 +60,7 @@ public class RemoteCallUtils {
 	 *                          objects - must not be
 	 *                          <code>null</code>).
 	 */
-	public Object callCompatibleMethod(final Object instance, String methodName, final Object originalArguments, HttpServletRequest request, HttpServletResponse response) throws InvocationTargetException, IllegalAccessException, RpcException, NoSuchMethodException {
+	public Object callCompatibleMethod(final Object instance, String serviceName, String methodName, final Object originalArguments, HttpServletRequest request, HttpServletResponse response) throws InvocationTargetException, IllegalAccessException, RpcException, NoSuchMethodException {
 		int argsCount = 0;
 		if (originalArguments instanceof List) {
 			argsCount = ((List) originalArguments).size();
@@ -195,7 +195,7 @@ public class RemoteCallUtils {
 		// Invoke method
 		Object methodResult = null;
 		try {
-			debugCall(methodToCall, convertedArguments);
+			debugCall(serviceName,methodToCall, convertedArguments);
 			methodResult = methodToCall.invoke(instance, convertedArguments.toArray());
 			if( methodToCall.getReturnType().equals(Void.TYPE)){
 				return Void.TYPE;
@@ -247,9 +247,9 @@ public class RemoteCallUtils {
 		info("---------------------------------------\n");
 	}
 
-	private void debugCall(Method methodToCall, List convertedArguments) {
+	private void debugCall(String serviceName, Method methodToCall, List convertedArguments) {
 		info("--------------------------------------------");
-		info("==========>>calling:" + methodToCall.getName());
+		info("==========>>calling:" + serviceName +"." + methodToCall.getName());
 		Class[] mPTypes = methodToCall.getParameterTypes();
 		for (int i = 0; i < convertedArguments.size(); i++) {
 			String value = null;

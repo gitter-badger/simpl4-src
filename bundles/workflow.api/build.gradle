@@ -1,5 +1,5 @@
 version='1.0.0'
-ext.activiti_version='5.16'
+ext.activiti_version='5.18'
 dependencies {
 		compile files("${repository}/activiti-${activiti_version}/activiti-engine-${activiti_version}.jar")
 		compile files("${repository}/camel/camel-core-2.18.0.jar")

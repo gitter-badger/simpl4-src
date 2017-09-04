@@ -131,7 +131,7 @@ public class JsonRpc {
 		debug("callProcedure:" + service + "/method:" + method + "/args:" + args);
 		Object methodResult;
 		try {
-			methodResult = m_remoteCallUtils.callCompatibleMethod(obj, method, args, null, null);
+			methodResult = m_remoteCallUtils.callCompatibleMethod(obj, service,method, args, null, null);
 		} catch (NoSuchMethodException e) {
 			throw new RpcException(ERROR_FROM_SERVER, METHOD_NOT_FOUND, "Method " + method + " not found", e);
 		} catch (IllegalAccessException e) {

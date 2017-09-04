@@ -204,7 +204,7 @@
 						};
 					}
 
-					var result = simpl4.util.Rpc.rpcSync( "activiti:getTasks", {
+					var result = simpl4.util.Rpc.rpcSync( "process:getTasks", {
 						queryParams: queryParams,
 						listParams: {
 							size: 1000
@@ -212,6 +212,7 @@
 					} );
 					return completed.call( this, result );
 				} catch ( e ) {
+					console.log("Tasks.getTasks:",e);
 					alert( "Tasks.getTasks:" + e );
 					return;
 				}

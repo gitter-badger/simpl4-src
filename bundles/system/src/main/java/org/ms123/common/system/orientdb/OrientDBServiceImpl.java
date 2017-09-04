@@ -338,7 +338,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	}
 	/* End Teststuff*/
 
-	private static int maxUserPoolsize = 5;
+	private static int maxUserPoolsize = 15;
 	private static int maxPoolsize = 50;
 	private static MultiUserPool multiUserPool = new MultiUserPool(maxPoolsize);
 
@@ -379,7 +379,20 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		return getFactory( db, "root", this.rootPassword, 50, autoCommit, true);
 	}
 
-	public synchronized OrientGraphFactory getFactory(String name, String user, String pw, int poolsize, boolean autoCommit, boolean cache) {
+	public synchronized OrientGraphFactory getUserFactory(String db ) {
+		String username = ThreadContext.getThreadContext().getUserName();
+		if( !userExists( db, username) ){
+			userCreate( db, username );
+		}
+		Map	userProps = this.authService.getUserProperties(username);
+		String password = (String)userProps.get("password");
+		if( "admin".equals(username) && password == null){
+			password = this.rootPassword;
+		}
+		return getFactory( db, username, password, maxUserPoolsize, false, false );
+	}
+
+	private OrientGraphFactory getFactory(String name, String user, String pw, int poolsize, boolean autoCommit, boolean cache) {
 		OrientGraphFactory f = cache ? factoryMap.get(name+"/"+autoCommit) : null;
 		info(this, "getFactory1("+name+"):"+user+"/"+poolsize);
 		

@@ -27,6 +27,7 @@ import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
 import org.apache.camel.core.osgi.OsgiServiceRegistry;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.CompositeRegistry;
+import org.apache.camel.Component;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.management.event.ExchangeCompletedEvent;
 import org.apache.camel.management.event.ExchangeCreatedEvent;
@@ -54,6 +55,7 @@ import org.ms123.common.camel.components.deepzoom.*;
 import org.ms123.common.camel.components.scpevent.*;
 import org.ms123.common.camel.trace.*;
 import org.ms123.common.camel.api.CamelService;
+import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.datamapper.DatamapperService;
@@ -92,6 +94,10 @@ public class CamelContextBuilder {
 		SimpleRegistry sr = new SimpleRegistry();
 		OsgiServiceRegistry or = new OsgiServiceRegistry(bc);
 		PermissionService permissionService = (PermissionService) or.lookupByName(PermissionService.class.getName());
+		ProcessService processService = (ProcessService) or.lookupByName(ProcessService.class.getName());
+		info("createCamelContext.processService:"+processService);
+		Component processComponent = processService.getProcessComponent();
+		info("createCamelContext.processComponent:"+processComponent);
 
 		JNDIContextManager jndiContextManager = (JNDIContextManager) or.lookupByName(JNDIContextManager.class.getName());
 		info("createCamelContext.JNDIContextManager:"+jndiContextManager);
@@ -100,6 +106,7 @@ public class CamelContextBuilder {
 		info("CamelContextBuilder.jndiContext:"+jndiContext);	
 
 		sr.put(PermissionService.PERMISSION_SERVICE, permissionService);
+		sr.put(ProcessService.PROCESS_SERVICE, processService);
 		sr.put(DataLayer.DATA_LAYER, or.lookupByNameAndType("dataLayer", DataLayer.class));
 		sr.put("datamapper", or.lookupByName(DatamapperService.class.getName()));
 		sr.put("namespace", namespace);
@@ -111,6 +118,7 @@ public class CamelContextBuilder {
 		sr.put("eventbus", new org.ms123.common.camel.components.eventbus.EventBusComponent());
 		sr.put("websocket", new org.ms123.common.camel.components.websocket.WebsocketComponent());
 		sr.put("vfs", new org.ms123.common.camel.components.vfs.VfsComponent());
+		sr.put("process", processComponent);
 		sr.put("direct", new DirectComponent());
 		sr.put("xdocreport", new XDocReportComponent());
 		sr.put("wawidoc", new WawiDocComponent());

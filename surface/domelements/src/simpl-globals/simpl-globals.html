@@ -169,8 +169,16 @@
 				document.getElementsByTagName( "head" )[ 0 ].appendChild( themeLink );
 			}
 
-			simpl4.util.BaseManager.setUser( "guest" );
-			simpl4.util.BaseManager.setPassword( "guest" );
+			var passwd = getParameterByName( "passwd" );
+			var user = getParameterByName( "user" );
+			if ( user && passwd ) {
+				simpl4.util.BaseManager.setUser( user );
+				simpl4.util.BaseManager.setPassword( passwd );
+				console.log("setting("+user+","+passwd+")");
+			}else{
+				simpl4.util.BaseManager.setUser( "guest" );
+				simpl4.util.BaseManager.setPassword( "guest" );
+			}
 
 			moment.locale( simpl4.util.BaseManager.getLanguage() );
 

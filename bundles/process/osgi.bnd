@@ -1,0 +1,14 @@
+version=1.0.0
+Export-Package org.ms123.common.process, org.ms123.common.process.identity, org.ms123.common.process.jdbc, org.ms123.common.process.camel, org.ms123.common.process.camel.base, org.ms123.common.process.expressions, org.ms123.common.process.jobs, org.ms123.common.process.listener, org.ms123.common.process.converter, org.ms123.common.process.tasks, org.ms123.common.process.engineapi, org.ms123.common.process.engineapi.task, org.ms123.common.process.engineapi.process, org.ms123.common.process.engineapi.repository,
+Import-Package *
+Bundle-Version:${version}
+Bundle-Vendor: MS123, Org.
+Bundle-Description: Process Service
+Bundle-ManifestVersion: 2
+Bundle-Name: ProcessService Bundle
+Bundle-SymbolicName:org.ms123.common.process
+Bundle-ClassPath: .
+Include-Resource: =src/main/resources/messages
+DynamicImport-Package: *
+Service-Component: *
+-metatype: *

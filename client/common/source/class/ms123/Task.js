@@ -214,7 +214,7 @@ qx.Class.define("ms123.Task", {
 					queryParams={ candidate:this._user.userid };
 				}
 			
-				var result = ms123.util.Remote.rpcSync("activiti:getTasks", {
+				var result = ms123.util.Remote.rpcSync("process:getTasks", {
 					queryParams:queryParams,
 					listParams:{
 						size:1000
