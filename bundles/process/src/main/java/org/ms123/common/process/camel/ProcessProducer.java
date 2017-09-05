@@ -64,6 +64,7 @@ import org.ms123.common.camel.trace.MessageHelper;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.system.thread.ThreadContext;
+import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import static com.jcabi.log.Logger.debug;
@@ -462,6 +463,11 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			ProcessInstance pi = executeProcess(exchange);
 			debug(this,"ProcessInstance:" + pi);
 			if (pi != null) {
+				String tenant = ThreadContext.getThreadContext().getUserName();
+				info(this,"ExecutionEntity:" + (pi instanceof ExecutionEntity));
+				if( pi instanceof ExecutionEntity ){
+					((ExecutionEntity)pi).setTenantId(tenant);
+				}
 				this.activitiKey += "/" + pi.getId();
 				debug(this,"m_activitiKey:" + this.activitiKey);
 				exchange.getOut().setBody(pi.getId());

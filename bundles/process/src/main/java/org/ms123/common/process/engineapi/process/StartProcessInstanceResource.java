@@ -32,6 +32,7 @@ import org.apache.commons.io.IOUtils;
 import flexjson.*;
 import org.camunda.bpm.engine.repository.ProcessDefinitionQuery;
 import org.osgi.service.event.EventAdmin;
+import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.osgi.service.event.Event;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
@@ -166,6 +167,10 @@ public class StartProcessInstanceResource extends BaseResource {
 				info(this, "getResourceAsStream:" + e);
 			}
 			ProcessInstance processInstance = getPE().getRuntimeService().startProcessInstanceById(processDefinition.getId(), m_businessKey, variables);
+			info(this,"ExecutionEntity:" + (processInstance instanceof ExecutionEntity));
+			if( processInstance instanceof ExecutionEntity ){
+				((ExecutionEntity)processInstance).setTenantId(uid);
+			}
 			variables.put("__processInstanceId", processInstance.getProcessInstanceId());
 			info(this, "StartProcessInstanceResource.variables:" + variables);
 			Map<String, String> response = new HashMap();
