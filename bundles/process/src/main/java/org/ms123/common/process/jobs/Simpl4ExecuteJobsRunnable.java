@@ -74,7 +74,7 @@ public class Simpl4ExecuteJobsRunnable implements Runnable {
 		PermissionService ps = ((Simpl4JobExecutor) jobExecutor).getPermissionService();
 		this.eventAdmin = ((Simpl4JobExecutor) jobExecutor).getEventAdmin();
 		String ns = this.info.get("namespace");
-		ThreadContext.loadThreadContext(ns, this.info.get("user"));
+		ThreadContext.loadThreadContext(ns, this.info.get("tenant"));
 		ps.loginInternal(ns);
 
 		final JobExecutorContext jobExecutorContext = new JobExecutorContext();

@@ -81,10 +81,10 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 
 		String pdKey = job.getProcessDefinitionKey();
 		String namespace = pdKey.substring(0, pdKey.indexOf(NAMESPACE_DELIMITER));
-		info(this, "Simpl4JobExecutor.executeJobs(" + pimpl.getName() + "):" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
+		info(this, "Simpl4JobExecutor.executeJobs(" + tenantProcessEngine.getName() + "):" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
 		Map<String, String> info = getInfo(tenantProcessEngine, job.getProcessInstanceId(), job.getProcessDefinitionId(), namespace);
 		try {
-			threadPoolExecutor.execute(new Simpl4ExecuteJobsRunnable(jobIds, info, pimpl));
+			threadPoolExecutor.execute(new Simpl4ExecuteJobsRunnable(jobIds, info, tenantProcessEngine));
 		} catch (RejectedExecutionException e) {
 			logRejectedExecution(tenantProcessEngine, jobIds.size());
 			rejectedJobsHandler.jobsRejected(jobIds, null, this); 
