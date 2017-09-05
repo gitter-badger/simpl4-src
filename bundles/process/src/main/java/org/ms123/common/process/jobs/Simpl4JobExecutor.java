@@ -64,11 +64,7 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 		this.processService = ps;
 	}
 
-	public ProcessEngine getProcessEngine() {
-		info(this, "Simpl4JobExecutor.getProcessEngine");
-		return this.rootProcessEngine;
-	}
-
+	@Override
 	public List<ProcessEngineImpl> getProcessEngines() {
 		info(this, "Simpl4JobExecutor.getProcessEngines");
 		return processEngines;
@@ -94,12 +90,12 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 	protected Map getInfo(ProcessEngineImpl tenantProcessEngine, String processInstanceId, String processDefinitionId, String tenantId) {
 		Map<String, String> info = new HashMap();
 		if (processInstanceId != null) {
-			ProcessInstance processInstance = tenantProcessEngine.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId)./*processInstanceTenantId(tenantId).*/singleResult();
+			ProcessInstance processInstance = tenantProcessEngine.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 			Map<String, Object> vars = tenantProcessEngine.getRuntimeService().getVariables(processInstanceId);
 			info.put("tenant", tenantProcessEngine.getName());
 			info.put("user", (String) vars.get("__currentUser"));
 			if (processInstance == null) {
-				HistoricProcessInstance instance = tenantProcessEngine.getHistoryService().createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)./*processInstanceTenantId(tenantId).*/singleResult();
+				HistoricProcessInstance instance = tenantProcessEngine.getHistoryService().createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 				if (instance == null) {
 					throw new RuntimeException("Simpl4JobExecutor.getInfo:processInstance not found:" + processInstanceId);
 				}
@@ -109,9 +105,10 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 			}
 		} else {
 			info.put("user", "admin");
+			info.put("tenant", "admin");
 		}
 		RepositoryService repositoryService = tenantProcessEngine.getRepositoryService();
-		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId)./*processDefinitionTenantId(tenantId).*/singleResult();
+		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
 		String namespace = pd.getKey().substring(0, pd.getKey().indexOf(NAMESPACE_DELIMITER));
 		info.put("namespace", namespace);
 		return info;
