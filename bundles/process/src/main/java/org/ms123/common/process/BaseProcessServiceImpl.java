@@ -33,6 +33,7 @@ import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.form.FormService;
 import org.ms123.common.git.GitService;
+import org.ms123.common.dmn.DmnService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.system.registry.RegistryService;
@@ -64,6 +65,7 @@ class BaseProcessServiceImpl {
 	protected ProcessEngine rootProcessEngine;
 	protected PermissionService permissionService;
 	protected GitService gitService;
+	protected DmnService dmnService;
 	protected RegistryService registryService;
 	protected DataLayer dataLayer;
 	protected static EventAdmin eventAdmin;
@@ -108,6 +110,7 @@ class BaseProcessServiceImpl {
 		c.getBeans().put(PermissionService.PERMISSION_SERVICE, this.permissionService);
 		c.getBeans().put(RegistryService.REGISTRY_SERVICE, this.registryService);
 		c.getBeans().put("gitService", this.gitService);
+		c.getBeans().put(DmnService.DMN_SERVICE, this.dmnService);
 		simpl4JobExecutor.setProcessEngine(this.rootProcessEngine);
 		simpl4JobExecutor.setProcessService((ProcessService)this);
 

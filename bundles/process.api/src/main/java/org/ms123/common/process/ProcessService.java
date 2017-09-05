@@ -21,6 +21,7 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.ms123.common.form.FormService;
 import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.git.GitService;
+import org.ms123.common.dmn.DmnService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.data.api.DataLayer;
 import org.osgi.service.event.EventAdmin;
@@ -38,6 +39,7 @@ public interface ProcessService {
 	public FormService getFormService();
 	public RegistryService getRegistryService();
 	public GitService getGitService();
+	public DmnService getDmnService();
 	public PermissionService getPermissionService();
 	public DataLayer getDataLayer();
 	public EventAdmin getEventAdmin();

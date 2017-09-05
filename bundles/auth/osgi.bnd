@@ -1,6 +1,6 @@
 version=1.0.0
 Export-Package org.ms123.common.auth
-Private-Package org.ms123.common.auth.user,org.ms123.common.auth
+Private-Package org.ms123.common.auth
 Import-Package *
 Bundle-Version:${version}
 Bundle-Vendor: MS123, Org.

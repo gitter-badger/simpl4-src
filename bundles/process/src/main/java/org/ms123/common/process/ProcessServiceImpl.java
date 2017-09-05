@@ -40,6 +40,7 @@ import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.form.FormService;
 import org.ms123.common.system.registry.RegistryService;
 import org.ms123.common.git.GitService;
+import org.ms123.common.dmn.DmnService;
 import org.ms123.common.process.api.ProcessService;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.system.registry.RegistryService;
@@ -109,6 +110,9 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	}
 	public GitService getGitService(){
 		return this.gitService;
+	}
+	public DmnService getDmnService(){
+		return this.dmnService;
 	}
 	public DataLayer getDataLayer(){
 		return this.dataLayer;
@@ -372,6 +376,10 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	public void setGitService(GitService gitService) {
 		this.gitService = gitService;
 		//m_processEngineConfiguration.getBeans().put("gitService", gitService);
+	}
+	@Reference(dynamic = true, optional = true)
+	public void setDmnService(DmnService dmnService) {
+		this.dmnService = dmnService;
 	}
 	@Reference
 	public void setOrientDBService(OrientDBService paramEntityService) {
