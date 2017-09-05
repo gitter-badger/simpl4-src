@@ -28,6 +28,7 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.runtime.*;
+import org.ms123.common.process.api.ProcessService;
 import org.camunda.bpm.engine.runtime.Job;
 import org.ms123.common.permission.api.PermissionService;
 import org.osgi.service.event.EventAdmin;
@@ -40,56 +41,65 @@ import static com.jcabi.log.Logger.info;
 @SuppressWarnings("unchecked")
 public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.common.process.Constants {
 
-	ProcessEngine m_pe;
-	Map m_beans;
+	ProcessEngine rootProcessEngine;
+	ProcessService processService;
 
-	public Simpl4JobExecutor(Map beans) {
-		m_beans = beans;
+	public Simpl4JobExecutor() {
 	}
 
 	public PermissionService getPermissionService() {
-		return (PermissionService) m_beans.get(PermissionService.PERMISSION_SERVICE);
+		return (PermissionService) ((ProcessEngineImpl) this.rootProcessEngine).getProcessEngineConfiguration().getBeans().get(PermissionService.PERMISSION_SERVICE);
 	}
 
 	public EventAdmin getEventAdmin() {
-		return (EventAdmin) m_beans.get("eventAdmin");
+		return (EventAdmin) ((ProcessEngineImpl) this.rootProcessEngine).getProcessEngineConfiguration().getBeans().get("eventAdmin");
 	}
 
 	public void setProcessEngine(ProcessEngine pe) {
-		registerProcessEngine((ProcessEngineImpl)pe);
-		m_pe = pe;
+		registerProcessEngine((ProcessEngineImpl) pe);
+		this.rootProcessEngine = pe;
+	}
+
+	public void setProcessService(ProcessService ps) {
+		this.processService = ps;
 	}
 
 	public ProcessEngine getProcessEngine() {
-		return m_pe;
+		info(this, "Simpl4JobExecutor.getProcessEngine");
+		return this.rootProcessEngine;
+	}
+
+	public List<ProcessEngineImpl> getProcessEngines() {
+		info(this, "Simpl4JobExecutor.getProcessEngines");
+		return processEngines;
 	}
 
 	@Override
-	public void executeJobs(List<String> jobIds, ProcessEngineImpl pimpl) {
-		ManagementService ms = m_pe.getManagementService();
+	public void executeJobs(List<String> jobIds, ProcessEngineImpl tenantProcessEngine) {
+		ManagementService ms = tenantProcessEngine.getManagementService();
 		Job job = ms.createJobQuery().jobId(jobIds.get(0)).singleResult();
 
 		String pdKey = job.getProcessDefinitionKey();
 		String namespace = pdKey.substring(0, pdKey.indexOf(NAMESPACE_DELIMITER));
-		info(this, "------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
-		System.err.println("------>executeJobs:" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
-		Map<String, String> info = getInfo(job.getProcessInstanceId(), job.getProcessDefinitionId(), namespace);
+		info(this, "Simpl4JobExecutor.executeJobs(" + pimpl.getName() + "):" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
+		Map<String, String> info = getInfo(tenantProcessEngine, job.getProcessInstanceId(), job.getProcessDefinitionId(), namespace);
 		try {
-			threadPoolExecutor.execute(new Simpl4ExecuteJobsRunnable(this, info, jobIds));
+			threadPoolExecutor.execute(new Simpl4ExecuteJobsRunnable(jobIds, info, pimpl));
 		} catch (RejectedExecutionException e) {
-			rejectedJobsHandler.jobsRejected(jobIds, null, this); //@@@MS
+			logRejectedExecution(tenantProcessEngine, jobIds.size());
+			rejectedJobsHandler.jobsRejected(jobIds, null, this); 
 		}
 	}
 
-	protected Map getInfo(String processInstanceId, String processDefinitionId, String tenantId) {
+	protected Map getInfo(ProcessEngineImpl tenantProcessEngine, String processInstanceId, String processDefinitionId, String tenantId) {
 		Map<String, String> info = new HashMap();
 		if (processInstanceId != null) {
-			ProcessInstance processInstance = m_pe.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId)./*processInstanceTenantId(tenantId).*/singleResult();
-			Map<String, Object> vars = m_pe.getRuntimeService().getVariables(processInstanceId);
-			info(this, "getInfo.vars:" + vars);
+			ProcessInstance processInstance = tenantProcessEngine.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId)./*processInstanceTenantId(tenantId).*/singleResult();
+			Map<String, Object> vars = tenantProcessEngine.getRuntimeService().getVariables(processInstanceId);
+			info.put("tenant", tenantProcessEngine.getName());
 			info.put("user", (String) vars.get("__currentUser"));
 			if (processInstance == null) {
-				HistoricProcessInstance instance = m_pe.getHistoryService().createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)./*processInstanceTenantId(tenantId).*/singleResult();
+				HistoricProcessInstance instance = tenantProcessEngine.getHistoryService().createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)./*processInstanceTenantId(tenantId).*/singleResult();
 				if (instance == null) {
 					throw new RuntimeException("Simpl4JobExecutor.getInfo:processInstance not found:" + processInstanceId);
 				}
@@ -100,10 +110,9 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 		} else {
 			info.put("user", "admin");
 		}
-		RepositoryService repositoryService = m_pe.getRepositoryService();
+		RepositoryService repositoryService = tenantProcessEngine.getRepositoryService();
 		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId)./*processDefinitionTenantId(tenantId).*/singleResult();
-		String namespace = pd.getId().substring(0, pd.getId().indexOf(NAMESPACE_DELIMITER));
-		info(this, "getInfo.namespace:" + namespace);
+		String namespace = pd.getKey().substring(0, pd.getKey().indexOf(NAMESPACE_DELIMITER));
 		info.put("namespace", namespace);
 		return info;
 	}
