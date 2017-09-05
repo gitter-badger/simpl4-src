@@ -195,8 +195,8 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		return null;
 	}
 
-	private List<Map> getUserByWhere(String where) throws Exception {
-		info(this, "getUserByWhere:" + where);
+	private List<Map> getUsersByWhere(String where) throws Exception {
+		info(this, "getUsersByWhere:" + where);
 		OCommandRequest query = new OSQLSynchQuery("select from SUser where " + where);
 		Iterable<Vertex> result = orientGraph.command(query).execute();
 		Iterator<Vertex> it = result.iterator();
@@ -260,7 +260,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			SessionContext sessionContext = this.dataLayer.getSessionContext(sdesc);
 			QueryBuilder qb = new OrientDBQueryBuilder(sdesc, "user", "global", sessionContext, filter, (Map) params, null);
 			String where = qb.getWhere();
-			List<Map> rows = getUserByWhere(where);
+			List<Map> rows = getUsersByWhere(where);
 			Map<String, List> ret = new HashMap<String, List>();
 			if (this.permissionService.hasRole("admin")) {
 				ret.put("rows", rows);
@@ -556,6 +556,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 
 	/* END:User registration */
 
+	/* BEG:Orientdb stuff */
 	private void createClassAndIndex() {
 		try {
 			OSchemaProxy schema = orientGraph.getRawGraph().getMetadata().getSchema();
@@ -679,6 +680,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			v.setProperty(pname, pvalue);
 		}
 	}
+	/* END:Orientdb stuff */
 
 
 	/* END JSON-RPC-API*/
