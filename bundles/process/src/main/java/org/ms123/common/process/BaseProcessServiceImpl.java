@@ -94,10 +94,11 @@ class BaseProcessServiceImpl {
 		c.setAuthorizationEnabled(false);
 		c.setTenantCheckEnabled(false);
 		c.setEnableExpressionsInAdhocQueries(true);
-		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
+		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor();
 		c.setJobExecutor(simpl4JobExecutor);
 		c.setJobExecutorActivate(true);
 		simpl4JobExecutor.setAutoActivate(true);
+		c.setProcessEngineName( "root");
 
 		GroovyExpressionManager groovyExpressionManager = new GroovyExpressionManager();
 		c.setExpressionManager(groovyExpressionManager);
@@ -108,6 +109,7 @@ class BaseProcessServiceImpl {
 		c.getBeans().put(RegistryService.REGISTRY_SERVICE, this.registryService);
 		c.getBeans().put("gitService", this.gitService);
 		simpl4JobExecutor.setProcessEngine(this.rootProcessEngine);
+		simpl4JobExecutor.setProcessService((ProcessService)this);
 
 		return this.rootProcessEngine;
 	}
@@ -133,13 +135,14 @@ class BaseProcessServiceImpl {
 		c.setEnableExpressionsInAdhocQueries(true);
 		addEventDistributor(c, username);
 		addVariableEventDistributor(c, username);
-		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor(c.getBeans());
+		Simpl4JobExecutor simpl4JobExecutor = new Simpl4JobExecutor();
 		c.setJobExecutor(simpl4JobExecutor);
 		c.setJobExecutorActivate(true);
 		simpl4JobExecutor.setAutoActivate(true);
 
 		GroovyExpressionManager groovyExpressionManager = new GroovyExpressionManager();
 		c.setExpressionManager(groovyExpressionManager);
+		c.setProcessEngineName( username);
 
 		pe = c.buildProcessEngine();
 		simpl4JobExecutor.setProcessEngine(pe);
@@ -150,6 +153,7 @@ class BaseProcessServiceImpl {
 		c.getBeans().put("gitService", this.gitService);
 
 		this.userProcessEngineMap.put(username, pe);
+		
 		return pe;
 	}
 
