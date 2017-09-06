@@ -269,6 +269,7 @@
 				return false;
 			},
 			_getMenuYaml: function() {
+				if( this.name == null) return [];
 				var nodes = this._loadMenu( this.name );
 				var pages = [];
 				if ( nodes.length > 0 ) {

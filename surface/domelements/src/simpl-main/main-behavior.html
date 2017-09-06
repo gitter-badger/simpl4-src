@@ -110,6 +110,7 @@
 		buildToolbar:function(){
 			var nodes = document.querySelector("#dispatcherId").getNodes();
 			var parent = this.querySelector("#toolbarIconsId");
+			if( nodes == null) nodes = [];
 			for ( var i = 0; i < nodes.length; i++ ) {
 				var node = nodes[ i ];
 				if ( node.uri && node.uri.startsWith( "mainToolbar:" ) ) {
