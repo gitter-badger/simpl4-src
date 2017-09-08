@@ -40,5 +40,6 @@ if [ $? -eq 0 ] ; then
 	jscomp.sh -o domelements.js out.js
 	rm out.js
 else
-	cp bin/_domelements.html.gz domelements.html.gz
+	cp bin/domelements.html domelements.html
+	cp bin/domelements.js domelements.js
 fi
