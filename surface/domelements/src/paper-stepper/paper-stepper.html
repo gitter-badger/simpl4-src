@@ -485,7 +485,7 @@ Custom property | Description | Default
       _updateStepperClosedMaxHeight: function() {
         this.debounce('updateStepperClosedMaxHeight', function() {
           this.customStyle['--label-wrapper-height'] = this.$$('#content-wrapper').clientHeight + 'px';
-          this.updateStyles('--label-wrapper-height');
+          this.updateStyles();
         });
       },
 
