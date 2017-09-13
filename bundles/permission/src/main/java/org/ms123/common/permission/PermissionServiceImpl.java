@@ -145,11 +145,7 @@ public class PermissionServiceImpl extends BasePermissionServiceImpl implements 
 		}
 		debug("userProps:" + userProps);
 		debug("filter:" + filter);
-		List<String> roleList = null;
-		String rs = (String) userProps.get(ROLES);
-		if (rs != null && rs.length() > 0) {
-			roleList = Arrays.asList(rs.split("\\s*,\\s*"));
-		}
+		List<String> roleList = (List<String>) userProps.get(ROLES);
 		if( additionalRoles != null){
 			if( roleList == null){
 				roleList = additionalRoles;

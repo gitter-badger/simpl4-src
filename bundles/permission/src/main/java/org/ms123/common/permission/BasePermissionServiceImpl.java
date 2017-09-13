@@ -238,10 +238,7 @@ class BasePermissionServiceImpl implements Constants {
 		if( userProps == null ) {
 			return roleListRet;
 		}
-		String rs = (String) userProps.get(ROLES);
-		if (rs != null && rs.length() >0) {
-			roleList = Arrays.asList(rs.split("\\s*,\\s*"));
-		}
+		roleList = (List<String>) userProps.get(ROLES);
 		if (roleList != null) {
 			for (String roleid : roleList) {
 				String[] s = roleid.split("\\.");
