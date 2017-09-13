@@ -295,6 +295,10 @@ r - processing display element<br/>
 			return raw;
 		},
 		_dataChanged: function() {
+			if( this.internalDataChanged===true){
+				this.internalDataChanged=null;
+				return;
+			}
 			this.async( function() {
 				this.__dataChanged();
 			}, 10 );
@@ -316,6 +320,10 @@ r - processing display element<br/>
 				return;
 			}
 			if ( this._api == null ) {
+				if( this.data == null){
+					this.internalDataChanged = true;
+					this.data=[];
+				}
 				this._createTable( this.preparedMeta, this.data, this.options );
 			} else {
 				this._api.clear();
