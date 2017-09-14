@@ -126,6 +126,10 @@
 					value: false,
 					type: Boolean
 				},
+				showHeader: {
+					value: true,
+					type: Boolean
+				},
 				collapsed: {
 					value: false,
 					observer:"collapsedChanged",
@@ -168,6 +172,11 @@
 						this.$.panelContent.style.display = "block";
 					}
 					this.$.collapsable.icon = "custom-icons:" + ( this.collapsed ? "icon-collapse" : "icon-expand" );
+				}
+				if ( this.showHeader === true  ) {
+					this.$.heading.style.display = "block";
+				} else {
+					this.$.heading.style.display = "none";
 				}
 				var self = this;
 				this.$.heading.addEventListener( "click", function() {
