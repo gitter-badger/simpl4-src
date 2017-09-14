@@ -68,6 +68,7 @@
 		detached: function() {},
 		setForm: function( form ) {
 			this.form = form;
+			this.convertNullToEmpty = form._form.xf_string_null_in_empty===true;
 		},
 		getPack:function(){
       if( this.form == null) return null;
@@ -519,6 +520,7 @@
 						v = this._toIso( v );
 					}
 				}
+				console.log("setValue("+this.name+"):",v);
 				this.editValue = v;
 			},
 			getValue: function() {
@@ -539,6 +541,10 @@
 						}	
 						return parseFloat(this.value);
 					}
+				}
+				
+				if( this.value == null && this.convertNullToEmpty ){
+					return "";
 				}
 				return this.value;
 			},
@@ -1173,6 +1179,7 @@
 			border: 0px !important;
 			padding:0px !important;
 			border-radius:0px !important;
+			line-height:15px;
 			min-height:23px;
 		}
 		:host /deep/ .selectize-input.focus {
@@ -1512,7 +1519,8 @@
 				//this.selectizeControl.blur();
 			},
 			onChange: function( val ) {
-				//console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+val );
+				if( val == 'null') val = null;
+				//console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+(val==null) );
 				if( this.isEmpty(this.value) && this.isEmpty(val)){
 					return;
 				}
