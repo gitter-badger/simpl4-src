@@ -132,9 +132,10 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	public synchronized List<Map> getUserList(Map mfilter, int startIndex, int numResults) {
 		List<Map> result = new ArrayList();
 		OCommandRequest query = new OSQLSynchQuery("select from SUser");
+		OrientGraph orientGraph = getConnection();
 		try {
 			int count = 0;
-			Iterable<Vertex> res = this.orientGraph.command(query).execute();
+			Iterable<Vertex> res = orientGraph.command(query).execute();
 			Iterator<Vertex> iter = res.iterator();
 			while (iter.hasNext()) {
 				if (count < startIndex)
@@ -149,12 +150,14 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			error(this, "getUserList.ex:%[exception]s", ex);
 			throw new RuntimeException(ex);
 		} finally {
+			orientGraph.shutdown();
 		}
 		return result;
 	}
 
 	private synchronized Map deleteByUserId(String userid) {
 		Map<String, String> ret = new HashMap<String, String>();
+		OrientGraph orientGraph = getConnection();
 		try {
 			if (isEmpty(userid) && userid.length() < 3) {
 				throw new RuntimeException("AuthServiceImpl.deleteByUserId.userid is empty or too short");
@@ -167,6 +170,8 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		} catch (Exception e) {
 			error(this, "deleteByUserId.rollback:%[exception]s", e);
 			orientGraph.rollback();
+		}finally{
+			orientGraph.shutdown();
 		}
 		return ret;
 	}
@@ -180,30 +185,40 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	}
 
 	private Map getUserByFilter(String id, String email) {
-		String filter = "userid = ?";
-		if (email != null) {
-			filter = "email = ?";
-		}
-		info(this, "getUserByUserid:" + filter);
-		OCommandRequest query = new OSQLSynchQuery("select from SUser where " + filter);
-		Iterable<Vertex> result = orientGraph.command(query).execute(email != null ? email : id);
-		Iterator<Vertex> it = result.iterator();
-		if (it.hasNext()) {
-			Vertex v = it.next();
-			return ((OrientVertex) v).getProperties();
+		OrientGraph orientGraph = getConnection();
+		try{
+			String filter = "userid = ?";
+			if (email != null) {
+				filter = "email = ?";
+			}
+			info(this, "getUserByUserid:" + filter);
+			OCommandRequest query = new OSQLSynchQuery("select from SUser where " + filter);
+			Iterable<Vertex> result = orientGraph.command(query).execute(email != null ? email : id);
+			Iterator<Vertex> it = result.iterator();
+			if (it.hasNext()) {
+				Vertex v = it.next();
+				return ((OrientVertex) v).getProperties();
+			}
+		}finally{
+			orientGraph.shutdown();
 		}
 		return null;
 	}
 
 	private List<Map> getUsersByWhere(String where) throws Exception {
-		info(this, "getUsersByWhere:" + where);
-		OCommandRequest query = new OSQLSynchQuery("select from SUser where " + where);
-		Iterable<Vertex> result = orientGraph.command(query).execute();
-		Iterator<Vertex> it = result.iterator();
+		OrientGraph orientGraph = getConnection();
 		List<Map> ret = new ArrayList<Map>();
-		while (it.hasNext()) {
-			Vertex v = it.next();
-			ret.add(((OrientVertex) v).getProperties());
+		try{
+			info(this, "getUsersByWhere:" + where);
+			OCommandRequest query = new OSQLSynchQuery("select from SUser where " + where);
+			Iterable<Vertex> result = orientGraph.command(query).execute();
+			Iterator<Vertex> it = result.iterator();
+			while (it.hasNext()) {
+				Vertex v = it.next();
+				ret.add(((OrientVertex) v).getProperties());
+			}
+		}finally{
+			orientGraph.shutdown();
 		}
 		return ret;
 	}
@@ -610,6 +625,16 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			prop = oClass.createProperty(propertyName, type, linkedClass);
 		}
 		return prop;
+	}
+
+	private OrientGraph getConnection(){
+		try {
+			OrientGraphFactory factory = this.orientdbService.getFactory(AUTH_DATABASE, false);
+			return factory.getTx();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("AuthServiceImpl.initAuth:" , e);
+		}
 	}
 
 	private void initAuth() {
