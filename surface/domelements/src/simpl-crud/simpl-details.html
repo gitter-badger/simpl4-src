@@ -95,6 +95,7 @@
 				this.datetimeList = {};
 				this.columns = [];
 				var ret = [];
+				if( fields == null) fields=[];
 				fields.forEach( function( f ) {
 					var dtName = f.name;
 					if ( f.hidden ) return;
