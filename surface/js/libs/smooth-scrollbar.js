@@ -5674,7 +5674,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 
 	    this.__addEvent(container, 'keydown', function (evt) {
-	        //if (!isFocused) return;
+	        if (!isFocused) return;
 
 	        var options = _this.options;
 	        var parents = _this.parents;
@@ -6458,7 +6458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    events.split(/\s+/g).forEach(function (evt) {
 	        _this.__handlers.push({ evt: evt, elem: elem, fn: fn, hasRegistered: true });
 
-	        document.addEventListener(evt, fn);
+	        elem.addEventListener(evt, fn);
 	    });
 	} /**
 	   * @module
