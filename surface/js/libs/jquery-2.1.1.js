@@ -5515,9 +5515,12 @@ var rmargin = (/^margin/);
 var rnumnonpx = new RegExp( "^(" + pnum + ")(?!px)[a-z%]+$", "i" );
 
 var getStyles = function( elem ) {
-		return elem.ownerDocument.defaultView.getComputedStyle( elem, null );
+		if( elem.ownerDocument && elem.ownerDocument.defaultView){
+			return elem.ownerDocument.defaultView.getComputedStyle( elem, null );
+		}else{
+			return "";
+		}
 	};
-
 
 
 function curCSS( elem, name, computed ) {
