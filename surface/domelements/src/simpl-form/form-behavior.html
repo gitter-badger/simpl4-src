@@ -643,10 +643,10 @@
 				this._buildShapeMap( this.shapes[ 0 ] );
 				this.async( function() {
 					this.fields = this._filterToArray( "[field]", this.$.formdiv, true, true );
+					this.fieldsMap = this._toMap( this.fields );
 					this.fields.forEach( function( field ) {
 						field.setForm( this );
 					}, this );
-					this.fieldsMap = this._toMap( this.fields );
 					this.fire( "form-ready", this );
 					this._valueChanged();
 					if ( this.resetData == null ) {

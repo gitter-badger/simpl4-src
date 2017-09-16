@@ -353,7 +353,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 				<iron-icon icon="{{item.xf_iconname}}"></iron-icon>{{item.xf_label}}</xaction-button>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isEnumSelect(item.id)}}">
-			<select-field field class="flex" name$="{{item.xf_id}}" items="{{item.items}}" multiple="[[item.xf_multiselection]]" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
+			<select-field field class="flex" name$="{{item.xf_id}}" items="{{item.items}}" parent-name="[[item.xf_parent_field_name]]" multiple="[[item.xf_multiselection]]" tabindex$="[[item.xf_tabindex]]" required="[[item.xf_required]]" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" defaultvalue="{{item.xf_default}}" help$="{{item.help}}" label="{{item.label}}" raised>
 			</select-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isTreeSelect(item.id)}}">

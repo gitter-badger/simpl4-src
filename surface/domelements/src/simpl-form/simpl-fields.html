@@ -520,7 +520,6 @@
 						v = this._toIso( v );
 					}
 				}
-				console.log("setValue("+this.name+"):",v);
 				this.editValue = v;
 			},
 			getValue: function() {
@@ -1391,6 +1390,9 @@
 					} ),
 				}
 			},
+			listeners: {
+				'value-changed': '_formValueChanged'
+			},
 			observers: [
 				'valueChanged(value)',
 				'compactChanged(compact)',
@@ -1439,6 +1441,7 @@
 				this.items = o;
 			},
 			itemsChanged:function(){
+				if( this.form == null && !_.isEmpty(this.parentName) ) return;
 				var select = this.$.select;
 				while (select.firstChild) {
     			select.removeChild(select.firstChild);
@@ -1449,33 +1452,41 @@
         if( this.selectize){
          this.selectize.clearOptions();
         }
-				if( this.items.length ){
-					for( var i=0; i < this.items.length;i++){
-						var item = this.items[i];
-            if( this.selectize){
-	            this.selectize.addOption({value:item.value,text:item.label});
-						}else{
-             var option = document.createElement("option");
-             var label = document.createTextNode(item.label);
-             option.value = item.value;
-             Polymer.dom( option ).appendChild( label );
-             Polymer.dom( select ).appendChild( option );
-     				}
-    			}
-				}else{
-					var items=this.items
-					Object.keys(items).forEach(function(k) {
-						var item = items[k];
-						if( this.selectize){
-							this.selectize.addOption({value:item.value,text:item.label});
-						}else{
-							var option = document.createElement("option");
-							var label = document.createTextNode(item.label);
-							option.value = item.value;
-							Polymer.dom( option ).appendChild( label );
-							Polymer.dom( select ).appendChild( option );
+				if( _.isEmpty(this.parentName) || (!_.isEmpty(this.parentName) &&  !_.isEmpty(this.parentValue))){
+					if( this.items.length ){
+						for( var i=0; i < this.items.length;i++){
+							var item = this.items[i];
+							if( !_.isEmpty(this.parentValue) && item.parent != this.parentValue){
+								continue;
+							}
+							if( this.selectize){
+								this.selectize.addOption({value:item.value,text:item.label});
+							}else{
+							 var option = document.createElement("option");
+							 var label = document.createTextNode(item.label);
+							 option.value = item.value;
+							 Polymer.dom( option ).appendChild( label );
+							 Polymer.dom( select ).appendChild( option );
+							}
 						}
-					})
+					}else{
+						var items=this.items
+						Object.keys(items).forEach(function(k) {
+							var item = items[k];
+							if( !_.isEmpty(this.parentValue) && item.parent != this.parentValue){
+								return;
+							}
+							if( this.selectize){
+								this.selectize.addOption({value:item.value,text:item.label});
+							}else{
+								var option = document.createElement("option");
+								var label = document.createTextNode(item.label);
+								option.value = item.value;
+								Polymer.dom( option ).appendChild( label );
+								Polymer.dom( select ).appendChild( option );
+							}
+						})
+					}
 				}
 				if( this.selectize){
 					this.selectize.refreshOptions(false);
@@ -1620,6 +1631,43 @@
 			},
 			setInvalid: function( b ) {
 				this.isInvalid = b;
+			},
+			_formValueChanged:function( e){
+				var name = e.detail.name;
+				var list = this.getFieldsWithParent();
+				for( var i=0; i < list.length;i++){
+					var f = list[i];
+					if( f.parentName == name){
+						f.parentValue = e.detail.getValue();
+						f.itemsChanged();
+					}
+				}
+			},
+			getFieldsWithParent:function(){
+				if( this.fieldsWithParent) return this.fieldsWithParent;
+				var list = [];
+				if( this.form == null) return [];
+				this.form.fields.forEach( function( field ) {
+					if( !_.isEmpty(field.parentName)){
+						list.push( field);
+					}
+				}, this );
+				this.fieldsWithParent = list;
+				return list;
+			},
+			isParentDest:function(name){
+				var list = this.getFieldsWithParent();
+				for( var i=0; i < list.length;i++){
+					var f = list[i];
+					if( f.parentName == name) return true;
+				}
+				return false;
+			},
+			setForm: function( form ) {
+				this.form = form;
+				if( this.isParentDest(this.name) || !_.isEmpty(this.parentName) ){
+					this.itemsChanged();
+				}
 			},
 			isRequired: function() {
 				if( !this.form ) return false;
