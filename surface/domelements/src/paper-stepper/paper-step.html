@@ -200,6 +200,13 @@ Missing Doc
         /**
          * Missing Doc
          */
+        topPos: {
+          type: Number,
+					value:100
+        },
+        /**
+         * Missing Doc
+         */
         _previousSaved: {
           type: Boolean,
           readOnly: true
@@ -419,7 +426,7 @@ Missing Doc
       _updateSlideshowViewportTop: function(optional, _alternativeLabel, vertical) {
         if (!vertical) {
           this.async(function() {
-            this.$$('#slideshowViewport').style.top = '100px';
+            this.$$('#slideshowViewport').style.top = this.topPos+'px';
             this.fire('step-horizontal-label-resize');
           }, 1);
         }
