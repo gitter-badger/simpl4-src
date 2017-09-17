@@ -34,6 +34,12 @@
 	<script>
 		Polymer( {
 			is: 'simpl-lobipanel',
+			properties: {
+				minimize: {
+					type: Boolean,
+					value: true
+				}
+			},
 			behaviors: [
 				ModernizrBehavior,
 				StyleScopeBehavior
@@ -44,7 +50,7 @@
 				}, 200 );
 			},
 			init: function() {
-					$( ".panel" ).lobiPanel( {
+					var opts = {
 						reload: {
 							icon: 'fa fa-refresh'
 						},
@@ -71,7 +77,12 @@
 						unpin: false,
 						close: false,
 						editTitle: false
-					} );
+					};
+					if( this.minimize===false){
+						opts.minimize = false;
+					}
+					$( ".panel" ).lobiPanel( opts );
+
 					this.async( function() {
 						this.setStyleScope( this, "style-scope", this.tagName.toLowerCase() );
 						//this.toggleSearchMode();
