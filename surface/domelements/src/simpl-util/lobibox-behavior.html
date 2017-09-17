@@ -20,7 +20,7 @@
 -->
 <script>
 	LobiboxBehavior = {
-		notify: function( msg, type, delay ) {
+		notify: function( msg, type, delay, options ) {
 			var icon = "vaadin-icons:info-circle-o";
 			if ( type == "success" ) {
 				icon = "vaadin-icons:check-circle-o";
@@ -29,11 +29,13 @@
 			} else if ( type == "error" ) {
 				icon = "vaadin-icons:exclamation";
 			}
-			Lobibox.notify( type, {
+			var opts = {
 				delay: delay,
 				icon: icon,
 				msg: msg
-			} );
+			};
+      var options = $.extend({}, opts, options);
+			Lobibox.notify( type, options);
 
 		}
 	}
