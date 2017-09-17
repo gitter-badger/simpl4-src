@@ -1456,7 +1456,8 @@
 					if( this.items.length ){
 						for( var i=0; i < this.items.length;i++){
 							var item = this.items[i];
-							if( !_.isEmpty(this.parentValue) && item.parent != null && item.parent != this.parentValue){
+							var parentList = _.isEmpty(item.parent) ? null : item.parent.split(",");
+							if( !_.isEmpty(this.parentValue) && parentList != null && _.indexOf( parentList, this.parentValue)<0){
 								continue;
 							}
 							if( this.selectize){
@@ -1473,7 +1474,8 @@
 						var items=this.items
 						Object.keys(items).forEach(function(k) {
 							var item = items[k];
-							if( !_.isEmpty(this.parentValue) && item.parent!=null && item.parent != this.parentValue){
+							var parentList = _.isEmpty(item.parent) ? null : item.parent.split(",");
+							if( !_.isEmpty(this.parentValue) && parentList != null && _.indexOf( parentList, this.parentValue)<0){
 								return;
 							}
 							if( this.selectize){
