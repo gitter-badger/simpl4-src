@@ -1456,7 +1456,7 @@
 					if( this.items.length ){
 						for( var i=0; i < this.items.length;i++){
 							var item = this.items[i];
-							if( !_.isEmpty(this.parentValue) && item.parent != this.parentValue){
+							if( !_.isEmpty(this.parentValue) && item.parent != null && item.parent != this.parentValue){
 								continue;
 							}
 							if( this.selectize){
@@ -1473,7 +1473,7 @@
 						var items=this.items
 						Object.keys(items).forEach(function(k) {
 							var item = items[k];
-							if( !_.isEmpty(this.parentValue) && item.parent != this.parentValue){
+							if( !_.isEmpty(this.parentValue) && item.parent!=null && item.parent != this.parentValue){
 								return;
 							}
 							if( this.selectize){
@@ -1640,6 +1640,7 @@
 					if( f.parentName == name){
 						f.parentValue = e.detail.getValue();
 						f.itemsChanged();
+						f.setValue( f.defaultvalue);
 					}
 				}
 			},
@@ -1667,6 +1668,9 @@
 				this.form = form;
 				if( this.isParentDest(this.name) || !_.isEmpty(this.parentName) ){
 					this.itemsChanged();
+				}
+				if( this.getValue() == null){
+					this.setValue( this.defaultvalue);
 				}
 			},
 			isRequired: function() {
