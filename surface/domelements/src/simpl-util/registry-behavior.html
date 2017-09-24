@@ -34,14 +34,13 @@
 
 			var prompt = Lobibox.prompt( 'text', {
 				height: 200,
-				title: tr( 'te.enter_name' ),
+				title: tr( this._registryTitleSave ? this._registryTitleSave : 'te.enter_name' ),
 				attrs: {
 					pattern: "[A-Za-z0-9]{3,}",
 					value: this._currentRegistryName
 				},
 				callback: ( function( $this, type, ev ) {
-					console.log( "callback:", prompt.getValue() );
-					if ( !_.isEmpty( prompt.getValue() ) ) {
+					if ( type != "cancel" &&  !_.isEmpty( prompt.getValue() ) ) {
 						this._doSave( prompt.getValue() );
 					}
 				} ).bind( this )
