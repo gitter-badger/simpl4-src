@@ -347,6 +347,9 @@
 		/**
 		 * set the form data
 		 */
+		setState: function( data ) {
+			this.setData( data);
+		},
 		setData: function( data ) {
 			this.resetData = jQuery.extend( {}, data );;
 			if ( data == null ) return;
@@ -433,6 +436,9 @@
 		/**
 		 * get the form data
 		 */
+		getState: function() {
+			return this.getData();
+		},
 		getData: function() {
 			var data = simpl4.util.Merge.merge( true, this.data );
 			this.fields.forEach( function( field ) {
