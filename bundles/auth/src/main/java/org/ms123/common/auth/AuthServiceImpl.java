@@ -627,10 +627,13 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 		return prop;
 	}
 
+	private OrientGraphFactory _factory = null;
 	private OrientGraph getConnection(){
 		try {
-			OrientGraphFactory factory = this.orientdbService.getFactory(AUTH_DATABASE, false);
-			return factory.getTx();
+			if( _factory == null){
+				_factory = this.orientdbService.getFactory(AUTH_DATABASE, 20);
+			}
+			return _factory.getTx();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("AuthServiceImpl.initAuth:" , e);
