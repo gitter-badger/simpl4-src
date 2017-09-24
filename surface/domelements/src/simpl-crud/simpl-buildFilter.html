@@ -34,6 +34,10 @@
 					value: null,
 					type: String
 				},
+				name: {
+					value: null,
+					type: String
+				},
 				filter: {
 					value: null,
 					notify: true,
@@ -41,7 +45,7 @@
 				}
 			},
 			observers: [
-				'paramsChanged(params.*)'
+				'paramsChanged(params.*,name)'
 			],
 			paramsChanged: function() {
 				this.build( true );
