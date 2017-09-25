@@ -41,6 +41,7 @@
 				var f = this.fields[ i ];
 				var enabledExpr = f.getAttribute( "enabled-expr" );
 				var readonlyExpr = f.getAttribute( "readonly-expr" );
+				var contentExpr = f.getAttribute( "content-expr" );
 				//console.log( "Name:" + f.name + "|enabled-expr:" + enabledExpr + "|readonlyExpr:" + readonlyExpr + "|" );
 				if ( this._isNotEmpty( readonlyExpr ) ) {
 					var e = this._maskedEval( readonlyExpr, env );
@@ -76,6 +77,11 @@
 					} else {
 						f.removeAttribute( "visibility" );
 					}
+				}
+				if ( this._isNotEmpty( contentExpr ) ) {
+					var e = this._maskedEval( contentExpr, env );
+					console.log( "Name:" + f.name + ",content-expr:" + contentExpr+" -> "+ e );
+					f.setValue( e );
 				}
 			}
 			var abuttons = this.$.formdiv.parentNode.querySelectorAll( "xaction-button" );
