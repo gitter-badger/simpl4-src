@@ -1246,14 +1246,6 @@
 						type: Boolean,
 						value: true
 				},
-				create: {
-						type: Boolean,
-						value: false
-				},
-				createOnBlur: {
-						type: Boolean,
-						value: false
-				},
 				createFilter: {
 						type: String,
 						value: null
@@ -1535,6 +1527,12 @@
 				//console.log( "select-field(" + this.name + ").onFocus" );
 				//this.selectizeControl.blur();
 			},
+			onCreate: function( tag ) {
+				if( this.combobox ){
+					return { 'value': tag, 'text': tag };
+				}
+				return false;
+			},
 			onChange: function( val ) {
 				if( val == 'null') val = null;
 				//console.log( "select-field(" + this.name + ").onChange:", this.value+"/val:"+(val==null) );
@@ -1551,8 +1549,8 @@
 				var options = {
 						delimiter: this.delimiter,
 						diacritics: this.diacritics,
-						create: this.create,
-						createOnBlur: this.createOnBlur,
+						create: this.onCreate.bind(this),
+						createOnBlur: this.onCreate.bind(this),
 						createFilter: this.createFilter,
 						highlight: this.highlight,
 						persist: this.persist,
