@@ -26,6 +26,7 @@
 				box-shadow: 10px 10px 15px -6px rgba(96, 125, 139, 0.67) !important;
 				border-left: 2px solid rgb(239, 242, 243) !important;
 			}
+
 		</style>
 		<link rel="import" type="css" href="bootstrap.css" />
 		<link rel="import" type="css" href="lobipanel.css" />
@@ -46,47 +47,63 @@
 			],
 			attached: function() {
 				this.async( function() {
-				this.init();
+					this.init();
 				}, 200 );
 			},
 			init: function() {
-					var opts = {
-						reload: {
-							icon: 'fa fa-refresh'
-						},
-						editTitle: {
-							icon: 'fa fa-edit',
-							icon2: 'fa fa-save'
-						},
-						unpin: {
-							icon: 'fa fa-arrows'
-						},
-						minimize: {
-							icon: 'fa fa-chevron-up',
-							icon2: 'fa fa-chevron-down'
-						},
-						close: {
-							icon: 'fa fa-times-circle'
-						},
-						expand: {
-							icon: 'fa fa-expand',
-							icon2: 'fa fa-compress'
-						},
-						sortable: true,
-						reload: false,
-						unpin: false,
-						close: false,
-						editTitle: false
-					};
-					if( this.minimize===false){
-						opts.minimize = false;
-					}
-					$( ".panel" ).lobiPanel( opts );
+				var opts = {
+					reload: {
+						icon: 'fa fa-refresh'
+					},
+					editTitle: {
+						icon: 'fa fa-edit',
+						icon2: 'fa fa-save'
+					},
+					unpin: {
+						icon: 'fa fa-arrows'
+					},
+					minimize: {
+						icon: 'fa fa-chevron-up',
+						icon2: 'fa fa-chevron-down'
+					},
+					close: {
+						icon: 'fa fa-times-circle'
+					},
+					expand: {
+						icon: 'fa fa-expand',
+						icon2: 'fa fa-compress'
+					},
+					sortable: true,
+					reload: false,
+					unpin: false,
+					close: false,
+					editTitle: false
+				};
+				if ( this.minimize === false ) {
+					opts.minimize = false;
+				}
+				$( ".panel" ).lobiPanel( opts );
 
-					this.async( function() {
-						this.setStyleScope( this, "style-scope", this.tagName.toLowerCase() );
-						//this.toggleSearchMode();
-					} );
+				$( '.panel' ).on( 'beforeMaximize.lobiPanel', ( function( ev, lobiPanel ) {
+					this.fire( 'lp-maximize', ev );
+				} ).bind( this ) );
+
+				$( '.panel' ).on( 'beforeMinimize.lobiPanel', ( function( ev, lobiPanel ) {
+					this.fire( 'lp-minimize', ev );
+				} ).bind( this ) );
+
+				$( '.panel' ).on( 'beforeFullScreen.lobiPanel', ( function( ev, lobiPanel ) {
+					this.fire( 'lp-fullscreen', ev );
+				} ).bind( this ) );
+
+				$( '.panel' ).on( 'beforeSmallSize.lobiPanel', ( function( ev, lobiPanel ) {
+					this.fire( 'lp-smallsize', ev );
+				} ).bind( this ) );
+
+				this.async( function() {
+					this.setStyleScope( this, "style-scope", this.tagName.toLowerCase() );
+					//this.toggleSearchMode();
+				} );
 			}
 		} );
 
