@@ -80,7 +80,7 @@
 				}
 				if ( this._isNotEmpty( contentExpr ) ) {
 					var e = this._maskedEval( contentExpr, env );
-					console.log( "Name:" + f.name + ",content-expr:" + contentExpr+" -> "+ e );
+					//console.log( "Name:" + f.name + ",content-expr:" + contentExpr+" -> "+ e );
 					f.setValue( e );
 				}
 			}
@@ -289,6 +289,7 @@
 			try {
 				env._ = _;
 				env.moment = moment;
+				env.accounting = accounting;
 				env.Math = Math;
 				env.form = this;
 				env.tr = window.tr;
