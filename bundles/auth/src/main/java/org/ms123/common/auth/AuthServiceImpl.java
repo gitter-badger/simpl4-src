@@ -590,6 +590,9 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 			createProperty(suser, "team_manage", OType.BOOLEAN);
 			createLinkedProperty(suser, "roles", OType.EMBEDDEDLIST, OType.STRING);
 			upsertUser("admin", "admin", null, null, null, null, null, null, true, false);
+			List<String> roles = new ArrayList<String>();
+			roles.add("global.guest");
+			upsertUser("guest", null, null, null, null, null, null, roles, true, false);
 		} catch (Exception e) {
 			error(this, "createClassAndIndex:%[exception]s", e);
 			e.printStackTrace();
