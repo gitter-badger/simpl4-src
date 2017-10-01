@@ -87,6 +87,8 @@ import java.util.concurrent.ExecutorService;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.FrameworkEvent;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
 /** JettyService implementation
  */
@@ -260,6 +262,9 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 		String sh = System.getProperty("simpl4.dir");
 		m_basedir = new File(sh).getCanonicalFile().toString();
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
+		ServletContextHandler context0 = new ServletContextHandler(contexts, "/", ServletContextHandler.SESSIONS);
+		List<Handler> handlerList = new ArrayList<Handler>();
+		handlerList.add( context0);
 
 		boolean isOpenfireDisabled = System.getProperty("simpl4.openfire.disabled") != null && "true".equals(System.getProperty("simpl4.openfire.disabled"));
 		boolean isActiveMQDisabled = System.getProperty("simpl4.activemq.disabled") != null && "true".equals(System.getProperty("simpl4.activemq.disabled"));
@@ -274,6 +279,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			webappOpenfire.setWelcomeFiles(new String[]{"index.jsp"});
 			webappOpenfire.setResourceBase(m_basedir + "/etc/openfire/web");
 			webappOpenfire.setContextPath("/openfire/");
+			handlerList.add( webappOpenfire);
 		}
 		WebAppContext webAppActivemq = null;
 		if( !isActiveMQDisabled){
@@ -282,12 +288,36 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			webAppActivemq.setWelcomeFiles(new String[]{"index.jsp"});
 			webAppActivemq.setResourceBase(m_basedir + "/etc/activemq/web");
 			webAppActivemq.setContextPath("/activemq/");
+			handlerList.add( webAppActivemq);
+		}
+
+		File servlets = new File(m_basedir,"/etc/servlets.json");
+		if( servlets.exists()){
+			String servletsString = new String(Files.readAllBytes(Paths.get(servlets.toURI())));
+			JSONDeserializer ds = new JSONDeserializer();
+			List<Map> servletList = (List) ds.deserialize(servletsString);
+			for( Map<String,String> map : servletList){
+				String basedir = map.get("basedir");
+				if( !basedir.startsWith("/")){
+					basedir = new File(m_basedir, basedir).toString();
+				}
+				String contextPath = map.get("contextPath");
+				String indexFile = map.get("indexFile");
+				info( "Create.webAppContext("+basedir+","+contextPath+","+indexFile+")");
+				WebAppContext webAppContext = new WebAppContext(contexts, basedir, contextPath);
+				webAppContext.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
+				if( indexFile != null){
+					webAppContext.setWelcomeFiles(new String[]{indexFile});
+				}
+				webAppContext.setResourceBase(basedir);
+				webAppContext.setContextPath(contextPath);
+				handlerList.add( webAppContext);
+			}
 		}
 
 		LoginFilter loginFilter = new LoginFilter(m_permissionService);
 		FilterHolder loginFilterHolder = new FilterHolder(loginFilter);
 		loginFilterHolder.setName("LoginFilter");
-		ServletContextHandler context0 = new ServletContextHandler(contexts, "/", ServletContextHandler.SESSIONS);
 		ServletHandler servletHandler = context0.getServletHandler();
 		servletHandler.addFilter(loginFilterHolder, createFilterMapping("/*", loginFilterHolder));
 		BundleContext bc = m_bundleContext;
@@ -362,7 +392,11 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				}
 			}
 		}), "/*");
-		if( webappOpenfire != null && webAppActivemq!=null){
+
+		Handler[] handlerArray = new Handler[handlerList.size()];
+		handlerArray = handlerList.toArray(handlerArray);
+		contexts.setHandlers(handlerArray);
+		/*if( webappOpenfire != null && webAppActivemq!=null){
 			contexts.setHandlers(new Handler[] { context0, webappOpenfire, webAppActivemq });
 		}else if( webappOpenfire != null){
 			contexts.setHandlers(new Handler[] { context0, webappOpenfire });
@@ -370,7 +404,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 			contexts.setHandlers(new Handler[] { context0, webAppActivemq });
 		}else{
 			contexts.setHandlers(new Handler[] { context0 });
-		}
+		}*/
 		m_server.setHandler(contexts);
 	}
 
