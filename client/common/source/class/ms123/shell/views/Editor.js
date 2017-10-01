@@ -530,7 +530,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 
 			var params = {
 				method:prefix+"deployProcess",
-				service:"process",
+				service:this.getProcessEngine(),
 				parameter:rpcParams,
 				async: false,
 				context: this,
@@ -538,6 +538,9 @@ qx.Class.define("ms123.shell.views.Editor", {
 				failed: failed
 			}
 			ms123.util.Remote.rpcAsync(params);
+		},
+		getProcessEngine:function(){
+			return ms123.config.ConfigManager.isOldPE() ? "activiti" : "process";
 		},
 		__undeployProcess:function(model,data){
 			this._deployProcess("un",model,data);

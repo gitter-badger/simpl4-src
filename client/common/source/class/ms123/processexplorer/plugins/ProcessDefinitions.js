@@ -335,7 +335,7 @@ qx.Class.define( "ms123.processexplorer.plugins.ProcessDefinitions", {
 			try {
 				var deploymentIds = this._getDeploymentIds();
 				console.log( "_deleteDeployments:" + JSON.stringify( deploymentIds, null, 2 ) );
-				ms123.util.Remote.rpcSync( "process:deleteDeployments", {
+				ms123.util.Remote.rpcSync( this.getProcessEngine()+":deleteDeployments", {
 					deploymentIds: deploymentIds,
 					cascade: true
 				} );
@@ -358,7 +358,7 @@ qx.Class.define( "ms123.processexplorer.plugins.ProcessDefinitions", {
 		_getProcessDefinitions: function() {
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync( "process:getProcessDefinitions", {
+				result = ms123.util.Remote.rpcSync( this.getProcessEngine()+":getProcessDefinitions", {
 					namespace: this._namespace,
 					version: this._onlyLatest ? -1 : null
 				} );
@@ -390,6 +390,9 @@ qx.Class.define( "ms123.processexplorer.plugins.ProcessDefinitions", {
 				}
 			}
 			return records;
+		},
+		getProcessEngine:function(){
+			return ms123.config.ConfigManager.isOldPE() ? "activiti" : "process";
 		},
 		_handleEvent: function() {
 			this._refreshDefinitions();

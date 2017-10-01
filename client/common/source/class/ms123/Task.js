@@ -213,7 +213,7 @@ qx.Class.define("ms123.Task", {
 					queryParams={ candidate:this._user.userid };
 				}
 			
-				var result = ms123.util.Remote.rpcSync("process:getTasks", {
+				var result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getTasks", {
 					queryParams:queryParams,
 					listParams:{
 						size:1000
@@ -235,6 +235,9 @@ qx.Class.define("ms123.Task", {
 				obj = obj[parts[i]];
 			}
 			return new obj();
+		},
+		getProcessEngine:function(){
+			return ms123.config.ConfigManager.isOldPE() ? "activiti" : "process";
 		},
 		_addRecord: function (map) {
 			this._tableModel.addRowsAsMapArray([map], null, true);

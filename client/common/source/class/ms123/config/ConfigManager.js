@@ -82,6 +82,9 @@ qx.Class.define("ms123.config.ConfigManager", {
 		isRuntime:function(){
 			return ms123.config.ConfigManager.__branding["usage"] == "runtime";
 		},
+		isOldPE:function(){
+			return ms123.config.ConfigManager.__branding["oldPE"] === true;
+		},
 		isTest:function(){
 			return ms123.config.ConfigManager.__branding["testing"] === true;
 		},

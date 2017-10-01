@@ -93,7 +93,7 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 			var result = null;
 			try {
 				var s = this._select;
-				result = ms123.util.Remote.rpcSync("process:getProcessInstances", {
+				result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getProcessInstances", {
 					namespace: this.namespace,
 					processDefinitionKey: s=='key' ? this._processDefinition.key:null,
 					processDefinitionId: s=='id' ? this._processDefinition.id:null,
@@ -228,7 +228,7 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 			}).bind(this);
 
 			try {
-				var result = ms123.util.Remote.rpcSync("process:getProcessInstance", {
+				var result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getProcessInstance", {
 					processInstanceId: id
 				});
 				completed.call(this, result);
@@ -262,7 +262,7 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 
 		_getDiagram: function (id) {
 			if(!id || id.toLowerCase() == "starterror" ) return;
-			var source = ms123.util.Remote.rpcSync("process:getInstanceDiagram", { processInstanceId:id });
+			var source = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getInstanceDiagram", { processInstanceId:id });
 			var image = new qx.ui.basic.Image(source);
 			//image.setScale(true);
 			//image.setWidth(500);
@@ -902,6 +902,9 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 			var escape = document.createElement('textarea');
 			escape.innerHTML = html;
 			return escape.innerHTML;
+		},
+		getProcessEngine:function(){
+			return ms123.config.ConfigManager.isOldPE() ? "activiti" : "process";
 		},
 		_handleEventDeplomentChanged: function (e) {
 			if( this._splitPane){

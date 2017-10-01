@@ -222,7 +222,7 @@ console.log("processVariables:",processVariables);
 
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("process:getTaskFormProperties", {
+				result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getTaskFormProperties", {
 					executionId:processInstanceId,
 					taskId: tid
 				});
@@ -240,7 +240,7 @@ console.log("processVariables:",processVariables);
 		_getProcessVariables: function (processTenantId, formId, pid) {
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("process:getVariables", {
+				result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getVariables", {
 					executionId:pid,
 					namespace:processTenantId,
 					formId:formId
@@ -356,7 +356,7 @@ console.log("processVariables:",processVariables);
 			}).bind(this);
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("process:executeTaskOperation", {
+				result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":executeTaskOperation", {
 					taskId:taskId,
 					operation: "complete",
 					startParams: processVariables
@@ -381,7 +381,7 @@ console.log("processVariables:",processVariables);
 		_getTasks: function (processInstanceId) {
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("process:getTasks", {
+				result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getTasks", {
 					queryParams:{
 						assignee:this.userid,
 						processInstanceId: processInstanceId
@@ -397,10 +397,13 @@ console.log("processVariables:",processVariables);
 			}
 			return result;
 		},
+		getProcessEngine:function(){
+			return ms123.config.ConfigManager.isOldPE() ? "activiti" : "process";
+		},
 		_getProcessDefinition: function (namespace,name) {
 			var result = null;
 			try {
-				result = ms123.util.Remote.rpcSync("process:getProcessDefinitions", {
+				result = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getProcessDefinitions", {
 					namespace:namespace ? namespace : ms123.StoreDesc.getCurrentNamespace(),
 					version:-1,
 					key:name
