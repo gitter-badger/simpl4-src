@@ -272,6 +272,18 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			piMap.put("duration", pi.getDurationInMillis());
 			piMap.put("processDefinitionId", pi.getProcessDefinitionId());
 			piMap.put("startUserId", pi.getStartUserId());
+			String variableNames = getString(exchange, "variableNames", this.variableNames);
+			if( !isEmpty(variableNames)){
+				List<String> nameList = Arrays.asList(variableNames.split(","));
+				Map<String, Object> vars = this.runtimeService.getVariables(pi.getId());
+				Map<String,Object> varsSelected = new HashMap();
+				for (Map.Entry<String, Object> entry : vars.entrySet()) {
+					if( nameList.indexOf( entry.getKey()) > -1){
+						varsSelected.put( entry.getKey(), entry.getValue());
+					}
+				}
+				piMap.put("variables", varsSelected);
+			}
 			ret.add(piMap);
 		}
 		exchange.getIn().setBody(ret);
