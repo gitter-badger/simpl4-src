@@ -306,6 +306,7 @@ public class JettyServiceImpl implements JettyService, ServiceListener,Framework
 				info( "Create.webAppContext("+basedir+","+contextPath+","+indexFile+")");
 				WebAppContext webAppContext = new WebAppContext(contexts, basedir, contextPath);
 				webAppContext.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
+				webAppContext.setAttribute("bundleContext", m_bundleContext);
 				if( indexFile != null){
 					webAppContext.setWelcomeFiles(new String[]{indexFile});
 				}
