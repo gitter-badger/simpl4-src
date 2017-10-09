@@ -56,8 +56,13 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 
 	protected Inflector inflector = Inflector.getInstance();
 	public List<Map> executeQuery(SessionContext sc, Class clazz,String className, String where){
-		info(this,"executeQuery.sql:"+"select from "+className + " where "+ where);
-		List list = clazz.graphQuery("select from "+className + " where "+ where,false);
+		info(this,"executeQuery.sql:"+"select from "+className + " where ["+ where+"]");
+		List list = null;
+		if( isEmpty(where) || "null".equals(where)){
+			list = clazz.graphQuery("select from "+className,false);
+		}else{
+			list = clazz.graphQuery("select from "+className + " where "+ where,false);
+		}
 		List result = [];
 		list.each{ obj ->
 			result.add( _objToMap( sc, obj,0 ));
