@@ -72,6 +72,10 @@ CRUD operations for simpl4
 				TranslationsBehavior
 			],
 			properties: {
+				getFirst: {
+					value: false,
+					type: Boolean
+				},
 				namespace: {
 					type: String
 				},
@@ -97,6 +101,14 @@ CRUD operations for simpl4
 			],
 			attached: function() {
 				this.isAttached = true;
+				if ( this.initialized != true ) {
+					if ( this.getFirst ) {
+						this.async( function() {
+							this.getInitialData();
+						}, 200 );
+					}
+				}
+				this.initialized;
 			},
 			buttonsChanged: function() {
 				var buttons = {
@@ -435,6 +447,20 @@ CRUD operations for simpl4
 				this.data = [ {
 					articleId: "ABC"
 				} ]
+			},
+			getInitialData: function( data ) {
+				var rpc = {
+					storeId: ( this.namespace || simpl4.util.BaseManager.getNamespace() ) + "_" + this._pack,
+					entity: this.entity
+				}
+				var ret = simpl4.util.Rpc.rpcSync( "data:query", rpc );
+				if( ret != null && ret.rows){
+					this.currentData = clone( ret.rows[0] );
+					console.log("currentData:",this.currentData);
+					this.$.formid.setData( this.currentData );
+					this.mode="edit";
+				}
+				return ret;
 			},
 			getHelp: function() {
 				return tr( "crud2.select_with" );
