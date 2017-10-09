@@ -34,6 +34,7 @@ import org.ms123.common.permission.api.PermissionService;
 import org.osgi.service.event.EventAdmin;
 import org.camunda.bpm.engine.impl.ProcessEngineImpl;
 import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 
 /**
  * 
@@ -66,7 +67,7 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 
 	@Override
 	public List<ProcessEngineImpl> getProcessEngines() {
-		info(this, "Simpl4JobExecutor.getProcessEngines");
+		debug(this, "Simpl4JobExecutor.getProcessEngines");
 		return processEngines;
 	}
 
@@ -77,7 +78,7 @@ public class Simpl4JobExecutor extends DefaultJobExecutor implements org.ms123.c
 
 		String pdKey = job.getProcessDefinitionKey();
 		String namespace = pdKey.substring(0, pdKey.indexOf(NAMESPACE_DELIMITER));
-		info(this, "Simpl4JobExecutor.executeJobs(" + tenantProcessEngine.getName() + "):" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
+		debug(this, "Simpl4JobExecutor.executeJobs(" + tenantProcessEngine.getName() + "):" + jobIds + "/" + job.getProcessInstanceId() + "/" + job.getProcessDefinitionId() + "/" + namespace);
 		Map<String, String> info = getInfo(tenantProcessEngine, job.getProcessInstanceId(), job.getProcessDefinitionId(), namespace);
 		try {
 			threadPoolExecutor.execute(new Simpl4ExecuteJobsRunnable(jobIds, info, tenantProcessEngine));

@@ -41,6 +41,7 @@ import org.ms123.common.system.thread.ThreadContext;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import static com.jcabi.log.Logger.info;
+import static com.jcabi.log.Logger.debug;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.ms123.common.system.history.HistoryService.HISTORY_ACTIVITI_JOB_EXCEPTION;
@@ -82,7 +83,7 @@ public class Simpl4ExecuteJobsRunnable implements Runnable {
 		final List<String> currentProcessorJobQueue = jobExecutorContext.getCurrentProcessorJobQueue();
 		CommandExecutor commandExecutor = processEngine.getProcessEngineConfiguration().getCommandExecutorTxRequired();
 
-		info(this, "Simpl4ExecuteJobsRunnable.start("+jobIds+"):" + this.info);
+		debug(this, "Simpl4ExecuteJobsRunnable.start("+jobIds+"):" + this.info);
 		currentProcessorJobQueue.addAll(jobIds);
 
 		Context.setJobExecutorContext(jobExecutorContext);
@@ -112,7 +113,7 @@ public class Simpl4ExecuteJobsRunnable implements Runnable {
 
 		} finally {
 			Context.removeJobExecutorContext();
-			info(this, "Simpl4ExecuteJobsRunnable.finish:"+this.info);
+			debug(this, "Simpl4ExecuteJobsRunnable.finish:"+this.info);
 		}
 	}
 
