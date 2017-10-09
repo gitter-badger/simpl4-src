@@ -98,7 +98,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	private static AuthService authService;
 	private PermissionService permissionService;
 	private ServiceRegistration serviceRegistration;
-	static final String[] topics = new String[] { "setting/deleteResource", "setting/setResource" };
+	static final String[] topics = new String[] { "auth/changed", "setting/deleteResource", "setting/setResource" };
 
 	private BundleContext bundleContext;
 
@@ -119,7 +119,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 				info(this,"OrientDbService.authenticate("+username+"):password null");
 				return null;
 			}
-			Map	userProps = authService.getUserProperties(username);
+			Map	userProps = getUserProperties(username);
 			if( userProps == null){
 				info(this,"OrientDbService.authenticate("+username+"):unknown");
 				return null;
@@ -217,6 +217,10 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 			if( "setting/setResource".equals(event.getTopic())){
 				clearLiveList();
 				setupLiveList();
+			}
+			if( "auth/changed".equals(event.getTopic())){
+				String userId = (String)event.getProperty("auth");
+				userProperties.remove( userId);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -341,6 +345,16 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	private static int maxPoolsize = 50;
 	private static MultiUserPool multiUserPool = new MultiUserPool(maxPoolsize);
 
+	private static Map<String,Map> userProperties = new HashMap<String,Map>();
+	private static Map getUserProperties(String userId){
+		Map up = userProperties.get(userId);
+		if( up == null){		
+			up = authService.getUserProperties(userId);
+			userProperties.put(userId, up);
+		}
+		return up;
+	}
+
 	public synchronized OrientGraph getOrientGraph(String name){
 		info( this, "getOrientGraph("+name+"):start");
 		String username = ThreadContext.getThreadContext().getUserName();
@@ -350,7 +364,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 
 		OrientGraphFactory factory = multiUserPool.get( name + "/"+ username );
 		if( factory == null){
-			Map	userProps = this.authService.getUserProperties(username);
+			Map	userProps = getUserProperties(username);
 			String password = (String)userProps.get("password");
 			if( "admin".equals(username) && password == null){
 				password = this.rootPassword;
@@ -387,7 +401,7 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 		if( !userExists( db, username) ){
 			userCreate( db, username );
 		}
-		Map	userProps = this.authService.getUserProperties(username);
+		Map	userProps = getUserProperties(username);
 		String password = (String)userProps.get("password");
 		if( "admin".equals(username) && password == null){
 			password = this.rootPassword;
