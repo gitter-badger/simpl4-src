@@ -75,6 +75,8 @@ import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.ms123.common.system.orientdb.OrientDBService;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.Event;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.info;
@@ -95,6 +97,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	protected OrientDBService orientdbService;
 	protected OrientGraph orientGraph;
 	protected DataLayer dataLayer;
+	private EventAdmin eventAdmin;
 
 	protected PermissionService permissionService;
 	protected CallService callService;
@@ -109,6 +112,12 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 
 	protected void deactivate() throws Exception {
 		System.out.println("AuthServiceImpl deactivate");
+	}
+
+	private void sendEvent(String userid) {
+		Map props = new HashMap();
+		props.put("auth", userid);
+		eventAdmin.postEvent(new Event("auth/changed", props));
 	}
 
 	public String getAdminUser() {
@@ -319,7 +328,8 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	@RequiresRoles("admin")
 	public Map updateUser(@PName(USER_ID) String userid, @PName("data") Map data) throws RpcException {
 		try {
-			return _createUser(userid, data);
+			sendEvent(userid);
+		 	return _createUser(userid, data);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "AuthServiceImpl.updateUser:", e);
 		} finally {
@@ -329,6 +339,7 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	@RequiresRoles("admin")
 	public Map deleteUser(@PName(USER_ID) String userid) throws RpcException {
 		try {
+			sendEvent(userid);
 			StoreDesc sdesc = getStoreDesc();
 			Map ret = deleteByUserId(userid);
 			return ret;
@@ -736,6 +747,11 @@ public class AuthServiceImpl implements org.ms123.common.auth.api.AuthService, C
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.permissionService = paramPermissionService;
 		info(this, "AuthServiceImpl.setPermissionService:" + paramPermissionService);
+	}
+	@Reference(dynamic = true)
+	public void setEventAdmin(EventAdmin paramEventAdmin) {
+		info(this,"AuthServiceImpl.setEventAdmin:" + paramEventAdmin);
+		this.eventAdmin = paramEventAdmin;
 	}
 
 }
