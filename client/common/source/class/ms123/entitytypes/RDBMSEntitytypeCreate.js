@@ -391,6 +391,9 @@ qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 		},
 		_deleteIsOk:function(data){
 			var relations = this._getRelations();
+			if( relations==null){
+				return null;
+			}
 			var etname = this.storeDesc.getPack()+"."+data.name;
 			for( var i=0; i< relations.length;i++){
 				var rel = relations[i];
