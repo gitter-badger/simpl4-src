@@ -144,16 +144,44 @@ public class StartProcessInstanceResource extends BaseResource {
 				Map params = (Map) new JSONDeserializer().deserialize(IOUtils.toString(is));
 				if (params.get("items") != null) {
 					List<Map> items = (List) params.get("items");
+							info(this, "variables.items:" + items);
 					for (Map<String, String> item : items) {
 						String name = item.get("name");
 						Object value = item.get("value");
-						if (value instanceof String) {
-							String v = ((String) value).trim();
-							if (v.length() > 1 && (v.startsWith("{") || v.startsWith("["))) {
-								value = new JSONDeserializer().deserialize(v);
+						Object type = item.get("type");
+						try{
+							if( "map".equals(type) || "list".equals(type)){
+								if (value instanceof String) {
+									String v = ((String) value).trim();
+									if (v.length() > 1 && (v.startsWith("{") || v.startsWith("["))) {
+										value = new JSONDeserializer().deserialize(v);
+									}
+								}
 							}
+							if( "boolean".equals(type) && value instanceof String){
+								value = new Boolean( String.valueOf(value));
+							}
+							if( "integer".equals(type) && value instanceof String){
+								value = new Integer( String.valueOf(value));
+							}
+							if( "double".equals(type) && value instanceof String){
+								value = new Double( String.valueOf(value));
+							}
+							if( "long".equals(type) && value instanceof String){
+								value = new Long( String.valueOf(value));
+							}
+							if( "date".equals(type) && value instanceof String){
+								value = new java.util.Date( String.valueOf(value));
+							}
+						}catch(Exception e){
+							info(this, "Exception.variable.put("+name+"):" + value);
+							e.printStackTrace();
 						}
-						info(this, "put:" + name + "=" + value);
+						if( value != null){
+							info(this, "variable.put("+name+","+value.getClass().getSimpleName()+"):" + value);
+						}else{
+							info(this, "variable.put("+name+"):" + value);
+						}
 						variables.put(name, value);
 					}
 				}
