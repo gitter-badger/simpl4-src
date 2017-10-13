@@ -51,6 +51,7 @@ import org.camunda.bpm.engine.runtime.Execution;
 import org.camunda.bpm.engine.runtime.ExecutionQuery;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstantiationBuilder;
+import org.camunda.bpm.engine.history.HistoricVariableInstance;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
@@ -278,11 +279,13 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			String variableNames = getString(exchange, "variableNames", this.variableNames);
 			if( !isEmpty(variableNames)){
 				List<String> nameList = Arrays.asList(variableNames.split(","));
-				Map<String, Object> vars = this.runtimeService.getVariables(pi.getId());
+				List<HistoricVariableInstance> variableList = this.getHistoryService().createHistoricVariableInstanceQuery().processInstanceId(pi.getId()).list();
 				Map<String,Object> varsSelected = new HashMap();
-				for (Map.Entry<String, Object> entry : vars.entrySet()) {
-					if( nameList.indexOf( entry.getKey()) > -1){
-						varsSelected.put( entry.getKey(), entry.getValue());
+				for( HistoricVariableInstance vi : variableList){
+					String name = vi.getName();
+					Object value = vi.getValue();
+					if( nameList.indexOf( name ) > -1){
+						varsSelected.put( name, value);
 					}
 				}
 				piMap.put("variables", varsSelected);
