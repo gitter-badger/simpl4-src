@@ -740,20 +740,19 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			eq.executionId(trimToEmpty(eval(executionId,exchange)));
 			hasCriteria=true;
 		}
-		String processVariable = this.processCriteria.get(PROCESSVARIABLE);
-		if (!isEmpty(processVariable)) {
+		List<String> processVariables = this.endpoint.getProcessCriteriaVar();
+		for( String processVariable : processVariables){
+			hasCriteria=true;
 			processVariable = trimToEmpty(processVariable);
 			List<String> tokens = splitByCommasNotInQuotes( processVariable);
 			if( tokens.size() == 1){
-				eq.processVariableValueEquals(processVariable, trimToEmpty(eval(tokens.get(0),exchange)));
+				eq.processVariableValueEquals(processVariable, eval(trimToEmpty(tokens.get(0)),exchange,Object.class));
 			}else{
-				debug(this,"p1eval:"+eval(tokens.get(1),exchange));
-				eq.processVariableValueEquals(
-					trimToEmpty(tokens.get(0)),
-					trimToEmpty(eval(tokens.get(1),exchange))
-				);
+				String name = trimToEmpty(tokens.get(0));
+				Object value = eval(trimToEmpty(tokens.get(1)),exchange,Object.class);
+				info(this,"setProcessVariable("+name+","+value.getClass().getSimpleName()+"):"+value);
+				eq.processVariableValueEquals( name, value);
 			}
-			hasCriteria=true;
 		}
 
 		if( hasCriteria ){
@@ -817,17 +816,17 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			}
 		}
 
-		String processVariable = this.processCriteria.get(PROCESSVARIABLE);
-		if (!isEmpty(processVariable)) {
+		List<String> processVariables = this.endpoint.getProcessCriteriaVar();
+		for( String processVariable : processVariables){
 			processVariable = trimToEmpty(processVariable);
 			List<String> tokens = splitByCommasNotInQuotes( processVariable);
 			if( tokens.size() == 1){
-				hq.variableValueEquals(processVariable,trimToEmpty(eval(tokens.get(0),exchange)));
+				hq.variableValueEquals(processVariable,eval(trimToEmpty(tokens.get(0)),exchange,Object.class));
 			}else{
-				hq.variableValueEquals(
-					trimToEmpty(tokens.get(0)),
-					trimToEmpty(eval(tokens.get(1),exchange))
-				);
+				String name = trimToEmpty(tokens.get(0));
+				Object value = eval(trimToEmpty(tokens.get(1)),exchange,Object.class);
+				info(this,"setProcessVariable("+name+","+value.getClass().getSimpleName()+"):"+value);
+				hq.variableValueEquals( name, value);
 			}
 		}
 

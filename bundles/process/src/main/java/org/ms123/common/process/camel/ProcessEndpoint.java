@@ -21,6 +21,7 @@ import flexjson.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import org.apache.camel.*;
 import org.apache.camel.core.osgi.utils.BundleContextUtils;
 import org.apache.camel.impl.DefaultEndpoint;
@@ -38,11 +39,12 @@ import static com.jcabi.log.Logger.info;
  */
 @SuppressWarnings({"unchecked","deprecation"})
 @UriEndpoint(scheme = "process", title = "Process", syntax = "process:name", consumerClass = ProcessConsumer.class)
-public class ProcessEndpoint extends DefaultEndpoint {
+public class ProcessEndpoint extends DefaultEndpoint implements ProcessConstants,org.ms123.common.process.Constants{
 
 	private JSONDeserializer ds = new JSONDeserializer();
 	private Map m_options;
 	private Map<String, String> processCriteria = new HashMap<String, String>();
+	private List<String> processCriteriaVar = new ArrayList<String>();
 	private Map<String, String> taskCriteria = new HashMap<String, String>();
 	private String namespace;
 	private String events;
@@ -253,19 +255,28 @@ public class ProcessEndpoint extends DefaultEndpoint {
 
 	public void setProcessCriteria(String data) {
 		Map<String, String> ret = new HashMap<String, String>();
+		List<String> retVar = new ArrayList<String>();
 		if (data != null) {
 			List<Map<String, String>> l = (List) ds.deserialize(data);
 			for (Map<String, String> m : l) {
 				String name = m.get("name");
 				String value = m.get("value");
-				ret.put(name, value);
+				if( name.equals(PROCESSVARIABLE)){
+					retVar.add( value);
+				}else{
+					ret.put(name, value);
+				}
 			}
 		}
 		this.processCriteria = ret;
+		this.processCriteriaVar = retVar;
 	}
 
 	public Map<String, String> getProcessCriteria() {
 		return this.processCriteria;
+	}
+	public List<String> getProcessCriteriaVar() {
+		return this.processCriteriaVar;
 	}
 }
 
