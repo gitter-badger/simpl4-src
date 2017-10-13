@@ -53,6 +53,7 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 	private boolean isCheckAssignments;
 	private String messageName;
 	private String headerFields;
+	private String destination;
 	private List<Map<String,String>> assigments;
 	private String variableNames;
 	private String taskOperation;
@@ -176,6 +177,14 @@ public class ActivitiEndpoint extends org.activiti.camel.ActivitiEndpoint {
 
 	public String getHeaderFields() {
 		return headerFields;
+	}
+
+	public void setDestination(String t) {
+		destination = t;
+	}
+
+	public String getDestination() {
+		return destination;
 	}
 
 	public void setVariableNames(String t) {

@@ -123,6 +123,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 	private String activityId;
 	private String namespace;
 	private String headerFields;
+	private String destination;
 	private List<Map<String,String>> assignments;
 	private String variableNames;
 	private String businessKey;
@@ -155,6 +156,7 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 		this.namespace = endpoint.getNamespace();
 		this.signalName = endpoint.getSignalName();
 		this.headerFields = endpoint.getHeaderFields();
+		this.destination = endpoint.getDestination();
 		this.assignments = endpoint.getAssignments();
 		this.variableNames = endpoint.getVariableNames();
 		this.businessKey = endpoint.getBusinessKey();
@@ -267,7 +269,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 				retList.add( ret);
 			}
 		}
-		exchange.getIn().setBody(retList);
+//		exchange.getIn().setBody(retList);
+		ExchangeUtils.setDestination(this.destination, retList, exchange);
 	}
 
 	private void doQueryProcessInstances(Exchange exchange) {
@@ -302,7 +305,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			}
 			ret.add(piMap);
 		}
-		exchange.getIn().setBody(ret);
+//		exchange.getIn().setBody(ret);
+		ExchangeUtils.setDestination(this.destination, ret, exchange);
 	}
 
 	private void doQueryTasks(Exchange exchange) {
@@ -357,7 +361,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			taskMap.put("processName", pde.getName());
 			ret.add(taskMap);
 		}
-		exchange.getIn().setBody(ret);
+//		exchange.getIn().setBody(ret);
+		ExchangeUtils.setDestination(this.destination, ret, exchange);
 	}
 
 	private Method getMethod( Method[] methods, String name, int pc){
@@ -491,7 +496,8 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			if (pi != null) {
 				this.activitiKey += "/" + pi.getId();
 				debug(this,"m_activitiKey:" + this.activitiKey);
-				exchange.getOut().setBody(pi.getId());
+				//exchange.getOut().setBody(pi.getId());
+				ExchangeUtils.setDestination(this.destination, pi.getId(), exchange);
 			}
 		}
 	}
@@ -749,11 +755,18 @@ public class ActivitiProducer extends org.activiti.camel.ActivitiProducer implem
 			if( tokens.size() == 1){
 				eq.processVariableValueEquals(trimToEmpty(eval(tokens.get(0),exchange)));
 			}else{
-				debug(this,"p1eval:"+eval(tokens.get(1),exchange));
-				eq.processVariableValueEquals(
-					trimToEmpty(tokens.get(0)),
-					trimToEmpty(eval(tokens.get(1),exchange))
-				);
+				String name = trimToEmpty(tokens.get(0));
+				String value = trimToEmpty(eval(tokens.get(1),exchange));
+				if( "false".equals(value)){
+					info(this,"getProcessInstances.variables("+name+"):false");
+					eq.processVariableValueEquals( name, false );
+				}else if( "true".equals(value)){
+					info(this,"getProcessInstances.variables("+name+"):true");
+					eq.processVariableValueEquals( name, true );
+				}else{
+					info(this,"getProcessInstances.variables("+name+"):"+value);
+					eq.processVariableValueEquals( name, value );
+				}
 			}
 			hasCriteria=true;
 		}
