@@ -365,7 +365,9 @@
 				if ( this.isDate() && !this.hasDate ) {
 					this.datetimePicker = this.getDatePicker(showTime, {}/*options*/);
 					if( this.hasTouch()){
-						this.readonly = true;
+						if( window.isGes != true){
+							this.readonly = true;
+						}
 					}
 					if ( this._date ) {
 						this.datetimePickerGotoDate(this._date);
