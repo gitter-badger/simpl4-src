@@ -110,6 +110,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 	private String activityId;
 	private String namespace;
 	private String headerFields;
+	private String destination;
 	private List<Map<String,String>> assignments;
 	private String variableNames;
 	private String businessKey;
@@ -135,6 +136,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		this.namespace = endpoint.getNamespace();
 		this.signalName = endpoint.getSignalName();
 		this.headerFields = endpoint.getHeaderFields();
+		this.destination = endpoint.getDestination();
 		this.assignments = endpoint.getAssignments();
 		this.variableNames = endpoint.getVariableNames();
 		this.businessKey = endpoint.getBusinessKey();
@@ -254,7 +256,8 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				retList.add( ret);
 			}
 		}
-		exchange.getIn().setBody(retList);
+		//exchange.getIn().setBody(retList);
+		ExchangeUtils.setDestination(this.destination, retList, exchange);
 	}
 
 	private void doQueryProcessInstances(Exchange exchange) {
@@ -286,7 +289,8 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			}
 			ret.add(piMap);
 		}
-		exchange.getIn().setBody(ret);
+		//exchange.getIn().setBody(ret);
+		ExchangeUtils.setDestination(this.destination, ret, exchange);
 	}
 
 	private void doQueryTasks(Exchange exchange) {
@@ -343,7 +347,8 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			taskMap.put("processName", pd.getName());
 			ret.add(taskMap);
 		}
-		exchange.getIn().setBody(ret);
+		//exchange.getIn().setBody(ret);
+		ExchangeUtils.setDestination(this.destination, ret, exchange);
 	}
 
 	private Method getMethod( Method[] methods, String name, int pc){
@@ -482,7 +487,8 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				}
 				this.activitiKey += "/" + pi.getId();
 				debug(this,"m_activitiKey:" + this.activitiKey);
-				exchange.getOut().setBody(pi.getId());
+				//exchange.getOut().setBody(pi.getId());
+				ExchangeUtils.setDestination(this.destination, pi.getId(), exchange);
 			}
 		}
 	}
