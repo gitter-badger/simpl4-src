@@ -540,7 +540,7 @@ qx.Class.define("ms123.shell.views.Editor", {
 			ms123.util.Remote.rpcAsync(params);
 		},
 		getProcessEngine:function(){
-			return ms123.config.ConfigManager.isOldPE() ? "activiti" : "process";
+			return ms123.config.ConfigManager.isOldPE() ? "workflow" : "process";
 		},
 		__undeployProcess:function(model,data){
 			this._deployProcess("un",model,data);
