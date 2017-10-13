@@ -174,18 +174,18 @@ class BaseFormServiceImpl {
 	}
 	public Set<String> getFormInputVariables(String namespace, String formKey) throws Exception {
 		Set<String> result = new HashSet<String>();
+		if( formKey==null || "null".equals(formKey)){
+			return new HashSet<String>();
+		}
 		String json = m_gitService.searchContent(namespace, formKey, "sw.form");
 		Map rootShape = (Map) m_ds.deserialize(json);
 		List<Map> 	inputShapes = new ArrayList<Map>();
-/* $if version >= 1.8 $ */
+
 		traverseElement(inputShapes, rootShape, (shape) -> {
 			Map<String,String> properties = (Map)shape.get("properties");
 			String il = properties.get("xf_inputlistname");
 			return !isEmpty(il);
 		});
-/* $else$ */
-		getElementsWithInputlist(inputShapes, rootShape);
-/* $endif$ */
 
 		for( Map shape : inputShapes){
 			Map<String,String> properties = (Map)shape.get("properties");
