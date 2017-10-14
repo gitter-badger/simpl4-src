@@ -151,11 +151,11 @@ public class ExchangeUtils {
 				expr = evaluate(expr,exchange);
 				value = type.cast(evaluateExpr(expr, exchange, type));
 			}catch(Throwable e){
-				info( ExchangeUtils.class, "getParameter("+expr+","+type+"):"+ e.getMessage());
 				if( type.equals( String.class )){
 					info( ExchangeUtils.class, "\tExpr("+expr+") casted to:\""+ type.cast(expr)+"\"");
 					return type.cast(expr);
 				}
+				info( ExchangeUtils.class, "getParameter("+expr+","+type+"):"+ e.getMessage());
 				throw e;
 			}
 		}
