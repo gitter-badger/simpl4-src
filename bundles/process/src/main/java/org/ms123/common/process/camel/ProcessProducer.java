@@ -490,7 +490,6 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				}
 				this.activitiKey += "/" + pi.getId();
 				debug(this,"m_activitiKey:" + this.activitiKey);
-				//exchange.getOut().setBody(pi.getId());
 				ExchangeUtils.setDestination(this.destination, pi.getId(), exchange);
 			}
 		}
@@ -687,7 +686,9 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				}
 			}
 		}
+		info(this,"getProcessVariables1:"+processVariables);
 		processVariables.putAll( getProcessAssignments(exchange) );
+		info(this,"getProcessVariables2:"+processVariables);
 		return processVariables;
 	}
 
