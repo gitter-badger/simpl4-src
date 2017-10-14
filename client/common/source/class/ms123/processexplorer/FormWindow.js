@@ -56,10 +56,14 @@ qx.Class.define("ms123.processexplorer.FormWindow", {
 			this._window.destroy();
 		},
 		open: function (params) {
-			if( params.taskName ){
-				this._window.setCaption(params.processName+"/"+params.taskName);
-			}else{
-				this._window.setCaption(params.processName);
+			try{
+				if( params.taskName ){
+					this._window.setCaption(params.processName+"/"+params.taskName);
+				}else{
+					this._window.setCaption(params.processName);
+				}
+			}catch(e){
+				console.error("Ex:",e);
 			}
 			var form = this.createForm(params);
 			if (this._window.hasChildren()) {
