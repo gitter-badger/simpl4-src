@@ -457,6 +457,7 @@ ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/commonmark-0.9.0.bar \
 	scan-bundle:file:$REPOSITORY/reflections-0.9.11.bar \
 	scan-bundle:file:$REPOSITORY/guava-20.0.jar \
+	scan-bundle:file:$REPOSITORY/apache-lucene-5.3.2.jar \
 	scan-bundle:file:$REPOSITORY/java-uuid-generator-3.1.3.jar \
 	scan-bundle:file:$REPOSITORY/camunda-engine-orientdb-0.0.1.jar \
 	scan-bundle:file:$REPOSITORY/jruby-complete-1.7.16.1.jar \
