@@ -987,7 +987,7 @@
 	</style>
 	<template>
 		<div class="vertical layout">
-			<paper-checkbox checked="{{value}}">
+			<paper-checkbox disabled$="[[disabled]]" checked="{{value}}">
 				<label id="label" hidden$="[[!label]]">[[label]]</label>
 			  <paper-tooltip for="" position="bottom" xffset="0">[[help]]</paper-tooltip>
 			</paper-checkbox>
