@@ -51,7 +51,7 @@ configure(subprojects -
 	}
 
 	apply plugin: 'groovy'
-	apply plugin: 'scala'
+//	apply plugin: 'scala'
 	apply plugin: 'aspectj'
 
 	tasks.withType(ScalaCompile) {
@@ -101,7 +101,7 @@ configure(subprojects -
 		main {
 			java { srcDir 'src/main/java' }
 			groovy { srcDir 'src/main/java' }
-			scala { srcDir 'src/main/java' }
+	//		scala { srcDir 'src/main/java' }
 			resources { srcDir 'src/main/resources' }
 		}
 	}
@@ -167,10 +167,10 @@ configure(subprojects -
 		}
 	}
 	compileGroovy.dependsOn.remove("compileJava")
-	compileScala.dependsOn.remove("compileJava")
+	//compileScala.dependsOn.remove("compileJava")
 	compileJava.dependsOn(compileGroovy)
-	compileJava.dependsOn(compileScala)
-	compileScala.dependsOn(compileGroovy)
+	//compileJava.dependsOn(compileScala)
+	//compileScala.dependsOn(compileGroovy)
 	compileGroovy.dependsOn projectClean,preProcess
 }
 
