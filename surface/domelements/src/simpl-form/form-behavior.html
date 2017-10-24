@@ -293,6 +293,9 @@
 				env.Math = Math;
 				env.form = this;
 				env.tr = window.tr;
+				env.parseFloat = window.parseFloat;
+				env.parseInt = window.parseInt;
+				env.isNaN = window.isNaN;
 				return metaes.evaluate( scr.toString(), env );
 			} catch ( e ) {
 				console.error( "\t" + e );
