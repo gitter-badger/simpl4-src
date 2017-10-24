@@ -65,6 +65,9 @@ simpl4.util.BaseManager.extend( "simpl4.util.MessageManager", {
 	},
 	tr: function( id ) {
 		var t = simpl4.util.MessageManager.transMap[ id ];
+		if( !_.isEmpty(t) && t.indexOf("\\n") >-1){
+			t = t.split("\\n").join("\n");
+		}
 		return t == null ? id : t;
 	}
 }, {} );
