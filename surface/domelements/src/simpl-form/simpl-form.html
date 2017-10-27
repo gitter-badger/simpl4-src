@@ -402,7 +402,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			<custom-field field class="flex" type="{{item.xf_type}}" url="[[item.xf_url]]" elementname="[[item.xf_elementname]]" tabindex$="[[item.xf_tabindex]]" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" name$="{{item.xf_id}}" help$="{{item.help}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></custom-field>
 		</template>
 		<template is="dom-if" if="{{isGroup(item.id)}}">
-			<simpl-group id$="[[item.xf_id]]" class="group layout vertical">
+			<simpl-group id$="[[item.xf_id]]" class="group layout vertical" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}">
 				<label for=".group">{{item.label}}</label>
 				<form-element-selector class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
 			</simpl-group>
@@ -563,7 +563,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			</template>
 
 			<template is="dom-if" if="{{isGroup(item.id)}}">
-				<simpl-group id$="[[item.xf_id]]" class="flex layout vertical group">
+				<simpl-group id$="[[item.xf_id]]" class="flex layout vertical group" enabled-expr$="{{item.xf_enabled}}" readonly-expr$="{{item.xf_readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}">
 					<label for=".group">{{item.label}}</label>
 					<form-element-selector class="flex layout horizontal baseline wrap" items="{{item.childShapes}}" />
 				</simpl-group>

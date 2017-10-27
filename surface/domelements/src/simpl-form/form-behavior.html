@@ -84,6 +84,49 @@
 					f.setValue( e );
 				}
 			}
+
+			for ( var i = 0, l = this.groups.length; i < l; i++ ) {
+				var g = this.groups[ i ];
+				var enabledExpr = g.getAttribute( "enabled-expr" );
+				var readonlyExpr = g.getAttribute( "readonly-expr" );
+				var contentExpr = g.getAttribute( "content-expr" );
+				console.log( "Name:" + g.name + "|enabled-expr:" + enabledExpr + "|readonlyExpr:" + readonlyExpr + "|" );
+				if ( this._isNotEmpty( readonlyExpr ) ) {
+					var e = this._maskedEval( readonlyExpr, env );
+					if ( e ) {
+						g.setAttribute( "disabled", "r" );
+					} else {
+						g.removeAttribute( "disabled" );
+					}
+				} else if ( this._isNotEmpty( enabledExpr ) ) {
+					var e = this._maskedEval( enabledExpr, env );
+					if ( e ) {
+						g.removeAttribute( "disabled" );
+					} else {
+						g.setAttribute( "disabled", "e" );
+					}
+				}
+				var excludeExpr = g.getAttribute( "exclude-expr" );
+				console.log( "Name:" + g.name + "|excludeExpr:" + excludeExpr + "|" );
+				if ( this._isNotEmpty( excludeExpr ) ) {
+					var e = this._maskedEval( excludeExpr, env );
+					if ( e ) {
+						g.setAttribute( "hidden", "" );
+					} else {
+						g.removeAttribute( "hidden" );
+					}
+				}
+				var invisibleExpr = g.getAttribute( "invisible-expr" );
+				console.log( "Name:" + g.name + "|invisibleExpr:" + invisibleExpr + "|" );
+				if ( this._isNotEmpty( invisibleExpr ) ) {
+					var e = this._maskedEval( invisibleExpr, env );
+					if ( e ) {
+						g.setAttribute( "visibility", "hidden" );
+					} else {
+						g.removeAttribute( "visibility" );
+					}
+				}
+			}
 			var abuttons = this.$.formdiv.parentNode.querySelectorAll( "xaction-button" );
 			for ( var i = 0; i < abuttons.length; i++ ) {
 				var ab = abuttons[ i ];
@@ -304,6 +347,22 @@
 			}
 			return def;
 		},
+		_maskedEvalNoError: function( scr, env, def ) {
+			try {
+				env._ = _;
+				env.moment = moment;
+				env.accounting = accounting;
+				env.Math = Math;
+				env.form = this;
+				env.tr = window.tr;
+				env.parseFloat = window.parseFloat;
+				env.parseInt = window.parseInt;
+				env.isNaN = window.isNaN;
+				return metaes.evaluate( scr.toString(), env );
+			} catch ( e ) {
+			}
+			return def;
+		},
 		_whenFieldsReady: function( done ) {
 			var self = this;
 
@@ -389,7 +448,14 @@
 //					console.log( "expressionIn(" + field.name + "\t," + field.expressionIn + "\t," + oldValue + ") -> ", fieldData );
 
 				}
-				field.setValue( fieldData || field.defaultvalue || null );
+				var defValue = field.defaultvalue;
+				if( fieldData == null){
+					defValue = this._maskedEvalNoError( defValue, {}, defValue );
+					field.setValue( defValue );
+				}else{
+					field.setValue( fieldData );
+				}
+				field.withoutCheck = false;
 			}, this );
 			this._valueChanged();
 		},
@@ -659,6 +725,7 @@
 				this._buildShapeMap( this.shapes[ 0 ] );
 				this.async( function() {
 					this.fields = this._filterToArray( "[field]", this.$.formdiv, true, true );
+					this.groups = this._filterToArray( "simpl-group" , this.$.formdiv, true,true );
 					this.fieldsMap = this._toMap( this.fields );
 					this.fields.forEach( function( field ) {
 						field.setForm( this );
@@ -684,6 +751,7 @@
 				this._buildShapeMap( this.shapes[ 0 ] );
 				this.async( function() {
 					this.fields = this._filterToArray( "[field]" , this.$.formdiv, true, true );
+					this.groups = this._filterToArray( "simpl-group" , this.$.formdiv, true,true );
 					this.fields.forEach( function( field ) {
 						field.setForm( this );
 					}, this );
