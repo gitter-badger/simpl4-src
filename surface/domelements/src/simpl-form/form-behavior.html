@@ -326,6 +326,13 @@
 			});
 			return elements;
 		},
+		isNumEmpty: function( v ) {
+			if ( v == null ) return true;
+			if ( v == 0 ) return true;
+		  if ( isNaN(v) ) return true;
+			if ( v == '' ) return true;
+			return false;
+		},
 		_maskedEval: function( scr, env, def ) {
 			try {
 				env._ = _;
@@ -334,6 +341,7 @@
 				env.Math = Math;
 				env.form = this;
 				env.tr = window.tr;
+				env.isNumEmpty = this.isNumEmpty;
 				env.parseFloat = window.parseFloat;
 				env.parseInt = window.parseInt;
 				env.isNaN = window.isNaN;
