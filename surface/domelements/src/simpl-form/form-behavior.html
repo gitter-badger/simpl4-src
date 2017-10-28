@@ -90,7 +90,7 @@
 				var enabledExpr = g.getAttribute( "enabled-expr" );
 				var readonlyExpr = g.getAttribute( "readonly-expr" );
 				var contentExpr = g.getAttribute( "content-expr" );
-				console.log( "Name:" + g.name + "|enabled-expr:" + enabledExpr + "|readonlyExpr:" + readonlyExpr + "|" );
+				//console.log( "Name:" + g.name + "|enabled-expr:" + enabledExpr + "|readonlyExpr:" + readonlyExpr + "|" );
 				if ( this._isNotEmpty( readonlyExpr ) ) {
 					var e = this._maskedEval( readonlyExpr, env );
 					if ( e ) {
@@ -107,7 +107,7 @@
 					}
 				}
 				var excludeExpr = g.getAttribute( "exclude-expr" );
-				console.log( "Name:" + g.name + "|excludeExpr:" + excludeExpr + "|" );
+				//console.log( "Name:" + g.name + "|excludeExpr:" + excludeExpr + "|" );
 				if ( this._isNotEmpty( excludeExpr ) ) {
 					var e = this._maskedEval( excludeExpr, env );
 					if ( e ) {
@@ -117,7 +117,7 @@
 					}
 				}
 				var invisibleExpr = g.getAttribute( "invisible-expr" );
-				console.log( "Name:" + g.name + "|invisibleExpr:" + invisibleExpr + "|" );
+				//console.log( "Name:" + g.name + "|invisibleExpr:" + invisibleExpr + "|" );
 				if ( this._isNotEmpty( invisibleExpr ) ) {
 					var e = this._maskedEval( invisibleExpr, env );
 					if ( e ) {
@@ -180,14 +180,12 @@
 				errorList = regula.validate( {
 					elements: elements
 				} );
-				if ( dontInvalidate !== true ) {
-					errorList.forEach( function( err ) {
-						err.failingElements.forEach( function( elem ) {
-							elem.setInvalid( true );
-							elem.setErrorMessage( err.message );
-						} );
+				errorList.forEach( function( err ) {
+					err.failingElements.forEach( function( elem ) {
+						elem.setInvalid( dontInvalidate !== true ? true : false );
+						elem.setErrorMessage( dontInvalidate != true ? err.message : null );
 					} );
-				}
+				} );
 			}
 			var elements = this._filterToArray( "gridinput-field,tableselect-field,upload-field,embeddedobj-inline-field,linkedobj-field,linkedlist-field,embeddedobj-field,embeddedlist-field,tree-field,select-field" ,this.$.formdiv, true , true );
 			for ( var i = 0; i < elements.length; i++ ) {
