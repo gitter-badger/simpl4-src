@@ -83,13 +83,13 @@
 
 	<template>
 		<div class="layout horizontal">
-			<paper-button id="button" style="padding:0px;margin:0px;" icon="file-upload" class="button button_secondary" on-click="_fileClick">
+			<paper-button id="button" style="padding:0px;margin:0px;" icon="file-upload" class="upload button button_secondary" on-click="_fileClick">
 				<iron-icon icon="vaadin-icons:upload"></iron-icon>
 				<content></content>
 			</paper-button>
 			<div style="padding-top:8px;margin-left:10px;margin-right:10px;">[[tr('import.or')]]</div>
 			<paper-material class="button button_secondary" elevation="1" id='UploadBorder'>
-				<div id="dropArea" style="position:relative;" hidden$="{{!_shownDropText}}"><iron-icon icon="vaadin-icons:arrow-forward"></iron-icon>{{dropText}}</div>
+				<div id="dropArea" style="position:relative;" hidden$="{{!_shownDropText}}"><iron-icon class="upload" icon="vaadin-icons:arrow-forward"></iron-icon>{{dropText}}</div>
 				<template is="dom-repeat" items="{{files}}">
 					<div class="file">
 						<div class="name">
