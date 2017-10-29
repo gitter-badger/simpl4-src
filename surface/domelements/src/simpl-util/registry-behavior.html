@@ -151,6 +151,33 @@
 				}
 			}
 			simpl4.util.Rpc.rpcAsync( params );
+		},
+		_doLoad: function(name,callback) {
+			var attributes = this._registryAttributes;
+			if( attributes == null ){
+				attributes = {
+					subject: this._registrySubject
+				}
+			}
+			var params = {
+				service: "registry",
+				method: "get",
+				parameter: {
+					key: this._registryKey+"/" + name,
+					attributes: attributes
+				},
+				async: true,
+				context: this,
+				failed: function( e ) {
+					console.error( "getRegistry:", e );
+					this.notify( tr( "error" ), 'error', 8000 );
+				},
+				completed: function( ret ) {
+					console.log( "getRegistry.ret:", ret );
+					callback(ret);
+				}
+			}
+			simpl4.util.Rpc.rpcAsync( params );
 		}
 	}
 

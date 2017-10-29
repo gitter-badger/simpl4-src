@@ -294,7 +294,9 @@
 			this._errorMessage = msg;
 			this.async( function() {
 				var error = this.querySelector( "#globalErrorId" );
-				error.innerHTML = msg;
+				if( error != null){
+					error.innerHTML = msg;
+				}
 			}, 50 );
 		},
 		_getExcludes:function(selector){
