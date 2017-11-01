@@ -36,7 +36,7 @@
 				}
 			} )
 		},
-		openDialog: function( dia, _width ) {
+		openDialog: function( dia, _width,height ) {
 			var width = _width || "80%";
 			if ( window.matchMedia( '(max-width: 480px)' ).matches ) {
 				width = "95%";
@@ -50,7 +50,7 @@
 				draggable: true,
 				closeText:'',
 				title: "",
-				height: "auto",
+				height: height || "auto",
 				width: width,
 				modal: true
 			} );

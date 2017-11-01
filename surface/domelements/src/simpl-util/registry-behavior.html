@@ -47,7 +47,7 @@
 			} );
 
 		},
-		_doSave: function( name ) {
+		_doSave: function( name, silent ) {
 			var json = this.getState();
 			this._currentRegistryName = name;
 
@@ -70,10 +70,14 @@
 				failed: function( e ) {
 					console.error( "_doSave:", e );
 					if ( e == null ) return;
-					this.notify( tr( "error" ), 'error', 8000 );
+					if( silent !== true){
+						this.notify( tr( "error" ), 'error', 8000 );
+					}
 				},
 				completed: function( ret ) {
-					this.notify( tr( "registry.saved" ), 'success', 8000 );
+					if( silent !== true){
+						this.notify( tr( "registry.saved" ), 'success', 8000 );
+					}
 				}
 			}
 			simpl4.util.Rpc.rpcAsync( params );
@@ -152,7 +156,29 @@
 			}
 			simpl4.util.Rpc.rpcAsync( params );
 		},
-		_doLoad: function(name,callback) {
+		_doDelete: function(name, silent) {
+			var params = {
+				service: "registry",
+				method: "delete",
+				parameter: {
+					key: this._registryKey+"/" + name,
+					silent: silent
+				},
+				async: true,
+				context: this,
+				failed: function( e ) {
+					console.error( "deleteRegistry:", e );
+					if( silent != true){
+						this.notify( tr( "error" ), 'error', 8000 );
+					}
+				},
+				completed: function( ret ) {
+					console.log( "deleteRegistry.ok" );
+				}
+			}
+			simpl4.util.Rpc.rpcAsync( params );
+		},
+		_doLoad: function(name,callback, silent) {
 			var attributes = this._registryAttributes;
 			if( attributes == null ){
 				attributes = {
@@ -164,13 +190,16 @@
 				method: "get",
 				parameter: {
 					key: this._registryKey+"/" + name,
-					attributes: attributes
+					attributes: attributes,
+					silent: silent
 				},
 				async: true,
 				context: this,
 				failed: function( e ) {
 					console.error( "getRegistry:", e );
-					this.notify( tr( "error" ), 'error', 8000 );
+					if( silent != true){
+						this.notify( tr( "error" ), 'error', 8000 );
+					}
 				},
 				completed: function( ret ) {
 					console.log( "getRegistry.ret:", ret );
