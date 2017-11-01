@@ -1,0 +1,16 @@
+<script>
+	ExecuteBehavior = {
+		executeCommand: function( command ) {
+			channel.publish( "executeCommand", {
+				command: command
+			} );
+		},
+		redo: function( command ) {
+			channel.publish( "doRedo", {} );
+		},
+		undo: function( command ) {
+			channel.publish( "doUndo", {} );
+		}
+	}
+
+</script>

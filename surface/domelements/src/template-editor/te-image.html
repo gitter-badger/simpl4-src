@@ -1,0 +1,168 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+
+<style>
+	[aria-describedby="imageDialog"] {
+		max-width: 800px;
+	}
+
+</style>
+
+<dom-module id="te-image">
+	<style>
+		paper-dialog {
+			margin: 0px;
+			padding: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable {
+			margin: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable .scrollable {
+			padding: 0 12px !important;
+		}
+
+	</style>
+	<template>
+		<paper-dialog id="imageDialog" no-cancel-on-outside-click with-backdrop>
+			<paper-dialog-scrollable>
+				<simpl-cropper id="cropBoxId" on-cropper-ready="cropperReady"></simpl-cropper>
+				<div>
+					<paper-button on-tap="closeOK">
+						<iron-icon icon="check"></iron-icon>[[tr("save")]]</paper-button>
+					<paper-button on-tap="closeNOK">
+						<iron-icon icon="clear"></iron-icon>[[tr("Cancel")]]</paper-button>
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+	</template>
+	<script>
+		Polymer( {
+			is: "te-image",
+			properties: {},
+			behaviors: [
+				DialogBehavior,
+				ExecuteBehavior,
+				TranslationsBehavior
+			],
+			observers: [],
+			ready: function() {},
+			closeNOK: function() {
+				console.log( "closeNOK(old:", this.oldState );
+				this.setState( this.oldState );
+				this.async( function() {
+					this.closeDialog( this.$.imageDialog );
+					this.isOpen = false;
+				}, 250 );
+			},
+			closeOK: function() {
+				this.closeDialog( this.$.imageDialog );
+				this.fire( "close-imageedit", {
+					state: this.getState()
+				} );
+				this.isOpen = false;
+			},
+			setCropperData: function( state ) {
+				var img = this.$.cropBoxId.getImage();
+				if ( state.imageData.width == null ) {
+					this.$.cropBoxId.reset();
+					return;
+				}
+				img.cropper( "setCropBoxData", state.cropBoxData );
+				img.cropper( "setCanvasData", state.canvasData );
+				img.cropper( "setImageData", state.imageData );
+				console.debug( "setCropperData.state:", state );
+			},
+			refreshState: function() {
+				var img = this.$.cropBoxId.getImage();
+				if ( this.currentState == null ) {
+					this.currentState = {};
+				}
+				var canvas = img.cropper( "getCroppedCanvas" );
+				console.trace( "refreshState.canvas:", canvas );
+				if ( canvas ) {
+					this.currentState.croppedImage = canvas.toDataURL();
+					this.currentState.croppedWidth = canvas.width;
+					this.currentState.croppedHeight = canvas.height;
+				}
+				this.currentState.cropBoxData = img.cropper( "getCropBoxData" );
+				this.currentState.canvasData = img.cropper( "getCanvasData" );
+				this.currentState.imageData = img.cropper( "getImageData" );
+				this.currentState.containerData = img.cropper( "getContainerData" );
+				console.debug( "refreshState.currentState:", this.currentState );
+				return this.currentState;
+			},
+			cropperReady: function( e ) {
+				this.currentState.file = e.detail.event.target.src;
+				this.currentState.fileId = e.detail.fileId;
+				console.log( "Ready.currentFileId:", this.currentState.fileId );
+			},
+			getState: function() {
+				if ( this.notAppliedState ) {
+					return this.notAppliedState;
+				}
+				this.$.cropBoxId.gotoEditTab();
+				return this.refreshState();
+			},
+			setState: function( state ) {
+				if ( this.isOpen ) {
+					this._setState( state );
+				} else {
+					this.notAppliedState = state;
+				}
+			},
+			_setState: function( state ) {
+				if ( this.currentState == null ) {
+					this.currentState = {};
+				}
+				//if ( this.currentState.fileId != state.fileId ) {
+				if ( state.file ) {
+					console.log( "stateFile:", state.file.toString().substring( 0, 64 ) );
+					this.$.cropBoxId.replaceImage( state.fileId, state.file );
+					this.currentState.fileId = state.fileId;
+					this.currentState.file = state.file;
+				}
+				this.async( function() {
+					if ( state.file ) {
+						this.setCropperData( state );
+					}
+				}, 150 );
+			},
+			getOldState: function() {
+				return this.oldState;
+			},
+			open: function( state ) {
+				this.isOpen = true;
+				this.openDialog( this.$.imageDialog );
+				console.log( "ImageDialog.open" );
+				this.async( function() {
+					if ( this.notAppliedState ) {
+						this._setState( this.notAppliedState );
+						this.notAppliedState = null;
+					}
+					this.async( function() {
+						this.oldState = clone( this.getState() );
+					}, 200 );
+				}, 200 );
+			}
+		} );
+
+	</script>
+</dom-module>

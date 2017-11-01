@@ -1,0 +1,517 @@
+<link rel="import" href="execute-behavior.html">
+<style>
+	.gutter.gutter-horizontal {
+		height: auto !important;
+	}
+
+</style>
+<dom-module id="te-block">
+	<template>
+		<style>
+			#panelId {
+				height: 100%;
+				box-shadow: 10px 10px 15px -6px rgba(96, 125, 139, 0.67) !important;
+			}
+			#headerId {
+				height: 20px;
+				width: 100%;
+				background: #607d8b;
+			}
+			#titleId {
+				color: white;
+				padding-left: 20px;
+			}
+			#handleId {
+				color: white;
+				background: #607d8b;
+				position: absolute;
+				left: 2px;
+				width: calc(100% - 4px);
+				height: 20px;
+				top: -20px;
+				border: 4px solid #607d8b;
+				border-top-left-radius: 4px;
+				border-top-right-radius: 4px;
+			}
+			#allId {
+				height: 100%;
+				width: 100%;
+			}
+			#contentId {
+				cursor: move;
+				background: white;
+				overflow: auto;
+				padding-left: 2px;
+				height: 100%;
+				width: 100%;
+				position: relative;
+			}
+			#contentId /deep/ table {
+				width: 100%;
+				border-collapse: collapse;
+			}
+			#contentId /deep/ table th {
+				border-bottom: 1px solid black;
+				background-color: #FFFFFF;
+				font-size: 8pt;
+				padding: 2px;
+				font-weight: 600;
+				color: #303e45;
+			}
+			.icon {
+				vertical-align: top;
+				top: -2px;
+				height: 16px;
+				cursor: pointer;
+			}
+			paper-item.button {
+				cursor: pointer;
+				min-height: initial;
+			}
+			paper-dialog {
+				margin: 0px;
+				padding: 0px !important;
+			}
+			paper-dialog /deep/ paper-dialog-scrollable {
+				margin: 0px !important;
+			}
+			paper-dialog /deep/ paper-dialog-scrollable .scrollable {
+				padding: 0 12px !important;
+			}
+			paper-dialog /deep/ .CodeMirror,
+			paper-dialog /deep/ .CodeMirror-scroll {
+				max-height: 400px;
+				height: 400px;
+			}
+			table.edittable {
+				font-family: arial;
+				background-color: white;
+				font-size: 8pt;
+				width: 100%;
+				table-layout: fixed;
+				text-align: left;
+			}
+			table.edittable thead tr th,
+			table.edittable tfoot tr th {
+				background-color: #e6EEEE;
+				font-size: 7pt;
+				padding: 2px;
+				font-weight: 400;
+			}
+			#leftSide,
+			#rightSide {
+				padding: 5px;
+			}
+			#leftSide {
+				max-width: calc(66.4273% - 40px);
+			}
+			:host /deep/ b,
+			:host /deep/ strong {
+				font-size: 12px !important;
+				font-weight: 500;
+				line-height: 15px !important;
+			}
+			:host /deep/ #contentId.te-block {
+				font-size: 90%;
+				overflow: hidden;
+			}
+			:host /deep/ p {
+				line-height: 15px;
+				margin-top: 0;
+				margin-left: 0;
+			}
+
+		</style>
+		<div id="allId" class="layout vertical horizontal">
+			<div id="handleId" class="layout horizontal">
+				<iron-icon on-click="edit" class="icon" icon="editor:mode-edit"></iron-icon>
+				<div id="placeholderId" class="flex"></div>
+				<iron-icon on-click="close" class="icon" icon="close"></iron-icon>
+			</div>
+			<div id="panelId" class="flex">
+				<div id="contentId">
+					<template is="dom-if" if="[[isTableBlock(blocktype)]]">
+						<table id="edittableId" class="edittable">
+							<thead>
+								<tr id="edittableHeaderId">
+									<template is="dom-repeat" items="[[tableColumns]]">
+										<template is="dom-if" if="[[item.enabled]]">
+											<th style="[[getColStyle(item.width,item.align)]]" data-id="[[item.id]]">
+												<div class="layout vertical">
+													<div id="h1">[[item.header1]]</div>
+													<div id="h2">[[item.header2]]</div>
+												</div>
+											</th>
+										</template>
+									</template>
+								</tr>
+							</thead>
+						</table>
+					</template>
+					<template is="dom-if" if="[[isImageBlock(blocktype)]]">
+						<img style="width:100%;height:100%;" id="imageId"></img>
+					</template>
+				</div>
+			</div>
+		</div>
+
+		<paper-dialog id="mdeDialog" no-cancel-on-outside-click with-backdrop>
+			<paper-dialog-scrollable>
+				<div class="layout horizontal wrap">
+					<div id="leftSide" class="flex">
+						<textarea id="mdeId"></textarea>
+					</div>
+					<div style="" id="rightSide">
+						<paper-tabs class="flex" selected="{{helpTabId}}" selectables="paper-tab" on-iron-select="tabSelected" attr-for-selected="help-item-id" scrollable>
+							<paper-tab class="menu__item_secondary" help-item-id="0">[[tr('te.owndata')]]</paper-tab>
+							<paper-tab class="menu__item_secondary" help-item-id="1">[[tr('te.customer')]]</paper-tab>
+						</paper-tabs>
+
+						<div id="decoId">
+							<neon-animated-pages selected="{{helpTabId}}" attr-for-selected="help-item-id" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
+
+								<neon-animatable style="position:relative;" help-item-id="0">
+									<div style="max-height:450px;overflow:auto;">
+										<paper-listbox>
+											<template is="dom-repeat" items="[[companyMetaList]]">
+												<paper-item class="button" on-tap="insertText" data-name$="[[item.name]]">
+													<span>[[item.title]]</span>
+												</paper-item>
+											</template>
+										</paper-listbox>
+									</div>
+								</neon-animatable>
+								<neon-animatable style="position:relative;" help-item-id="1">
+									<div style="max-height:430px;overflow:auto;">
+										<paper-listbox>
+											<template is="dom-repeat" items="[[customerMetaList]]">
+												<paper-item class="button" style="max-height:initial;" on-tap="insertText" data-name$="[[item.name]]">
+													<span>[[item.title]]</span>
+												</paper-item>
+											</template>
+										</paper-listbox>
+									</div>
+								</neon-animatable>
+
+							</neon-animated-pages>
+						</div>
+
+					</div>
+				</div>
+				<div>
+					<label class="header" for="aligment">[[tr('te.right_align')]]</label>
+					<paper-checkbox class="" id="aligment" checked="{{rightAlign}}"></paper-checkbox>
+				</div>
+				<div>
+					<paper-button on-tap="closeMdeOK">
+						<iron-icon icon="check"></iron-icon>[[tr("save")]]</paper-button>
+					<paper-button on-tap="closeMdeNOK">
+						<iron-icon icon="clear"></iron-icon>[[tr("Cancel")]]</paper-button>
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+
+		<te-table on-close-tableedit="closeTableEdit" id="tableEditDialog"></te-table>
+		<te-image on-close-imageedit="closeImageEdit" id="imageEditDialog"></te-image>
+	</template>
+	<script>
+		Polymer( {
+			is: 'te-block',
+			properties: {
+				rightAlign: {
+					type: Boolean,
+					value: false
+				},
+				helpTabId: {
+					type: String,
+					value: "0"
+				}
+			},
+			behaviors: [
+				DialogBehavior,
+				ExecuteBehavior,
+				TranslationsBehavior
+			],
+			ready: function() {
+				$( this.$.allId ).hover( this.focus.bind( this ), this.blur.bind( this ) );
+			},
+			attached: function() {
+				this.getMdFields( "customer" );
+				this.getMdFields( "company" );
+				this.leftSide = this.querySelector( '#leftSide' );
+				this.rightSide = this.querySelector( '#rightSide' );
+			},
+			getColStyle: function( w, a ) {
+				return "width:" + w + ";text-align:" + a + ";";
+			},
+			isTableBlock: function( type ) {
+				return this.blocktype == "table_block";
+			},
+			isImageBlock: function( type ) {
+				return this.blocktype == "image_block";
+			},
+			setBlockType: function( type ) {
+				this.blocktype = type;
+				if ( type == "table_block" ) {
+					this.tableColumns = this.$.tableEditDialog.getState().columns;
+				}
+			},
+			setState: function( state ) {
+				this.blocktype = state.blocktype;
+				if ( this.blocktype == "table_block" ) {
+					this.$.tableEditDialog.setState( state );
+					this.tableColumns = state.columns;
+				} else if ( this.blocktype == "image_block" ) {
+					this.async( function() {
+						this.$.imageEditDialog.setState( state );
+						var img = this.querySelector( "#imageId" );
+						img.src = state.croppedImage;
+					}, 100 );
+				} else {
+					if ( this.mde == null ) {
+						this.mde = this.createMde();
+					}
+					this.mde.value( state.markdown );
+					this.$.contentId.innerHTML = this.mde.markdown( this.mde.value() )
+					this.rightAlign = state.textAlign == "right";
+					$( this.$.contentId ).css( {
+						textAlign: state.textAlign
+					} );
+				}
+			},
+			getState: function() {
+				var state = {};
+				if ( this.blocktype == "table_block" ) {
+					state = this.$.tableEditDialog.getState();
+				} else if ( this.blocktype == "image_block" ) {
+					state = this.$.imageEditDialog.getState();
+				} else {
+					if ( this.mde ) {
+						state.markdown = this.mde.value();
+						state.html = this.mde.markdown( this.mde.value() );
+						state.textAlign = this.rightAlign ? "right" : "left";
+					}
+				}
+				var boundingBox = {};
+				boundingBox.left = this.offsetLeft;
+				boundingBox.right = this.offsetLeft + this.offsetWidth;
+				boundingBox.bottom = this.offsetTop + this.offsetHeight;
+				boundingBox.top = this.offsetTop;
+				boundingBox.width = this.offsetWidth;
+				boundingBox.height = this.offsetHeight;
+				state.boundingBox = boundingBox;
+				state.blocktype = this.blocktype;
+				return state;
+			},
+			closeMdeNOK: function() {
+				this.mde.value( this.oldText );
+				this.rightAlign = this.oldRightAlign;
+				this.closeDialog( this.$.mdeDialog );
+			},
+			closeMdeOK: function() {
+				this.closeDialog( this.$.mdeDialog );
+
+				this.$.contentId.innerHTML = this.mde.markdown( this.mde.value() )
+
+				var self = this;
+				var newText = clone( this.mde.value() );
+				var oldText = clone( this.oldText );
+				var oldTextAlign = this.oldRightAlign ? "right" : "left";
+				var newTextAlign = this.rightAlign ? "right" : "left";
+				this.executeCommand( {
+					execute: function() {
+						console.log( "execute:", newText );
+						console.log( "executeMD:", self.mde.markdown( newText ) );
+						self.mde.value( newText );
+						self.$.contentId.innerHTML = self.mde.markdown( newText );
+						$( self.$.contentId ).css( {
+							textAlign: newTextAlign
+						} );
+					},
+					rollback: function() {
+						console.log( "rollback:", oldText );
+						console.log( "rollbackMD:", self.mde.markdown( oldText ) );
+						self.mde.value( oldText );
+						self.$.contentId.innerHTML = self.mde.markdown( oldText );
+						$( self.$.contentId ).css( {
+							textAlign: oldTextAlign
+						} );
+					}
+				} );
+
+			},
+			closeTableEdit: function( e ) {
+				var self = this;
+				var newState = clone( e.detail.state );
+				var oldState = clone( self.oldTableState );
+				this.executeCommand( {
+					execute: function() {
+						self.$.tableEditDialog.setState( newState );
+						self.tableColumns = newState.columns;
+					},
+					rollback: function() {
+						self.$.tableEditDialog.setState( oldState );
+						self.tableColumns = oldState.columns;
+					}
+				} );
+			},
+
+			closeImageEdit: function( e ) {
+				var self = this;
+				var newState = clone( e.detail.state );
+				var oldState = clone( self.oldImageState );
+				var img = self.querySelector( "#imageId" );
+				var paperBB = self.parentNode.getBoundingClientRect();
+				this.executeCommand( {
+					execute: function() {
+						self.$.imageEditDialog.setState( newState );
+						img.src = newState.croppedImage;
+						var ratio = newState.croppedHeight / newState.croppedWidth;
+						var height = $( self ).width() * ratio;
+						$( self ).height( height );
+						self.setDim( paperBB, self.getBoundingClientRect(), ratio );
+					},
+					rollback: function() {
+						self.$.imageEditDialog.setState( oldState );
+						img.src = oldState.croppedImage;
+						var ratio = oldState.croppedHeight / oldState.croppedWidth;
+						var height = $( self ).width() * ratio;
+						$( self ).height( height );
+					}
+				} );
+			},
+
+			setDim: function( pBB, bBB, ratio ) {
+				console.log( "pBB:", clone( pBB ) );
+				console.log( "bBB:", clone( bBB ) );
+				var right = bBB.right - pBB.left;
+				var bottom = bBB.bottom - pBB.top;
+				var over = right - pBB.width;
+				console.log( "overWidth:", over );
+				if ( over > 0 ) {
+					var newWidth = bBB.width - over;
+					var newHeight = newWidth * ratio;
+					$( this ).width( newWidth );
+					$( this ).height( newHeight );
+				}
+
+				var over = bottom - pBB.height;
+				console.log( "overHeight:", over );
+				if ( over > 0 ) {
+					var newHeight = bBB.height - over;
+					var newWidth = newHeight / ratio;
+					$( this ).width( newWidth );
+					$( this ).height( newHeight );
+				}
+			},
+			getMdFields: function( name ) {
+				var params = {
+					service: "simpl4",
+					method: "mdm.getMdFields",
+					parameter: {
+						"entityName": name,
+						"lang": Simpl4.Cache.getItem( "lang" )
+					},
+					async: true,
+					context: this,
+					failed: function( e ) {
+						console.error( "failed:", e );
+						if ( e == null ) return;
+					},
+					completed: function( ret ) {
+						console.debug( "getMdFields(" + name + "):", ret );
+						if ( name == "customer" ) {}
+						this[ name + "MetaList" ] = ret;
+					}
+				}
+				simpl4.util.Rpc.rpcAsync( params );
+			},
+			tabSelected: function() {},
+			close: function() {
+				this.fire( "blockclose", {
+					id: this.id
+				} );
+			},
+			edit: function() {
+				if ( this.blocktype == "table_block" ) {
+					this.tedit();
+				} else if ( this.blocktype == "image_block" ) {
+					this.iedit();
+				} else {
+					this.medit();
+				}
+			},
+			tedit: function() {
+				this.oldTableState = this.$.tableEditDialog.getState();
+				this.$.tableEditDialog.open();
+			},
+			iedit: function() {
+				this.$.imageEditDialog.open();
+				this.async( function() {
+					this.oldImageState = this.$.imageEditDialog.getOldState();
+				}, 1000 );
+			},
+			insertText: function( evt ) {
+				var text = evt.currentTarget.dataset.name;
+				var cm = this.mde.codemirror;
+				if ( cm.somethingSelected() ) {
+					cm.replaceSelection( text );
+				} else {
+					cm.replaceRange( '${' + text + '}', cm.getCursor() );
+				}
+
+			},
+			medit: function() {
+				if ( this.mde == null ) {
+					this.mde = this.createMde();
+				}
+				this.oldText = clone( this.mde.value() );
+				this.oldRightAlign = this.rightAlign;
+				console.log( "oldText:", this.oldText );
+				this.openDialog( this.$.mdeDialog );
+				this.async( function() {
+					this.mde.value( this.oldText );
+					this.splitDialog();
+				}, 100 );
+
+			},
+			createMde: function() {
+				this.mde = new SimpleMDE( {
+					shortcuts: {
+						drawTable: "Cmd-Alt-T"
+					},
+					hideIcons: [ "link", "image", "side-by-side", "fullscreen" ],
+					showIcons: [ "undo", "redo", "table", "horizontal-rule" ],
+					insertTexts: {
+						horizontalRule: [ "", "\n-----\n" ],
+						image: [ "![](http://", ")" ],
+						link: [ "[", "](http://)" ],
+						table: [ "", "\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text      | Text     |\n" ],
+					},
+
+					spellChecker: false,
+					element: this.$.mdeId
+				} );
+				this.mde.codemirror.on( "change", ( function() {} ).bind( this ) );
+				return this.mde;
+			},
+			splitDialog: function() {
+				Split( [ this.leftSide, this.rightSide ], {
+					gutterSize: 7,
+					sizes: [ 60, 40 ],
+					minSize: [ 300, 100 ]
+				} )
+			},
+			focus: function() {
+				console.log( "focus" );
+				$( this.$.handleId ).show();
+			},
+			blur: function() {
+				console.log( "blur" );
+				$( this.$.handleId ).hide();
+			}
+
+		} );
+
+	</script>
+</dom-module>

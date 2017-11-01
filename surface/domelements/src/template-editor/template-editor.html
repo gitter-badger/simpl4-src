@@ -1,0 +1,582 @@
+<link rel="import" href="te-undo.html">
+<link rel="import" href="te-block.html">
+<link rel="import" href="te-table.html">
+<link rel="import" href="te-image.html">
+<link rel="import" href="te-columndialog.html">
+<link rel="import" href="te-paperarea.html">
+<link rel="import" href="execute-behavior.html">
+<div>
+	<dom-module id="template-editor">
+		<template>
+			<style>
+				#toolbarId {
+					width: 100%;
+					position: relative;
+					top: 2px;
+					left: 2px;
+					height: 32px;
+					background: #607d8b;
+				}
+				#scrollId {
+					//width: calc(100% - 30px);
+					overflow: auto;
+					display: inline-block;
+					background: white;
+					margin-top: 6px;
+				}
+				:host /deep/ .scrollbar-thumb-x {
+					display: initial !important;
+					height: 4px !important;
+				}
+				#page1FormId,
+				#page2FormId {
+					width: 595px;
+				}
+				label.header {
+					margin-left: 200px;
+					font-size: 18px;
+					color: #303e45;
+					margin-top: 20px;
+					display: block;
+				}
+				:host /deep/ #topBar {
+					height: 32px;
+				}
+				:host /deep/ #dropdown {
+					top: 40px !important;
+				}
+				:host /deep/ #checkbox.checked.paper-checkbox {
+					background-color: #303e45 !important;
+					border-color: #303e45 !important;
+				}
+				:host /deep/ .scrollbar-track-x {
+					display: none !important;
+				}
+				paper-icon-button {
+					height: 32px;
+				}
+
+			</style>
+			<paper-toolbar id="toolbarId">
+				<paper-icon-button id="redoId" disabled="[[!canRedo]]" slot="top" icon="vaadin-icons:share" on-tap="redoAction"></paper-icon-button>
+				<paper-tooltip for="redoId" position="bottom">[[tr('Redo')]]</paper-tooltip>
+				<paper-icon-button id="undoId" disabled="[[!canUndo]]" slot="top" icon="vaadin-icons:reply" on-tap="undoAction"></paper-icon-button>
+				<paper-tooltip for="undoId" position="bottom">[[tr('Undo')]]</paper-tooltip>
+
+				<paper-icon-button id="clearId" slot="top" icon="vaadin-icons:refresh" on-tap="onTapClear"></paper-icon-button>
+				<paper-tooltip for="clearId" position="bottom">[[tr('te.clear')]]</paper-tooltip>
+
+				<paper-icon-button id="saveId" disabled="[[!currentTemplateName]]" slot="top" icon="vaadin-icons:upload-alt" on-tap="onTapSave"></paper-icon-button>
+				<paper-tooltip for="saveId" position="bottom">[[tr('te.save')]]</paper-tooltip>
+
+				<paper-icon-button id="saveUnderId" slot="top" icon="vaadin-icons:upload" on-tap="onTapSaveUnder"></paper-icon-button>
+				<paper-tooltip for="saveUnderId" position="bottom">[[tr('te.save_under')]]</paper-tooltip>
+
+				<paper-icon-button id="loadId" slot="top" icon="vaadin-icons:download" on-tap="onTapLoad"></paper-icon-button>
+				<paper-tooltip for="loadId" position="bottom">[[tr('te.load')]]</paper-tooltip>
+
+				<div id="placeholderId" style="max-width:200px;" class="flex"></div>
+
+
+			</paper-toolbar>
+
+			<paper-tabs class="flex" selected="{{mainTabId}}" selectables="paper-tab" on-iron-select="mainTabSelected" attr-for-selected="main-item-id" scrollable>
+				<paper-tab class="menu__item_secondary" main-item-id="0">[[tr('te.page1_content')]]</paper-tab>
+				<paper-tab class="menu__item_secondary" main-item-id="1">[[tr('te.additional_content')]]</paper-tab>
+				<paper-tab class="menu__item_secondary" main-item-id="2">[[tr('te.page1_header')]]</paper-tab>
+				<paper-tab class="menu__item_secondary" main-item-id="3">[[tr('te.page2_header')]]</paper-tab>
+				<paper-tab class="menu__item_secondary" main-item-id="4">[[tr('te.setup')]]</paper-tab>
+			</paper-tabs>
+
+			<template is="dom-if" if="[[isAddContent(mainTabId)]]">
+				<div style="margin-top:30px;">
+					<label class="" for="additionalContent">[[tr('te.additional_content_help')]]</label>
+				</div>
+			</template>
+			<div scrollbar style="" id="scrollId">
+
+				<neon-animated-pages selected="{{mainTabId}}" attr-for-selected="main-item-id" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
+
+					<neon-animatable style="position:relative;" main-item-id="0">
+						<te-paperarea id="page1Content" main-tab-id="0" paper-width="595" paper-height="842" paper-name="page1Content"></te-paperarea>
+					</neon-animatable>
+					<neon-animatable style="position:relative;" main-item-id="1">
+						<te-paperarea id="additionalContent" main-tab-id="0" paper-width="595" paper-height="842" paper-name="additionalContent"></te-paperarea>
+					</neon-animatable>
+					<neon-animatable style="position:relative;" main-item-id="2">
+						<label class="header" for="page1Header">[[tr('te.header')]]</label>
+						<te-paperarea id="page1Header" main-tab-id="1" paper-width="595" paper-name="page1Header"></te-paperarea>
+						<label class="header" for="page1Footer">[[tr('te.footer')]]</label>
+						<te-paperarea id="page1Footer" main-tab-id="1" paper-width="595" paper-name="page1Footer"></te-paperarea>
+					</neon-animatable>
+					<neon-animatable style="position:relative;" main-item-id="3">
+						<label class="header" for="page2Header">[[tr('te.header')]]</label>
+						<paper-checkbox class="" id="headerAsPage1" checked="{{headerAsPage1}}">[[tr('te.as_page_one')]]</paper-checkbox>
+						<te-paperarea hidden$="[[headerAsPage1]]" id="page2Header" main-tab-id="1" paper-width="595" paper-name="page2Header"></te-paperarea>
+						<label class="header" for="page2Footer">[[tr('te.footer')]]</label>
+						<paper-checkbox class="" id="footerAsPage1" checked="{{footerAsPage1}}">[[tr('te.as_page_one')]]</paper-checkbox>
+						<te-paperarea hidden$="[[footerAsPage1]]" id="page2Footer" main-tab-id="1" paper-width="595" paper-name="page2Footer"></te-paperarea>
+					</neon-animatable>
+					<neon-animatable style="position:relative;" main-item-id="4">
+						<label class="header" for="page1FormId">[[tr('te.page1')]]</label>
+						<simpl-form id="page1FormId" namespace="global" on-value-changed="onSetup1ValueChanged" on-xaction="onTapPage1Setup" data="[[dataPage1Form]]" form-name="documentSetup.form"></simpl-form>
+						<br/>
+						<label class="header" for="page2FormId">[[tr('te.page2')]]</label>
+						<paper-checkbox class="" id="paramAsPage1" checked="{{paramAsPage1}}">[[tr('te.as_page_one')]]</paper-checkbox>
+						<simpl-form hidden$="[[paramAsPage1]]" id="page2FormId" namespace="global" on-value-changed="onSetup2ValueChanged" on-xaction="onTapPage2Setup" data="[[dataPage2Form]]" form-name="documentSetup.form"></simpl-form>
+					</neon-animatable>
+
+				</neon-animated-pages>
+
+			</div>
+
+
+			<te-undo></te-undo>
+		</template>
+		<script>
+			Polymer( {
+				is: 'template-editor',
+				listeners: {},
+				properties: {
+					mainTabId: {
+						type: String,
+						value: "0"
+					}
+				},
+				behaviors: [
+					TranslationsBehavior,
+					LobiboxBehavior,
+					ExecuteBehavior
+				],
+				isAddContent: function( num ) {
+					return num == '1';
+				},
+				setState: function( state ) {
+					console.log( "te-editor.setState:", state );
+					this.lockValueChangeEvent = true;
+					var mainTabId = this.mainTabId;
+					this.mainTabId = "0";
+					this.page1FormId.setData( state.page1 )
+					this.page2FormId.setData( state.page2 )
+					this.$.headerAsPage1.checked = state.headerAsPage1;
+					this.$.footerAsPage1.checked = state.footerAsPage1;
+					this.$.paramAsPage1.checked = state.paramAsPage1;
+					channel.publish( "globalSetupPage1", {
+						setup: clone( state.page1 )
+					} );
+					channel.publish( "globalSetupPage2", {
+						setup: clone( state.page2 )
+					} );
+					Object.keys( state.areas ).forEach( ( function( key ) {
+						var paper = this.querySelector( "te-paperarea#" + key );
+						this.mainTabId = paper.parentNode.getAttribute( "main-item-id" );
+						if ( state.headerAsPage1 == true && key == 'page2Header' ) {
+							return;
+						} else if ( state.footerAsPage1 == true && key == 'page2Footer' ) {
+							return;
+						}
+						paper.setState( state.areas[ key ] );
+						paper.setPaperSize();
+					} ).bind( this ) );
+					this.mainTabId = mainTabId;
+					this.lockValueChangeEvent = false;
+				},
+				getState: function() {
+					var mainTabId = this.mainTabId;
+					var state = {};
+					state.areas = {};
+					var papers = this.querySelectorAll( "te-paperarea" );
+					for ( var i = 0; i < papers.length; i++ ) {
+						var paper = papers[ i ];
+						this.mainTabId = paper.parentNode.getAttribute( "main-item-id" );
+						var id = paper.id;
+						state.areas[ id ] = paper.getState();
+					}
+					if ( this.$.headerAsPage1.checked ) {
+						state.areas[ "page2Header" ] = state.areas[ "page1Header" ];
+					}
+
+					if ( this.$.footerAsPage1.checked ) {
+						state.areas[ "page2Footer" ] = state.areas[ "page1Footer" ];
+					}
+
+					state[ "page1" ] = this.page1FormId.getData();
+					if ( this.$.paramAsPage1.checked ) {
+						state[ "page2" ] = state[ "page1" ];
+					} else {
+						state[ "page2" ] = this.page2FormId.getData();
+					}
+					this.mainTabId = mainTabId;
+					state.headerAsPage1 = this.$.headerAsPage1.checked;
+					state.footerAsPage1 = this.$.footerAsPage1.checked;
+					state.paramAsPage1 = this.$.paramAsPage1.checked;
+
+					console.log( "te-editor.getState:", state );
+					return state;
+				},
+				clear: function() {
+					this.lockValueChangeEvent = true;
+					var papers = this.querySelectorAll( "te-paperarea" );
+					for ( var i = 0; i < papers.length; i++ ) {
+						var paper = papers[ i ];
+						paper.clear();
+					}
+					this.setDefaultPaperSize( false );
+					this.lockValueChangeEvent = false;
+				},
+				onTapClear: function() {
+					var self = this;
+					var state = clone( this.getState() );
+					this.executeCommand( {
+						execute: function() {
+							self.clear();
+						},
+						rollback: function() {
+							self.setState( state );
+						}
+					} );
+				},
+				getFo: function( state ) {
+					var params = {
+						service: "simpl4",
+						method: "dashboard.getBillPdf",
+						parameter: {
+							"wawidoc": JSON.stringify( state )
+						},
+						async: true,
+						context: this,
+						failed: function( e ) {
+							console.error( "getFo.failed:", e );
+							if ( e == null ) return;
+						},
+						completed: function( ret ) {
+							console.debug( "getFo:", ret );
+						}
+					}
+					simpl4.util.Rpc.rpcAsync( params );
+				},
+				mainTabSelected: function( e ) {
+					var src = e.srcElement || e.target;
+					channel.publish( "mainTabChanged", {
+						selectedTab: src.selected
+					} );
+					this.async( function() {
+						this.updateScrollbar();
+					}, 100 );
+				},
+				attached: function() {
+					this.page1FormId = this.querySelector( "#page1FormId" );
+					this.page2FormId = this.querySelector( "#page2FormId" );
+					window.addEventListener( 'resize', this.setScrollAreaHeight.bind( this ) );
+					this._initScrollbar();
+
+					this.canRedo = false;
+					this.canUndo = false;
+					this.currentTemplateName = null;
+
+					channel.subscribe( "undoState", ( function( data ) {
+						this.canUndo = data.canUndo;
+						this.canRedo = data.canRedo;
+					} ).bind( this ) );
+
+					channel.subscribe( "zoom", ( function( data ) {
+						this.updateScrollbar();
+					} ).bind( this ) );
+					this.setDefaultPaperSize( true );
+				},
+				setDefaultPaperSize: function( async ) {
+					this.dataPage1Form = {
+						leftMargin: 28,
+						rightMargin: 28,
+						topMargin: 28,
+						bottomMargin: 28,
+						headerHeight: 100,
+						footerHeight: 100
+					}
+					this.dataPage2Form = {
+						leftMargin: 28,
+						rightMargin: 28,
+						topMargin: 28,
+						bottomMargin: 28,
+						headerHeight: 100,
+						footerHeight: 100
+					}
+					this.$.headerAsPage1.checked = true;
+					this.$.footerAsPage1.checked = true;
+					this.$.paramAsPage1.checked = true;
+					if ( async ) {
+						this.async( function() {
+							channel.publish( "globalSetupPage1", {
+								setup: clone( this.dataPage1Form )
+							} );
+							channel.publish( "globalSetupPage2", {
+								setup: clone( this.dataPage1Form )
+							} );
+							this.async( function() {
+								this.$.page1Content.setPaperSize();
+								this.$.additionalContent.setPaperSize();
+							}, 100 );
+						}, 100 );
+					} else {
+						channel.publish( "globalSetupPage1", {
+							setup: clone( this.dataPage1Form )
+						} );
+						channel.publish( "globalSetupPage2", {
+							setup: clone( this.dataPage1Form )
+						} );
+						this.$.page1Content.setPaperSize();
+						this.$.additionalContent.setPaperSize();
+					}
+				},
+				updateScrollbar: function() {
+					this.setScrollAreaHeight();
+					this.async( function() {
+						this._scrollbar.scrollTo( 0, 0 );
+						this._scrollbar.update( true );
+					}, 100 );
+				},
+				onSetup1ValueChanged: function( e ) {
+					if ( this.lockValueChangeEvent || !this.page1FormId.validate() ) {
+						return;
+					}
+					this.debounce( "onSetup1ValueChanged", function() {
+						var fieldName = e.detail.name;
+						var currentFormData = this.page1FormId.getData();
+						var oldData = clone( this.dataPage1Form );
+						var oldValue = this.dataPage1Form[ fieldName ];
+						var newValue = currentFormData[ fieldName ];
+						this.dataPage1Form[ fieldName ] = currentFormData[ fieldName ];
+						var newData = clone( this.dataPage1Form );
+						var self = this;
+						this.executeCommand( {
+							execute: function() {
+								channel.publish( "globalSetupPage1", {
+									setup: newData
+								} );
+								self.updateFormFieldWithLock( self.page1FormId, fieldName, newValue );
+							},
+							rollback: function() {
+								channel.publish( "globalSetupPage1", {
+									setup: oldData
+								} );
+								self.updateFormFieldWithLock( self.page1FormId, fieldName, oldValue );
+							}
+						} );
+					}, 1000 );
+				},
+				onSetup2ValueChanged: function( e ) {
+					if ( this.lockValueChangeEvent || !this.page2FormId.validate() ) {
+						return;
+					}
+					this.debounce( "onSetup2ValueChanged", function() {
+						var fieldName = e.detail.name;
+						var oldData = clone( this.dataPage1Form );
+						var currentFormData = this.page2FormId.getData();
+						var oldValue = this.dataPage2Form[ fieldName ];
+						var newValue = currentFormData[ fieldName ];
+						this.dataPage2Form[ fieldName ] = currentFormData[ fieldName ];
+						var newData = clone( this.dataPage1Form );
+						var self = this;
+						this.executeCommand( {
+							execute: function() {
+								channel.publish( "globalSetupPage2", {
+									setup: newData
+								} );
+								self.updateFormFieldWithLock( self.page2FormId, fieldName, newValue );
+							},
+							rollback: function() {
+								channel.publish( "globalSetupPage2", {
+									setup: oldData
+								} );
+								self.updateFormFieldWithLock( self.page2FormId, fieldName, oldValue );
+							}
+						} );
+					}, 1000 );
+				},
+				updateFormFieldWithLock: function( formid, fieldName, value ) {
+					var data = [];
+					data[ fieldName ] = value;
+					this.lockValueChangeEvent = true;
+					formid.updateData( data, true )
+					this.lockValueChangeEvent = false;
+				},
+				setScrollAreaHeight: function() {
+					var formPanelHeight = 105;
+					var winHeight = window.innerHeight;
+					var height = ( winHeight - ( formPanelHeight + 64 + 24 ) );
+					this.$.scrollId.style.height = ( height + 30 ) + "px";
+
+					return height;
+				},
+
+				_initScrollbar: function() {
+					var isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) );
+					this._scrollbar = window.Scrollbar.init( this.$.scrollId, {
+						speed: isTouch ? 1 : 4,
+						damping: isTouch ? 0.1 : 0.05,
+						renderByPixels: true,
+						overscrollEffect: "bounce",
+						alwaysShowTracks: true,
+						overscrollEffectColor: "#87ceeb",
+						thumbMinSize: 10
+					} );
+					this.setScrollAreaHeight();
+					this.async( function() {
+						this._scrollbar.update( true );
+					}, 100 );
+					this._scrollbar.addListener( ( function( e ) {
+						channel.publish( "scrollOffset", {
+							offset: e.offset
+						} );
+					} ).bind( this ) );
+
+				},
+
+				redoAction: function() {
+					this.redo();
+				},
+				undoAction: function() {
+					this.undo();
+				},
+				onTapSave: function() {
+					this.debounce( "onTapSave", function() {
+						this._onTapSave();
+					}, 250 );
+				},
+				_onTapSave: function() {
+					this.saveState( this.currentTemplateName );
+				},
+
+				onTapSaveUnder: function() {
+					var json = this.getState();
+
+					var prompt = Lobibox.prompt( 'text', {
+						height: 200,
+						title: tr( 'te.enter_name' ),
+						attrs: {
+							pattern: "[A-Za-z0-9]{3,}",
+							value: this.currentTemplateName
+						},
+						callback: ( function( $this, type, ev ) {
+							console.log( "callback:", prompt.getValue() );
+							if ( !_.isEmpty( prompt.getValue() ) ) {
+								this.saveState( prompt.getValue() );
+							}
+						} ).bind( this )
+					} );
+
+				},
+				saveState: function( name ) {
+					var json = this.getState();
+					this.currentTemplateName = name;
+
+					var params = {
+						service: "registry",
+						method: "set",
+						parameter: {
+							key: "/dashboard/template/" + name,
+							attributes: {
+								subject: "template"
+							},
+							value: JSON.stringify( json )
+						},
+						async: true,
+						context: this,
+						failed: function( e ) {
+							console.error( "saveTemplate:", e );
+							if ( e == null ) return;
+							this.notify( tr( "error" ), 'error', 8000 );
+						},
+						completed: function( ret ) {
+							this.notify( tr( "te.template_saved" ), 'success', 8000 );
+						}
+					}
+					simpl4.util.Rpc.rpcAsync( params );
+				},
+				selectFromList: function( menu, valueList, nameList ) {
+					var win = Lobibox.window( {
+						title: tr( 'te.select_template' ),
+						width: 300,
+						height: 400,
+						modal: true,
+						content: function() {
+							return $( menu );
+						},
+						buttons: {
+							select: {
+								text: tr( 'button.select' )
+							},
+							close: {
+								text: tr( 'button.cancel' ),
+								closeOnClick: true
+							}
+						},
+						callback: ( function( $this, type, ev ) {
+							if ( type === 'select' ) {
+								var selected = $this.$el[ 0 ].querySelector( "#templateMenuId" ).selected;
+								if ( selected == null ) {
+									return;
+								}
+								var oldState = clone( this.getState() );
+								this.currentTemplateName = nameList[ selected ];
+								var state = clone( JSON.parse( valueList[ selected ] ) );
+								var self = this;
+								this.executeCommand( {
+									execute: function() {
+										self.clear();
+										self.setState( state );
+									},
+									rollback: function() {
+										self.clear();
+										self.setState( oldState );
+									}
+								} );
+								win.destroy();
+							}
+						} ).bind( this )
+					} );
+				},
+				onTapLoad: function() {
+					this.debounce( "onTapLoad", function() {
+						this._onTapLoad();
+					}, 250 );
+				},
+				_onTapLoad: function() {
+					var params = {
+						service: "registry",
+						method: "getAll",
+						parameter: {
+							attributes: {
+								subject: "template"
+							}
+						},
+						async: true,
+						context: this,
+						failed: function( e ) {
+							console.error( "getTemplates:", e );
+							this.notify( tr( "error" ), 'error', 8000 );
+						},
+						completed: function( ret ) {
+							console.log( "getTemplates.ret:", ret );
+							var menu = '<paper-menu id="templateMenuId">';
+							var valueList = [];
+							var nameList = [];
+							for ( var i in ret ) {
+								var key = ret[ i ].key;
+								var name = key.substring( key.lastIndexOf( '/' ) + 1 );
+								menu += '<paper-item style="min-height:24px; font-size:14px;">' + name + '</paper-item>';
+								valueList.push( ret[ i ].value );
+								nameList.push( name );
+							}
+							menu += '</paper-menu>';
+							this.selectFromList( menu, valueList, nameList );
+						}
+					}
+					simpl4.util.Rpc.rpcAsync( params );
+				}
+			} );
+
+		</script>
+	</dom-module>
+	<template-editor></template-editor>
+</div>

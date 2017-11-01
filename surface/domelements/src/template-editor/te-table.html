@@ -1,0 +1,423 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+<dom-module id="te-table">
+	<style>
+		input {
+			width: 100%;
+			margin-bottom: 1px;
+			font-size: 10px;
+		}
+		select {
+			width: 100%;
+			box-shadow: 1px 1px 0 #ccc, 0 -1px #fff;
+			background: #ffffff;
+			color: #555e63;
+		}
+		paper-checkbox /deep/ #checkbox.checked.paper-checkbox {
+			background-color: #555e63;
+			border-color: #555e63;
+		}
+		b {
+			font-size: 10px;
+			font-weight: 400;
+			letter-spacing: .1px;
+			text-decoration: underline;
+			line-height: 24px;
+		}
+		table.edittable {
+			font-family: arial;
+			background-color: white;
+			//margin:10px 0pt 15px;
+			font-size: 8pt;
+			width: 100%;
+			table-layout: fixed;
+			text-align: left;
+		}
+		table.edittable thead tr th,
+		table.edittable tfoot tr th {
+			background-color: #e6EEEE;
+			//			border: 1px solid #FFF;
+			font-size: 8pt;
+			padding: 4px;
+			cursor: pointer;
+		}
+		table.edittable tbody td {
+			color: #3D3D3D;
+			padding: 4px;
+			background-color: #FFF;
+			vertical-align: top;
+		}
+		paper-dialog {
+			margin: 0px;
+			padding: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable {
+			margin: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable .scrollable {
+			padding: 0 12px !important;
+		}
+		.coledit /deep/ iron-icon {
+			pointer-events: none;
+		}
+
+	</style>
+	<template>
+		<paper-dialog id="tableDialog" no-cancel-on-outside-click with-backdrop>
+			<paper-dialog-scrollable>
+				<div>[[tr("te.fields_show")]]</div>
+				<table>
+					<tr>
+						<template is="dom-repeat" items="{{columns}}">
+							<td>
+								<paper-checkbox data-id="[[item.id]]" on-change="checkboxChanged" checked$="[[item.enabled]]">[[item.text]]</paper-checkbox>
+							</td>
+						</template>
+					</tr>
+				</table>
+				<br/>
+				<br/>
+				<table id="edittableId" class="edittable">
+					<thead>
+						<tr id="edittableHeaderId">
+							<template is="dom-repeat" items="[[enabledColumns]]">
+								<th style="[[getColStyle(item.width,item.align)]]" data-id="[[item.id]]">
+									<div class="layout vertical">
+										<div id="h1">[[item.header1]]</div>
+										<div id="h2">[[item.header2]]</div>
+									</div>
+								</th>
+							</template>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<template is="dom-repeat" items="[[enabledColumns]]">
+								<td>
+									<div class="layout vertical">
+										<span><b>[[tr("te.title")]]</b></span>
+										<input on-input="header1Changed" data-id="[[item.id]]" type="text" value="[[item.header1]]">
+										<input on-input="header2Changed" data-id="[[item.id]]" type="text" value="[[item.header2]]">
+									</div>
+							</template>
+							</td>
+						</tr>
+						<tr>
+							<template is="dom-repeat" items="[[enabledColumns]]">
+								<td>
+									<span><b>[[tr("te.align")]]</b></span>
+									<div class="layout vertical">
+										<select on-input="alignChanged" data-id="[[item.id]]" value="[[item.align]]">
+											<option value="left">[[tr("te.left")]]</option>
+											<option value="right">[[tr("te.right")]]</option>
+											<option value="center">[[tr("te.center")]]</option>
+										</select>
+									</div>
+								</td>
+							</template>
+						</tr>
+						<tr>
+							<template is="dom-repeat" indexAs="index" items="[[enabledColumns]]">
+								<td>
+									<paper-icon-button class="coledit" id="[[getId('add',index)]]" data-id="[[item.id]]" data-col="[[index]]" style="width:36px;" slot="top" icon="vaadin-icons:plus-square-o" on-tap="onTapColumnAdd"></paper-icon-button>
+									<paper-tooltip for="[[getId('add',index)]]" position="top">[[tr('button.new')]]</paper-tooltip>
+									<paper-icon-button class="coledit" id="[[getId('del',index)]]" data-id="[[item.id]]" data-col="[[index]]" style="width:36px;" slot="top" icon="vaadin-icons:minus-square-o" on-tap="onTapColumnDel"></paper-icon-button>
+									<paper-tooltip for="[[getId('del',index)]]" position="top">[[tr('button.del')]]</paper-tooltip>
+								</td>
+							</template>
+						</tr>
+					</tbody>
+				</table>
+				<div>
+					<paper-button on-tap="closeOK">
+						<iron-icon icon="check"></iron-icon>[[tr("save")]]</paper-button>
+					<paper-button on-tap="closeNOK">
+						<iron-icon icon="clear"></iron-icon>[[tr("Cancel")]]</paper-button>
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+		<te-columndialog on-columndialog-ok="columnAdd" id="columnDialogId"></te-columndialog>
+	</template>
+	<script>
+		Polymer( {
+			is: "te-table",
+			properties: {},
+			behaviors: [
+				DialogBehavior,
+				ExecuteBehavior,
+				TranslationsBehavior
+			],
+			observers: [],
+			getId: function( cmd, index ) {
+				return cmd + index;
+			},
+			ready: function() {
+				this.columns = [ {
+					id: "position",
+					text: tr( "te.position" ),
+					header1: tr( "te.position.header" ),
+					header2: "",
+					enabled: true,
+					width: "11%",
+					align: "left",
+				}, {
+					id: "articleId",
+					text: tr( "te.articleId" ),
+					header1: tr( "te.articleId.header" ),
+					header2: "",
+					width: "11%",
+					enabled: true,
+					align: "left",
+				}, {
+					id: "name",
+					text: tr( "te.name" ),
+					header1: tr( "te.name.header" ),
+					header2: "",
+					width: "34%",
+					enabled: false,
+					align: "left",
+				}, {
+					id: "description",
+					text: tr( "te.description" ),
+					header1: tr( "te.description.header" ),
+					header2: "",
+					width: "34%",
+					enabled: true,
+					align: "left",
+				}, {
+					id: "amount",
+					text: tr( "te.amount" ),
+					header1: tr( "te.amount.header" ),
+					header2: "",
+					width: "11%",
+					enabled: true,
+					align: "left",
+				}, {
+					id: "unit",
+					text: tr( "te.unit" ),
+					header1: tr( "te.unit.header" ),
+					header2: "",
+					width: "11%",
+					enabled: true,
+					align: "left",
+				}, {
+					id: "retailPrice",
+					text: tr( "te.retailPrice" ),
+					header1: tr( "te.retailPrice.header" ),
+					header2: "",
+					width: "11%",
+					enabled: true,
+					align: "left",
+				}, {
+					id: "total",
+					text: tr( "te.total" ),
+					header1: tr( "te.total.header" ),
+					header2: "",
+					width: "11%",
+					enabled: true,
+					align: "left",
+				}, {
+					id: "vat",
+					text: tr( "te.vat" ),
+					header1: tr( "te.vat.header" ),
+					header2: "",
+					width: "8%",
+					enabled: true,
+					align: "left",
+				} ]
+				this.filterEnabledColumns();
+			},
+			onTapColumnAdd: function( e ) {
+				var ind = e.target.dataCol;
+				var id = e.target.dataId;
+				var index = this.getColumnIndex( this.columns, id, ind );
+				console.log( "id(" + id + "):", index );
+				this.$.columnDialogId.open( index );
+
+			},
+			onTapColumnDel: function( e ) {
+				var ind = e.target.dataCol;
+				var id = e.target.dataId;
+				var index = this.getColumnIndex( this.columns, id, ind );
+				this.splice( "columns", index, 1 );
+				this.filterEnabledColumns();
+			},
+			columnAdd: function( e ) {
+				console.log( "columnAdd:", e.detail );
+				var index = e.detail.index;
+				var data = clone( e.detail.data );
+				data.enabled = true;
+				data.align = "left";
+				data.width = "10%";
+				data.header2 = "";
+				this.splice( "columns", index + 1, 0, data );
+				this.filterEnabledColumns();
+			},
+			closeNOK: function() {
+				this.destroyDialog( this.$.tableDialog );
+				this.columns = this.oldColumns;
+				this.filterEnabledColumns();
+			},
+			closeOK: function() {
+				this.destroyDialog( this.$.tableDialog );
+				console.log( "closeOK:", this.columns );
+				this.fire( "close-tableedit", {
+					state: {
+						columns: clone( this.columns )
+					}
+				} );
+			},
+			getColStyle: function( w, a ) {
+				return "width:" + w + ";text-align:" + a + ";";
+			},
+			filterEnabledColumns: function() {
+				var enabledColumns = this.columns.filter( function( col ) {
+					return col.enabled;
+				} )
+				this.enabledColumns = [];
+				this.async( function() {
+					this.enabledColumns = clone( enabledColumns );
+					console.log( "enabledColumns:", this.enabledColumns );
+				} )
+			},
+			header1Changed: function( event ) {
+				var id = event.target.dataId;
+				this.columns.forEach( function( elem ) {
+					if ( elem.id == id ) {
+						elem.header1 = event.target.value;
+					}
+				} );
+				$( this.$.edittableHeaderId ).children( 'th' ).each( function( i ) {
+					if ( this.dataId == id ) {
+						this.querySelector( "#h1" ).innerHTML = event.target.value;
+					}
+				} );
+			},
+			header2Changed: function( event ) {
+				var id = event.target.dataId;
+				this.columns.forEach( function( elem ) {
+					if ( elem.id == id ) {
+						elem.header2 = event.target.value;
+					}
+				} );
+				$( this.$.edittableHeaderId ).children( 'th' ).each( function( i ) {
+					if ( this.dataId == id ) {
+						this.querySelector( "#h2" ).innerHTML = event.target.value;
+					}
+				} );
+			},
+			alignChanged: function( event ) {
+				var id = event.target.dataId;
+				this.columns.forEach( function( elem ) {
+					if ( elem.id == id ) {
+						elem.align = event.target.value;
+					}
+				} );
+				this.filterEnabledColumns();
+				this.refreshResize();
+			},
+			checkboxChanged: function( event ) {
+				var id = event.target.dataId;
+				this.columns.forEach( function( elem ) {
+					if ( elem.id == id ) {
+						elem.enabled = event.target.checked == true;
+					}
+				} );
+				this.filterEnabledColumns();
+				this.refreshResize();
+			},
+			refreshResize: function() {
+				$( ".rc-handle-container", $( this.$.tableDialog ) ).remove();
+				this.async( function() {
+					$( this.$.edittableId ).resizableColumns( {
+						stop: this.storeWidth.bind( this )
+					} );
+				}, 100 )
+			},
+			moveToIndex: function( newInd, id ) {
+				var oldInd = this.columns.findIndex( function( element ) {
+					return element.id == id;
+				} );
+				if ( newInd == oldInd ) {
+					return;
+				}
+				var cols = this.columns;
+				var tmp = cols[ newInd ];
+				cols[ newInd ] = cols[ oldInd ];
+				cols[ oldInd ] = tmp;
+			},
+			storeWidth: function( event ) {
+				var self = this;
+				$( this.$.edittableHeaderId ).children( 'th' ).each( function( i ) {
+					var col = self.getColumn( self.columns, this.dataId );
+					col.width = this.style.width;
+				} );
+			},
+			getColumn: function( columns, id ) {
+				for ( var i = 0; i < columns.length; i++ ) {
+					if ( columns[ i ].id == id ) {
+						return columns[ i ];
+					}
+				}
+				return null;
+			},
+			getColumnIndex: function( columns, id, ind ) {
+				for ( var i = 0; i < columns.length; i++ ) {
+					if ( columns[ i ].id == id ) {
+						return i;
+					}
+				}
+				return ind;
+			},
+			getState: function() {
+				return {
+					columns: clone( this.columns )
+				};
+			},
+			setState: function( state ) {
+				this.columns = state.columns || this.columns;
+				this.filterEnabledColumns();
+			},
+			open: function( state ) {
+				//this.columns = state.columns || this.columns;
+				this.filterEnabledColumns();
+				this.oldColumns = clone( this.columns );
+				this.openDialog( this.$.tableDialog );
+				var self = this;
+				var elem = this.$.edittableId;
+				$( elem ).dragtable( {
+					placeholder: 'placeholder',
+					helperCells: ':not(.footerrow td)',
+					stop: function() {
+						var newList = [];
+						$( self.$.edittableHeaderId ).children( 'th' ).each( function( i, x, y ) {
+							self.moveToIndex( i, this.dataId );
+						} );
+						self.filterEnabledColumns();
+						self.refreshResize();
+					}
+				} );
+				this.refreshResize();
+			}
+		} );
+
+	</script>
+</dom-module>

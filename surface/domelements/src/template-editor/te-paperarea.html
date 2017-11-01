@@ -1,0 +1,449 @@
+<link rel="import" href="execute-behavior.html">
+<dom-module id="te-paperarea">
+	<template>
+		<style>
+			#canvasId {
+				position: relative;
+				border: 1px solid #303e45;
+				background: #DFE5E7;
+			}
+			#toolbarId {
+				z-index: 1;
+				width: 200px;
+				position: relative;
+				top: 0px;
+				left: 0px;
+				height: 32px;
+				color: black;
+				background: transparent;
+			}
+			:host /deep/ te-block {
+				z-index: 0;
+			}
+			:host /deep/ #topBar {
+				height: 32px;
+			}
+			:host /deep/ .draggable {
+				cursor: move;
+			}
+			:host /deep/ .block {
+				display: block;
+				position: absolute;
+			}
+
+		</style>
+		<paper-toolbar id="toolbarId">
+			<paper-icon-button id="zoomInId" slot="top" icon="zoom-in" on-tap="zoomInAction"></paper-icon-button>
+			<paper-tooltip for="zoomInId" position="bottom">[[tr('Zoom in')]]</paper-tooltip>
+			<paper-icon-button id="zoomOutId" slot="top" icon="zoom-out" on-tap="zoomOutAction"></paper-icon-button>
+			<paper-tooltip for="zoomOutId" position="bottom">[[tr('Zoom in')]]</paper-tooltip>
+			<paper-icon-button id="zoom100Id" slot="top" icon="maps:zoom-out-map" on-tap="zoom100Action"></paper-icon-button>
+			<paper-tooltip for="zoom100Id" position="bottom">[[tr('Zoom 100%')]]</paper-tooltip>
+			<paper-menu-button id="blockMenuId">
+				<paper-icon-button icon="vaadin-icons:lines" style="height:36px;" class="dropdown-trigger"></paper-icon-button>
+				<paper-listbox style="color:black;" class="dropdown-content">
+
+					<paper-item data-block="text_block" class="draggable">
+						<iron-icon icon="vaadin-icons:file-text-o"></iron-icon>
+						<div class="flex">[[tr('te.text_block')]]</div>
+					</paper-item>
+
+					<paper-item data-block="table_block" class="draggable">
+						<iron-icon icon="vaadin-icons:file-table"></iron-icon>
+						<div class="flex">[[tr('te.table_block')]]</div>
+					</paper-item>
+
+					<paper-item data-block="image_block" class="draggable">
+						<iron-icon icon="vaadin-icons:file-picture"></iron-icon>
+						<div class="flex">[[tr('te.image_block')]]</div>
+					</paper-item>
+				</paper-listbox>
+			</paper-menu-button>
+		</paper-toolbar>
+
+		<div class="horizontal layout">
+			<div class="xrid droppable" id="canvasId">
+			</div>
+			<div class="flex"></div>
+		</div>
+		</div>
+
+	</template>
+	<script>
+		Polymer( {
+			is: 'te-paperarea',
+			listeners: {
+				'blockclose': 'blockclose'
+			},
+			properties: {
+				mainTabId: {
+					type: String
+				},
+				paperWidth: {
+					type: String
+				},
+				paperHeight: {
+					type: String
+				},
+				paperName: {
+					type: String
+				}
+			},
+			behaviors: [
+				TranslationsBehavior,
+				ExecuteBehavior
+			],
+			_createBlockFromState: function( block ) {
+				console.log( "paperarea.setState(" + this.paperName + "," + i + "):", block );
+				var bb = block.boundingBox;
+				var b = this.createBlockFromState( block.blocktype, bb.left, bb.top, bb.width, bb.height );
+				b.setState( block );
+			},
+			setState: function( state ) {
+				var absoluteBlocks = state[ "absolute" ] || state[ "static" ];
+				var flowBlocks = state[ "flow" ] || [];
+				for ( var i = 0; i < absoluteBlocks.length; i++ ) {
+					this._createBlockFromState( absoluteBlocks[ i ] );
+				}
+				for ( var i = 0; i < flowBlocks.length; i++ ) {
+					this._createBlockFromState( flowBlocks[ i ] );
+				}
+			},
+			getState: function() {
+				var canvas = this.$.canvasId;
+				var blocks = canvas.querySelectorAll( "te-block" );
+
+				var blockListAbsolute = [];
+				var blockListFlow = [];
+				for ( var i = 0; i < blocks.length; i++ ) {
+					var block = blocks[ i ];
+					var bstate = block.getState();
+					if ( bstate.blocktype == "table_block" || this.paperName == "additionalContent" ) {
+						blockListFlow.push( bstate )
+					} else {
+						blockListAbsolute.push( bstate )
+					}
+				}
+				blockListFlow.sort( function( a, b ) {
+					return a.boundingBox.top - b.boundingBox.top;
+				} );
+				console.log( "blockListFlow:", blockListFlow );
+				return {
+					flow: blockListFlow,
+					"absolute": blockListAbsolute
+				};
+			},
+			clear: function() {
+				var canvas = this.$.canvasId;
+				var blocks = canvas.querySelectorAll( "te-block" );
+				for ( var i = 0; i < blocks.length; i++ ) {
+					blocks[ i ].remove();
+				}
+			},
+			setPaperSize: function() {
+				if ( this.dataPage1Form == null ) {
+					return;
+				}
+				var canvasId = this.$.canvasId;
+				var height = null;
+				var width = null;
+				if ( this.paperName == "page1Content" ) {
+					height = this.paperHeight - ( this.dataPage1Form.topMargin + this.dataPage1Form.bottomMargin + this.dataPage1Form.headerHeight + this.dataPage1Form.footerHeight );
+					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
+				}
+				if ( this.paperName == "additionalContent" ) {
+					height = this.paperHeight - ( this.dataPage1Form.topMargin + this.dataPage1Form.bottomMargin + this.dataPage1Form.headerHeight + this.dataPage1Form.footerHeight );
+					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
+				}
+				if ( this.paperName == "page1Header" ) {
+					height = this.dataPage1Form.headerHeight;
+					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
+				}
+				if ( this.paperName == "page1Footer" ) {
+					height = this.dataPage1Form.footerHeight;
+					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
+				}
+				if ( this.paperName == "page2Header" ) {
+					height = this.dataPage2Form.headerHeight;
+					width = this.paperWidth - ( this.dataPage2Form.leftMargin + this.dataPage2Form.rightMargin );
+				}
+				if ( this.paperName == "page2Footer" ) {
+					height = this.dataPage2Form.footerHeight;
+					width = this.paperWidth - ( this.dataPage2Form.leftMargin + this.dataPage2Form.rightMargin );
+				}
+				//console.log( "setPaperSize(" + this.paperName + "):" + height + "/" + width );
+				canvasId.style.height = height + "px";
+				canvasId.style.width = width + "px";
+			},
+			moveBlocksInto: function() {
+				var canvas = this.$.canvasId;
+				var blocks = canvas.querySelectorAll( "te-block" );
+				var cbb = canvas.getBoundingClientRect();
+				for ( var i = 0; i < blocks.length; i++ ) {
+					var block = blocks[ i ];
+					var bb = block.getBoundingClientRect();
+					var right = bb.right - cbb.left;
+					var bottom = bb.bottom - cbb.top;
+					var over = right - cbb.width;
+					if ( over > 0 ) {
+						var off = $( block ).offset();
+						$( block ).offset( {
+							left: off.left - over,
+							top: off.top
+						} );
+					}
+					var over = bottom - cbb.height;
+					if ( over > 0 ) {
+						var off = $( block ).offset();
+						$( block ).offset( {
+							left: off.left,
+							top: off.top - ( over + 2 )
+						} );
+					}
+				}
+			},
+			closeMenu: function() {
+				this.$.blockMenuId.close();
+				var e = new MouseEvent( "mouseup", {
+					view: window,
+					bubbles: true,
+					cancelable: true
+				} );
+				this.$.canvasId.dispatchEvent( e );
+			},
+			attached: function() {
+				if ( this.atta ) return;
+				this.atta = true;
+				channel.subscribe( "globalSetupPage1", ( function( data ) {
+					this.dataPage1Form = data.setup;
+				} ).bind( this ) );
+				channel.subscribe( "globalSetupPage2", ( function( data ) {
+					this.dataPage2Form = data.setup;
+				} ).bind( this ) );
+
+				channel.subscribe( "mainTabChanged", ( function( data ) {
+					this.async( function() {
+						this.setPaperSize();
+						this.moveBlocksInto();
+					}, 250 );
+				} ).bind( this ) );
+
+				channel.subscribe( "scrollOffset", ( function( data ) {
+					if ( this.paperName != "page1Content" && this.paperName != "additionalContent" ) {
+						return;
+					}
+					var y = data.offset.y;
+					this.debounce( "xxx", function() {
+						var off = $( this.$.toolbarId ).offset();
+						this.$.toolbarId.style.top = y + "px";
+					}, 10 );
+				} ).bind( this ) );
+
+				this.zoom = 1;
+				this.setZoom();
+
+				var self = this;
+				this.async( function() {
+					this.rect = this.$.canvasId.getBoundingClientRect()
+				}, 100 )
+
+				$( ".draggable" ).drag( {
+					"start": function( evt ) {
+						self.rect = self.$.canvasId.getBoundingClientRect()
+						evt.dataTransfer.effectAllowed = $.dnd.EFFECT_ALL;
+						$( this ).addClass( "active" );
+						console.log( "start:", evt.currentTarget.dataset.block );
+						evt.dataTransfer.setData( "text", evt.currentTarget.dataset.block );
+					},
+					"end": function( evt ) {
+						console.log( "end:", evt );
+						$( this ).removeClass( "active" );
+						self.fire( "enddrag", {} );
+						self.closeMenu();
+					}
+				} );
+
+				$( ".droppable", this ).drop( {
+					"drop": function( evt ) {
+						var blocktype = evt.dataTransfer.getData( "text" );
+						$( this ).removeClass( "active" );
+						self.createBlock( blocktype, evt.originalEvent.clientY, evt.originalEvent.clientX );
+						//						self.closeMenu();
+					},
+					"over": function( evt ) {
+						evt.dataTransfer.dropEffect = $.dnd.EFFECT_COPY;
+					},
+					"enter": function( evt ) {
+						console.log( "enter:", evt );
+					},
+					"leave": function( evt ) {
+						console.log( "leave:", evt );
+					}
+				} );
+			},
+			blockclose: function( e ) {
+				console.log( "close:", e );
+				var self = this;
+				var element = $( "#" + e.detail.id, this );
+				this.executeCommand( {
+					execute: function() {
+						element.detach();
+						self.makeBlockDraggable();
+					},
+					rollback: function() {
+						element.appendTo( self.$.canvasId, self );
+						self.makeBlockDraggable();
+					}
+				} );
+			},
+			createBlockFromState: function( blocktype, x, y, w, h ) {
+				var newBlock = document.createElement( "te-block" );
+				newBlock.id = "blockId" + this.getId();
+				newBlock.className += "block";
+				newBlock.setBlockType( blocktype );
+				$( "#canvasId", this ).append( newBlock );
+				$( newBlock ).css( {
+					top: y,
+					left: x,
+					height: h + "px",
+					width: w + "px"
+				} );
+				this.makeBlockDraggable();
+				return newBlock;
+			},
+			createBlock: function( blocktype, y, x ) {
+				var newBlock = document.createElement( "te-block" );
+				newBlock.id = "blockId" + this.getId();
+				newBlock.className += "block";
+				newBlock.setBlockType( blocktype );
+				var left = ( ( x - 75 ) - this.rect.left ) / this.zoom;
+				if ( left < 0 ) {
+					left = 0;
+				}
+				var width = "150px";
+				if ( blocktype == "table_block" ) {
+					left = 0;
+					width = "100%";
+				}
+				this.async( function() {
+					$( newBlock ).css( {
+						top: ( y - this.rect.top ) / this.zoom,
+						left: left,
+						height: "70px",
+						width: width
+					} );
+					this.makeBlockDraggable();
+					this.moveBlocksInto();
+				}, 10 );
+
+				var self = this;
+				this.executeCommand( {
+					execute: function() {
+						$( "#canvasId", self ).append( newBlock );
+					},
+					rollback: function() {
+						$( newBlock ).detach();
+					}
+				} );
+			},
+			makeBlockDraggable: function() {
+				var self = this;
+				$( ".block", this ).draggable( {
+					start: function( e, ui ) {
+						console.log( "start:", ui );
+					},
+					stop: function( e, ui ) {
+						console.log( "stop:", ui );
+						var startPos = clone( ui.originalPosition );
+						var stopPos = clone( ui.position );
+						var id = ui.helper.attr( "id" );
+						self.executeCommand( {
+							execute: function() {
+								$( "#" + id, self ).css( {
+									top: stopPos.top,
+									left: stopPos.left
+								} );
+							},
+							rollback: function() {
+								$( "#" + id, self ).css( {
+									top: startPos.top,
+									left: startPos.left
+								} );
+							}
+						} );
+					},
+					containment: this.$.canvasId,
+					handle: this.$.contentId,
+					drag: ( function( event, ui ) {} ).bind( this ),
+					scroll: false
+				} );
+
+				$( ".block", this ).resizable( {
+					start: function( e, ui ) {
+						console.log( "start:", ui );
+					},
+					stop: function( e, ui ) {
+						console.log( "resizable:", ui );
+						var startSize = clone( ui.originalSize );
+						var stopSize = clone( ui.size );
+						var id = ui.element.attr( "id" );
+						self.executeCommand( {
+							execute: function() {
+								$( "#" + id, self ).css( {
+									height: stopSize.height,
+									width: stopSize.width
+								} );
+							},
+							rollback: function() {
+								$( "#" + id, self ).css( {
+									height: startSize.height,
+									width: startSize.width
+								} );
+							}
+						} );
+					},
+					minHeight: 30,
+					minWidth: 60,
+					containment: this.$.canvasId
+				} );
+			},
+			getId: function() {
+				if ( this.idCounter == null ) {
+					this.idCounter = 1;
+				} else {
+					this.idCounter++;
+				}
+				return this.idCounter;
+			},
+
+			zoomOutAction: function() {
+				this.zoom -= 0.1;
+				if ( this.zoom < 0.4 ) {
+					this.zoom = 0.4;
+				}
+				this.setZoom();
+			},
+			zoomInAction: function() {
+				this.zoom += 0.1;
+				if ( this.zoom > 2 ) {
+					this.zoom = 2;
+				}
+				this.setZoom();
+			},
+			zoom100Action: function() {
+				this.zoom = 1;
+				this.setZoom();
+			},
+			setZoom: function() {
+				this.zoom = Number( ( this.zoom ).toFixed( 2 ) );
+				console.log( "zoom:", this.zoom );
+				this.$.canvasId.setAttribute( "style", "zoom:" + this.zoom );
+				this.setPaperSize();
+				channel.publish( "zoom", {
+					name: this.paperName
+				} );
+			}
+		} );
+
+	</script>
+</dom-module>

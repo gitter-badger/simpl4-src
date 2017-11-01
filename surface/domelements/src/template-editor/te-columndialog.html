@@ -1,0 +1,87 @@
+<dom-module id="te-columndialog">
+	<style>
+		:host {
+			pointer-events: all;
+		}
+		paper-button[dialog] {
+			color: black !important;
+		}
+		iron-icon.error-big {
+			color: #c00418;
+			height: 64px;
+			width: 64px;
+		}
+		paper-dialog {
+			min-height: 250px;
+			min-width: 300px;
+			max-width: 300px;
+			color: #727272 !important;
+			position: relative;
+		}
+		paper-dialog {
+			margin: 0px;
+			padding: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable {
+			margin: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable .scrollable {
+			padding: 0 12px !important;
+		}
+		.titlelabel {
+			font-size: 16px;
+			font-weight: 600;
+			padding-left: 20px;
+			padding-top: 20px;
+		}
+
+	</style>
+	<template>
+		<paper-dialog xith-backdrop id="dialogId">
+			<div class="layout vertical flex">
+				<div class="layout horizontal flex">
+					<iron-icon class="error-big" icon="vaadin-icons:grid-h"></iron-icon>
+					<label class="titlelabel" for="formId">[[tr('te.new_column')]]</label>
+				</div>
+				<simpl-form id="formId" namespace="global" on-xaction="onTap" data="[[data]]" form-name="teNewColumn.form"></simpl-form>
+			</div>
+			<div class="buttons">
+				<paper-button raised dialog on-tap="onTap">
+					<iron-icon icon="check"></iron-icon>Ok</paper-button>
+				<paper-button raised dialog on-tap="close">
+					<iron-icon icon="cancel"></iron-icon>[[tr('button.cancel')]]</paper-button>
+			</div>
+		</paper-dialog>
+	</template>
+	<script>
+		Polymer( {
+			is: 'te-columndialog',
+			behaviors: [
+				DialogBehavior,
+				TranslationsBehavior
+			],
+			onTap: function() {
+				if ( this.$.formId.validate() ) {
+					var data = this.$.formId.getData();
+					this.fire( "columndialog-ok", {
+						index: this.index,
+						data: data
+					} )
+					this.destroyDialog( this.$.dialogId );
+				}
+			},
+			close: function( msg ) {
+				this.sd.parent().css( "z-index", "inherit" );
+				this.destroyDialog( this.$.dialogId );
+			},
+			open: function( index ) {
+				this.index = index;
+				this.$.formId.setData( {} );
+				var sd = this.openDialog( this.$.dialogId, "inherit" );
+				sd.parent().css( "z-index", "555112" );
+				this.sd = sd;
+			}
+		} );
+
+	</script>
+</dom-module>

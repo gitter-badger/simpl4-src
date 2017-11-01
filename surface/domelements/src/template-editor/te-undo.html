@@ -1,0 +1,76 @@
+<div>
+	<dom-module id="te-undo">
+		<template>
+		</template>
+		<script>
+			Polymer( {
+				is: 'te-undo',
+				behaviors: [
+					TranslationsBehavior,
+				],
+				attached: function() {
+					if ( this.undoStack == null ) {
+						this.facade = {
+							update: this.update.bind( this )
+						};
+						this.reset();
+						var subscription = channel.subscribe( "executeCommand", ( function( data ) {
+							this.handleExecuteCommand( data );
+						} ).bind( this ) );
+						var subscription = channel.subscribe( "doUndo", ( function( data ) {
+							this.doUndo();
+						} ).bind( this ) );
+						var subscription = channel.subscribe( "doRedo", ( function( data ) {
+							this.doRedo();
+						} ).bind( this ) );
+						var subscription = channel.subscribe( "resetUndo", ( function( data ) {
+							this.reset( data );
+						} ).bind( this ) );
+					}
+				},
+				update: function() {},
+				reset: function() {
+					this.undoStack = new Array();
+					this.redoStack = new Array();
+				},
+				handleExecuteCommand: function( data ) {
+					if ( !data.command ) {
+						return
+					}
+
+					this.undoStack.push( data.command );
+					this.redoStack = [];
+
+					data.command.execute();
+					this.publishState();
+				},
+
+				doUndo: function() {
+					var lastCommand = this.undoStack.pop();
+					if ( lastCommand ) {
+						this.redoStack.push( lastCommand );
+						lastCommand.rollback();
+
+					}
+					this.publishState();
+				},
+				doRedo: function() {
+					var lastCommand = this.redoStack.pop();
+					if ( lastCommand ) {
+						this.undoStack.push( lastCommand );
+						lastCommand.execute();
+					}
+					this.publishState();
+				},
+				publishState: function() {
+					channel.publish( "undoState", {
+						canUndo: this.undoStack.length > 0,
+						canRedo: this.redoStack.length > 0
+					} );
+				}
+
+			} );
+
+		</script>
+	</dom-module>
+</div>
