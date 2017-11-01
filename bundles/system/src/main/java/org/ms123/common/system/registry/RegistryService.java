@@ -24,7 +24,9 @@ public interface RegistryService {
 	public final String REGISTRY_SERVICE = "registryService";
 	public void  set(String key, String value,Map attributes) throws RpcException;
 	public String  get(String key) throws RpcException;
+	public String  get(String key, Boolean silent) throws RpcException;
 	public List<Map>  getAll(Map attributes) throws RpcException;
 	public List<String>  getKeys(Map attributes) throws RpcException;
 	public void  delete(String key) throws RpcException;
+	public void  delete(String key,Boolean silent) throws RpcException;
 }

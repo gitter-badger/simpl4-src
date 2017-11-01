@@ -30,6 +30,7 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.git.GitService;
 import org.ms123.common.rpc.PName;
 import org.ms123.common.rpc.POptional;
+import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.store.StoreDesc;
 import org.osgi.framework.Bundle;
@@ -96,14 +97,22 @@ public class RegistryServiceImpl extends BaseRegistryServiceImpl implements Regi
 			if( orientGraph!=null)orientGraph.shutdown();
 		}
 	}
+	public String get( String key){
+		return get(key,false);
+	}
+	public void delete( String key){
+		delete(key,false);
+	}
 
 	//@RequiresRoles("admin")
 	public String  get(
-		@PName("key") String key ) throws RpcException {
+		@PName("key") String key,
+		@PName("silent") @POptional @PDefaultBool(false) Boolean silent
+			 ) throws RpcException {
 		OrientGraph orientGraph = null;
 		try{
 			orientGraph = getGraph();
-			return _get(key);
+			return _get(key,silent);
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "RegistryService.get:", e);
 		} finally {
@@ -137,14 +146,15 @@ public class RegistryServiceImpl extends BaseRegistryServiceImpl implements Regi
 		}
 	}
 
-	@RequiresRoles("admin")
+	//@RequiresRoles("admin")
 	public void  delete(
-		@PName("key") String key ) throws RpcException {
+		@PName("key") String key,
+		@PName("silent") @POptional @PDefaultBool(false) Boolean silent) throws RpcException {
 		OrientGraph orientGraph = null;
 		try{
 			orientGraph = getGraph();
 			orientGraph.begin();
-			_delete(key);
+			_delete(key, silent);
 			orientGraph.commit();
 		} catch (Throwable e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "RegistryService.delete:", e);

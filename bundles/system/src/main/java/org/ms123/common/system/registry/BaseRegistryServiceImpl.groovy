@@ -58,12 +58,12 @@ abstract class BaseRegistryServiceImpl {
 		}
 	}
 
-	protected String  _get(String key){
+	protected String  _get(String key, Boolean silent){
 		def obj = this.registryClass.graphQuery("select from Registry where key=?", true, key)
-		if( obj == null){
+		if( silent == false && obj == null){
 			throw new RuntimeException("_get("+key+"):not found");
 		}
-		return obj.value;
+		return obj != null ? obj.value : null;
 	}
 	protected List<Map>  _getAll(Map attributes){
 		def sql = "select from Registry where ";
@@ -105,9 +105,12 @@ abstract class BaseRegistryServiceImpl {
 		return list;
 	}
 
-	protected void  _delete(String key){
+	protected void  _delete(String key, Boolean silent){
 		def obj = this.registryClass.graphQuery("select from Registry where key=?", true, key)
 		if( obj == null){
+			if( silent){
+				return;
+			}
 			throw new RuntimeException("_delete("+key+"):not found");
 		}
 		obj.remove();
