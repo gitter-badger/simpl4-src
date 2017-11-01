@@ -79,10 +79,29 @@
 			pointer-events: none;
 		}
 
+		paper-input /deep/ .floated-label-placeholder.paper-input-container{
+			display:none;
+		}
+		paper-input /deep/ paper-input-container{
+			padding:0;
+		}
+		paper-input /deep/ input {
+			line-height:16px !important;
+			font-size:13px !important;
+		}
+		#datarefId b{
+			font-size: 13px;
+			text-decoration: initial;
+		}
+
 	</style>
 	<template>
 		<paper-dialog id="tableDialog" no-cancel-on-outside-click with-backdrop>
 			<paper-dialog-scrollable>
+				<div style="margin-bottom:3px;" class="layout horizontal">
+					<span id="datarefId" style="width:100px;"><b>[[tr("te.dataref")]]</b></span>
+					<paper-input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:250px;" allowed-pattern="[a-zA-Z0-9]+" pattern="[a-z][a-zA-Z0-9]+" auto-validate="true" on-input="datarefChanged" type="text" value="[[dataref]]">
+				</div>
 				<div>[[tr("te.fields_show")]]</div>
 				<table>
 					<tr>
@@ -274,6 +293,7 @@
 			closeNOK: function() {
 				this.destroyDialog( this.$.tableDialog );
 				this.columns = this.oldColumns;
+				this.dataref = this.oldDataref;
 				this.filterEnabledColumns();
 			},
 			closeOK: function() {
@@ -297,6 +317,9 @@
 					this.enabledColumns = clone( enabledColumns );
 					console.log( "enabledColumns:", this.enabledColumns );
 				} )
+			},
+			datarefChanged: function( event ) {
+					this.dataref = event.target.value;
 			},
 			header1Changed: function( event ) {
 				var id = event.target.dataId;
@@ -389,10 +412,16 @@
 			},
 			getState: function() {
 				return {
+					meta:{
+						dataref:this.dataref
+					},
 					columns: clone( this.columns )
 				};
 			},
 			setState: function( state ) {
+				if( state.meta ){
+					this.dataref = state.meta.dataref
+				}
 				this.columns = state.columns || this.columns;
 				this.filterEnabledColumns();
 			},
@@ -400,6 +429,7 @@
 				//this.columns = state.columns || this.columns;
 				this.filterEnabledColumns();
 				this.oldColumns = clone( this.columns );
+				this.oldDataref = clone( this.dataref);
 				this.openDialog( this.$.tableDialog );
 				var self = this;
 				var elem = this.$.edittableId;
