@@ -2138,9 +2138,19 @@
 			max-height: inherit !important;
 			padding: 0 10px;
 		}
+		:host /deep/ select-field.gridinput div.input-content.paper-input-container{
+			max-height: 23px !important;
+		}
+		:host /deep/ select-field.gridinput label{
+			padding-bottom: 4px !important;
+		}
 		div.line {
 			margin-bottom: 15px;
 		}
+		paper-icon-button /deep/ iron-icon{
+			pointer-events: none;
+		}
+
 		@media screen and (max-width: 1200px) {
 			div.line {
 				margin-bottom: 20px;
