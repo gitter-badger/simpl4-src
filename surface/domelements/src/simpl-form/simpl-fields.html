@@ -2428,6 +2428,9 @@
 					var name = col.colname;
 					var val = line[ name ];
 					e.getGridField().withoutCheck = true;
+					if( val == null && col.xf_default){
+						val = col.xf_default;
+					}
 					e.setValue( val );
 				}
 			},
