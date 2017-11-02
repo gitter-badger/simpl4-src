@@ -279,7 +279,7 @@ Hint:if an external variable 'uuid' exists, then she is passed to service calls
 			<input-field gridfield class="flex" type="{{item.xf_type}}" enabled-expr$="{{item.xf_enabled}}" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" data-constraints$="{{item.regulaConstraints}}" name$="{{item.xf_id}}" label="{{item.label}}" defaultvalue="{{item.xf_default}}"></input-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isEnumSelect(item.id)}}">
-			<select-field gridfield class="flex" name$="{{item.xf_id}}" items="{{item.items}}" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" combobox="{{item.xf_combobox}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
+			<select-field gridfield class="gridinput flex" name$="{{item.xf_id}}" items="{{item.items}}" data-constraints$="{{item.regulaConstraints}}" enabled-expr$="{{item.xf_enabled}}" readonly$="{{item.readonly}}" invisible-expr$="{{item.xf_invisible}}" exclude-expr$="{{item.xf_exclude}}" combobox="{{item.xf_combobox}}" defaultvalue="{{item.xf_default}}" label="{{item.label}}" raised>
 			</select-field>
 		</template>
 		<template name="{{item.xf_id}}" is="dom-if" if="{{isUpload(item.id)}}">

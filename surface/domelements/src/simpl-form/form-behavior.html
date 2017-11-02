@@ -973,11 +973,16 @@
 						if( col.type == "selection"){
 							col.id= "Enumselect";
 							try{
-								col.items = JSONPath( {
-									json: this._selectionLists,
-									path: col.parameter,
-									callback: function() {}
-								} )[0];
+								if( col.parameter && col.parameter.startsWith("enumeration")){
+									var si = simpl4FormManager.createSelectableItems( this.namespace, this.formName, props.xf_id, col.parameter );
+									col.items = si.getItems();
+								}else{
+									col.items = JSONPath( {
+										json: this._selectionLists,
+										path: col.parameter,
+										callback: function() {}
+									} )[0];
+								}
 							}catch(e){
 								console.error("JSONPath:",e);
 							}
