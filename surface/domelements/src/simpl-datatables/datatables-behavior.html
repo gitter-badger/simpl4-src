@@ -106,6 +106,10 @@ r - processing display element<br/>
 				this._api.columns.adjust()
 			}
 		},
+		createNew: function() {
+			this._api.destroy( false );
+      this._api=null;
+		},
 		__createTable: function( dtMeta, dataSet, options ) {
 			this.dataSet = dataSet;
 			if ( options ) {
