@@ -118,7 +118,7 @@
 				for ( var i = 0; i < blocks.length; i++ ) {
 					var block = blocks[ i ];
 					var bstate = block.getState();
-					if ( bstate.blocktype == "table_block" || this.paperName == "additionalContent" ) {
+					if ( bstate.positionAbsolute===false || bstate.blocktype == "table_block" || this.paperName == "additionalContent" ) {
 						blockListFlow.push( bstate )
 					} else {
 						blockListAbsolute.push( bstate )
