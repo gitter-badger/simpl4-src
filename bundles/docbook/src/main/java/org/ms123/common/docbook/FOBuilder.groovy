@@ -36,6 +36,7 @@ import groovy.text.markup.MarkupTemplateEngine;
 import groovy.text.markup.TemplateConfiguration;
 import groovy.text.markup.TemplateResolver;
 import org.ms123.common.data.api.DataLayer;
+import org.ms123.common.message.MessageService;
 import org.osgi.framework.BundleContext;
 import org.commonmark.node.*;
 import org.commonmark.Extension;
@@ -63,6 +64,7 @@ public class FOBuilder extends TemplateEvaluator{
 	private BundleContext bc;
 	private String namespace;
 	private	TransformToFo transformer = null;
+	private MessageService messageService;
 
 	public FOBuilder(String namespace, BundleContext bc) {
 		this.bc = bc;
@@ -77,6 +79,7 @@ public class FOBuilder extends TemplateEvaluator{
 		this.resolver = new MyTemplateResolver( namespace);
 		this.engine = new MarkupTemplateEngine(this.class.getClassLoader(),templateConfiguration, resolver);
 		this.transformer = TransformToFo.create(this.bc);
+		this.messageService = getMessageService();
 	}
 
 	public InputStream toFO( String jsonText, Map<String,Object> variableMap){
@@ -86,6 +89,10 @@ public class FOBuilder extends TemplateEvaluator{
 			json = [ state:json, templateName:"master.tpl"];
 		}
 		def templateName = json.templateName as String;
+		def lang = json.lang as String;
+		if( lang == null){
+			lang = "de";
+		}
 
 		def isMod = this.resolver.testModified( templateName );
 		def template = this.templateCache.get(templateName);
@@ -96,9 +103,9 @@ public class FOBuilder extends TemplateEvaluator{
 		Map binding = [:].withDefault { x -> new DefaultBinding(x) }
 		if( variableMap.bindings != null){
 			binding.putAll( variableMap.bindings as Map);
-			htmlToFoList( json.state as Map, variableMap.bindings as Map );
+			htmlToFoList( json.state as Map, variableMap.bindings as Map, lang );
 		}else{
-			htmlToFoList( json.state as Map, variableMap );
+			htmlToFoList( json.state as Map, variableMap, lang );
 			binding.putAll( variableMap);
 		}
 
@@ -158,8 +165,79 @@ public class FOBuilder extends TemplateEvaluator{
 	private void htmlToFo(InputStream is, OutputStream os) throws Exception {
 		this.transformer.transform(is, os);
 	}
-	private void htmlToFoList(Map state, Map bindings) throws Exception {
+	private MessageService  getMessageService(){
+		def service=null;
+		def sr = bc.getServiceReference("org.ms123.common.message.MessageService");
+		if (sr != null) {
+			service = bc.getService(sr);
+		}
+		if (service == null) {
+			throw new RuntimeException("JsonConverter.Cannot resolve :org.ms123.common.message.MessageService");
+		}
+		return (MessageService)service;
+	}
+	private boolean hasMoreRightBrackets(String str, int pos) {
+		int len = str.length();
+		boolean hasMore = false;
+		for (int i = pos + 1; i < len; i++) {
+			if (str.charAt(i) == '}') {
+				return true;
+			}
+			if (str.charAt(i) == '<') {
+				return false;
+			}
+			if (str.charAt(i) == '@' && i + 1 < len && str.charAt(i + 1) == '{') {
+				return false;
+			}
+			if (str.charAt(i) == '$' && i + 1 < len && str.charAt(i + 1) == '{') {
+				return false;
+			}
+		}
+		return false;
+	}
+	private String evalMessages( String str, String lang){
+		int countRepl = 0;
+		int countPlainStr = 0;
+		Object replacement = null;
+		String newString = "";
+		int openBrackets = 0;
+		int first = 0;
+		for (int i = 0; i < str.length(); i++) {
+			info(this,"char("+i+","+openBrackets+","+hasMoreRightBrackets(str, i)+"):"+str.charAt(i));
+			if (i < str.length() - 2 && str.substring(i, i + 2).compareTo("@{") == 0) {
+				if (openBrackets == 0) {
+					first = i + 2;
+				}
+				openBrackets++;
 
+			} else if (str.charAt(i) == '}' && openBrackets > 0 && !hasMoreRightBrackets(str, i)) {
+				openBrackets -= 1;
+				if (openBrackets == 0) {
+					countRepl++;
+					info(this,"msgid:"+str.substring(first, i));
+					def msgid = str.substring(first, i);
+					Map<String,String> msg = this.messageService.getMessage(namespace,lang, msgid);
+					info(this,"msgstr:"+msg);
+					if( msg != null){
+						replacement = msg.msgstr;
+					}else{
+						replacement = msgid;
+					}
+					newString += replacement;
+				}
+			} else if (openBrackets == 0) {
+				newString += str.charAt(i);
+				countPlainStr++;
+			}
+		}
+		if (countRepl == 1 && countPlainStr == 0) {
+			return replacement;
+		} else {
+			return newString;
+		}
+	}
+
+	private void htmlToFoList(Map state, Map bindings, String lang) throws Exception {
 		Map areas = state.areas as Map;
 		areas.each{ entry -> 
 			List<Map> flowBlocks = entry.value['flow'] as List;
@@ -170,7 +248,10 @@ public class FOBuilder extends TemplateEvaluator{
 			  String html = null;
 				try{
 					if( block.markdown ){
-						markdown = render(block.markdown as String, bindings);
+						info(this,"xmarkdown:"+block.markdown);
+						String md = evalMessages(block.markdown as String, lang);
+						info(this,"xmd:"+md);
+						markdown = render(md, bindings);
 					}else{
 						markdown = "";
 					}
