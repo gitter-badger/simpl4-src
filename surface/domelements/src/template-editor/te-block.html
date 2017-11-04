@@ -46,6 +46,17 @@
 				width: 100%;
 				position: relative;
 			}
+			#contentId /deep/ h1,
+			#contentId /deep/ h2,
+			#contentId /deep/ h3,
+			#contentId /deep/ h4,
+			#contentId /deep/ h5,
+			#contentId /deep/ h6,
+			#contentId /deep/ p {
+				font-size: 10px;
+				font-weight: 400;
+				margin: 0;
+			}
 			#contentId /deep/ table {
 				width: 100%;
 				border-collapse: collapse;
@@ -201,8 +212,13 @@
 				<div class="layout horizontal">
 					<label class="header" for="aligment">[[tr('te.right_align')]]</label>
 					<paper-checkbox class="" id="aligment" style="margin-left:2px;" checked="{{rightAlign}}"></paper-checkbox>
+					<paper-tooltip for="aligment" position="bottom">[[tr('te.right_align')]]</paper-tooltip>
 					<label class="header" for="flow">[[tr('te.absolute')]]</label>
 					<paper-checkbox class="" id="flow" style="margin-left:2px;" checked="{{positionAbsolute}}"></paper-checkbox>
+					<paper-tooltip for="flow" position="bottom">[[tr('te.absolute')]]</paper-tooltip>
+					<label class="header" for="spaces">[[tr('te.whiteSpacesPreserve')]]</label>
+					<paper-checkbox class="" id="spaces" style="margin-left:2px;" checked="{{whiteSpacesPreserve}}"></paper-checkbox>
+					<paper-tooltip for="spaces" position="bottom">[[tr('te.whiteSpacesPreserve')]]</paper-tooltip>
 				</div>
 				<div>
 					<paper-button on-tap="closeMdeOK">
@@ -225,6 +241,10 @@
 					value: false
 				},
 				positionAbsolute: {
+					type: Boolean,
+					value: true
+				},
+				whiteSpacesPreserve: {
 					type: Boolean,
 					value: true
 				},
@@ -280,6 +300,7 @@
 					this.mde.value( state.markdown );
 					this.$.contentId.innerHTML = this.mde.markdown( this.mde.value() )
 					this.positionAbsolute = state.positionAbsolute;
+					this.whiteSpacesPreserve = (state.whiteSpacesPreserve == null ||state.whiteSpacesPreserve == 'preserve');
 					this.rightAlign = state.textAlign == "right";
 					$( this.$.contentId ).css( {
 						textAlign: state.textAlign
@@ -298,6 +319,7 @@
 						state.html = this.mde.markdown( this.mde.value() );
 						state.textAlign = this.rightAlign ? "right" : "left";
 						state.positionAbsolute = this.positionAbsolute;
+						state.whiteSpacesPreserve = this.whiteSpacesPreserve ? 'preserve' : 'ignore-if-surrounding-linefeed';
 					}
 				}
 				var boundingBox = {};
@@ -315,6 +337,7 @@
 				this.mde.value( this.oldText );
 				this.rightAlign = this.oldRightAlign;
 				this.positionAbsolute = this.oldPositionAbsolute;
+				this.whiteSpacesPreserve = this.oldWhiteSpacesPreserve;
 				this.destroyDialog( this.$.mdeDialog );
 			},
 			closeMdeOK: function() {
@@ -478,6 +501,7 @@
 				this.oldText = clone( this.mde.value() );
 				this.oldRightAlign = this.rightAlign;
 				this.oldPositionAbsolute = this.positionAbsolute;
+				this.oldWhiteSpacesPreserve = this.whiteSpacesPreserve;
 				console.log( "oldText:", this.oldText );
 				var gutter = this.querySelector(".gutter");
 				this.openDialog( this.$.mdeDialog );
