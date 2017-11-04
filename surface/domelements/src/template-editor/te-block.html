@@ -301,7 +301,6 @@
 					}
 				}
 				var boundingBox = {};
-console.log("block:",(this.offsetTop+"/"+this.offsetHeight));
 				boundingBox.left = this.offsetLeft;
 				boundingBox.right = this.offsetLeft + this.offsetWidth;
 				boundingBox.bottom = this.offsetTop + this.offsetHeight;
@@ -316,10 +315,10 @@ console.log("block:",(this.offsetTop+"/"+this.offsetHeight));
 				this.mde.value( this.oldText );
 				this.rightAlign = this.oldRightAlign;
 				this.positionAbsolute = this.oldPositionAbsolute;
-				this.closeDialog( this.$.mdeDialog );
+				this.destroyDialog( this.$.mdeDialog );
 			},
 			closeMdeOK: function() {
-				this.closeDialog( this.$.mdeDialog );
+				this.destroyDialog( this.$.mdeDialog );
 
 				this.$.contentId.innerHTML = this.mde.markdown( this.mde.value() )
 
@@ -415,6 +414,7 @@ console.log("block:",(this.offsetTop+"/"+this.offsetHeight));
 				}
 			},
 			getMdFields: function( name ) {
+				return;
 				var params = {
 					service: "simpl4",
 					method: "mdm.getMdFields",
@@ -507,6 +507,9 @@ console.log("block:",(this.offsetTop+"/"+this.offsetHeight));
 				return this.mde;
 			},
 			splitDialog: function() {
+				if( this.leftSide.children.length>0){
+					return;
+				}
 				Split( [ this.leftSide, this.rightSide ], {
 					gutterSize: 7,
 					sizes: [ 60, 40 ],
