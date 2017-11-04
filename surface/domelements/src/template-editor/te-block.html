@@ -479,10 +479,13 @@
 				this.oldRightAlign = this.rightAlign;
 				this.oldPositionAbsolute = this.positionAbsolute;
 				console.log( "oldText:", this.oldText );
+				var gutter = this.querySelector(".gutter");
 				this.openDialog( this.$.mdeDialog );
 				this.async( function() {
 					this.mde.value( this.oldText );
-					this.splitDialog();
+					if( gutter == null){
+						this.splitDialog();
+					}
 				}, 100 );
 
 			},
@@ -507,9 +510,6 @@
 				return this.mde;
 			},
 			splitDialog: function() {
-				if( this.leftSide.children.length>0){
-					return;
-				}
 				Split( [ this.leftSide, this.rightSide ], {
 					gutterSize: 7,
 					sizes: [ 60, 40 ],
