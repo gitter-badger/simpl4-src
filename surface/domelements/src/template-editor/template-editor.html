@@ -591,10 +591,7 @@
 				onTapExport: function() {
 					this._onTapLoad( ( function( state ) {
 						console.log( "onTapExport:", state );
-						//var filer = new Filer();
-						//filer.init();
 						var input = this.querySelector( 'input[type="file"]' );
-						input.defaultValue = "abc";
 						input.onchange = ( function( e ) {
 							var file = e.target.files[ 0 ];
 							console.log( "file:", file );

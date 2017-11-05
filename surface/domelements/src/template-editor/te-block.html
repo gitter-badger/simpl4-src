@@ -260,6 +260,7 @@
 			],
 			ready: function() {
 				$( this.$.allId ).hover( this.focus.bind( this ), this.blur.bind( this ) );
+				this.blur();
 			},
 			attached: function() {
 				this.getMdFields( "customer" );
