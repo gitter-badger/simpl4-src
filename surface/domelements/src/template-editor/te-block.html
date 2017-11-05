@@ -55,6 +55,7 @@
 			#contentId /deep/ p {
 				font-size: 10px;
 				font-weight: 400;
+				line-height: 16px;
 				margin: 0;
 			}
 			#contentId /deep/ table {
@@ -139,7 +140,7 @@
 				<div id="placeholderId" class="flex"></div>
 				<iron-icon on-click="close" class="icon" icon="close"></iron-icon>
 			</div>
-			<div id="panelId" class="flex">
+			<div id="panelId" on-click="edit" class="flex">
 				<div id="contentId">
 					<template is="dom-if" if="[[isTableBlock(blocktype)]]">
 						<table id="edittableId" class="edittable">
