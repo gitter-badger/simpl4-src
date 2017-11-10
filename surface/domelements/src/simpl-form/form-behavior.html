@@ -84,7 +84,9 @@
 					f.setValue( e );
 				}
 			}
-
+			if( this.groups==null){
+				this.groups=[];
+			}
 			for ( var i = 0, l = this.groups.length; i < l; i++ ) {
 				var g = this.groups[ i ];
 				var enabledExpr = g.getAttribute( "enabled-expr" );
