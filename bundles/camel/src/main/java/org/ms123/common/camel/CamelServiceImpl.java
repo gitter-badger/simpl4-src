@@ -95,6 +95,7 @@ public class CamelServiceImpl extends BaseCamelServiceImpl implements org.ms123.
 		try {
 			m_bundleContext = bundleContext;
 			//registerEventHandler(bundleContext);
+			addMailcap();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

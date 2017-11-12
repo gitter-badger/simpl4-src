@@ -57,5 +57,6 @@ dependencies {
  	compile files("${repository}/pdfbox/fontbox-2.0.3.jar")
  	compile files("${repository}/pdfbox/pdfbox-tools-2.0.3.bar")
  	compile files("${repository}/dom4j-1.6.1.bar")
+ 	compile files("${repository}/activation-1.1.1.bar")
   compile files('build/classes/main')
 }

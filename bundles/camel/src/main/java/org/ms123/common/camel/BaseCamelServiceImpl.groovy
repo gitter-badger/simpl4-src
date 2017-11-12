@@ -806,6 +806,15 @@ abstract class BaseCamelServiceImpl implements Constants,org.ms123.common.camel.
 		return Arrays.asList(s.split(","));
 	}
 
+	protected void addMailcap(){
+		javax.activation.MailcapCommandMap  cm = (javax.activation.MailcapCommandMap)javax.activation.CommandMap.getDefaultCommandMap();
+		cm.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
+		cm.addMailcap("text/xml;; x-java-content-handler=com.sun.mail.handlers.text_xml");
+		cm.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
+		cm.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
+		cm.addMailcap("message/rfc822;; x-java-content- handler=com.sun.mail.handlers.message_rfc822");
+		javax.activation.CommandMap.setDefaultCommandMap(cm);
+	}
 
 }
 

@@ -245,7 +245,7 @@ $SRCTOPDIR/bin/pax-run.sh \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.prefs-1.0.4.jar \
 	scan-bundle:file:$REPOSITORY/derby-10.5.3.0_1.jar \
 	scan-bundle:file:$REPOSITORY/groovy-all-2.4.4-indy.jar \
-	scan-bundle:file:$REPOSITORY/mail-1.5.0-b01.jar \
+	scan-bundle:file:$REPOSITORY/javax.mail-1.6.0.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.bundlerepository-1.6.4.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.eventadmin-1.2.2.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.http.bridge-2.0.4.jar \
@@ -457,6 +457,7 @@ ${camundabundles} \
 	scan-bundle:file:$REPOSITORY/commonmark-0.9.0.bar \
 	scan-bundle:file:$REPOSITORY/reflections-0.9.11.bar \
 	scan-bundle:file:$REPOSITORY/guava-20.0.jar \
+	scan-bundle:file:$REPOSITORY/activation-1.1.1.bar \
 	scan-bundle:file:$REPOSITORY/apache-lucene-5.3.2.jar \
 	scan-bundle:file:$REPOSITORY/java-uuid-generator-3.1.3.jar \
 	scan-bundle:file:$REPOSITORY/camunda-engine-orientdb-0.0.1.jar \
