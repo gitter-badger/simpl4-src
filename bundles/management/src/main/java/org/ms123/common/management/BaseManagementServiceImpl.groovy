@@ -194,6 +194,10 @@ abstract class BaseManagementServiceImpl implements EventHandler, FrameworkListe
 			StoreDesc sdesc = StoreDesc.getNamespaceData(ns);
 			info(this, "createClasses:"+ns+"/sdesc:"+sdesc);
 			m_domainobjectsService.createClasses(sdesc);
+
+			sdesc = StoreDesc.getNamespaceData(ns,"odata");
+			info(this, "createClasses:"+ns+"/sdesc:"+sdesc);
+			m_domainobjectsService.createClasses(sdesc);
 		}catch(Exception e){
 			error(this, "createDomainClasses.error:%[exception]s",e);
 			e.printStackTrace();
