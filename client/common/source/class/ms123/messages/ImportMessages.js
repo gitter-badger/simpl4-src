@@ -60,7 +60,6 @@ qx.Class.define( "ms123.messages.ImportMessages", {
 			for( var j=0; j < langs.length;j++){
 				msgMap[langs[j]] = [];
 			}	
-			
 			console.log("langs:",langs);
 			for( var i=1; i < arr.length-1;i++){
 				var row = arr[i];
@@ -71,6 +70,33 @@ qx.Class.define( "ms123.messages.ImportMessages", {
 				}	
 			}
 			console.log("map:",msgMap);
+			for( var j=0; j < langs.length;j++){
+				var lang = langs[j];
+				this._saveMessages( msgMap[lang], lang);
+			}	
+		},
+		_saveMessages: function (data,lang) {
+			var completed = (function (data) {
+				ms123.form.Dialog.alert(this.tr("messages.messages_saved"));
+			}).bind(this);
+
+			var failed = (function (details) {
+				ms123.form.Dialog.alert(this.tr("messages.saveMessages_failed") + ":" + details.message);
+			}).bind(this);
+
+			try {
+				var storeId = this._facade.storeDesc.getStoreId();
+				var ret = ms123.util.Remote.rpcSync("message:addMessages", {
+					namespace: this._facade.storeDesc.getNamespace(),
+					overwrite: true,
+					lang: lang,
+					msgs: data
+				});
+				completed.call(this, ret);
+			} catch (e) {
+				failed.call(this, e);
+				return;
+			}
 		},
 		csvToArray: function( strData, strDelimiter ) {
 			// Check to see if the delimiter is defined. If not,then default to comma.
