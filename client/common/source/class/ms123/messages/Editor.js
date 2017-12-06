@@ -316,6 +316,9 @@ qx.Class.define("ms123.messages.Editor", {
 			}
 			return records;
 		},
+		_import: function (data) {
+			new ms123.messages.ImportMessages(this._facade);
+		},
 		_export: function (data) {
 			var langs = ms123.util.Remote.rpcSync("message:getLanguages", {
 				namespace: this._facade.storeDesc.getNamespace()

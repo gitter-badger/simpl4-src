@@ -158,10 +158,10 @@ qx.Class.define( "ms123.messages.ExportMessages", {
 			console.log( "__createExportDialog:", langs );
 			var opts = [];
 			for ( var i = 0; i < langs.length; i++ ) {
-				if ( langs[ i ] == this._lang1 ) {
+				if ( langs[ i ].name == this._lang1 ) {
 					continue;
 				}
-				if ( langs[ i ].endsWith( '-' ) ) {
+				if ( langs[ i ].name.endsWith( '-' ) ) {
 					continue;
 				}
 				var opt = {
