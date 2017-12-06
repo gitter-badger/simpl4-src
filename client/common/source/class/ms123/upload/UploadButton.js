@@ -51,9 +51,10 @@ qx.Class.define("ms123.upload.UploadButton", {
 	/**
 	 */
 
-	construct: function (fieldName, label, icon, command) {
+	construct: function (fieldName, label, icon, command, flag) {
 		this.base(arguments, label, icon, command);
 
+		this._flag = flag;
 		this.__inputEl = this._createInput();
 		if (fieldName) {
 			this.setFieldName(fieldName);
@@ -256,7 +257,11 @@ qx.Class.define("ms123.upload.UploadButton", {
 				}
 				var value = e.getData();
 				this.setFileName(value);
-				this.fireDataEvent('changeFileName', value);
+				if( this._flag === true){
+					this.fireDataEvent('changeFileName', controlDom.files);
+				}else{
+					this.fireDataEvent('changeFileName', value);
+				}
 			}, this);
 
 			return control;
