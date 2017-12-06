@@ -125,6 +125,19 @@ qx.Class.define("ms123.messages.Editor", {
 			toolbar.add(new qx.ui.core.Spacer(), {
 				flex: 1
 			});
+			this._buttonExport = new qx.ui.toolbar.Button(this.tr("export.export_button"), "ms123/csv_icon.png");
+			this._buttonExport.addListener("execute", function () {
+				this._export();
+			}, this);
+			toolbar._add(this._buttonExport);
+
+			this._buttonImport = new qx.ui.toolbar.Button(this.tr("import.import_button"), "icon/16/actions/document-revert.png");
+			this._buttonImport.addListener("execute", function () {
+				this._import();
+			}, this);
+			toolbar._add(this._buttonImport);
+
+			toolbar.addSpacer();
 			this._buttonSave = new qx.ui.toolbar.Button(this.tr("meta.lists.savebutton"), "icon/16/actions/document-save.png");
 			this._buttonSave.addListener("execute", function () {
 				this._save();
@@ -269,7 +282,7 @@ qx.Class.define("ms123.messages.Editor", {
 				return;
 			}
 		},
-		_getMessages: function () {
+		_getMessages: function (lang) {
 			var completed = (function (data) {}).bind(this);
 
 			var failed = (function (details) {
@@ -279,7 +292,7 @@ qx.Class.define("ms123.messages.Editor", {
 			try {
 				var ret = ms123.util.Remote.rpcSync("message:getMessages", {
 					namespace: this._facade.storeDesc.getNamespace(),
-					lang: this._lang
+					lang: lang
 				});
 				completed.call(this, ret);
 				return ret;
@@ -303,11 +316,25 @@ qx.Class.define("ms123.messages.Editor", {
 			}
 			return records;
 		},
+		_export: function (data) {
+			var langs = ms123.util.Remote.rpcSync("message:getLanguages", {
+				namespace: this._facade.storeDesc.getNamespace()
+			});
+			var recs = this._getRecords();
+			var result = [];
+			for( var i=0; i< recs.length;i++){
+				var rec = recs[i];
+				if( rec.msgid.toLowerCase().indexOf( this.__searchFilter)>=0){
+					result.push( rec );
+				}
+			}
+			new ms123.messages.ExportMessages(langs,this._lang, result, this._facade);
+		},
 		_save: function () {
 			this._saveMessages(this._getRecords());
 		},
 		_load: function () {
-			return this._getMessages();
+			return this._getMessages(this._lang);
 		}
 	}
 });
