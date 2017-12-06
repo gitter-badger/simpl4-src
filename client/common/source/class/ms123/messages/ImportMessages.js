@@ -46,6 +46,7 @@ qx.Class.define( "ms123.messages.ImportMessages", {
 	 ******************************************************************************/
 	members: {
 		_importFile: function( text ) {
+			this.win.close();
 			console.log( text );
 			var arr = this.csvToArray(text);
 			console.log( arr );
@@ -259,7 +260,7 @@ qx.Class.define( "ms123.messages.ImportMessages", {
 			return l;
 		},
 		__createImportDialog: function( facade ) {
-			this._createWindow( this._createUploadPage() );
+			this.win = this._createWindow( this._createUploadPage() );
 		}
 	}
 } );
