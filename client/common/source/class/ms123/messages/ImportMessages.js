@@ -48,7 +48,9 @@ qx.Class.define( "ms123.messages.ImportMessages", {
 		_importFile: function( text ) {
 			this.win.close();
 			console.log( text );
-			var arr = this.csvToArray(text);
+			var d = text[5]; 
+			console.log("delimiter:",d);
+			var arr = this.csvToArray(text,d);
 			console.log( arr );
 			this._convertToMessageFormat( arr );
 		},
@@ -208,7 +210,8 @@ qx.Class.define( "ms123.messages.ImportMessages", {
 				var reader = new FileReader();
 
 				reader.addEventListener( 'loadend', function( e ) {
-					var text = e.srcElement.result;
+					var target = e.target || e.srcElement;
+					var text = target.result;
 					self._importFile( text );
 				}, this );
 
@@ -232,7 +235,8 @@ qx.Class.define( "ms123.messages.ImportMessages", {
 			for ( var i = 0, f; f = files[ i ]; i++ ) { //here only one file allowed
 				var reader = new FileReader();
 				reader.addEventListener( 'loadend', function( e ) {
-					var text = e.srcElement.result;
+					var target = e.target || e.srcElement;
+					var text = target.result;
 					self._importFile( text );
 				}, this );
 				reader.readAsText( f );
