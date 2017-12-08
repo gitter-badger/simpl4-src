@@ -138,7 +138,7 @@
 
 
 			<te-undo></te-undo>
-			<input type="file" name="filedef" style="display:none;"></input>
+			<input type="file" id="tempId" name="filedef" style="display:none;"></input>
 		</template>
 		<script>
 			Polymer( {
@@ -591,7 +591,7 @@
 				onTapExport: function() {
 					this._onTapLoad( ( function( state ) {
 						console.log( "onTapExport:", state );
-						var input = this.querySelector( 'input[type="file"]' );
+						var input = this.querySelector( 'input#tempId[type="file"]' );
 						input.onchange = ( function( e ) {
 							var file = e.target.files[ 0 ];
 							console.log( "file:", file );
@@ -631,7 +631,7 @@
 
 						reader.readAsBinaryString( files[ 0 ] );
 					}
-					var input = this.querySelector( 'input[type="file"]' );
+					var input = this.querySelector( 'input#tempId[type="file"]' );
 					input.onchange = handleFileSelect.bind( this );
 					$( input ).trigger( 'click' );
 				}
