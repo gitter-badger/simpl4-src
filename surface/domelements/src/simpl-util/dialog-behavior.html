@@ -36,7 +36,7 @@
 				}
 			} )
 		},
-		openDialog: function( dia, _width,height ) {
+		openDialog: function( dia, _width,height, title ) {
 			var width = _width || "80%";
 			if ( window.matchMedia( '(max-width: 480px)' ).matches ) {
 				width = "95%";
@@ -53,7 +53,7 @@
 					console.log("close");
 					this.destroyDialog(dia);
 				}).bind(this),
-				title: "",
+				title: title || "",
 				height: "auto",
 				maxHeight: height,
 				width: width,
