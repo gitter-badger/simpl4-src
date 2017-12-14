@@ -91,6 +91,9 @@
 		onMenuReady:function() {
 			this.pagesReady();
 		},
+		onMenuUpdate:function() {
+			this.allPages = this._getPages();
+		},
 		pagesReady:function() {
 			this.waitOnPages--;
 			if (this.waitOnPages === 0) {
@@ -359,11 +362,15 @@
 		_buildUrl: function( page ) {
 			var url = page.url;
 			var hasRpc = ( url.indexOf( "?rpc=" ) > 0 ) || ( url.indexOf( "&rpc=" ) > 0 );
-			if ( hasRpc ) {
+			if ( hasRpc || ( page.roles && page.roles.length>0) ) {
 				var password = simpl4.util.BaseManager.getPassword();
 				var username = simpl4.util.BaseManager.getUser();
 				var credentials = simpl4.util.Base64.encode( username + ":" + password );
-				url += "&credentials=" + credentials;
+				if( url.indexOf( "?" ) > 0 ){
+					url += "&credentials=" + credentials;
+				}else{
+					url += "?credentials=" + credentials;
+				}
 			}
 			if ( _.isEmpty( page.appendix ) ) {
 				return url;
