@@ -177,6 +177,9 @@
 				type: Boolean,
 				value: false
 			},
+			maxsize: {
+				value: 0
+			},
 
 			/**
 			 * `files` is the list of files to be uploaded
@@ -315,6 +318,12 @@
 					if ( this.multi == false ) {
 						this.clear();
 					}
+					console.log("maxsize:",this.maxsize);
+					if( this.maxsize!=0 && file.size > this.maxsize){
+						console.log("too large");
+						this.fire( "upload-maxsize", {file:file} );
+						continue;
+					}
 					this.push( "files", file );
 					this.uploadFile( file );
 				}
@@ -345,6 +354,12 @@
 				file.complete = false;
 				if ( this.multi == false ) {
 					this.clear();
+				}
+				console.log("maxsize:",this.maxsize);
+				if( this.maxsize!=0 && file.size > this.maxsize){
+					console.log("too large");
+					this.fire( "upload-maxsize", {file:file} );
+					continue;
 				}
 				this.push( "files", file );
 				this.uploadFile( file );
