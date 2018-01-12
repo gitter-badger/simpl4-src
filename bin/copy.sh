@@ -113,6 +113,7 @@ zip -d ${WEBDIRECTORY}/lib/pax-web-jetty-bundle-4.1.1.jar "javax/*" >/dev/null
 
 
 cp $SRCTOPDIR/bin/sw $BINDIRECTORY
+cp $SRCTOPDIR/bin/oetl.sh $BINDIRECTORY
 cp $SRCTOPDIR/bin/generate.sh $BINDIRECTORY
 cp $SRCTOPDIR/bin/setup.sh $BINDIRECTORY
 cp $SRCTOPDIR/bin/setup.bat $BINDIRECTORY
@@ -147,6 +148,7 @@ cp    $SRCTOPDIR/etc/run.bat.tpl $SERVERDIRECTORY/
 cp    $SRCTOPDIR/etc/README-deployed.md $DESTDIRECTORY/README.md
 cp    $SRCTOPDIR/etc/warbuild.xml $DESTDIRECTORY/build.xml
 cp    $SRCTOPDIR/etc/orientdb-server-config.xml $ETCDIRECTORY/
+cp    $SRCTOPDIR/etc/orientdb-client-log.properties $ETCDIRECTORY/
 cp    $SRCTOPDIR/etc/security.json $ETCDIRECTORY/
 cp    $SRCTOPDIR/etc/zookeeper.properties $ETCDIRECTORY/
 cp    $SRCTOPDIR/etc/kafkaserver.properties $ETCDIRECTORY/
