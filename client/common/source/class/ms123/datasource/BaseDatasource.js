@@ -70,7 +70,7 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 			return false;
 		},
 		_isOrientOk:function(data){
-			if( data.packagename == "data"){
+			if( data.packagename == "data" && data.isOrientDB){
 				ms123.form.Dialog.alert( this.tr( "datasource.orient_pack_data_not_ok" ) );
 				return false;
 			}
