@@ -388,7 +388,14 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	}
 
 	private String columnName(String in) {
-		return strip(in, "\"");
+		if( in.indexOf(" ") >=0){
+			return strip(in, "\"");
+		}else{
+			if( in.indexOf("-") >=0){
+				return in;
+			}
+			return strip(in, "\"");
+		}
 	}
 
 	private String tableName(String in) {
