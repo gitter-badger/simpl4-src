@@ -23,6 +23,7 @@
  */
 qx.Class.define("ms123.MainMenu", {
 	extend: qx.ui.form.MenuButton,
+	include: [ms123.util.MDebounce],
 
 
 	/******************************************************************************
@@ -215,6 +216,9 @@ if( _module == null) console.trace();
 	members: {
 
 		_init: function (ns) {
+			//@@@MenuHack Chromium 63.0  Begin
+      this._onPointerDownDebounced = this.debounce(this._onPointerDownOrig,200);
+			//@@@MenuHack End
 			this._user = ms123.config.ConfigManager.getUserProperties();
 			var x = qx.util.Serializer.toJson(this._user);
 
@@ -433,13 +437,11 @@ console.log("modules:",modules);
 			return logout;
 		},
 		//@@@MenuHack Chromium 63.0  Begin
+		//two events shortly one after one
 		_onPointerDown:function(e){
-      if( this._debounce==null){
-        this._debounce = this.debounce(200);
-      }
-      this._debounce(e);
+      this._onPointerDownDebounced(e);
     },
-    __onPointerDown : function(e) {
+    _onPointerDownOrig : function(e) {
       if(e.getButton() != "left") {
         return;
       }
@@ -452,19 +454,6 @@ console.log("modules:",modules);
         }
         e.stopPropagation();
       }
-    },
-    debounce : function(wait) {
-      var timeout;
-      var self = this;
-      return function(e) {
-        var context = this, args = arguments;
-        var later = function() {
-        	timeout = null;
-          self.__onPointerDown(e);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-      };
     },
 		//@@@MenuHack End
 
