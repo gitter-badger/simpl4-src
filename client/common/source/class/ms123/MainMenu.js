@@ -23,7 +23,6 @@
  */
 qx.Class.define("ms123.MainMenu", {
 	extend: qx.ui.form.MenuButton,
-	include: [ms123.util.MDebounce],
 
 
 	/******************************************************************************
@@ -216,9 +215,6 @@ if( _module == null) console.trace();
 	members: {
 
 		_init: function (ns) {
-			//@@@MenuHack Chromium 63.0  Begin
-      this._onPointerDownDebounced = this.debounce(this._onPointerDownOrig,200);
-			//@@@MenuHack End
 			this._user = ms123.config.ConfigManager.getUserProperties();
 			var x = qx.util.Serializer.toJson(this._user);
 
@@ -436,15 +432,19 @@ console.log("modules:",modules);
 			}, this);
 			return logout;
 		},
-		//@@@MenuHack Chromium 63.0  Begin
-		//two events shortly one after one
-		_onPointerDown:function(e){
-      this._onPointerDownDebounced(e);
-    },
-    _onPointerDownOrig : function(e) {
+
+    // overridden
+    _onPointerDown : function(e) {
+      this.base(arguments, e);
+			if( this._isPointerDown === true){
+				return;
+			}
+			this._isPointerDown = true;
+
       if(e.getButton() != "left") {
         return;
       }
+
       var menu = this.getMenu();
       if (menu) {
         if (!menu.isVisible()) {
@@ -455,8 +455,13 @@ console.log("modules:",modules);
         e.stopPropagation();
       }
     },
-		//@@@MenuHack End
 
+    // overridden
+    _onPointerUp : function(e) {
+      this.base(arguments, e);
+			this._isPointerDown = false;
+      e.stopPropagation();
+    },
 		_createMenu: function (menu, entityButtonsMap, extraButtons) {
 			menu.add(extraButtons[this._me["team"].name]);
 			if (this._user.admin) {
