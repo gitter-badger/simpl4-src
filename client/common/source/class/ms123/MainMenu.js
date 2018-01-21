@@ -459,7 +459,7 @@ console.log("modules:",modules);
       return function(e) {
         var context = this, args = arguments;
         var later = function() {
-        timeout = null;
+        	timeout = null;
           self.__onPointerDown(e);
         };
         clearTimeout(timeout);
