@@ -432,36 +432,6 @@ console.log("modules:",modules);
 			}, this);
 			return logout;
 		},
-
-    // overridden
-    _onPointerDown : function(e) {
-      this.base(arguments, e);
-			if( this._isPointerDown === true){
-				return;
-			}
-			this._isPointerDown = true;
-
-      if(e.getButton() != "left") {
-        return;
-      }
-
-      var menu = this.getMenu();
-      if (menu) {
-        if (!menu.isVisible()) {
-          this.open();
-        } else {
-          menu.exclude();
-        }
-        e.stopPropagation();
-      }
-    },
-
-    // overridden
-    _onPointerUp : function(e) {
-      this.base(arguments, e);
-			this._isPointerDown = false;
-      e.stopPropagation();
-    },
 		_createMenu: function (menu, entityButtonsMap, extraButtons) {
 			menu.add(extraButtons[this._me["team"].name]);
 			if (this._user.admin) {
