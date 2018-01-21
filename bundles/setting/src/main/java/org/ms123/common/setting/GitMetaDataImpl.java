@@ -130,6 +130,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 	}
 
 	public List<Map> getFieldsetsForEntity(String namespace, String settingsid, String entity) throws Exception {
+		entity = getEntityName(entity);
 		String resourceid = format("settings/entities.{0}.fieldsets", entity);
 		String settingStr = getResource(namespace, settingsid, resourceid);
 		if (settingStr != null) {
@@ -147,6 +148,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 
 	public List<Map> getFieldsForEntityView(String namespace, String settingsid, String entity, String view, Map mapping, String filter, String sortField) throws Exception {
 		List<Map> retList = new ArrayList();
+		entity = getEntityName(entity);
 		String resourceid = format("settings/entities.{0}.views.{1}.fields", entity, view);
 		String settingStr = getResource(namespace, settingsid, resourceid);
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,StoreDesc.getPackName(entity));
@@ -180,6 +182,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 	}
 
 	public Map getPropertiesForEntityView(String namespace, String settingsid, String entity, String view) throws Exception {
+		entity = getEntityName(entity);
 		String resourceid = format("settings/entities.{0}.views.{1}.properties", entity, view);
 		String settingStr = getResource(namespace, settingsid, resourceid);
 		if (settingStr != null) {
@@ -191,6 +194,7 @@ class GitMetaDataImpl implements MetaData, Constants {
 	}
 
 	public Map getPropertiesForEntity(String namespace, String settingsid, String entity) throws Exception {
+		entity = getEntityName(entity);
 		String resourceid = format("settings/entities.{0}.properties", entity);
 		String settingStr = getResource(namespace, settingsid, resourceid);
 		if (settingStr != null) {
@@ -312,6 +316,17 @@ class GitMetaDataImpl implements MetaData, Constants {
 		return def;
 	}
 
+	private String getEntityName(String entity){
+		if( entity == null) return null;
+		int colon = entity.indexOf(StoreDesc.PACK_DELIM);
+		if( colon >= 0){
+			String pack = entity.substring(0, colon);	
+			if( "data".equals(pack)){
+				return entity.substring(colon+1);
+			}
+		}
+		return entity;
+	}
 	private void sendEvent(String topic, String namespace, String settingsid, String resourceid) {
 		Map props = new HashMap();
 		props.put("namespace", namespace);
