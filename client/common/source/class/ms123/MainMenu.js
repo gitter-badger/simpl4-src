@@ -432,6 +432,42 @@ console.log("modules:",modules);
 			}, this);
 			return logout;
 		},
+		//@@@MenuHack Chromium 63.0  Begin
+		_onPointerDown:function(e){
+      if( this._debounce==null){
+        this._debounce = this.debounce(200);
+      }
+      this._debounce(e);
+    },
+    __onPointerDown : function(e) {
+      if(e.getButton() != "left") {
+        return;
+      }
+      var menu = this.getMenu();
+      if (menu) {
+        if (!menu.isVisible()) {
+          this.open();
+        } else {
+          menu.exclude();
+        }
+        e.stopPropagation();
+      }
+    },
+    debounce : function(wait) {
+      var timeout;
+      var self = this;
+      return function(e) {
+        var context = this, args = arguments;
+        var later = function() {
+        timeout = null;
+          self.__onPointerDown(e);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    },
+		//@@@MenuHack End
+
 		_createMenu: function (menu, entityButtonsMap, extraButtons) {
 			menu.add(extraButtons[this._me["team"].name]);
 			if (this._user.admin) {
