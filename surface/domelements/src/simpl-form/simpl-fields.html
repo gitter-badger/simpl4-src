@@ -279,9 +279,6 @@
 				},
 				min: {
 					type: String
-				},
-				name: {
-					type: String
 				}
 			},
 			hasDate: false,//Modernizr.inputtypes.date && Modernizr.desktop !== true,
@@ -910,9 +907,6 @@
 			is: "custom-field",
 			behaviors: [ FieldBehavior ],
 			properties: {
-				url: {
-					type: String
-				},
 				elementname: {
 					type: String
 				},
@@ -1231,7 +1225,7 @@
 				StyleScopeBehavior,
 				FieldBehavior
 			],
-			listeners: {
+			_listeners: {
 				'value-changed': 'ignore'
 			},
 			properties: {
