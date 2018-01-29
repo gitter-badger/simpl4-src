@@ -104,6 +104,10 @@ qx.Class.define("ms123.graphicaleditor.plugins.shapemenu.Button", {
 			if (!e.isLeftPressed()) {
 				return;
 			}
+			if( this.__isPointerDown === true){
+				return;
+			}
+			this.__isPointerDown = true;
 			var menu = this.getMenu();
 			if (menu) {
 				if (!menu.isVisible()) {
@@ -115,6 +119,12 @@ qx.Class.define("ms123.graphicaleditor.plugins.shapemenu.Button", {
 			this.capture(true);
 		},
 
+    // overridden
+    _onPointerUp : function(e) {
+      this.base(arguments, e);
+			this.__isPointerDown = false;
+      e.stopPropagation();
+    },
 		_createContentElement: function () {
 			var root = new qx.html.Root(this.node);
 			root.setAttribute("$$widget", this.toHashCode());
