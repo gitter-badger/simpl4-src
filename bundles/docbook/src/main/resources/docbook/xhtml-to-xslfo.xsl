@@ -135,7 +135,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.minimum">0.25em</xsl:attribute>
     <xsl:attribute name="space-after.optimum">0.33em</xsl:attribute>
     <xsl:attribute name="space-after.maximum">0.42em</xsl:attribute>
-    <xsl:attribute name="start-indent">4%</xsl:attribute>
+    <xsl:attribute name="start-indent">0em</xsl:attribute>
     <xsl:attribute name="text-align">start</xsl:attribute>
     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
@@ -153,7 +153,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.minimum">0.25em</xsl:attribute>
     <xsl:attribute name="space-after.optimum">0.33em</xsl:attribute>
     <xsl:attribute name="space-after.maximum">0.42em</xsl:attribute>
-    <xsl:attribute name="start-indent">7%</xsl:attribute>
+    <xsl:attribute name="start-indent">0em</xsl:attribute>
     <xsl:attribute name="text-align">start</xsl:attribute>
     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
@@ -171,7 +171,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.minimum">0.25em</xsl:attribute>
     <xsl:attribute name="space-after.optimum">0.33em</xsl:attribute>
     <xsl:attribute name="space-after.maximum">0.42em</xsl:attribute>
-    <xsl:attribute name="start-indent">11%</xsl:attribute>
+    <xsl:attribute name="start-indent">0em</xsl:attribute>
     <xsl:attribute name="text-align">start</xsl:attribute>
     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
@@ -189,7 +189,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.minimum">0.25em</xsl:attribute>
     <xsl:attribute name="space-after.optimum">0.33em</xsl:attribute>
     <xsl:attribute name="space-after.maximum">0.42em</xsl:attribute>
-    <xsl:attribute name="start-indent">11%</xsl:attribute>
+    <xsl:attribute name="start-indent">0em</xsl:attribute>
     <xsl:attribute name="text-align">start</xsl:attribute>
     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
@@ -207,7 +207,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <xsl:attribute name="space-after.minimum">0.25em</xsl:attribute>
     <xsl:attribute name="space-after.optimum">0.33em</xsl:attribute>
     <xsl:attribute name="space-after.maximum">0.42em</xsl:attribute>
-    <xsl:attribute name="start-indent">11%</xsl:attribute>
+    <xsl:attribute name="start-indent">0em</xsl:attribute>
     <xsl:attribute name="text-align">start</xsl:attribute>
     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
