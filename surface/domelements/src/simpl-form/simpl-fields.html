@@ -2397,6 +2397,7 @@
 					for ( var i = this.lines.length-1; (i-1) > lid; i-- ) {
 						this._upLine(i);
 					}
+					this.setDefaultValue( this.lines.length-1);
 				}, 20 );
 			},
 			removeLine: function( e ) {
@@ -2449,6 +2450,19 @@
 					line[ col.colname ] = val;
 				}
 				return line;
+			},
+			setDefaultValue: function( i ) {
+				for ( var j = 0; j < this.columns.length; j++ ) {
+					var e = this.querySelector( "#id" + i + "_" + j );
+					var col = this.columns[ j ];
+					var name = col.colname;
+					var val = null;
+					e.getGridField().withoutCheck = true;
+					if( val == null && col.xf_default){
+						val = col.xf_default;
+					}
+					e.setValue( val );
+				}
 			},
 			checkConstraints: function() {
 				this.setInvalid( false );
