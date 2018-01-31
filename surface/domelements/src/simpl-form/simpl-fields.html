@@ -1630,6 +1630,11 @@
 				return false;
 			},
 			checkConstraints: function() {
+				var c = this.getAttribute( "data-constraints" );
+				if ( c != null && c.length > 0 ) {
+					this._checkConstraints(c);
+					return;
+				}
 				this.setInvalid( false );
 				if ( !this.isRequired() ) return;
 				if ( !this.isEmpty(this.value) ) {
@@ -1637,6 +1642,23 @@
 				}
 				this.setInvalid( true );
 				this.setErrorMessage( tr( "This field is required" ) );
+			},
+			_checkConstraints: function(c) {
+				var elements = [ this ];
+				regula.bind( {
+					elements: elements
+				} );
+				this.async( function() {
+					var errorList = regula.validate( {
+						elements: elements
+					} );
+					this.setInvalid( errorList.length > 0 );
+					if ( errorList.length > 0 ) {
+						this.setErrorMessage( errorList[ 0 ].message );
+					}else{
+						this.setErrorMessage( null );
+					}
+				} );
 			},
 			setErrorMessage: function( message ) {
 				this.errorMessage = message;
@@ -2376,7 +2398,7 @@
 			columnsChanged: function() {
 				var exprMap = {};
 				this.columns.each( ( function( c ) {
-					c.regulaConstraints = this._constructRegulaConstraints( c.constraints );
+					c.regulaConstraints = this._constructRegulaConstraints( c.constraints, c.errormsg );
 					c.label = c.display;
 					if( c.id != "Enumselect"){
 						c.id = "Input";

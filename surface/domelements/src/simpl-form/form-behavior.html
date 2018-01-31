@@ -191,6 +191,9 @@
 			}
 			var elements = this._filterToArray( "gridinput-field,tableselect-field,upload-field,embeddedobj-inline-field,linkedobj-field,linkedlist-field,embeddedobj-field,embeddedlist-field,tree-field,select-field" ,this.$.formdiv, true , true );
 			for ( var i = 0; i < elements.length; i++ ) {
+				if( elements[i].tagName == "SELECT-FIELD" && (elements[i].getAttribute("gridfield")!=null)){
+					continue;
+				}
 				var saveInvalid = elements[ i ].isInvalid;
 				elements[ i ].checkConstraints();
 				if ( elements[ i ].isInvalid ) {
