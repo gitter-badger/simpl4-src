@@ -175,7 +175,7 @@ Custom property | Description | Default
         <paper-button hidden$="[[!hasBackButton]]" disabled=[[!_hasBackStep]] on-tap="back"><iron-icon icon="vaadin-icons:arrow-long-left"></iron-icon>[[backText]]</paper-button>
         <span class="flex"></span>
         <paper-button hidden$="[[!hasSkipButton]]" disabled="[[!_canSkip]]" on-tap="progress">[[skipText]]</paper-button>
-        <paper-button hidden$="[[_isLastStep(_selectedIndex,savedStepNumber)]]" id="continueButton" on-tap="continue">{{_choosePrimaryButtonText(_attrForSelectedStepPrimaryButtonText, finishText, continueText, updateText)}}<iron-icon icon="vaadin-icons:arrows-long-right"></iron-icon></paper-button>
+        <paper-button hidden$="[[_isLastStep(_selectedIndex,savedStepNumber,hasFinishButton)]]" id="continueButton" on-tap="continue">{{_choosePrimaryButtonText(_attrForSelectedStepPrimaryButtonText, finishText, continueText, updateText)}}<iron-icon icon="vaadin-icons:arrows-long-right"></iron-icon></paper-button>
       </div>
     </template>
 
@@ -260,6 +260,10 @@ Custom property | Description | Default
           value: false
         },
         hasBackButton: {
+          type: Boolean,
+          value: false
+        },
+        hasFinishButton: {
           type: Boolean,
           value: false
         },
@@ -619,7 +623,8 @@ Custom property | Description | Default
         return _attrForPrimaryButtonText;
       },
 
-      _isLastStep: function(sel,ind) {
+      _isLastStep: function(sel,ind,hasFinishButton) {
+				if( hasFinishButton) return false;
         return (this.stepNumber - this.savedStepNumber) == 1 && (sel == ind);
       },
       _initializeSteps: function() {
