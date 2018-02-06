@@ -82,6 +82,9 @@
 				if ( this.minimize === false ) {
 					opts.minimize = false;
 				}
+				if ( this.expand === false ) {
+					opts.expand = false;
+				}
 				$( ".panel" ).lobiPanel( opts );
 
 				$( '.panel' ).on( 'beforeMaximize.lobiPanel', ( function( ev, lobiPanel ) {
