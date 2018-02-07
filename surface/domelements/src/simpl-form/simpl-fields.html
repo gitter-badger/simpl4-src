@@ -2303,6 +2303,7 @@
 			clearLines:function(){
 				this.splice("lines", 0, this.lines.length)
 				this.push( "lines", {} );
+				this.setDefaultValue(0);
 			},
 			_valueChanged: function(e) {
 				var lid = e.target.parentNode.dataset.lid;
