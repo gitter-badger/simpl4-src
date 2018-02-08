@@ -201,12 +201,26 @@ public final class TraceEventMessage implements Serializable, org.apache.camel.p
 			return uri;
 		}
 	}
+
 	private String toJsonString(Object o) {
+		if( o == null){
+			return "";
+		}
+		if( o.getClass().getSimpleName().startsWith("CaseIn")){
+			if( ((Map)o).get("jobInstance") != null){
+				return "QuartzStuff";
+			}
+		}
 		try{
 			return m_gson.toJson(o);
 		}catch(Throwable e){
 		}
-		return m_js.serialize(o);
+
+		try{
+			return m_js.serialize(o);
+		}catch(Throwable e){
+		}
+		return "cannot decode";
 	}
 
 	// Properties
