@@ -40,6 +40,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import groovy.lang.Script;
 import java.net.URLEncoder;
 import java.net.URL;
+import java.net.InetAddress;
 import org.apache.camel.model.language.*;
 import org.apache.camel.util.IntrospectionSupport;
 import static org.apache.camel.util.ObjectHelper.isEmpty;
@@ -1173,7 +1174,8 @@ class GroovyProcessor implements Processor {
 			simpl4Dir: System.getProperty("simpl4.dir"),
 			homeDir: System.getProperty("git.repos")+ "/" + this.namespace,
 			homeDataDir: System.getProperty("git.repos")+ "/" + this.namespace+"_data",
-			namespace: this.namespace
+			namespace: this.namespace,
+			hostname: InetAddress.getLocalHost().getHostName()
 		]
 		def script = 	this.scriptClazz.newInstance();
 		params.put("env", env);
