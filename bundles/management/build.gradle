@@ -21,7 +21,7 @@ dependencies {
 	compile files("${repository}/commons/commons-exec-1.1.jar")
  	compile files("${repository}/commons/commons-io-2.5.jar")
   compile files("${repository}/flexjson-2.1.bar")
- 	compile files("${repository}/org.eclipse.jgit-4.1.1.201511131810-r.jar")
+  compile files("${repository}/jgit/jgit-4.10.jar")
 	compile files("${repository}/org.osgi.compendium-4.3.1.jar")
 	compile files("${repository}/org.osgi.core-4.3.1.jar")
 	compile files("${repository}/pax-web-jetty-bundle-4.1.1.jar")
