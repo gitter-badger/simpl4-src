@@ -313,7 +313,7 @@ ${jgitbundles} \
   scan-bundle:file:$REPOSITORY/jms-api-1.1-rev-1.bar \
   scan-bundle:file:$REPOSITORY/joda-time-2.8.2.jar \
   scan-bundle:file:$REPOSITORY/jotm-core-2.2.3.jar \
-	scan-bundle:file:$REPOSITORY/jsch-0.1.44-1.bar \
+	scan-bundle:file:$REPOSITORY/jsch-0.1.54.bar \
 	scan-bundle:file:$REPOSITORY/json-lib-2.3-jdk15.jar \
   scan-bundle:file:$REPOSITORY/lucene-core-3.6.2.bar \
 	scan-bundle:file:$REPOSITORY/milton-trunk_14-02-12.bar \
