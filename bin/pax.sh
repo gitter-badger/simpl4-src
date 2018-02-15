@@ -327,7 +327,6 @@ ${jgitbundles} \
   scan-bundle:file:$REPOSITORY/ops4j-base-lang-1.5.0.jar \
 	scan-bundle:file:$REPOSITORY/org.apache.felix.shell-1.4.3.jar \
 	scan-bundle:file:$REPOSITORY/jline-3.0.1.jar \
-	scan-bundle:file:$REPOSITORY/org.eclipse.jgit-4.1.1.201511131810-r.jar \
 	scan-bundle:file:$REPOSITORY/JavaEWAH-0.7.9.jar \
 	scan-bundle:file:$REPOSITORY/org.json_2.0.jar \
 	scan-bundle:file:$REPOSITORY/hjson-1.1.4.bar \
