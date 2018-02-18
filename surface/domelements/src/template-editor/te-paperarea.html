@@ -57,6 +57,11 @@
 						<iron-icon icon="vaadin-icons:file-picture"></iron-icon>
 						<div class="flex">[[tr('te.image_block')]]</div>
 					</paper-item>
+
+					<paper-item data-block="macro_block" class="draggable">
+						<iron-icon icon="vaadin-icons:curly-brackets"></iron-icon>
+						<div class="flex">[[tr('te.macro_block')]]</div>
+					</paper-item>
 				</paper-listbox>
 			</paper-menu-button>
 		</paper-toolbar>
@@ -118,7 +123,7 @@
 				for ( var i = 0; i < blocks.length; i++ ) {
 					var block = blocks[ i ];
 					var bstate = block.getState();
-					if ( bstate.positionAbsolute===false || bstate.blocktype == "table_block" || this.paperName == "additionalContent" ) {
+					if ( bstate.positionAbsolute===false || bstate.blocktype == "table_block" || this.paperName == "additionalContent" || this.paperName.startsWith("macro") ) {
 						blockListFlow.push( bstate )
 					} else {
 						blockListAbsolute.push( bstate )
@@ -153,6 +158,18 @@
 				}
 				if ( this.paperName == "additionalContent" ) {
 					height = this.paperHeight - ( this.dataPage1Form.topMargin + this.dataPage1Form.bottomMargin + this.dataPage1Form.headerHeight + this.dataPage1Form.footerHeight );
+					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
+				}
+				if ( this.paperName == "macro1" ) {
+					height = this.paperHeight;
+					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
+				}
+				if ( this.paperName == "macro2" ) {
+					height = this.paperHeight;
+					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
+				}
+				if ( this.paperName == "macro3" ) {
+					height = this.paperHeight;
 					width = this.paperWidth - ( this.dataPage1Form.leftMargin + this.dataPage1Form.rightMargin );
 				}
 				if ( this.paperName == "page1Header" ) {
@@ -322,6 +339,10 @@
 				}
 				var width = "150px";
 				if ( blocktype == "table_block" ) {
+					left = 0;
+					width = "100%";
+				}
+				if ( blocktype == "macro_block" ) {
 					left = 0;
 					width = "100%";
 				}

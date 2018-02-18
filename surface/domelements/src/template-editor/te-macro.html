@@ -1,0 +1,105 @@
+<!--
+/**
+ * This file is part of SIMPL4(http://simpl4.org).
+ *
+ * 	Copyright [2014,2017] [Manfred Sattler] <manfred@ms123.org>
+ *
+ * SIMPL4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SIMPL4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SIMPL4.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+
+<style>
+	[aria-describedby="macroDialog"] {
+		max-width: 500px;
+	}
+
+</style>
+
+<dom-module id="te-macro">
+	<style>
+		paper-dialog {
+			margin: 0px;
+			padding: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable {
+			margin: 0px !important;
+		}
+		paper-dialog /deep/ paper-dialog-scrollable .scrollable {
+			padding: 0 12px !important;
+		}
+
+	</style>
+	<template>
+		<paper-dialog id="macroDialog" no-cancel-on-outside-click with-backdrop>
+			<paper-dialog-scrollable>
+			  <simpl-form id="formId"  namespace="global" data="[[data]]" form-name="macroEdit.form"></simpl-form>
+				<div style="margin-top:30px;">
+					<paper-button on-tap="closeOK">
+						<iron-icon icon="check"></iron-icon>[[tr("save")]]</paper-button>
+					<paper-button on-tap="closeNOK">
+						<iron-icon icon="clear"></iron-icon>[[tr("Cancel")]]</paper-button>
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+	</template>
+	<script>
+		Polymer( {
+			is: "te-macro",
+			properties: {},
+			behaviors: [
+				DialogBehavior,
+				ExecuteBehavior,
+				TranslationsBehavior
+			],
+			observers: [],
+			ready: function() {
+				this.data = {};
+			},
+			closeNOK: function() {
+				console.log( "closeNOK(old:", this.oldState );
+				this.setState( this.oldState );
+				this.async( function() {
+					this.closeDialog( this.$.macroDialog );
+					this.isOpen = false;
+				}, 250 );
+			},
+			closeOK: function() {
+				this.closeDialog( this.$.macroDialog );
+				this.fire( "close-macroedit", {
+					state: this.getState()
+				} );
+				this.isOpen = false;
+			},
+			getState: function() {
+				return this.$.formId.getData();
+			},
+			setState: function( state ) {
+				return this.$.formId.setData(state);
+			},
+			getOldState: function() {
+				return this.oldState;
+			},
+			onMacroChanged: function( state ) {
+				 console.log(this.$.macroMenu.selectedItem);
+			},
+			open: function( state ) {
+				this.isOpen = true;
+				this.openDialog( this.$.macroDialog, 500 );
+				console.log( "macroDialog.open" );
+				this.oldState = clone( this.getState() );
+			}
+		} );
+
+	</script>
+</dom-module>

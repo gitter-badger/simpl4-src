@@ -163,6 +163,12 @@
 					<template is="dom-if" if="[[isImageBlock(blocktype)]]">
 						<img style="width:100%;height:100%;" id="imageId"></img>
 					</template>
+					<template is="dom-if" if="[[isMacroBlock(blocktype)]]">
+						<center>
+							<iron-icon icon="vaadin-icons:curly-brackets"></iron-icon></paper-button>
+							<div>[[macroTitle]]</div>
+						</center>
+					</template>
 				</div>
 			</div>
 		</div>
@@ -232,6 +238,7 @@
 
 		<te-table on-close-tableedit="closeTableEdit" id="tableEditDialog"></te-table>
 		<te-image on-close-imageedit="closeImageEdit" id="imageEditDialog"></te-image>
+		<te-macro on-close-macroedit="closeMacroEdit" id="macroEditDialog"></te-macro>
 	</template>
 	<script>
 		Polymer( {
@@ -272,6 +279,9 @@
 			getColStyle: function( w, a ) {
 				return "width:" + w + ";text-align:" + a + ";";
 			},
+			isMacroBlock: function( type ) {
+				return this.blocktype == "macro_block";
+			},
 			isTableBlock: function( type ) {
 				return this.blocktype == "table_block";
 			},
@@ -283,12 +293,25 @@
 				if ( type == "table_block" ) {
 					this.tableColumns = this.$.tableEditDialog.getState().columns;
 				}
+				if ( type == "macro_block" ) {
+					this.async( function(){
+						var state = this.$.macroEditDialog.getState();
+						if( state.macroNum == null){
+							state.macroNum = 1;
+							this.macroTitle = "Macro1";
+							this.$.macroEditDialog.setState(state);
+						}
+					},200);
+				}
 			},
 			setState: function( state ) {
 				this.blocktype = state.blocktype;
 				if ( this.blocktype == "table_block" ) {
 					this.$.tableEditDialog.setState( state );
 					this.tableColumns = state.columns;
+				} else if ( this.blocktype == "macro_block" ) {
+					this.macroTitle = "Macro"+state.macroNum;
+					this.$.macroEditDialog.setState( state);
 				} else if ( this.blocktype == "image_block" ) {
 					this.async( function() {
 						this.$.imageEditDialog.setState( state );
@@ -313,6 +336,8 @@
 				var state = {};
 				if ( this.blocktype == "table_block" ) {
 					state = this.$.tableEditDialog.getState();
+				} else if ( this.blocktype == "macro_block" ) {
+					state = this.$.macroEditDialog.getState();
 				} else if ( this.blocktype == "image_block" ) {
 					state = this.$.imageEditDialog.getState();
 				} else {
@@ -388,6 +413,10 @@
 						self.tableColumns = oldState.columns;
 					}
 				} );
+			},
+			closeMacroEdit: function( e ) {
+				console.log("data:",e.detail.state);
+				this.macroTitle = "Macro"+e.detail.state.macroNum;
 			},
 
 			closeImageEdit: function( e ) {
@@ -472,6 +501,8 @@
 					this.tedit();
 				} else if ( this.blocktype == "image_block" ) {
 					this.iedit();
+				} else if ( this.blocktype == "macro_block" ) {
+					this.macroedit();
 				} else {
 					this.medit();
 				}
@@ -484,6 +515,12 @@
 				this.$.imageEditDialog.open();
 				this.async( function() {
 					this.oldImageState = this.$.imageEditDialog.getOldState();
+				}, 1000 );
+			},
+			macroedit: function() {
+				this.$.macroEditDialog.open();
+				this.async( function() {
+					this.oldMacroState = this.$.macroEditDialog.getOldState();
 				}, 1000 );
 			},
 			insertText: function( evt ) {
