@@ -58,10 +58,12 @@
 						<div class="flex">[[tr('te.image_block')]]</div>
 					</paper-item>
 
-					<paper-item data-block="macro_block" class="draggable">
-						<iron-icon icon="vaadin-icons:curly-brackets"></iron-icon>
-						<div class="flex">[[tr('te.macro_block')]]</div>
-					</paper-item>
+					<template is="dom-if" if="[[isNotMacroPage(paperName)]]">
+						<paper-item data-block="macro_block" class="draggable">
+							<iron-icon icon="vaadin-icons:curly-brackets"></iron-icon>
+							<div class="flex">[[tr('te.macro_block')]]</div>
+						</paper-item>
+					</template>
 				</paper-listbox>
 			</paper-menu-button>
 		</paper-toolbar>
@@ -98,6 +100,9 @@
 				TranslationsBehavior,
 				ExecuteBehavior
 			],
+			isNotMacroPage:function( pn){
+				return !pn.startsWith("macro");
+			},
 			_createBlockFromState: function( block ) {
 				console.log( "paperarea.setState(" + this.paperName + "," + i + "):", block );
 				var bb = block.boundingBox;

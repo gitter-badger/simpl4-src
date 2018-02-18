@@ -203,7 +203,7 @@ public class FOBuilder extends TemplateEvaluator{
 		int openBrackets = 0;
 		int first = 0;
 		for (int i = 0; i < str.length(); i++) {
-			info(this,"char("+i+","+openBrackets+","+hasMoreRightBrackets(str, i)+"):"+str.charAt(i));
+			//info(this,"char("+i+","+openBrackets+","+hasMoreRightBrackets(str, i)+"):"+str.charAt(i));
 			if (i < str.length() - 2 && str.substring(i, i + 2).compareTo("@{") == 0) {
 				if (openBrackets == 0) {
 					first = i + 2;
@@ -237,52 +237,85 @@ public class FOBuilder extends TemplateEvaluator{
 		}
 	}
 
+	private List<Map> getCollection( Map bindings, String name){
+		String[] arr = name.split("\\.");
+		Object obj = bindings;
+		for( String s : arr){
+			obj = obj[s];
+		} 
+		return obj as List;
+	} 
+
 	private void htmlToFoList(Map state, Map bindings, String lang) throws Exception {
 		Map areas = state.areas as Map;
 		areas.each{ entry -> 
-			List<Map> flowBlocks = entry.value['flow'] as List;
-			List<Map> absoluteBlocks = entry.value['absolute'] as List;
-			List<Map> blocks = flowBlocks + absoluteBlocks;
-			blocks.each{ block ->
-				String markdown = null;
-			  String html = null;
-				try{
-					if( block.markdown ){
-						info(this,"xmarkdown:"+block.markdown);
-						String md = evalMessages(block.markdown as String, lang);
-						info(this,"xmd:"+md);
-						markdown = render(md, bindings);
+			String key = entry.key as String;
+			if( !key.startsWith("macro")){
+				List<Map> flowBlocks = entry.value['flow'] as List;
+				List<Map> absoluteBlocks = entry.value['absolute'] as List;
+				List<Map> blocks = flowBlocks + absoluteBlocks;
+				blocks.each{ Map block ->
+					if( block.blocktype == "macro_block"){
+						def area = areas["macro"+block.macroNum] as Map;
+						def collectionName = block.collection;
+						List<Map> collection = getCollection(bindings,collectionName as String);
+						List foLists = [];
+						block.foLists = foLists;
+						collection.each{ Map colEntry ->
+							List foList = [];
+							area.flow.each{ Map innerblock ->
+								evalBlock( innerblock, colEntry, lang);
+								foList.add( innerblock.fo);
+							}
+							foLists.add(foList);
+						}
 					}else{
-						markdown = "";
+						evalBlock( block, bindings, lang);
 					}
-					info(this,"FOBuilder.groovyRendered:"+markdown);
-					html= markdownToHtml( markdown );
-					info(this,"FOBuilder.markdownToHtml1:"+html);
-					info(this,"FOBuilder.markdownToHtml2:"+block.html);
-
-				}catch(Exception e){
-					error(this, "FOBuilder.render:%[exception]s",e);
-					if( markdown ){
-						html = "" + (markdown as String) +":"+e.getMessage()+"";
-					}else{
-						html = "" + (block.markdown as String) +":"+e.getMessage()+"";
-					}
-					html = html.replace( "<", "&lt;");
-					html = html.replace( ">", "&gt;");
-				}
-				try{
-					info(this,"HTML:"+markdown);
-					block.fo = htmlToFo( "<div>" + HtmlEscape.escape(html) +"</div>"  as String );
-					info(this,"FO:"+block.fo);
-				}catch(Exception e){
-					block.fo = "<fo:block>"+block.markdown+":"+e.getMessage()+"</fo:block>";
-					info(this,"Text:"+markdown);
-					info(this,"Html:"+html);
-					error(this, "FOBuilder.htmlToFoList:%[exception]s",e);
 				}
 			}
 		}
 	}
+	private void evalBlock( Map block, Map bindings, String lang){
+		String markdown = null;
+		String html = null;
+		try{
+			if( block.markdown ){
+				info(this,"xmarkdown:"+block.markdown);
+				String md = evalMessages(block.markdown as String, lang);
+				info(this,"xmd:"+md);
+				info(this,"bindings:"+bindings);
+				markdown = render(md, bindings);
+			}else{
+				markdown = "";
+			}
+			info(this,"FOBuilder.groovyRendered:"+markdown);
+			html= markdownToHtml( markdown );
+			info(this,"FOBuilder.markdownToHtml1:"+html);
+			info(this,"FOBuilder.markdownToHtml2:"+block.html);
+
+		}catch(Exception e){
+			error(this, "FOBuilder.render:%[exception]s",e);
+			if( markdown ){
+				html = "" + (markdown as String) +":"+e.getMessage()+"";
+			}else{
+				html = "" + (block.markdown as String) +":"+e.getMessage()+"";
+			}
+			html = html.replace( "<", "&lt;");
+			html = html.replace( ">", "&gt;");
+		}
+		try{
+			info(this,"HTML:"+markdown);
+			block.fo = htmlToFo( "<div>" + HtmlEscape.escape(html) +"</div>"  as String );
+			info(this,"FO:"+block.fo);
+		}catch(Exception e){
+			block.fo = "<fo:block>"+block.markdown+":"+e.getMessage()+"</fo:block>";
+			info(this,"Text:"+markdown);
+			info(this,"Html:"+html);
+			error(this, "FOBuilder.htmlToFoList:%[exception]s",e);
+		}
+	}
+
 	private String htmlToFo(String html) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		this.transformer.transform(toInputStream(html), bos);
