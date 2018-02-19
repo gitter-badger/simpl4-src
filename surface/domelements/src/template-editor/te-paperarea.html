@@ -269,39 +269,41 @@
 					this.rect = this.$.canvasId.getBoundingClientRect()
 				}, 100 )
 
-				$( ".draggable" ).drag( {
-					"start": function( evt ) {
-						self.rect = self.$.canvasId.getBoundingClientRect()
-						evt.dataTransfer.effectAllowed = $.dnd.EFFECT_ALL;
-						$( this ).addClass( "active" );
-						console.log( "start:", evt.currentTarget.dataset.block );
-						evt.dataTransfer.setData( "text", evt.currentTarget.dataset.block );
-					},
-					"end": function( evt ) {
-						console.log( "end:", evt );
-						$( this ).removeClass( "active" );
-						self.fire( "enddrag", {} );
-						self.closeMenu();
-					}
-				} );
+				this.async( function() {
+					$( ".draggable" ).drag( {
+						"start": function( evt ) {
+							self.rect = self.$.canvasId.getBoundingClientRect()
+							evt.dataTransfer.effectAllowed = $.dnd.EFFECT_ALL;
+							$( this ).addClass( "active" );
+							console.log( "start:", evt.currentTarget.dataset.block );
+							evt.dataTransfer.setData( "text", evt.currentTarget.dataset.block );
+						},
+						"end": function( evt ) {
+							console.log( "end:", evt );
+							$( this ).removeClass( "active" );
+							self.fire( "enddrag", {} );
+							self.closeMenu();
+						}
+					} );
 
-				$( ".droppable", this ).drop( {
-					"drop": function( evt ) {
-						var blocktype = evt.dataTransfer.getData( "text" );
-						$( this ).removeClass( "active" );
-						self.createBlock( blocktype, evt.originalEvent.clientY, evt.originalEvent.clientX );
-						//						self.closeMenu();
-					},
-					"over": function( evt ) {
-						evt.dataTransfer.dropEffect = $.dnd.EFFECT_COPY;
-					},
-					"enter": function( evt ) {
-						console.log( "enter:", evt );
-					},
-					"leave": function( evt ) {
-						console.log( "leave:", evt );
-					}
-				} );
+					$( ".droppable", this ).drop( {
+						"drop": function( evt ) {
+							var blocktype = evt.dataTransfer.getData( "text" );
+							$( this ).removeClass( "active" );
+							self.createBlock( blocktype, evt.originalEvent.clientY, evt.originalEvent.clientX );
+							//						self.closeMenu();
+						},
+						"over": function( evt ) {
+							evt.dataTransfer.dropEffect = $.dnd.EFFECT_COPY;
+						},
+						"enter": function( evt ) {
+							console.log( "enter:", evt );
+						},
+						"leave": function( evt ) {
+							console.log( "leave:", evt );
+						}
+					} );
+				}, 100 )
 			},
 			blockclose: function( e ) {
 				console.log( "close:", e );
