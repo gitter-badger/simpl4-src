@@ -223,6 +223,11 @@
 					<label class="header" for="flow">[[tr('te.absolute')]]</label>
 					<paper-checkbox class="" id="flow" style="margin-left:2px;" checked="{{positionAbsolute}}"></paper-checkbox>
 					<paper-tooltip for="flow" position="bottom">[[tr('te.absolute')]]</paper-tooltip>
+
+					<label class="header" for="useHeight">[[tr('te.useHeight')]]</label>
+					<paper-checkbox class="" id="useHeight" style="margin-left:2px;" checked="{{useHeight}}"></paper-checkbox>
+					<paper-tooltip for="useHeight" position="bottom">[[tr('te.useHeight')]]</paper-tooltip>
+
 					<label class="header" for="spaces">[[tr('te.whiteSpacesPreserve')]]</label>
 					<paper-checkbox class="" id="spaces" style="margin-left:2px;" checked="{{whiteSpacesPreserve}}"></paper-checkbox>
 					<paper-tooltip for="spaces" position="bottom">[[tr('te.whiteSpacesPreserve')]]</paper-tooltip>
@@ -250,7 +255,11 @@
 				},
 				positionAbsolute: {
 					type: Boolean,
-					value: true
+					value: false
+				},
+				useHeight: {
+					type: Boolean,
+					value: false
 				},
 				whiteSpacesPreserve: {
 					type: Boolean,
@@ -325,6 +334,7 @@
 					this.mde.value( state.markdown );
 					this.$.contentId.innerHTML = this.mde.markdown( this.mde.value() )
 					this.positionAbsolute = state.positionAbsolute;
+					this.useHeight = state.useHeight;
 					this.whiteSpacesPreserve = (state.whiteSpacesPreserve == null ||state.whiteSpacesPreserve == 'preserve');
 					this.rightAlign = state.textAlign == "right";
 					$( this.$.contentId ).css( {
@@ -346,6 +356,7 @@
 						state.html = this.mde.markdown( this.mde.value() );
 						state.textAlign = this.rightAlign ? "right" : "left";
 						state.positionAbsolute = this.positionAbsolute;
+						state.useHeight = this.useHeight;
 						state.whiteSpacesPreserve = this.whiteSpacesPreserve ? 'preserve' : 'ignore-if-surrounding-linefeed';
 					}
 				}
@@ -364,6 +375,7 @@
 				this.mde.value( this.oldText );
 				this.rightAlign = this.oldRightAlign;
 				this.positionAbsolute = this.oldPositionAbsolute;
+				this.useHeight = this.oldUseHeight;
 				this.whiteSpacesPreserve = this.oldWhiteSpacesPreserve;
 				this.destroyDialog( this.$.mdeDialog );
 			},
@@ -540,6 +552,7 @@
 				this.oldText = clone( this.mde.value() );
 				this.oldRightAlign = this.rightAlign;
 				this.oldPositionAbsolute = this.positionAbsolute;
+				this.oldUseHeight = this.useHeight;
 				this.oldWhiteSpacesPreserve = this.whiteSpacesPreserve;
 				console.log( "oldText:", this.oldText );
 				var gutter = this.querySelector(".gutter");
