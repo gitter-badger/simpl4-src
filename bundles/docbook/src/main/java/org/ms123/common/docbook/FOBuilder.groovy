@@ -293,6 +293,8 @@ public class FOBuilder extends TemplateEvaluator{
 			html= markdownToHtml( markdown );
 			info(this,"FOBuilder.markdownToHtml1:"+html);
 			info(this,"FOBuilder.markdownToHtml2:"+block.html);
+			if( html == null) html = "";
+			if( block.html == null) block.html = "";
 
 		}catch(Exception e){
 			error(this, "FOBuilder.render:%[exception]s",e);
@@ -313,6 +315,9 @@ public class FOBuilder extends TemplateEvaluator{
 			info(this,"Text:"+markdown);
 			info(this,"Html:"+html);
 			error(this, "FOBuilder.htmlToFoList:%[exception]s",e);
+		}
+		if( block.whiteSpacePreserve == null){
+			block.whiteSpacePreserve="ignore-if-surrounding-linefeed";
 		}
 	}
 
