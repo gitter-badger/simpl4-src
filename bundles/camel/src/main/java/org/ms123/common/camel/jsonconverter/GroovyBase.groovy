@@ -144,7 +144,8 @@ public abstract class GroovyBase extends Script {
 		m_properties.put(name,value);
 	}
 	public Object getProperty(String name){
-		//System.out.println("GroovyBase.getProperty:"+name);
+		if( name == null) return null;
+		System.out.println("GroovyBase.getProperty:"+name);
 		Object o = m_properties.get(name);
 		if( o != null ) return o;
 		return super.getProperty(name);
