@@ -73,6 +73,8 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		String eventName = (String) event.getProperty("eventName");
 		String topic = event.getTopic();
 		info(this, "HandleEvent.onEvent("+topic+","+eventName+")");
+		int ind = topic.lastIndexOf("/");
+		String tenant = topic.substring(ind+1);
 
 		if( !isEventWanted( topic, eventName)){
 			info(this,"Event("+topic+","+eventName+") not wanted");
@@ -89,6 +91,7 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		for( String key : properties.keySet()){
 			info(this, " - " + key + ": " + properties.get(key));
 		}
+		properties.put("tenant",tenant);
 		final Exchange exchange = endpoint.createExchange(ExchangePattern.InOnly);
 		exchange.getIn().setBody(properties);
 		try {

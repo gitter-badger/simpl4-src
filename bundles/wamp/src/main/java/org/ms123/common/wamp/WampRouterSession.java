@@ -73,7 +73,10 @@ class WampRouterSession {
 		m_context.webSocket = ws;
 	}
 	protected String getUserName() {
-		return ThreadContext.getThreadContext().getUserName();
+		if( ThreadContext.getThreadContext() != null){
+			return ThreadContext.getThreadContext().getUserName();
+		}
+		return null;
 	}
 
 	protected void setPermissionService( PermissionService ps){
@@ -120,6 +123,7 @@ class WampRouterSession {
 			return;
 		}
 		if (msg instanceof SubscribeMessage) {
+			info("xxxx.WampRouterSession.subscribe:"+this);
 			SubscribeMessage sub = (WampMessages.SubscribeMessage) msg;
 			debug("    SUBSCRIPING");
 			String err = null;
@@ -201,6 +205,7 @@ class WampRouterSession {
 			context.webSocket.sendStringByFuture(unsubscribed);
 		}
 		if (msg instanceof PublishMessage) {
+			info("xxxx.WampRouterSession.publish:"+this);
 			PublishMessage pub = ((WampMessages.PublishMessage) msg);
 			debug("    PUBLISHING");
 			boolean sendAcknowledge = false;
@@ -435,7 +440,7 @@ class WampRouterSession {
 				debug("<-- ReceiveMessage(" + getMessageName(msg) + "):" + message);
 			}
 			m_context.user = getUserName();
-			info("onWebSocketText.context("+m_context.user+"):"+msg.getClass().getSimpleName());
+			info("xxxx.onWebSocketText.context("+m_context.user+","+m_context.hashCode()+"):"+msg.getClass().getSimpleName());
 			handleMessage(m_context, msg);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -467,10 +472,31 @@ class WampRouterSession {
 		info("permittedUserList:"+permittedUserList);
 		info("permittedRoleList:"+permittedRoleList);
 
+		List<String> candidateList = null;
+		String tenant = null;
+		try{
+			Map m  = m_objectMapper.readValue(pub.argumentsKw.toString(),Map.class);
+			candidateList = (List)m.get("candidateList");
+			tenant = (String)m.get("tenant");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		String ev = WampCodec.encode(new EventMessage(subscription.subscriptionId, publicationId, details, pub.arguments, pub.argumentsKw));
 		for (SessionContext receiver : subscription.subscribers) {
-			info("receiver.user:"+receiver.user);
 			if( m_endpoint != null){
+				info("xxxx.receiver.user("+receiver.user+"):candidateList:"+candidateList+"/tenant:"+tenant);
+				if( tenant != null){
+					if( !tenant.equals( receiver.user)){
+						info("publish:User(" + receiver.user + ") tenant("+tenant+") not equals user("+receiver.user+"):");
+						continue;
+					}
+				}
+				if( candidateList!=null){
+					if( candidateList.indexOf( receiver.user) < 0){
+						info("publish:User(" + receiver.user + ") not in candidateList:"+candidateList);
+						continue;
+					}
+				}
 				List<String> userRoleList = getUserRoles( receiver.user);
 				if (!isPermitted(receiver.user, userRoleList, permittedUserList, permittedRoleList)) {
 					info("publish:User(" + receiver.user + ") has no permission");

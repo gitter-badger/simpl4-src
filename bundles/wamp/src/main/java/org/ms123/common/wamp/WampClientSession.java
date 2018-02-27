@@ -160,6 +160,7 @@ public class WampClientSession {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		this.scheduler = Schedulers.from(executor);
 		m_wampRouterSession = new WampRouterSession(ws, realms);
+		info("xxxx.WampClientEndpoint:"+m_wampRouterSession);
 		m_wampRouterSession.setEndpoint(endpoint);
 		ws.setWampRouterSession(m_wampRouterSession);
 		executor = Executors.newSingleThreadExecutor();

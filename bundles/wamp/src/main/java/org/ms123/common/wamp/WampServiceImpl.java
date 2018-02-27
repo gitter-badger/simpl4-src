@@ -298,7 +298,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 			String namespace = m_params.get("namespace");
 			String routesName = m_params.get("routes");
 			m_wampRouterSession = new WampRouterSession(this, getRealms());
-			debug("WampRouterWebSocket.WampRouterSession:" + m_wampRouterSession);
+			debug("xxxx.WampRouterWebSocket.WampRouterSession:" + m_wampRouterSession);
 			this.threadContext = ThreadContext.getThreadContext();
 			shiroResources = org.apache.shiro.util.ThreadContext.getResources();
 		}
