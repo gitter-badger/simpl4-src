@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.wamp.camel.WampClientEndpoint;
+import org.ms123.common.camel.api.GroovyExpression;
 
 
 /**
@@ -466,42 +467,51 @@ class WampRouterSession {
 		}
 		List<String> permittedUserList=null;
 		List<String> permittedRoleList=null;
+		String tenantExcludeExpr = null;
+		String excludeExpr = null;
 		if( m_endpoint != null){
 			permittedUserList=m_endpoint.getPermittedUsers();
 			permittedRoleList=m_endpoint.getPermittedRoles();
+			tenantExcludeExpr=m_endpoint.getTenantExcludeExpr();
+			excludeExpr=m_endpoint.getExcludeExpr();
 		}
-		info("permittedUserList:"+permittedUserList);
-		info("permittedRoleList:"+permittedRoleList);
+		debug("permittedUserList:"+permittedUserList);
+		debug("permittedRoleList:"+permittedRoleList);
+		debug("tenantExcludeExpr:"+tenantExcludeExpr);
+		debug("excludeExpr:"+excludeExpr);
 
-		List<String> candidateList = null;
-		String tenant = null;
+		Map<String,Object> varMap = null;
 		try{
-			Map<String,Object> m  = m_objectMapper.readValue(pub.argumentsKw.toString(),Map.class);
-			candidateList = (List)m.get("candidateList");
-			tenant = (String)m.get("tenant");
+			varMap  = m_objectMapper.readValue(pub.argumentsKw.toString(),Map.class);
+			info("varMap:");
+			for( String key : varMap.keySet()){
+				info(" - " + key + ": " + varMap.get(key));
+			}
 		}catch(Exception e){
-			error("publish.no tenant/candidateList:",e);
+			error("Get payload as varMap",e);
 			e.printStackTrace();
 		}
 		String ev = WampCodec.encode(new EventMessage(subscription.subscriptionId, publicationId, details, pub.arguments, pub.argumentsKw));
+		userRolesCache.clear();
 		for (SessionContext receiver : subscription.subscribers) {
 			if( m_endpoint != null){
-				info("receiver.user("+receiver.user+"):candidateList:"+candidateList+"/tenant:"+tenant);
-				if( tenant != null){
-					if( !tenant.equals( receiver.user)){
-						info("publish:User(" + receiver.user + ") tenant("+tenant+") not equals user("+receiver.user+"):");
+				varMap.put("userName",receiver.user);
+				info("publish.userName("+receiver.user+")");
+				if( !isEmpty(tenantExcludeExpr)){
+					if( GroovyExpression.evaluate( tenantExcludeExpr, varMap,m_endpoint.getCamelContext(),Boolean.class )){
+						info(" - tenantExcludeExpr("+tenantExcludeExpr+") evaluates to true");
 						continue;
 					}
 				}
-				if( candidateList!=null){
-					if( candidateList.indexOf( receiver.user) < 0){
-						info("publish:User(" + receiver.user + ") not in candidateList:"+candidateList);
+				if(!isEmpty(excludeExpr)){
+					if( GroovyExpression.evaluate( excludeExpr, varMap,m_endpoint.getCamelContext(),Boolean.class )){
+						info(" - excludeExpr("+excludeExpr+") evaluates to true");
 						continue;
 					}
 				}
 				List<String> userRoleList = getUserRoles( receiver.user);
 				if (!isPermitted(receiver.user, userRoleList, permittedUserList, permittedRoleList)) {
-					info("publish:User(" + receiver.user + ") has no permission");
+					info(" - User(" + receiver.user + ") has no permission");
 					continue;
 				}
 			}
@@ -552,14 +562,20 @@ class WampRouterSession {
 		}
 		return false;
 	}
-	protected List<String> getUserRoles(String userName) {
-		List<String> userRoleList = null;
+	private Map<String,List<String>> userRolesCache= new HashMap<String,List<String>>();
+	protected synchronized List<String> getUserRoles(String userName) {
+		List<String> userRoleList = userRolesCache.get( userName);
+		if( userRoleList != null) return userRoleList;
 		try {
 			userRoleList = this.m_permissionService.getUserRoles(userName);
 		} catch (Exception e) {
 			userRoleList = new ArrayList<>();
 		}
+		userRolesCache.put( userName, userRoleList);
 		return userRoleList;
+	}
+	private boolean isEmpty(String s) {
+		return (s == null || "".equals(s.trim()));
 	}
 
 	protected static void error(String msg, Throwable t) {

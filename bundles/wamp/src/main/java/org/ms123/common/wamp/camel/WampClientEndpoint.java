@@ -64,6 +64,8 @@ public class WampClientEndpoint extends DefaultEndpoint {
 	private String startableGroups;
 	private String startableUsers;
 	private String publish;
+	private String tenantExcludeExpr;
+	private String excludeExpr;
 	private String rpcReturn;
 	private String rpcParameter;
 	private String publishHeaders;
@@ -111,6 +113,20 @@ public class WampClientEndpoint extends DefaultEndpoint {
 	public void setProcedure(String procedure) {
 		this.procedure = procedure;
 	}
+
+	public String getTenantExcludeExpr() {
+		return this.tenantExcludeExpr;
+	}
+	public void setTenantExcludeExpr(String e) {
+		this.tenantExcludeExpr = e;
+	}
+	public String getExcludeExpr() {
+		return this.excludeExpr;
+	}
+	public void setExcludeExpr(String e) {
+		this.excludeExpr = e;
+	}
+
 	public String getTopic2() {
 		return this.topic2;
 	}
