@@ -160,6 +160,7 @@ public class WampClientSession {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		this.scheduler = Schedulers.from(executor);
 		m_wampRouterSession = new WampRouterSession(ws, realms);
+		m_wampRouterSession.setEndpoint(endpoint);
 		ws.setWampRouterSession(m_wampRouterSession);
 		executor = Executors.newSingleThreadExecutor();
 /* $if version >= 1.8 $ */
@@ -235,10 +236,6 @@ public class WampClientSession {
 			if (flags == PublishFlags.DontExcludeMe) {
 				options.put("exclude_me", false);
 			}
-			JsonNode node = m_objectMapper.valueToTree(this.endpoint.getPermittedUsers());
-			options.put("permittedUserList", node);
-			node = m_objectMapper.valueToTree(this.endpoint.getPermittedRoles());
-			options.put("permittedRoleList", node);
 			final WampMessages.PublishMessage msg = new WampMessages.PublishMessage(requestId, options, topic, arguments, argumentsKw);
 			requestMap.put(requestId, new RequestMapEntry(WampMessages.PublishMessage.ID, resultSubject));
 			WampClientSession.this.webSocket.onWebSocketText(WampCodec.encode(msg));

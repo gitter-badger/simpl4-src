@@ -37,6 +37,7 @@ import static org.ms123.common.wamp.WampRouterSession.State.*;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.permission.api.PermissionService;
+import org.ms123.common.wamp.camel.WampClientEndpoint;
 
 
 /**
@@ -53,6 +54,7 @@ class WampRouterSession {
 	private Map<String, Realm> m_realms;
 	private State state = DISCONNECTED;
 	private PermissionService m_permissionService;
+	private WampClientEndpoint m_endpoint;
 
 	protected static class SessionContext {
 		long sessionId;
@@ -76,6 +78,9 @@ class WampRouterSession {
 
 	protected void setPermissionService( PermissionService ps){
 		m_permissionService = ps;
+	}
+	protected void setEndpoint( WampClientEndpoint ep){
+		m_endpoint = ep;
 	}
 
 	private void handleMessage(SessionContext context, WampMessage msg) {
@@ -455,24 +460,22 @@ class WampRouterSession {
 		}
 		List<String> permittedUserList=null;
 		List<String> permittedRoleList=null;
-		try{
-			String node = pub.options.get("permittedUserList").toString();
-			permittedUserList = m_objectMapper.readValue(node, TypeFactory.defaultInstance().constructCollectionType(List.class, String.class));
-			node = pub.options.get("permittedRoleList").toString();
-			permittedRoleList = m_objectMapper.readValue(node, TypeFactory.defaultInstance().constructCollectionType(List.class, String.class));
-			info("permittedUserList:"+permittedUserList);
-			info("permittedRoleList:"+permittedRoleList);
-		}catch(Exception e){
-			e.printStackTrace();
+		if( m_endpoint != null){
+			permittedUserList=m_endpoint.getPermittedUsers();
+			permittedRoleList=m_endpoint.getPermittedRoles();
 		}
+		info("permittedUserList:"+permittedUserList);
+		info("permittedRoleList:"+permittedRoleList);
 
 		String ev = WampCodec.encode(new EventMessage(subscription.subscriptionId, publicationId, details, pub.arguments, pub.argumentsKw));
 		for (SessionContext receiver : subscription.subscribers) {
 			info("receiver.user:"+receiver.user);
-			List<String> userRoleList = getUserRoles( receiver.user);
-			if (!isPermitted(receiver.user, userRoleList, permittedUserList, permittedRoleList)) {
-				info("publish:User(" + receiver.user + ") has no permission");
-				continue;
+			if( m_endpoint != null){
+				List<String> userRoleList = getUserRoles( receiver.user);
+				if (!isPermitted(receiver.user, userRoleList, permittedUserList, permittedRoleList)) {
+					info("publish:User(" + receiver.user + ") has no permission");
+					continue;
+				}
 			}
 			if (receiver == publisher) {
 				boolean skipPublisher = true;
