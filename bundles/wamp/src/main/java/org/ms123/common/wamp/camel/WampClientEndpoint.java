@@ -97,7 +97,7 @@ public class WampClientEndpoint extends DefaultEndpoint {
 	}
 
 	public WampClientSession createWampClientSession(String realm) {
-		return WampServiceImpl.createWampClientSession(realm);
+		return WampServiceImpl.createWampClientSession(realm,this);
 	}
 
 	public BundleContext getBundleContext() {

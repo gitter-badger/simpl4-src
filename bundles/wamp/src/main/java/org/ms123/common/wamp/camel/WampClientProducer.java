@@ -39,8 +39,6 @@ import org.apache.camel.util.MessageHelper;
 import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.ms123.common.camel.api.ExchangeUtils;
-import org.ms123.common.permission.api.PermissionService;
-import org.ms123.common.system.thread.ThreadContext;
 import org.ms123.common.wamp.camel.WampClientConstants.*;
 import org.ms123.common.wamp.WampClientSession;
 import org.osgi.service.event.Event;
@@ -54,7 +52,6 @@ import static org.ms123.common.wamp.camel.WampClientConstants.*;
 @SuppressWarnings("unchecked")
 public class WampClientProducer extends DefaultAsyncProducer {
 
-	private PermissionService permissionService;
 	private WampClientSession clientSession;
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -69,24 +66,10 @@ public class WampClientProducer extends DefaultAsyncProducer {
 
 	@Override
 	public boolean process(Exchange exchange, AsyncCallback callback) {
-		if (this.permissionService == null) {
-			this.permissionService = getByType(exchange.getContext(), PermissionService.class);
-		}
 		String namespace = getEndpoint().getCamelContext().getName().split("/")[0];
 		Map<String, Object> vars = getCamelVariablenMap(exchange);
 		String topic = trimToEmpty(eval(getEndpoint().getTopic(), vars));
 		info(this,"process.topic:" + topic);
-		List<String> permittedRoleList = getEndpoint().getPermittedRoles();
-		List<String> permittedUserList = getEndpoint().getPermittedUsers();
-		String userName = getUserName();
-		List<String> userRoleList = getUserRoles(userName);
-		debug(this,"Producer.prepare.userName:" + userName);
-		debug(this,"Producer.prepare.userRoleList:" + userRoleList);
-		debug(this,"Producer.prepare.permittedRoleList:" + permittedRoleList);
-		debug(this,"Producer.prepare.permittedUserList:" + permittedUserList);
-		if (!isPermitted(userName, userRoleList, permittedUserList, permittedRoleList)) {
-			throw new RuntimeException(PERMISSION_DENIED + ":User(" + userName + ") has no permission");
-		}
 		this.clientSession.publish(topic,null,buildResponse(getPublishData(exchange)));
 		return true;
 	}
@@ -215,34 +198,7 @@ public class WampClientProducer extends DefaultAsyncProducer {
 			return newString;
 		}
 	}
-	protected String getUserName() {
-		return ThreadContext.getThreadContext().getUserName();
-	}
 
-	protected boolean isPermitted(String userName, List<String> userRoleList, List<String> permittedUserList, List<String> permittedRoleList) {
-		if (permittedUserList.contains(userName)) {
-			return true;
-		}
-		for (String userRole : userRoleList) {
-			if (permittedRoleList.contains(userRole)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	protected List<String> getUserRoles(String userName) {
-		List<String> userRoleList = null;
-		try {
-			userRoleList = this.permissionService.getUserRoles(userName);
-		} catch (Exception e) {
-			userRoleList = new ArrayList<>();
-		}
-		return userRoleList;
-	}
-	private <T> T getByType(CamelContext ctx, Class<T> kls) {
-		return kls.cast(ctx.getRegistry().lookupByName(kls.getName()));
-	}
 	private Map getCamelVariablenMap(Exchange exchange) {
 		Map camelMap = new HashMap();
 		Map exVars = ExchangeUtils.prepareVariables(exchange, true, true, true);

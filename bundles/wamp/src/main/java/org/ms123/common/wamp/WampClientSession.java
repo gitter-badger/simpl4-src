@@ -51,6 +51,7 @@ import rx.subjects.BehaviorSubject;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.subscriptions.Subscriptions;
+import org.ms123.common.wamp.camel.WampClientEndpoint;
 
 /**
  *
@@ -142,8 +143,9 @@ public class WampClientSession {
 	private HashMap<Long, RegisteredProceduresMapEntry> registeredProceduresById = new HashMap<>();
 
 	protected WampClientWebSocket webSocket;
+	protected WampClientEndpoint endpoint;
 
-	protected WampClientSession(WampClientWebSocket ws, String realmName, Map<String, Realm> realms) {
+	protected WampClientSession(WampClientWebSocket ws, WampClientEndpoint endpoint, String realmName, Map<String, Realm> realms) {
 		Set<WampRoles> roles = new HashSet<>();
 		roles.add(WampRoles.Caller);
 		roles.add(WampRoles.Callee);
@@ -154,6 +156,7 @@ public class WampClientSession {
 		subscriptionsByFlags.put(SubscriptionFlags.Wildcard, new HashMap<String, SubscriptionMapEntry>());
 		RealmConfig realmConfig = new RealmConfig(roles, false);
 		this.webSocket = ws;
+		this.endpoint = endpoint;
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		this.scheduler = Schedulers.from(executor);
 		m_wampRouterSession = new WampRouterSession(ws, realms);
@@ -228,11 +231,14 @@ public class WampClientSession {
 			final long requestId = IdGenerator.newLinearId(lastRequestId, requestMap);
 			lastRequestId = requestId;
 
-			ObjectNode options = null;
+			ObjectNode options = objectMapper.createObjectNode();
 			if (flags == PublishFlags.DontExcludeMe) {
-				options = objectMapper.createObjectNode();
 				options.put("exclude_me", false);
 			}
+			JsonNode node = m_objectMapper.valueToTree(this.endpoint.getPermittedUsers());
+			options.put("permittedUserList", node);
+			node = m_objectMapper.valueToTree(this.endpoint.getPermittedRoles());
+			options.put("permittedRoleList", node);
 			final WampMessages.PublishMessage msg = new WampMessages.PublishMessage(requestId, options, topic, arguments, argumentsKw);
 			requestMap.put(requestId, new RequestMapEntry(WampMessages.PublishMessage.ID, resultSubject));
 			WampClientSession.this.webSocket.onWebSocketText(WampCodec.encode(msg));

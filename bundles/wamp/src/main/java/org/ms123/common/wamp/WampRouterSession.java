@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -32,6 +34,10 @@ import org.ms123.common.wamp.WampMessages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.ms123.common.wamp.WampRouterSession.State.*;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.ms123.common.system.thread.ThreadContext;
+import org.ms123.common.permission.api.PermissionService;
+
 
 /**
  *
@@ -46,10 +52,12 @@ class WampRouterSession {
 	private SessionContext m_context = new SessionContext();
 	private Map<String, Realm> m_realms;
 	private State state = DISCONNECTED;
+	private PermissionService m_permissionService;
 
 	protected static class SessionContext {
 		long sessionId;
 		long lastUsedId = IdValidator.MIN_VALID_ID;
+		String user;
 		Realm realm;
 		Set<WampRoles> roles;
 		Map<Long, Procedure> providedProcedures;
@@ -61,6 +69,13 @@ class WampRouterSession {
 	protected WampRouterSession(BaseWebSocket ws, Map<String, Realm> realms) {
 		m_realms = realms;
 		m_context.webSocket = ws;
+	}
+	protected String getUserName() {
+		return ThreadContext.getThreadContext().getUserName();
+	}
+
+	protected void setPermissionService( PermissionService ps){
+		m_permissionService = ps;
 	}
 
 	private void handleMessage(SessionContext context, WampMessage msg) {
@@ -414,6 +429,8 @@ class WampRouterSession {
 			} else {
 				debug("<-- ReceiveMessage(" + getMessageName(msg) + "):" + message);
 			}
+			m_context.user = getUserName();
+			info("onWebSocketText.context("+m_context.user+"):"+msg.getClass().getSimpleName());
 			handleMessage(m_context, msg);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -436,8 +453,27 @@ class WampRouterSession {
 			details = m_objectMapper.createObjectNode();
 			details.put("topic", pub.topic);
 		}
+		List<String> permittedUserList=null;
+		List<String> permittedRoleList=null;
+		try{
+			String node = pub.options.get("permittedUserList").toString();
+			permittedUserList = m_objectMapper.readValue(node, TypeFactory.defaultInstance().constructCollectionType(List.class, String.class));
+			node = pub.options.get("permittedRoleList").toString();
+			permittedRoleList = m_objectMapper.readValue(node, TypeFactory.defaultInstance().constructCollectionType(List.class, String.class));
+			info("permittedUserList:"+permittedUserList);
+			info("permittedRoleList:"+permittedRoleList);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
 		String ev = WampCodec.encode(new EventMessage(subscription.subscriptionId, publicationId, details, pub.arguments, pub.argumentsKw));
 		for (SessionContext receiver : subscription.subscribers) {
+			info("receiver.user:"+receiver.user);
+			List<String> userRoleList = getUserRoles( receiver.user);
+			if (!isPermitted(receiver.user, userRoleList, permittedUserList, permittedRoleList)) {
+				info("publish:User(" + receiver.user + ") has no permission");
+				continue;
+			}
 			if (receiver == publisher) {
 				boolean skipPublisher = true;
 				if (pub.options != null) {
@@ -473,6 +509,26 @@ class WampRouterSession {
 		
 		Set<String> ret = Arrays.stream(a).collect(Collectors.toSet());
 		return ret;
+	}
+	protected boolean isPermitted(String userName, List<String> userRoleList, List<String> permittedUserList, List<String> permittedRoleList) {
+		if (permittedUserList.contains(userName)) {
+			return true;
+		}
+		for (String userRole : userRoleList) {
+			if (permittedRoleList.contains(userRole)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	protected List<String> getUserRoles(String userName) {
+		List<String> userRoleList = null;
+		try {
+			userRoleList = this.m_permissionService.getUserRoles(userName);
+		} catch (Exception e) {
+			userRoleList = new ArrayList<>();
+		}
+		return userRoleList;
 	}
 
 	protected static void debug(String msg) {

@@ -62,6 +62,8 @@ import static org.ms123.common.rpc.JsonRpcServlet.ERROR_FROM_METHOD;
 import static org.ms123.common.rpc.JsonRpcServlet.INTERNAL_SERVER_ERROR;
 import static org.ms123.common.rpc.JsonRpcServlet.PERMISSION_DENIED;
 import org.ms123.common.system.thread.*;
+import org.ms123.common.wamp.camel.WampClientEndpoint;
+import org.ms123.common.permission.api.PermissionService;
 
 /** WampService implementation
  */
@@ -80,6 +82,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 	private WampRouterSession m_localWampRouterSession;
 	private ObjectMapper m_objectMapper = new ObjectMapper();
 	private JsonRpc m_jsonRpc;
+	private static PermissionService permissionService;
 
 	public WampServiceImpl() {
 	}
@@ -222,8 +225,11 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 	}
 
 	public static WampClientSession createWampClientSession(String realm) {
+		return createWampClientSession(realm,null);
+	}
+	public static WampClientSession createWampClientSession(String realm,WampClientEndpoint endpoint) {
 		WampClientWebSocket ws = new WampClientWebSocket();
-		WampClientSession wcs = new WampClientSession(ws, realm, getRealms());
+		WampClientSession wcs = new WampClientSession(ws, endpoint, realm, getRealms());
 		ws.setWampClientSession(wcs);
 		return wcs;
 	}
@@ -241,6 +247,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 
 		public void setWampRouterSession(WampRouterSession wrs) {
 			m_wampRouterSession = wrs;
+			m_wampRouterSession.setPermissionService(permissionService);
 		}
 
 		public void sendStringByFuture(String message) {
@@ -291,7 +298,7 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 			String namespace = m_params.get("namespace");
 			String routesName = m_params.get("routes");
 			m_wampRouterSession = new WampRouterSession(this, getRealms());
-			debug("WampRouterWebSocket.currentThread:" + Thread.currentThread().getName());
+			debug("WampRouterWebSocket.WampRouterSession:" + m_wampRouterSession);
 			this.threadContext = ThreadContext.getThreadContext();
 			shiroResources = org.apache.shiro.util.ThreadContext.getResources();
 		}
@@ -324,6 +331,10 @@ public class WampServiceImpl extends BaseWampServiceImpl implements WampService 
 		public void onWebSocketError(Throwable cause) {
 			m_wampRouterSession.onWebSocketError(cause);
 		}
+	}
+	@Reference(dynamic = true, optional = true)
+	public void setPermissionService(PermissionService permissionService) {
+		this.permissionService = permissionService;
 	}
 }
 
