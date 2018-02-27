@@ -43,6 +43,7 @@ import org.ms123.common.wamp.camel.WampClientEndpoint;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 class WampRouterSession {
 
 	enum State {
@@ -475,16 +476,17 @@ class WampRouterSession {
 		List<String> candidateList = null;
 		String tenant = null;
 		try{
-			Map m  = m_objectMapper.readValue(pub.argumentsKw.toString(),Map.class);
+			Map<String,Object> m  = m_objectMapper.readValue(pub.argumentsKw.toString(),Map.class);
 			candidateList = (List)m.get("candidateList");
 			tenant = (String)m.get("tenant");
 		}catch(Exception e){
+			error("publish.no tenant/candidateList:",e);
 			e.printStackTrace();
 		}
 		String ev = WampCodec.encode(new EventMessage(subscription.subscriptionId, publicationId, details, pub.arguments, pub.argumentsKw));
 		for (SessionContext receiver : subscription.subscribers) {
 			if( m_endpoint != null){
-				info("xxxx.receiver.user("+receiver.user+"):candidateList:"+candidateList+"/tenant:"+tenant);
+				info("receiver.user("+receiver.user+"):candidateList:"+candidateList+"/tenant:"+tenant);
 				if( tenant != null){
 					if( !tenant.equals( receiver.user)){
 						info("publish:User(" + receiver.user + ") tenant("+tenant+") not equals user("+receiver.user+"):");
@@ -560,6 +562,9 @@ class WampRouterSession {
 		return userRoleList;
 	}
 
+	protected static void error(String msg, Throwable t) {
+		m_logger.error(msg,t);
+	}
 	protected static void debug(String msg) {
 		m_logger.debug(msg);
 	}
