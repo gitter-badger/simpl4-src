@@ -38,6 +38,7 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.ms123.common.camel.api.ExchangeUtils;
 import static org.ms123.common.process.listener.Topics.*;
 import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
@@ -80,6 +81,9 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 		info(this,"Event("+topic+","+eventName+") wanted");
 
 		Map<String,Object> properties = getPropertyMap( event );
+		if( !isEventIncluded( properties) &&  isEventExcluded( properties)){
+			return;
+		}
 
 		info(this, "onEvent.properties:");
 		for( String key : properties.keySet()){
@@ -101,10 +105,10 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 
 	@Override
 	protected void doStart() throws Exception {
-		this.tenant = ThreadContext.getThreadContext().getUserName();
+		this.tenant = "*";//ThreadContext.getThreadContext().getUserName();
 		Set<String> topicList = new HashSet<String>();
 		for( String we : this.wantedEvents){
-			info(this,"wantedEvent:"+we);
+			info(this,"wantedEvent("+this.tenant+"):"+we);
 			if (we.startsWith("task_")) {
 				topicList.add( TASK_EVENT_TOPIC + "/" +this.tenant);
 			} else if (we.startsWith("activity_")) {
@@ -148,6 +152,25 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 			}
 		}
 		return false;
+	}
+
+	private boolean isEventIncluded( Map<String,Object> props){
+		String includeExpr = this.endpoint.getIncludeExpr();
+		boolean inc = false;
+		if( !isEmpty(includeExpr)){
+			inc = ExchangeUtils.evaluateExpr(includeExpr, props, this.endpoint.getCamelContext(), boolean.class);
+		}
+		info(this,"isEventIncluded:"+inc);
+		return inc;
+	}
+	private boolean isEventExcluded( Map<String,Object> props){
+		String excludeExpr = this.endpoint.getExcludeExpr();
+		boolean inc = false;
+		if( !isEmpty(excludeExpr)){
+			inc = ExchangeUtils.evaluateExpr(excludeExpr, props, this.endpoint.getCamelContext(), boolean.class);
+		}
+		info(this,"isEventExcluded:"+inc);
+		return inc;
 	}
 
 	private List<String> propertyExcludeList = new ArrayList<>(Arrays.asList("replacedParent", "scopeActivityInstanceId", "eventScope","skipCustomListeners", "processInstanceStartContext", "activityInstanceState", "preserveScope", "completeScope", "skipIoMappings", "scope", "cachedEntityStateRaw", "executingScopeLeafActivity", "listenerIndex","deleteRoot", "sequenceCounter", "replacedByParent", "concurrent", "cachedEntityState", "revision","event.topics","variablesLocal", "hCode", "persistentState", "variableScopeKey", "suspensionState", "variables", "suspended", "deleted", "tenantId", "revisionNext"));

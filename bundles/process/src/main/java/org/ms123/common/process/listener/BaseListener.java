@@ -21,9 +21,16 @@ import java.io.Serializable;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import org.camunda.bpm.engine.task.IdentityLink;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.delegate.DelegateTask;
+import org.camunda.bpm.engine.delegate.ExecutionListener;
+import org.camunda.bpm.engine.delegate.TaskListener;
 
 import static com.jcabi.log.Logger.info;
 
@@ -64,6 +71,28 @@ public class BaseListener  {
 		return (type.isPrimitive() && type != void.class) || type == Object.class || type == Double.class || type == Float.class || type == Long.class || type == Integer.class || type == Short.class || type == Character.class || type == Byte.class || type == Boolean.class || type == String.class || type == java.util.Date.class || type == byte[].class;
 	}
 
+	protected List<String> getCandidates(DelegateTask task){
+		List<String> candidates = new ArrayList<String>();
+		Set<IdentityLink> iLinks = task.getCandidates();
+		for( IdentityLink il : iLinks ){
+			if( il.getUserId() != null){
+				candidates.add( il.getUserId());
+			}else if( il.getGroupId() != null){
+				String[] g = il.getGroupId().split("\\.");
+				if( g.length == 1){
+					candidates.add( g[0] );
+				}else{
+					candidates.add( g[1]);
+				}
+			}
+		}
+		String assignee = task.getAssignee();
+		if( !isEmpty(assignee)){
+			candidates.add( assignee );
+		}
+		return candidates;
+	}
+
 	private void initializeFormKey(Object o, Class clazz){
 		try{
 			Method method = clazz.getMethod("initializeFormKey");
@@ -98,6 +127,9 @@ public class BaseListener  {
 		char c[] = s.toCharArray();
 		c[0] = Character.toLowerCase(c[0]);
 		return new String(c);
+	}
+	private boolean isEmpty(String s) {
+		return (s == null || "".equals(s.trim()));
 	}
 
 }

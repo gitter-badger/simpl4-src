@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import org.apache.camel.Exchange;
+import org.apache.camel.CamelContext;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.apache.camel.util.ObjectHelper;
 import flexjson.*;
@@ -138,6 +139,9 @@ public class ExchangeUtils {
 
 	public static <T> T evaluateExpr(String expr, Exchange exchange, Class<T> type) {
 		return GroovyExpression.evaluate(expr, exchange, type);
+	}
+	public static <T> T evaluateExpr(String expr, Map<String,Object> varMap, CamelContext context,Class<T> type) {
+		return GroovyExpression.evaluate(expr, varMap, context,type);
 	}
 
 	public static <T> T getParameter(String expr, Exchange exchange, Class<T> type) {

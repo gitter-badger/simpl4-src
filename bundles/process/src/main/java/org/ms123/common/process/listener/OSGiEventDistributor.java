@@ -2,6 +2,7 @@ package org.ms123.common.process.listener;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -43,14 +44,18 @@ public class OSGiEventDistributor extends BaseListener implements TaskListener, 
 	private Event createEvent(DelegateTask delegateTask) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		fillDictionary(delegateTask, properties, true);
-		info(this, "OSGiEventDistributor.createTaskEvent:" + properties);
+		List<String> c = getCandidates(delegateTask);
+		properties.put( "candidates", "[" + String.join("|", c)+ "]" );
+		properties.put("candidateList",getCandidates(delegateTask));
+		properties.put("assignee",delegateTask.getAssignee());
+		info(this, "OSGiEventDistributor.createTaskEvent("+this.tenant+"):" + properties);
 		return new Event(Topics.TASK_EVENT_TOPIC + "/" + this.tenant, properties);
 	}
 
 	private Event createEvent(DelegateExecution execution) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		fillDictionary(execution, properties, false);
-		info(this, "OSGiEventDistributor.createExecutionEvent:" + properties);
+		info(this, "OSGiEventDistributor.createExecutionEvent("+this.tenant+"):" + properties);
 		return new Event(Topics.EXECUTION_EVENT_TOPIC + "/" + this.tenant, properties);
 	}
 

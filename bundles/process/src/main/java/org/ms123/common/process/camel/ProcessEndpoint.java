@@ -48,6 +48,8 @@ public class ProcessEndpoint extends DefaultEndpoint implements ProcessConstants
 	private Map<String, String> taskCriteria = new HashMap<String, String>();
 	private String namespace;
 	private String events;
+	private String includeExpr;
+	private String excludeExpr;
 	private String signalName;
 	private boolean withMetadata;
 	private boolean isSendSignal;
@@ -137,6 +139,23 @@ public class ProcessEndpoint extends DefaultEndpoint implements ProcessConstants
 	public String getEvents() {
 		return this.events;
 	}
+
+	public void setIncludeExpr(String data) {
+		this.includeExpr = data;
+	}
+
+	public String getIncludeExpr() {
+		return this.includeExpr;
+	}
+
+	public void setExcludeExpr(String data) {
+		this.excludeExpr = data;
+	}
+
+	public String getExcludeExpr() {
+		return this.excludeExpr;
+	}
+
 	public void setCheckAssignments(boolean data) {
 		this.isCheckAssignments = data;
 	}

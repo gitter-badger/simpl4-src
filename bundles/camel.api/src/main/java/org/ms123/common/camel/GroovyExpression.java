@@ -28,6 +28,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.language.groovy.GroovyShellFactory;
 import org.apache.camel.Message;
+import org.apache.camel.CamelContext;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.support.ExpressionSupport;
 import org.apache.camel.util.ExchangeHelper;
@@ -89,6 +90,28 @@ public class GroovyExpression {
 		Object value = script.run();
 
 		return exchange.getContext().getTypeConverter().convertTo(type, value);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T evaluate(String expr, Map<String,Object> varMap, CamelContext context,Class<T> type) {
+		Class<Script> scriptClass = getScriptFromCache(expr);
+		if( scriptClass == null){
+			ClassLoader cl = context.getApplicationContextClassLoader();
+			GroovyShell shell = cl != null ? new GroovyShell(cl) : new GroovyShell();
+			scriptClass = shell.getClassLoader().parseClass(expr);
+			addScriptToCache(expr, scriptClass);
+		}
+		Script script = null;
+		try{
+			script = scriptClass.newInstance();
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeCamelException(e);
+		}
+		script.setBinding(new Binding(varMap));
+		Object value = script.run();
+
+		return context.getTypeConverter().convertTo(type, value);
 	}
 
 	@SuppressWarnings("unchecked")
