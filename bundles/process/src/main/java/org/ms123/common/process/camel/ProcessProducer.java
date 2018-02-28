@@ -348,6 +348,20 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				taskMap.put("formResourceKey", taskFormData.getFormKey());
 			}
 			taskMap.put("processName", pd.getName());
+			String variableNames = getString(exchange, "variableNames", this.variableNames);
+			if( !isEmpty(variableNames)){
+				List<String> nameList = Arrays.asList(variableNames.split(","));
+				List<HistoricVariableInstance> variableList = this.getHistoryService().createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list();
+				Map<String,Object> varsSelected = new HashMap();
+				for( HistoricVariableInstance vi : variableList){
+					String name = vi.getName();
+					Object value = vi.getValue();
+					if( nameList.indexOf( name ) > -1){
+						varsSelected.put( name, value);
+					}
+				}
+				taskMap.put("variables", varsSelected);
+			}
 			ret.add(taskMap);
 		}
 		//exchange.getIn().setBody(ret);

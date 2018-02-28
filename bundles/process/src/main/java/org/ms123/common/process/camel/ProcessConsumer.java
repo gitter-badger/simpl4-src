@@ -44,6 +44,10 @@ import static com.jcabi.log.Logger.info;
 import static com.jcabi.log.Logger.debug;
 import static com.jcabi.log.Logger.error;
 import static com.jcabi.log.Logger.warn;
+import org.ms123.common.process.api.ProcessService;
+import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
+import org.camunda.bpm.engine.history.HistoricVariableInstance;
 
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class ProcessConsumer extends DefaultConsumer implements EventHandler {
@@ -51,13 +55,15 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 	private JSONDeserializer ds = new JSONDeserializer();
 	private JSONSerializer ser = new JSONSerializer();
 	private ProcessEndpoint endpoint;
+	private ProcessService processService;
 	private ServiceRegistration serviceRegistration;
 	private String tenant;
 	private String wantedEvents[];
 
-	public ProcessConsumer(ProcessEndpoint endpoint, Processor processor) {
+	public ProcessConsumer(ProcessEndpoint endpoint, Processor processor,ProcessService ps) {
 		super(endpoint, processor);
 		this.endpoint = endpoint;
+		this.processService = ps;
 		String _events = this.endpoint.getEvents();
 		if (_events != null && _events.trim().length() > 0) {
 			info(this, "_Events:" + _events);
@@ -92,6 +98,23 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 			info(this, " - " + key + ": " + properties.get(key));
 		}
 		properties.put("tenant",tenant);
+		HistoryService hs = getHistoryService( tenant );
+		String variableNames = this.endpoint.getVariableNames();
+		info(this, "variableNames:"+variableNames);
+		if( !isEmpty(variableNames)){
+			List<String> nameList = Arrays.asList(variableNames.split(","));
+			List<HistoricVariableInstance> variableList = hs.createHistoricVariableInstanceQuery().processInstanceId((String)properties.get("processInstanceId")).list();
+			info(this, "variableList:"+variableList);
+			Map<String,Object> varsSelected = new HashMap();
+			for( HistoricVariableInstance vi : variableList){
+				String name = vi.getName();
+				Object value = vi.getValue();
+				if( nameList.indexOf( name ) > -1){
+					varsSelected.put( name, value);
+				}
+			}
+			properties.put("variables", varsSelected);
+		}
 		final Exchange exchange = endpoint.createExchange(ExchangePattern.InOnly);
 		exchange.getIn().setBody(properties);
 		try {
@@ -206,6 +229,9 @@ public class ProcessConsumer extends DefaultConsumer implements EventHandler {
 			lastIndexDot = s.length();
 		}
 		return s.substring(lastIndexDot + 1, lastIndexAt);
+	}
+	private HistoryService getHistoryService(String userName){
+		return this.processService.getProcessEngine(userName).getHistoryService();
 	}
 }
 

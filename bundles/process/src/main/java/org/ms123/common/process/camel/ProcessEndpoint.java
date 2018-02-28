@@ -84,7 +84,7 @@ public class ProcessEndpoint extends DefaultEndpoint implements ProcessConstants
 
 	public Consumer createConsumer(Processor processor) throws Exception {
 		info(this, "ProcessEndpoint.createConsumer");
-		ProcessConsumer consumer = new ProcessConsumer(this, processor);
+		ProcessConsumer consumer = new ProcessConsumer(this, processor,processService);
 		configureConsumer(consumer);
 		return consumer;
 	}
