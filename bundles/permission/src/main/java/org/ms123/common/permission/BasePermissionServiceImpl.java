@@ -322,6 +322,7 @@ class BasePermissionServiceImpl implements Constants {
 	}
 	protected List<String> lookForAdditionalRoles(String namespace, String subid){
 		String service = (String)m_namespaceService.getBranding().get(SUB_LOGIN);
+		if( service==null) return null;
 		service = getFqServiceName( namespace, service );
 		Map<String, String> params = new HashMap<String,String>();
 		params.put(SUB_ID, subid );
