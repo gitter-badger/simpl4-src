@@ -118,10 +118,15 @@ class BaseProcessServiceImpl {
 	}
 
 	public synchronized ProcessEngine getProcessEngine() {
+		return getProcessEngine(null);
+	}
+	public synchronized ProcessEngine getProcessEngine(String username) {
 		if (isJdbc) {
 			return getProcessengineJDBC();
 		}
-		String username = ThreadContext.getThreadContext().getUserName();
+		if( username == null){
+			username = ThreadContext.getThreadContext().getUserName();
+		}
 		ProcessEngine pe = this.userProcessEngineMap.get(username);
 		info(this,"BaseProcessServiceImpl.getProcessEngine("+username+")");
 		if (pe != null) {

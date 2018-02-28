@@ -36,6 +36,7 @@ public interface ProcessService {
 
 	public ProcessEngine getRootProcessEngine();
 	public ProcessEngine getProcessEngine();
+	public ProcessEngine getProcessEngine(String userName);
 	public FormService getFormService();
 	public RegistryService getRegistryService();
 	public GitService getGitService();
