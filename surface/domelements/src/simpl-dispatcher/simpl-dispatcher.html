@@ -165,6 +165,9 @@
 						hash = base + x;
 						x++;
 					}
+					if( node.uri == "noop"){
+						node.uri = "";
+					}
 					if ( x > 0 && node.uri ) {
 						node.hash = hash;
 						var hasQuery = node.uri.indexOf( "?" ) >= 0;
