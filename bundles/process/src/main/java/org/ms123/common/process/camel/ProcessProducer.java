@@ -305,22 +305,29 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			String  val = entry.getValue();
 			info(this,"doQueryTasks("+key+"):"+val);
 
-			List<String> tokens = splitByCommasNotInQuotes( val);
-			if( tokens.size() == 1){
-  			Method m = getMethod(methods,key,1);
+			if( isEmpty(val)){
+				Method m = getMethod(methods,key,0);
 				if( m != null){
-					Object v = eval( trimToEmpty(val), exchange, m.getParameterTypes()[0] );
-					setQueryValue( taskQuery, m, v);	
+					setQueryValue( taskQuery, m, null);	
 				}
 			}else{
-  			Method m = getMethod(methods,key,2);
-				if( m != null){
-					setQueryValue(taskQuery, m, trimToEmpty(tokens.get(0)), eval(tokens.get(1),exchange,m.getParameterTypes()[1]));
+				List<String> tokens = splitByCommasNotInQuotes( val);
+				if( tokens.size() == 1){
+					Method m = getMethod(methods,key,1);
+					if( m != null){
+						Object v = eval( trimToEmpty(val), exchange, m.getParameterTypes()[0] );
+						setQueryValue( taskQuery, m, v);	
+					}
+				}else{
+					Method m = getMethod(methods,key,2);
+					if( m != null){
+						setQueryValue(taskQuery, m, trimToEmpty(tokens.get(0)), eval(tokens.get(1),exchange,m.getParameterTypes()[1]));
+					}
 				}
 			}
 		}
 		List<Task> taskList = taskQuery.list();
-		info(this,"taskList:");
+		info(this,"taskList:"+taskList);
 		List<Map> ret = new ArrayList<Map>();
 		for( Task task : taskList){
 			ProcessDefinition pd = this.repositoryService.getProcessDefinition(task.getProcessDefinitionId());
@@ -379,9 +386,15 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 	}
 	private void setQueryValue( Object o, Method m, Object val ){
 		try {
-			info(this,"setQueryValue("+m.getName()+"):"+val);
-			Object[] args = new Object[1];
-			args[0] = val;
+			Object[] args = null;
+			if( val == null){
+				info(this,"setQueryValue("+m.getName()+")");
+				args = new Object[0];
+			}else{
+				info(this,"setQueryValue("+m.getName()+"):"+val);
+				args = new Object[1];
+				args[0] = val;
+			}
 			m.invoke(o, args);
 		} catch (Exception e) {
 			error(this, "setQueryValue("+m.getName()+","+val+").error:%[exception]s",e);
