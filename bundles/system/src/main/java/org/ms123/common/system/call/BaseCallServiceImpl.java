@@ -298,19 +298,23 @@ abstract class BaseCallServiceImpl {
 			return null;
 		}
 		if (!type.isAssignableFrom(value.getClass())) {
+			boolean isDate =false;
 			if (value instanceof String && type.isAssignableFrom(java.util.Date.class)) {
 				info(this, "isostringToDate(" + value);
 				Date v = toDate((String) value);
 				if (v != null) {
 					value = v;
+					isDate=true;
 					info(this, "newValue:" + value);
 				}
 			}
-			Class clazz = null;
-			if (value != null) {
-				clazz = value.getClass();
+			if( isDate==false){
+				Class clazz = null;
+				if (value != null) {
+					clazz = value.getClass();
+				}
+				throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method(" + methodName + "):" + name + ") wrong type:" + clazz + " needed:" + type);
 			}
-			throw new RpcException(JsonRpcServlet.ERROR_FROM_METHOD, JsonRpcServlet.INTERNAL_SERVER_ERROR, "Method(" + methodName + "):" + name + ") wrong type:" + clazz + " needed:" + type);
 		}
 		return value;
 	}
