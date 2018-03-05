@@ -557,6 +557,18 @@ abstract class JsonConverterImpl implements JsonConverter{
 		}
 		return orient;
 	}
+	def getDataLayerJdo(){
+		def service=null;
+		def srList	=	bundleContext.getServiceReferences("org.ms123.common.data.api.DataLayer", "(kind=jdo)");
+		def jdo = null;
+		if (srList != null && srList.size()>=1) {
+			jdo = bundleContext.getService(srList.iterator().next());
+		}
+		if (jdo == null) {
+			throw new RuntimeException("JsonConverter.Cannot resolve service:org.ms123.common.camel.api.DataLayer(JDO)");
+		}
+		return jdo;
+	}
 }
 
 class OnExceptionJsonConverter extends JsonConverterImpl{
@@ -1193,6 +1205,9 @@ class GroovyProcessor implements Processor {
 		}
 		if( main.fieldExists(this.scriptClazz,"dataLayer")){
 			main.injectField( this.scriptClazz, script, "dataLayer", main.getDataLayer())
+		}
+		if( main.fieldExists(this.scriptClazz,"dataLayerJdo")){
+			main.injectField( this.scriptClazz, script, "dataLayerJdo", main.getDataLayerJdo())
 		}
 		if( main.fieldExists(this.scriptClazz,"messageService")){
 			main.injectField( this.scriptClazz, script, "messageService", main.getService( "org.ms123.common.message.MessageService"))
