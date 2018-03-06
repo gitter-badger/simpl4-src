@@ -586,7 +586,7 @@ class WampRouterSession {
 	}
 
 	protected static void info(String msg) {
-		m_logger.info(msg);
+		m_logger.debug(msg);
 	}
 
 	private static final Logger m_logger = LoggerFactory.getLogger(WampRouterSession.class);

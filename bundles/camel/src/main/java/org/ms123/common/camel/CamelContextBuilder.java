@@ -35,6 +35,7 @@ import org.apache.camel.management.event.ExchangeSendingEvent;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.processor.interceptor.Tracer;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.spring.spi.SpringTransactionPolicy;
 import org.apache.camel.support.EventNotifierSupport;
@@ -175,6 +176,7 @@ public class CamelContextBuilder {
 		formatter.setShowNode(true);
 		tracer.setFormatter(formatter);
 		tracer.setTraceExceptions(true);
+		tracer.setLogLevel(LoggingLevel.DEBUG);
 		tracer.setTraceHandler(new TraceEventHandler(true));
 		if (trace) {
 			camelContext.addInterceptStrategy(tracer);

@@ -69,7 +69,7 @@ public class WampClientProducer extends DefaultAsyncProducer {
 		String namespace = getEndpoint().getCamelContext().getName().split("/")[0];
 		Map<String, Object> vars = getCamelVariablenMap(exchange);
 		String topic = trimToEmpty(eval(getEndpoint().getTopic(), vars));
-		info(this,"process.topic:" + topic);
+		debug(this,"process.topic:" + topic);
 		this.clientSession.publish(topic,null,buildResponse(getPublishData(exchange)));
 		return true;
 	}
@@ -149,7 +149,7 @@ public class WampClientProducer extends DefaultAsyncProducer {
 	}
 
 	private String eval2(String expr, Map<String,Object> vars) {
-		info(this, "--> eval_in:" + expr+",vars:"+vars);
+		debug(this, "--> eval_in:" + expr+",vars:"+vars);
 		Object result = expr;
 		Script script = scriptCache.get(expr);
 		if( script == null){
@@ -161,9 +161,9 @@ public class WampClientProducer extends DefaultAsyncProducer {
 			result = script.run();
 		}catch(Exception e){
 			String error = org.ms123.common.utils.Utils.formatGroovyException(e, expr);
-			info(this, "ActivitiProducer.eval:"+error);
+			debug(this, "ActivitiProducer.eval:"+error);
 		}
-		info(this, "<-- eval_out:" + result);
+		debug(this, "<-- eval_out:" + result);
 		return String.valueOf(result);
 	}
 

@@ -78,7 +78,7 @@ class BaseProcessServiceImpl {
 	private boolean isJdbc = false;
 
 	public synchronized ProcessEngine getRootProcessEngine() {
-		info(this,"BaseProcessServiceImpl.getRootProcessEngine");
+		debug(this,"BaseProcessServiceImpl.getRootProcessEngine");
 		if (isJdbc) {
 			return getProcessengineJDBC();
 		}
@@ -128,7 +128,7 @@ class BaseProcessServiceImpl {
 			username = ThreadContext.getThreadContext().getUserName();
 		}
 		ProcessEngine pe = this.userProcessEngineMap.get(username);
-		info(this,"BaseProcessServiceImpl.getProcessEngine("+username+")");
+		debug(this,"BaseProcessServiceImpl.getProcessEngine("+username+")");
 		if (pe != null) {
 			return pe;
 		}
@@ -190,7 +190,7 @@ class BaseProcessServiceImpl {
 	}
 
 	public Component getProcessComponent() {
-		info(this, "BaseProcessServiceImpl.getProcessComponent");
+		debug(this, "BaseProcessServiceImpl.getProcessComponent");
 		return new org.ms123.common.process.camel.ProcessComponent();
 	}
 
