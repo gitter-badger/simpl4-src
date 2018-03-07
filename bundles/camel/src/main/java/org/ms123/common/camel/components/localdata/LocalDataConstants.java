@@ -29,6 +29,7 @@ public interface LocalDataConstants {
 
 	public static final String ENTITY_TYPE = "entityType";
 	public static final String NAMESPACE = "namespace";
+	public static final String PACK = "pack";
 
 	public static final String ROW_COUNT = "rowCount";
 

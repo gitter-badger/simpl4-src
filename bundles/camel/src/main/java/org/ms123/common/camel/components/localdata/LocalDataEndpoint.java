@@ -41,6 +41,7 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	private LocalDataConsumer m_localDataConsumer;
 
 	private String m_namespace;
+	private String m_pack;
 
 	private String m_filterName;
 	private String m_destination;
@@ -213,6 +214,14 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 
 	public int getMax() {
 		return m_max;
+	}
+
+	public void setPack(String pack) {
+		this.m_pack = pack;
+	}
+
+	public String getPack() {
+		return m_pack;
 	}
 
 	public void setNamespace(String namespace) {

@@ -52,6 +52,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 	private String m_destination = null;
 
 	private String m_namespace = null;
+	private String m_pack = null;
 
 	private String m_objectId = null;
 	private String m_where = null;
@@ -84,6 +85,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		m_dataLayer = endpoint.getDataLayer();
 		m_options = endpoint.getOptions();
 		m_namespace = endpoint.getNamespace();
+		m_pack = endpoint.getPack();
 		m_filterName = endpoint.getFilterName();
 		m_destination = endpoint.getDestination();
 		m_objectId = endpoint.getObjectId();
@@ -618,7 +620,11 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 	}
 
 	private List<Object> getObjectsByWhere(Exchange exchange, SessionContext sc, String entityType, String where) {
-		String pack = StoreDesc.getPackName(entityType, m_endpoint.isOrientdb() ? "odata" : "data");
+		
+		String pack = ExchangeUtils.getParameter(m_pack, exchange, String.class, PACK);
+		if( isEmpty( pack)){
+			pack = StoreDesc.getPackName(entityType, m_endpoint.isOrientdb() ? "odata" : "data");
+		}
 		String namespace = getNamespace(exchange);
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace, pack);
 		Class clazz = sc.getClass(sdesc, entityType);
@@ -662,7 +668,8 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		} else {
 			namespace = ExchangeUtils.getParameter(m_namespace, exchange, String.class, NAMESPACE);
 		}
-		SessionContext sc = m_dataLayer.getSessionContext(namespace);
+		String pack = ExchangeUtils.getParameter(m_pack, exchange, String.class, PACK);
+		SessionContext sc = m_dataLayer.getSessionContext(StoreDesc.getNamespaceData(namespace, pack));
 		return sc;
 	}
 
