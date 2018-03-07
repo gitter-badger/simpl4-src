@@ -80,7 +80,7 @@ qx.Class.define("ms123.entitytypes.DefaultSettings", {
 			var or = "";
 			for( var i=0; i< etList.length;i++){
 				var et = etList[i];
-				resourceRegex += or + "(^entities\."+et.name+"\..*)"
+				resourceRegex += or + "(^entities\\."+et.name+"\\..*)"
 				or = "|";
 			}
 

@@ -625,7 +625,7 @@ qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 			data.fields={};
 			if (this._isNew) {
 				data.enabled = true;
-				data.index = 100;
+				data.sort = 100;
 				//data.default_fields = false;
 				//data.team_security = false;
 				data.filter = "";
@@ -648,7 +648,7 @@ qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 					field.searchable_items = null;
 					field.search_options = null;
 				}
-				field.index = i;
+				field.sort = i;
 
 				data.fields[f.name] = field;
 			}
@@ -901,7 +901,7 @@ qx.Class.define("ms123.entitytypes.RDBMSEntitytypeCreate", {
 				arr.push(map[keys[i]]);
 			}
 			arr.sort( function(a,b){
-				return a.index-b.index;
+				return a.sort-b.sort;
 			});
 			this._setRecords(arr);
 		},

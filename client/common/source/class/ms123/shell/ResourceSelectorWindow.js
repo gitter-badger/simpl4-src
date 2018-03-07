@@ -180,7 +180,7 @@ console.log("curPath:"+curPath);
 			if( destName ){
 				tf1.setValue( destName );
 			}
-			tf1.setFilter(/[A-Za-z0-9._]/);
+			tf1.setFilter(/[A-Za-z0-9._-]/);
 			tf1.setFocusable(true);
 			tf1.setReadOnly(false);
 			tf1.setEnabled(true);
@@ -188,7 +188,7 @@ console.log("curPath:"+curPath);
 			tf1.setRequired(true);
 
 			var manager = new qx.ui.form.validation.Manager();
-			var validator = qx.util.Validate.regExp(new RegExp("^[A-Za-z]([0-9A-Za-z._]){1,32}$"));
+			var validator = qx.util.Validate.regExp(new RegExp("^[A-Za-z]([0-9A-Za-z._-]){1,32}$"));
 			manager.add(tf1, validator);
 			manager.validate();
 
