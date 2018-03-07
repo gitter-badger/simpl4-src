@@ -1276,7 +1276,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 			for (String pkName : pkNameList) {
 				Class type = getType(fields,pkName);
 				m += "String token" + i + " = tokens["+i+"];";
-				m += "this." + pkName + " = (\"null\".equals(token"+i+") || \"\".equals(token"+i+")) ? null : "+ type.getName() +".valueOf(token" + i + ");";
+				m += "this." + pkName + " = (\"null\".equals(token"+i+") ) ? null : "+ type.getName() +".valueOf(token" + i + ");";
 				i++;
 			}
 			m += "}";
