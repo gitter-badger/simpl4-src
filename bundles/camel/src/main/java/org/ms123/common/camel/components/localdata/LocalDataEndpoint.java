@@ -57,6 +57,7 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	private String m_relation;
 	private Boolean m_noUpdate=false;
 	private Boolean m_orientdb=false;
+	private Boolean m_isList=false;
 	private Boolean m_disableStateSelect=false;
 	private String m_lookupRelationObjectExpr;
 	private String m_lookupUpdateObjectExpr;
@@ -144,6 +145,13 @@ public class LocalDataEndpoint extends DefaultEndpoint {
 	}
 	public void setNoUpdate(boolean nou) {
 		m_noUpdate=nou;
+	}
+
+	public Boolean isList() {
+		return m_isList;
+	}
+	public void setList(boolean l) {
+		m_isList=l;
 	}
 	public String getRelation() {
 		return m_relation;

@@ -62,6 +62,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 	private String m_lookupRelationObjectExpr = null;
 	private String m_relation = null;
 	private Boolean m_noUpdate = false;
+	private Boolean m_isList = false;
 	private Boolean m_disableStateSelect = false;
 	private List<Map<String, String>> m_objectCriteria = null;
 	private List<Map<String, String>> m_filterParameter = null;
@@ -98,6 +99,7 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		m_lookupUpdateObjectExpr = endpoint.getLookupUpdateObjectExpr();
 		m_relation = endpoint.getRelation();
 		m_noUpdate = endpoint.isNoUpdate();
+		m_isList = endpoint.isList();
 		m_disableStateSelect = endpoint.isDisableStateSelect();
 		String endpointKey = endpoint.getEndpointKey();
 		if (endpointKey.indexOf("?") != -1) {
@@ -138,7 +140,11 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 	protected void invokeOperation(LocalDataOperation operation, Exchange exchange) throws Exception {
 		switch (operation) {
 		case insert:
-			doInsert(exchange);
+			if( m_isList){
+				doInsertList(exchange);
+			}else{
+				doInsert(exchange);
+			}
 			break;
 
 		case update:
@@ -402,6 +408,30 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 			ex = e;
 		}
 		processAndTransferResult(result, exchange, ex);
+	}
+
+	private void doInsertList(Exchange exchange) {
+		String entityType = ExchangeUtils.getParameter(m_entityType, exchange, String.class, ENTITY_TYPE);
+		List<Map> insertList = ExchangeUtils.getSource(m_source, exchange, List.class);
+		info(this, "doInsert(" + entityType + "):" + insertList.size());
+		SessionContext sc = getSessionContext(exchange);
+		Exception ex = null;
+		Map result = null;
+		javax.transaction.UserTransaction ut = sc.getUserTransaction();
+		try {
+			ut.begin();
+			for( Map insert : insertList){
+				m_dataLayer.insertObject(sc, insert, entityType);
+			}
+			ut.commit();
+		} catch (Exception e) {
+			try{
+				ut.rollback();
+			}catch(Exception e2){
+			}
+			ex = e;
+		}
+		processAndTransferResult(null, exchange, ex);
 	}
 
 	private void doUpdateById(Exchange exchange, boolean isUpsert) {
