@@ -1444,6 +1444,9 @@
 				var o = JSON.parse( this.jsonItems );
 				this.items = o;
 			},
+			setItems: function( items ) {
+				this.items = items;
+			},
 			itemsChanged:function(){
 				if( this.form == null && !_.isEmpty(this.parentName) ) return;
 				var select = this.$.select;
