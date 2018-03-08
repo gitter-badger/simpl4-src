@@ -73,7 +73,7 @@ import org.apache.commons.beanutils.*;
 
 /**
 */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","deprecation"})
 public abstract class BaseCamelBehavior extends BpmnActivityBehavior implements ActivityBehavior {
 
 	private Expression variablesmapping;
