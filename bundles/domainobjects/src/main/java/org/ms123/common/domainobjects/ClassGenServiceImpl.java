@@ -182,7 +182,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 				rel.put("dependent", true);
 				addRelations(cp, rel, sdesc);
 			} else {
-				makeField(sdesc, cp, ctClass, field.get("name"), null, datatype, null, null, null, fqn, null, true, true);
+				makeField(sdesc, cp, ctClass, field.get("name"), null, null, datatype, null, null, null, fqn, null, true, true);
 			}
 		}
 	}
@@ -754,7 +754,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 					info(this,"m:" + m);
 				}
 				boolean withIndex = getBoolean(m.get("index"), true);
-				AnnotationsAttribute fieldAttr = makeField(sdesc, cp, ctClass, val[0], (String) m.get("columnName"), val[1], edittype, (String) m.get("sqltype"), defaultValue, classname, m.get("constraints"), withAnnotation, withIndex);
+				AnnotationsAttribute fieldAttr = makeField(sdesc, cp, ctClass, val[0], (String) m.get("columnName"), (Boolean) m.get("nullable"), val[1], edittype, (String) m.get("sqltype"), defaultValue, classname, m.get("constraints"), withAnnotation, withIndex);
 				Map _pkMap = getPkMap(pkList, val[0]);
 				if (_pkMap != null) {
 					annotation = new Annotation("javax.jdo.annotations.PrimaryKey", constPool);
@@ -765,7 +765,7 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 		addGetNamespace(ctClass, namespace);
 	}
 
-	private AnnotationsAttribute makeField(StoreDesc sdesc, ClassPool cp, CtClass ctClass, String name, String columnName, String datatype, String edittype, String sqltype, String defaultValue, String classname, Object co, boolean withAnnotation, boolean withIndex) throws Exception {
+	private AnnotationsAttribute makeField(StoreDesc sdesc, ClassPool cp, CtClass ctClass, String name, String columnName, Boolean nullable, String datatype, String edittype, String sqltype, String defaultValue, String classname, Object co, boolean withAnnotation, boolean withIndex) throws Exception {
 		name = firstToLower(name);
 		ConstPool constPool = ctClass.getClassFile().getConstPool();
 		Class type = _getClass(datatype);
@@ -871,6 +871,9 @@ info(this,"genStateFields:"+genStateFields+"/"+genDefFields+"/"+team_security);
 				if (sqltype != null) {
 					columnAnnotation.addMemberValue("sqltype", new StringMemberValue(sqltype, constPool));
 					used = true;
+				}
+				if (nullable != null) {
+					columnAnnotation.addMemberValue("allowsNull", new StringMemberValue(nullable.booleanValue()+"", constPool));
 				}
 				if (used) {
 					fieldAttr.addAnnotation(columnAnnotation);
