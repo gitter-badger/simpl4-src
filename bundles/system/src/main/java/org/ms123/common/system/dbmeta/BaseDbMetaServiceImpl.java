@@ -125,6 +125,14 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		if (!isEmpty(datanucleusConfig.get("datanucleus_excludes"))) {
 			options.setTableInclusionRule(new RegularExpressionExclusionRule(datanucleusConfig.get("datanucleus_excludes")));
 		}
+		
+		Map<String,Boolean> tmp = (Map)datanucleusConfig;
+		Boolean v = tmp.get("datanucleus_generate_defaultvalue");
+		boolean generateDefaultValue = false;
+		if (v!=null) {
+				generateDefaultValue = v.booleanValue();
+		}
+		info(this, "GenerateDefaultValue2:" + generateDefaultValue );
 		List<String> tableTypes = new ArrayList<String>();
 		tableTypes.add("TABLE");
 		options.setTableTypes(tableTypes);
@@ -138,7 +146,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			for (final Schema schema : catalog.getSchemas()) {
 				info(this, "++++++++++++++++++++++:" + schema);
 				for (final Table table : catalog.getTables(schema)) {
-					Map entityMap = buildEntity(sdesc, table);
+					Map entityMap = buildEntity(sdesc, table, generateDefaultValue);
 					if (entityMap != null) {
 						entityList.add(entityMap);
 					}
@@ -166,7 +174,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		}
 	}
 
-	private Map buildEntity(StoreDesc sdesc, Table table) {
+	private Map buildEntity(StoreDesc sdesc, Table table, boolean generateDefaultValue) {
 		String namespace = sdesc.getNamespace();
 		String entityName = entityName(table.getName());
 		info(this, "Table:" + table.getName() + "/entityName:" + entityName);
@@ -212,17 +220,26 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		Map<String, Object> fieldsMap = new HashMap<String, Object>();
 		entityMap.put("fields", fieldsMap);
 		info(this,"Columns:"+table.getColumns());
+		int sort =0;
 		for (Column column : table.getColumns()) {
 			info(this,"\tColumn:"+column);
+			info(this,"\tAttribues:"+column.getAttributes());
 			String columnType = column.getColumnDataType().getTypeMappedClass().toString();
 			String name = fieldName(column.getName());
 			Map<String, Object> fieldMap = new HashMap<String, Object>();
+			fieldMap.put("nullable", column.isNullable());
+			fieldMap.put("sort", sort++);
 			fieldMap.put("name", name);
 			fieldMap.put("columnName", columnName(column.getName()));
 			fieldMap.put("enabled", true);
 			fieldMap.put("index", false);
 			fieldMap.put("sqltype", column.getColumnDataType().getDatabaseSpecificTypeName());
 			String datatype = getType(columnType);
+			if( column.getDefaultValue() == null && generateDefaultValue ){
+				fieldMap.put("default_value", getDefaultValue(datatype));
+			}else{
+				fieldMap.put("default_value", column.getDefaultValue());
+			}
 			fieldMap.put("datatype", datatype);
 			fieldMap.put("edittype", getEditType(datatype));
 			if( name.equals("timestamp") && "timestamp".equals(fieldMap.get("sqltype"))){
@@ -384,6 +401,28 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		return out;
 	}
 
+	private String getDefaultValue(String in) {
+		String out = "text";
+		if ("decimal".equals(in)) {
+			out = "0.0";
+		}
+		if ("string".equals(in)) {
+			out = "";
+		}
+		if ("number".equals(in)) {
+			out = "0";
+		}
+		if ("clob".equals(in)) {
+			out = "";
+		}
+		if ("date".equals(in)) {
+			out = "0";
+		}
+		if ("boolean".equals(in)) {
+			out = "false";
+		}
+		return out;
+	}
 
 	private String fieldName(String in) {
 		in = strip(in, "\"");

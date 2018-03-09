@@ -165,6 +165,13 @@ qx.Class.define( "ms123.datasource.Datasource", {
 					'exclude': 'isOrientDB',
 					'value': null
 				},
+				"datanucleus_generate_defaultvalue": {
+					'type': "Checkbox",
+					'label': this.tr( "datasource.datanucleus_generate_defaultvalue" ),
+					'exclude': 'isOrientDB',
+					'defaultValue': false,
+					'value': null
+				},
 				"datasource_is_schema_readonly": {
 					'type': "Checkbox",
 					'label': this.tr( "datasource.is_schema_readonly" ),

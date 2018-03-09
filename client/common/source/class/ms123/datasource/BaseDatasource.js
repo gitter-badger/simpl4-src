@@ -114,6 +114,7 @@ qx.Class.define( "ms123.datasource.BaseDatasource", {
 				var datanucleus = {
 					'create_datanucleus_metadata': data.create_datanucleus_metadata,
 					'datanucleus_inputschema': data.datanucleus_inputschema,
+					'datanucleus_generate_defaultvalue': data.datanucleus_generate_defaultvalue,
 					'datanucleus_includes': data.datanucleus_includes,
 					'datanucleus_excludes': data.datanucleus_excludes
 				};
