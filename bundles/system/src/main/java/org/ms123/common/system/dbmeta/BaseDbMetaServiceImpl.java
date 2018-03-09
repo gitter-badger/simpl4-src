@@ -409,7 +409,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	private String entityName(String in) {
 		in = strip(in, "\"");
 		in = cleanName(in);
-		return m_inflector.getEntityName(in).replaceAll(" ","_");
+		return removeNotAllowed(m_inflector.getEntityName(in).replaceAll(" ","_").replaceAll("-","_"));
 		//return getJavaName(in);
 	}
 
@@ -420,6 +420,23 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			out = in.substring(dollar + 1);
 		}
 		return out;
+	}
+	private String removeNotAllowed(String name) {
+		info(this,"removeNotAllowed.in:"+name  );
+		StringBuilder sb = new StringBuilder();
+		if(!Character.isJavaIdentifierStart(name.charAt(0))) {
+			sb.append("_");
+		}
+		for (char c : name.toCharArray()) {
+			if(!Character.isJavaIdentifierPart(c)) {
+				sb.append("_");
+			} else {
+				sb.append(c);
+			}
+		}
+		name = sb.toString();
+		info(this,"removeNotAllowed.out:"+name  );
+		return name;
 	}
 
 	private String getJavaName(String name) {
