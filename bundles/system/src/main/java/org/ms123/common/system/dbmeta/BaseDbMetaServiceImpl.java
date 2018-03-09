@@ -225,6 +225,9 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			String datatype = getType(columnType);
 			fieldMap.put("datatype", datatype);
 			fieldMap.put("edittype", getEditType(datatype));
+			if( name.equals("timestamp") && "timestamp".equals(fieldMap.get("sqltype"))){
+				continue;
+			}
 			if (false/*pkList.size() == 0*/) {
 				if (isSimplDatatype(datatype) && !column.isNullable()) {
 					fieldMap.put("primary_key", true);
@@ -388,14 +391,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 	}
 
 	private String columnName(String in) {
-		if( in.indexOf(" ") >=0){
-			return strip(in, "\"");
-		}else{
-			if( in.indexOf("-") >=0){
-				return in;
-			}
-			return strip(in, "\"");
-		}
+		return strip(in, "\"");
 	}
 
 	private String tableName(String in) {
