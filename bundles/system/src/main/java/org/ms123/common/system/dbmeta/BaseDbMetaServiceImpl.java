@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -217,7 +218,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		entityMap.put("name", entityName);
 		entityMap.put("tableName", tableName(table.getName()));
 		entityMap.put("schemaName", schemaName(table.getSchema().getName()));
-		Map<String, Object> fieldsMap = new HashMap<String, Object>();
+		Map<String, Object> fieldsMap = new LinkedHashMap<String, Object>();
 		entityMap.put("fields", fieldsMap);
 		info(this,"Columns:"+table.getColumns());
 		int sort =0;
@@ -226,7 +227,7 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 			info(this,"\tAttribues:"+column.getAttributes());
 			String columnType = column.getColumnDataType().getTypeMappedClass().toString();
 			String name = fieldName(column.getName());
-			Map<String, Object> fieldMap = new HashMap<String, Object>();
+			Map<String, Object> fieldMap = new LinkedHashMap<String, Object>();
 			fieldMap.put("nullable", column.isNullable());
 			fieldMap.put("sort", sort++);
 			fieldMap.put("name", name);
