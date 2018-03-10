@@ -2188,6 +2188,7 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 
 	private void setDefaultValues(Class clazz, Object o) throws Exception {
 		debug("----->setDefaultValues.clazz:" + clazz + "/" + o);
+		
 		Field[] fields = clazz.getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
 			java.lang.annotation.Annotation[] anns = fields[i].getDeclaredAnnotations();
@@ -2198,10 +2199,8 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 						continue;
 					}
 					Method methDf = atype.getDeclaredMethod("defaultValue");
-					//Method methAn = atype.getDeclaredMethod("allowsNull");//@@@MS ???? 
 					String df = (String) methDf.invoke(anns[j], new Object[0]);
-					//String al = (String) methAn.invoke(anns[j], new Object[0]); 
-					if (df != null && df.length() > 0) {
+					if (df != null /*&& df.length() > 0*/) {
 						Class type = TypeUtils.getTypeForField(o, fields[i].getName());
 						Object v = ConvertUtils.convert(df, type);
 						debug("setDefaultValues:" + fields[i].getName() + ":" + v + "/" + type);
