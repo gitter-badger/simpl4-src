@@ -493,9 +493,35 @@ abstract class BaseDbMetaServiceImpl implements DbMetaService {
 		if( checkAllUpper(name)){
 			name = name.toLowerCase();
 		}
-		name = m_inflector.lowerCamelCase(name, ' ', '_', '-').replaceAll("_", "");
+		name = name.replaceAll("_+", "_");
 		info(this,  "Name2:"+name );
-		return name;
+		name = m_inflector.lowerCamelCase(name, ' ', '_', '-').replaceAll("_", "");
+		info(this,  "Name3:"+name );
+		
+		return toBeanName(name);
+	}
+	private String toBeanName(String value){
+		if( value.length() < 3){
+			return value.toLowerCase();
+		}
+
+		char c = value.charAt(1);
+		if( Character.isLetter(c) && Character.isUpperCase(c)){
+			String old = value;
+			int index = getFirstLower(value)-1;
+			value = value.substring(0,index).toLowerCase() + value.substring(index);			
+			info(this,"Converted("+old+" -> "+ value+")");
+		}
+		return value;
+	}
+	private int getFirstLower(String value){
+		for (int i = 1; i < value.length(); i++) {
+			char c = value.charAt(i);
+			if (Character.isLetter(c) && !Character.isUpperCase(c)) {
+				return i;
+			}
+		}
+		return 2;
 	}
 
 	private boolean checkAllUpper(String value){
