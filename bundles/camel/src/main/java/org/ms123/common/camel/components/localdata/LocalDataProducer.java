@@ -120,6 +120,9 @@ public class LocalDataProducer extends DefaultProducer implements LocalDataConst
 		m_permissionService = CamelContextHelper.mandatoryLookup(camelContext, PermissionService.PERMISSION_SERVICE, PermissionService.class);
 		this.camelService = (CamelService) endpoint.getCamelContext().getRegistry().lookupByName(CamelService.class.getName());
 		m_max = endpoint.getMax();
+		if( isEmpty(m_pack)){
+			m_pack = m_endpoint.isOrientdb() ? "odata" : "data";
+		}
 	}
 
 	public void process(Exchange exchange) throws Exception {
