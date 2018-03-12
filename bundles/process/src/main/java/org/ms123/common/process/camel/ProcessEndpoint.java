@@ -56,6 +56,7 @@ public class ProcessEndpoint extends DefaultEndpoint implements ProcessConstants
 	private boolean isSendMessage;
 	private boolean isCheckAssignments;
 	private String messageName;
+	private String deleteReason;
 	private String headerFields;
 	private String destination;
 	private List<Map<String,String>> assigments;
@@ -196,6 +197,13 @@ public class ProcessEndpoint extends DefaultEndpoint implements ProcessConstants
 	}
 	public String getMessageName() {
 		return this.messageName;
+	}
+
+	public void setDeleteReason(String data) {
+		this.deleteReason = data;
+	}
+	public String getDeleteReason() {
+		return this.deleteReason;
 	}
 
 	public void setAssignments(String a) {

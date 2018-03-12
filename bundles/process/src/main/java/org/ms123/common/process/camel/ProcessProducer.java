@@ -117,6 +117,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 	private String businessKey;
 	private String signalName;
 	private String messageName;
+	private String deleteReason;
 	private boolean withMetadata;
 	private boolean isSendSignal;
 	private boolean isSendMessage;
@@ -142,6 +143,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		this.variableNames = endpoint.getVariableNames();
 		this.businessKey = endpoint.getBusinessKey();
 		this.messageName = endpoint.getMessageName();
+		this.deleteReason = endpoint.getDeleteReason();
 		this.isSendSignal = endpoint.isSendSignal();
 		this.withMetadata = endpoint.withMetadata();
 		this.isSendMessage = endpoint.isSendMessage();
@@ -209,6 +211,9 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			break;
 		case executeTaskOperation:
 			doExecuteTaskOperation(exchange);
+			break;
+		case deleteProcessInstance:
+			doDeleteProcessInstance(exchange);
 			break;
 		default:
 			throw new RuntimeException("ProcessProducer.Operation not supported. Value: " + operation);
@@ -411,6 +416,32 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			error(this, "setQueryValue("+m.getName()+","+val1+","+val2+").error:%[exception]s",e);
 		}
 	}
+
+	private void doDeleteProcessInstance(Exchange exchange) {
+		List<ProcessInstance> processInstanceList = getProcessInstances(exchange);
+		doDeleteProcessInstance(exchange, processInstanceList);
+	}
+	private void doDeleteProcessInstance(Exchange exchange,List<ProcessInstance> processInstanceList) {
+		String deleteReason = getString(exchange, "deleteReason", this.deleteReason);
+		info(this,"processInstanceList:" + processInstanceList);
+		info(this,"deleteReason:" + deleteReason);
+		Map<String,Object> processVariables = getProcessVariables(exchange);
+		if( processInstanceList != null){
+			for( ProcessInstance pi : processInstanceList){
+				info(this,"PI:"+pi.getId());
+				Execution execution = runtimeService.createExecutionQuery() .executionId(pi.getId()).singleResult(); 
+				info(this,"\tExecution:"+execution);
+				if( execution != null){
+					info(this,"doDeleteProcess:"+messageName+"/"+execution.getId());
+					if( processVariables != null){
+						this.runtimeService.setVariables( execution.getId(), processVariables);
+					}
+					this.runtimeService.deleteProcessInstance( execution.getId(), deleteReason);
+				}
+			}
+		}
+	}
+
 
 	private void doExecuteTaskOperation(Exchange exchange) {
 		String taskOperation = getString(exchange, "taskOperation", this.taskOperation);
