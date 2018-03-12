@@ -326,7 +326,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				}else{
 					Method m = getMethod(methods,key,2);
 					if( m != null){
-						setQueryValue(taskQuery, m, trimToEmpty(tokens.get(0)), eval(tokens.get(1),exchange,m.getParameterTypes()[1]));
+						setQueryValue(taskQuery, m, eval(trimToEmpty(tokens.get(0)),exchange,String.class), eval(tokens.get(1),exchange,m.getParameterTypes()[1]));
 					}
 				}
 			}
@@ -710,7 +710,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		}
 	}
 
-	private Object eval(String str, Exchange exchange, Class clazz) {
+	private <T> T eval(String str, Exchange exchange, Class<T> clazz) {
 		return ExchangeUtils.getParameter( str, exchange, clazz );
 	}
 	private String eval(String str, Exchange exchange) {
@@ -810,7 +810,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			if( tokens.size() == 1){
 				eq.processVariableValueEquals(processVariable, eval(trimToEmpty(tokens.get(0)),exchange,Object.class));
 			}else{
-				String name = trimToEmpty(tokens.get(0));
+				String name = eval(trimToEmpty(tokens.get(0)),exchange,String.class);
 				Object value = eval(trimToEmpty(tokens.get(1)),exchange,Object.class);
 				info(this,"setProcessVariable("+name+","+value.getClass().getSimpleName()+"):"+value);
 				eq.processVariableValueEquals( name, value);
