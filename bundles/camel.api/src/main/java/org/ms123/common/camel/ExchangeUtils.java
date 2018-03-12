@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import org.apache.camel.Exchange;
 import org.apache.camel.CamelContext;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNumericSpace;
+import static org.apache.commons.lang3.StringUtils.isAlphanumericSpace;
 import org.apache.camel.util.ObjectHelper;
 import flexjson.*;
 import static com.jcabi.log.Logger.info;
@@ -156,7 +158,11 @@ public class ExchangeUtils {
 				value = type.cast(evaluateExpr(expr, exchange, type));
 			}catch(Throwable e){
 				if( type.equals( String.class )){
-					info( ExchangeUtils.class, "\tExpr("+expr+") casted to:\""+ type.cast(expr)+"\"");
+					info( ExchangeUtils.class, "\tExpr1("+expr+") casted to:\""+ type.cast(expr)+"\"");
+					return type.cast(expr);
+				}
+				if( true ){
+					info( ExchangeUtils.class, "\tExpr2("+expr+") casted to:\""+ type.cast(expr)+"\"");
 					return type.cast(expr);
 				}
 				info( ExchangeUtils.class, "getParameter("+expr+","+type+"):"+ e.getMessage());
