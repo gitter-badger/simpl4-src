@@ -307,6 +307,9 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		Method methods[] = taskQueryClass.getMethods();
 		for (Map.Entry<String, String> entry : this.taskCriteria.entrySet()) {
 			String  key = entry.getKey();
+			if( "processVariable".equals(key)){
+				key = "processVariableValueEquals";
+			}
 			String  val = entry.getValue();
 			info(this,"doQueryTasks("+key+"):"+val);
 
