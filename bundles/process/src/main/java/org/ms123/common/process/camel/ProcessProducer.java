@@ -545,7 +545,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			debug(this,"ProcessInstance:" + pi);
 			if (pi != null) {
 				String tenant = ThreadContext.getThreadContext().getUserName();
-				info(this,"ExecutionEntity:" + (pi instanceof ExecutionEntity));
+				info(this,"ExecutionEntity("+tenant+"):" + (pi instanceof ExecutionEntity));
 				if( pi instanceof ExecutionEntity ){
 					((ExecutionEntity)pi).setTenantId(tenant);
 				}
@@ -619,8 +619,10 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		Map<String, Object> vars = getProcessVariables(exchange);//getCamelVariablenMap(exchange);
 		info(this,"ExecuteProcess:criteria:" + this.processCriteria);
 		info(this,"ExecuteProcess:vars:" + vars);
-		ThreadContext.loadThreadContext(this.namespace, "admin");
-		this.permissionService.loginInternal(this.namespace);
+		String user = ThreadContext.getThreadContext().getUserName();
+		info(this,"ExecuteProcess:user:" + user);
+		//ThreadContext.loadThreadContext(this.namespace, "admin");
+		//this.permissionService.loginInternal(this.namespace);
 		try {
 			ProcessInstantiationBuilder pib = null;
 			String processDefinitionId = getString(exchange, PROCESS_DEFINITION_ID, this.processCriteria.get(PROCESS_DEFINITION_ID));

@@ -398,6 +398,11 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 
 	public synchronized OrientGraphFactory getUserFactory(String db ) {
 		String username = ThreadContext.getThreadContext().getUserName();
+		return getUserFactory(db,username);
+	}
+
+	public synchronized OrientGraphFactory getUserFactory(String db,String username ) {
+		info(this,"OrientDBServiceImpl.getUserFactory:"+username);
 		if( !userExists( db, username) ){
 			userCreate( db, username );
 		}

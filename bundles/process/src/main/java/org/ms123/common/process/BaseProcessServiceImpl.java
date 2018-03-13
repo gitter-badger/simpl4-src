@@ -128,11 +128,11 @@ class BaseProcessServiceImpl {
 			username = ThreadContext.getThreadContext().getUserName();
 		}
 		ProcessEngine pe = this.userProcessEngineMap.get(username);
-		debug(this,"BaseProcessServiceImpl.getProcessEngine("+username+")");
+		debug(this,"BaseProcessServiceImpl.getProcessEngine("+username+"):"+pe);
 		if (pe != null) {
 			return pe;
 		}
-		OrientGraphFactory f = this.orientdbService.getUserFactory(BPM_DB);
+		OrientGraphFactory f = this.orientdbService.getUserFactory(BPM_DB, username);
 		f.setStandardElementConstraints(false);
 
 		OrientdbProcessEngineConfiguration c = new OrientdbProcessEngineConfiguration(f);

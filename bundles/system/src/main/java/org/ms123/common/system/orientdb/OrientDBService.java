@@ -26,6 +26,7 @@ public interface OrientDBService {
 	public OrientGraphFactory getFactory( String db, boolean autoStart );
 	public OrientGraphFactory getFactory( String db, int poolsize);
 	public OrientGraphFactory getUserFactory(String db );
+	public OrientGraphFactory getUserFactory(String db, String username );
 	public OrientGraph getOrientGraphRoot(String db);
 	public OrientGraph getOrientGraph(String db);
 	public List<Map<String,Object>> executeQuery(OrientGraph graph, String sql, Object ... args);
