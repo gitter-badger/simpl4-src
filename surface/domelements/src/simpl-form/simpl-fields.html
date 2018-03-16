@@ -1528,9 +1528,15 @@
 				}
 			},
 			getValue: function() {
-				//console.log( "select-field(" + this.name + "),getValue:", this.value );
+				//console.log( "select-field(" + this.name + ","+this.convertNullToEmpty+"),getValue:", this.value );
 				if( this.multiple !== true && this.value && Array.isArray(this.value) && this.value.length>0){
+					if( this.value[0] == null && this.convertNullToEmpty ){
+						return "";
+					}
 					return this.value[0];
+				}
+				if( this.value == null && this.convertNullToEmpty ){
+					return "";
 				}
 				return this.value;
 			},
@@ -1703,6 +1709,7 @@
 			},
 			setForm: function( form ) {
 				this.form = form;
+				this.convertNullToEmpty = form._form.xf_string_null_in_empty===true;
 				if( this.isParentDest(this.name) || !_.isEmpty(this.parentName) ){
 					this.itemsChanged();
 				}
