@@ -130,6 +130,8 @@
 			}
 
 			window.is_chromium = navigator.userAgent.toLowerCase().indexOf( 'chrome' ) > -1;
+			window.is_edge = Detectizr.browser.userAgent.indexOf( "edge/" ) >= 0;
+			console.log("is_edge:",is_edge);
 
 			simpl4.util.BaseManager.setNamespace( namespace );
 
