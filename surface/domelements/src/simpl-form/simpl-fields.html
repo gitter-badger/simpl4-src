@@ -478,6 +478,9 @@
 						this.type = 'text';
 					}
 				}
+				if( is_edge && this.type == "number"){
+					this.type = "text";
+				}
 				if ( this.isDateTime() && this.hasDate) {
 					this.input.setAttribute( 'type', "datetime-local" );
 				}else if ( this.isDateYearMonth() && this.hasDate) {
