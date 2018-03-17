@@ -27,6 +27,7 @@ import org.apache.camel.CamelContext;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNumericSpace;
 import static org.apache.commons.lang3.StringUtils.isAlphanumericSpace;
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import org.apache.camel.util.ObjectHelper;
 import flexjson.*;
 import static com.jcabi.log.Logger.info;
@@ -252,12 +253,17 @@ public class ExchangeUtils {
 		return n.replaceAll("[^\\p{IsAlphabetic}^\\p{IsDigit}]", "");
 	}
 	public static Map<String,Object> getAssignments(Exchange exchange, List<Map<String,String>> assignments){
+		return getAssignments( exchange, assignments, false);
+	}
+	public static Map<String,Object> getAssignments(Exchange exchange, List<Map<String,String>> assignments, boolean local){
+		Map<String,Object> lvariables = new HashMap();
 		Map<String,Object> variables = new HashMap();
-			info(ExchangeUtils.class,"getAssignments:"+assignments);
+			info(ExchangeUtils.class,"getAssignments("+local+"):"+assignments);
 		if( assignments == null){
 			return variables;
 		}
 		for( Map<String,String>  a : assignments){
+			boolean loc = toBoolean( a.get("local"));
 			String expr = a.get("expr");
 			Class type = assignmentTypes.get( a.get("type"));
 			String variable = a.get("variable");
@@ -266,10 +272,14 @@ public class ExchangeUtils {
 			}
 
 			Object value = ExchangeUtils.getParameter(expr,exchange, type);
-			info(ExchangeUtils.class,"put("+variable+"):"+value);
-			variables.put( variable, value);
+			info(ExchangeUtils.class,"put("+variable+",local:"+loc+"):"+value);
+			if( local && loc ){
+				lvariables.put( variable, value);
+			}else if( !local && !loc ){
+				variables.put( variable, value);
+			}
 		}
-		return variables;
+		return local ? lvariables : variables;
 	}
 }
 
