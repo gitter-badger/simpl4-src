@@ -243,6 +243,9 @@ public class TaskOperationResource extends BaseResource implements Constants{
 		}
 	}
 	private void checkPermission(String taskId){
+		if( isAdmin()){
+			return;
+		}
 		Task task = getPE().getTaskService().createTaskQuery().taskId(m_taskId).singleResult();
 		if( task == null){
 			throw new RuntimeException("TaskOperationResource.task not found:"+m_taskId);

@@ -90,6 +90,12 @@ public class BaseResource {
 	protected boolean hasRole( String role){
 		return getPermissionService().hasUserRole(role);
 	}
+	protected boolean  isAdmin(){
+		if(getPermissionService().hasAdminRole()){
+			return true;
+		}
+		return false;
+	}
 	protected void checkUser(String user){
 		if(getPermissionService().hasAdminRole()){
 			return;
