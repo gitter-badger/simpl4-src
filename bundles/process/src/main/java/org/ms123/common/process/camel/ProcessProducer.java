@@ -52,6 +52,8 @@ import org.camunda.bpm.engine.runtime.ExecutionQuery;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstantiationBuilder;
 import org.camunda.bpm.engine.history.HistoricVariableInstance;
+import org.camunda.bpm.engine.history.HistoricTaskInstanceQuery;
+import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
@@ -303,12 +305,124 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 
 	private void doQueryTasks(Exchange exchange) {
 		TaskQuery taskQuery = this.taskService.createTaskQuery();
+		buildTaskQuery( exchange, taskQuery);
+		List<Task> taskList = taskQuery.list();
+		info(this,"doQueryTasks.taskQuery.taskList:"+taskList);
+		List<Map> ret = new ArrayList<Map>();
+		Map<String,Boolean> tasksFound = new HashMap<String,Boolean>();
+		for( Task task : taskList){
+			ProcessDefinition pd = this.repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+			String processInstanceId = task.getProcessInstanceId();
+			info(this,"\tTaskName:"+task.getName()+"/taskId"+task.getId()+"/taskDefKey:"+task.getTaskDefinitionKey()+"/processDefId:"+task.getProcessDefinitionId()+"/pdKey:"+pd.getKey());
+			if( !pd.getKey().startsWith(this.namespace)){
+				continue;
+			}
+			Map<String, Object> taskMap = createTaskMapFromTask(task);
+			taskMap.put("processName", pd.getName());
+			
+			Map<String,Object> varsSelected = getVariablesSelected(exchange, processInstanceId);
+			if( varsSelected!= null){
+				taskMap.put("variables", varsSelected);
+			}
+			ret.add(taskMap);
+			tasksFound.put( task.getId(), true );
+		}
+		//search in history
+		HistoricTaskInstanceQuery htaskQuery = this.getHistoryService().createHistoricTaskInstanceQuery();
+		buildTaskQuery( exchange, htaskQuery);
+		List<HistoricTaskInstance> htaskList = htaskQuery.list();
+		info(this,"doQueryTasks.historicTaskQuery.taskList:"+htaskList);
+		for( HistoricTaskInstance task : htaskList){
+			if( tasksFound.get( task.getId())){
+				info(this,"\tTask("+task.getId()+","+task.getName()+") already with TaskEntityQuery found");
+				continue;
+			}
+			String processDefinitionId = task.getProcessDefinitionId();
+			String processDefinitionKey = task.getProcessDefinitionKey();
+			String processInstanceId = task.getProcessInstanceId();
+			info(this,"processInstanceKey:"+processDefinitionKey);
+			if( !processDefinitionKey.startsWith(this.namespace)){
+				continue;
+			}
+			Map<String, Object> taskMap = createTaskMapFromHistoricTaskInstance(task);
+			taskMap.put("processName", processDefinitionKey);
+			
+			Map<String,Object> varsSelected = getVariablesSelected(exchange, processInstanceId);
+			if( varsSelected!= null){
+				taskMap.put("variables", varsSelected);
+			}
+			ret.add(taskMap);
+		}
+		ExchangeUtils.setDestination(this.destination, ret, exchange);
+	}
+
+
+	private Map<String, Object> createTaskMapFromTask( Task task){
+		Map<String, Object> taskMap = new HashMap();
+		taskMap.put("assignee", task.getAssignee());
+		taskMap.put("createTime", task.getCreateTime());
+		taskMap.put("delegationState", task.getDelegationState());
+		taskMap.put("description", task.getDescription());
+		taskMap.put("dueDate", task.getDueDate());
+		taskMap.put("executionId", task.getExecutionId());
+		taskMap.put("id", task.getId());
+		taskMap.put("name", task.getName());
+		taskMap.put("owner", task.getOwner());
+		taskMap.put("parentTaskId", task.getParentTaskId());
+		taskMap.put("priority", task.getPriority());
+		taskMap.put("processDefinitionId", task.getProcessDefinitionId());
+		taskMap.put("processInstanceId", task.getProcessInstanceId());
+		taskMap.put("taskDefinitionId", task.getTaskDefinitionKey());
+		TaskFormData taskFormData = this.formService.getTaskFormData(task.getId());
+		if (taskFormData != null) {
+			taskMap.put("formResourceKey", taskFormData.getFormKey());
+		}
+		return taskMap;
+	}
+	private Map<String, Object> createTaskMapFromHistoricTaskInstance( HistoricTaskInstance task){
+		Map<String, Object> taskMap = new HashMap();
+		taskMap.put("assignee", task.getAssignee());
+		taskMap.put("description", task.getDescription());
+		taskMap.put("dueDate", task.getDueDate());
+		taskMap.put("executionId", task.getExecutionId());
+		taskMap.put("id", task.getId());
+		taskMap.put("name", task.getName());
+		taskMap.put("owner", task.getOwner());
+		taskMap.put("parentTaskId", task.getParentTaskId());
+		taskMap.put("priority", task.getPriority());
+		taskMap.put("processDefinitionId", task.getProcessDefinitionId());
+		taskMap.put("processInstanceId", task.getProcessInstanceId());
+		taskMap.put("taskDefinitionId", task.getTaskDefinitionKey());
+		return taskMap;
+	}
+	private Map<String,Object> getVariablesSelected( Exchange exchange, String processInstanceId){
+		String variableNames = getString(exchange, "variableNames", this.variableNames);
+		if( !isEmpty(variableNames)){
+			Map<String,Object> varsSelected = new HashMap();
+			List<String> nameList = Arrays.asList(variableNames.split(","));
+			List<HistoricVariableInstance> variableList = this.getHistoryService().createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
+			for( HistoricVariableInstance vi : variableList){
+				String name = vi.getName();
+				Object value = vi.getValue();
+				if( nameList.indexOf( name ) > -1){
+					varsSelected.put( name, value);
+				}
+			}
+			return varsSelected;
+		}
+		return null;
+	}
+
+	private void buildTaskQuery( Exchange exchange, Object taskQuery ){
 		Class taskQueryClass = taskQuery.getClass();
 		Method methods[] = taskQueryClass.getMethods();
 		for (Map.Entry<String, String> entry : this.taskCriteria.entrySet()) {
 			String  key = entry.getKey();
 			if( "processVariable".equals(key)){
 				key = "processVariableValueEquals";
+			}
+			if( "taskVariable".equals(key)){
+				key = "taskVariableValueEquals";
 			}
 			String  val = entry.getValue();
 			info(this,"doQueryTasks("+key+"):"+val);
@@ -334,53 +448,6 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 				}
 			}
 		}
-		List<Task> taskList = taskQuery.list();
-		info(this,"taskList:"+taskList);
-		List<Map> ret = new ArrayList<Map>();
-		for( Task task : taskList){
-			ProcessDefinition pd = this.repositoryService.getProcessDefinition(task.getProcessDefinitionId());
-			info(this,"\tTaskName:"+task.getName()+"/taskId"+task.getId()+"/taskDefKey:"+task.getTaskDefinitionKey()+"/processDefId:"+task.getProcessDefinitionId()+"/pdKey:"+pd.getKey());
-			if( !pd.getKey().startsWith(this.namespace)){
-				continue;
-			}
-			Map<String, Object> taskMap = new HashMap();
-			taskMap.put("assignee", task.getAssignee());
-			taskMap.put("createTime", task.getCreateTime());
-			taskMap.put("delegationState", task.getDelegationState());
-			taskMap.put("description", task.getDescription());
-			taskMap.put("dueDate", task.getDueDate());
-			taskMap.put("executionId", task.getExecutionId());
-			taskMap.put("id", task.getId());
-			taskMap.put("name", task.getName());
-			taskMap.put("owner", task.getOwner());
-			taskMap.put("parentTaskId", task.getParentTaskId());
-			taskMap.put("priority", task.getPriority());
-			taskMap.put("processDefinitionId", task.getProcessDefinitionId());
-			taskMap.put("processInstanceId", task.getProcessInstanceId());
-			taskMap.put("taskDefinitionId", task.getTaskDefinitionKey());
-			TaskFormData taskFormData = this.formService.getTaskFormData(task.getId());
-			if (taskFormData != null) {
-				taskMap.put("formResourceKey", taskFormData.getFormKey());
-			}
-			taskMap.put("processName", pd.getName());
-			String variableNames = getString(exchange, "variableNames", this.variableNames);
-			if( !isEmpty(variableNames)){
-				List<String> nameList = Arrays.asList(variableNames.split(","));
-				List<HistoricVariableInstance> variableList = this.getHistoryService().createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list();
-				Map<String,Object> varsSelected = new HashMap();
-				for( HistoricVariableInstance vi : variableList){
-					String name = vi.getName();
-					Object value = vi.getValue();
-					if( nameList.indexOf( name ) > -1){
-						varsSelected.put( name, value);
-					}
-				}
-				taskMap.put("variables", varsSelected);
-			}
-			ret.add(taskMap);
-		}
-		//exchange.getIn().setBody(ret);
-		ExchangeUtils.setDestination(this.destination, ret, exchange);
 	}
 
 	private Method getMethod( Method[] methods, String name, int pc){
@@ -452,6 +519,11 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		Map<String,Object> pv = getProcessVariables(exchange);
 //		pv.putAll( getProcessAssignments(exchange) );
 		info(this,"doExecuteTaskOperation("+taskOperation+","+taskId+".variables:"+pv);
+		
+		Map<String,Object> tv = getTaskAssignments(exchange);
+		if( tv != null && tv.size() > 0){
+			getTaskService().setVariablesLocal( taskId, tv );
+		}
 		this.processService.executeTaskOperation( taskId, taskOperation, pv, this.isCheckAssignments );
 	}
 
@@ -758,6 +830,9 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 	private Map<String,Object> getProcessAssignments(Exchange exchange){
 		return ExchangeUtils.getAssignments( exchange, this.assignments);
 	}
+	private Map<String,Object> getTaskAssignments(Exchange exchange){
+		return ExchangeUtils.getAssignments( exchange, this.assignments, true);
+	}
 
 	private List<ProcessInstance> getProcessInstances(Exchange exchange) {
 		return getProcessInstances(exchange, true, true );
@@ -822,7 +897,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			}
 		}
 
-		if( hasCriteria ){
+		if( true ){
 			info(this,"getProcessInstances.namespace:"+this.namespace);
 			List<ProcessInstance> executionList = (List) eq.list();
 			info(this,"getProcessInstances:" + executionList);
