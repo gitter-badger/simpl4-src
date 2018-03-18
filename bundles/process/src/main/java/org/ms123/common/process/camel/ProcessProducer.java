@@ -209,7 +209,10 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			doQueryProcessInstances(exchange);
 			break;
 		case queryTasks:
-			doQueryTasks(exchange);
+			doQueryTasks(exchange, false);
+			break;
+		case getTaskVariables:
+			doQueryTasks(exchange, true );
 			break;
 		case executeTaskOperation:
 			doExecuteTaskOperation(exchange);
@@ -303,7 +306,7 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		ExchangeUtils.setDestination(this.destination, ret, exchange);
 	}
 
-	private void doQueryTasks(Exchange exchange) {
+	private void doQueryTasks(Exchange exchange, boolean varsOnly) {
 		TaskQuery taskQuery = this.taskService.createTaskQuery();
 		buildTaskQuery( exchange, taskQuery);
 		List<Task> taskList = taskQuery.list();
@@ -317,8 +320,10 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			if( !pd.getKey().startsWith(this.namespace)){
 				continue;
 			}
-			Map<String, Object> taskMap = createTaskMapFromTask(task);
-			taskMap.put("processName", pd.getName());
+			Map<String, Object> taskMap = createTaskMapFromTask(task, varsOnly);
+			if( varsOnly==false){
+				taskMap.put("processName", pd.getName());
+			}
 			
 			Map<String,Object> varsSelected = getVariablesSelected(exchange, processInstanceId);
 			if( varsSelected!= null){
@@ -344,8 +349,10 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			if( !processDefinitionKey.startsWith(this.namespace)){
 				continue;
 			}
-			Map<String, Object> taskMap = createTaskMapFromHistoricTaskInstance(task);
-			taskMap.put("processName", processDefinitionKey);
+			Map<String, Object> taskMap = createTaskMapFromHistoricTaskInstance(task, varsOnly);
+			if( varsOnly==false){
+				taskMap.put("processName", processDefinitionKey);
+			}
 			
 			Map<String,Object> varsSelected = getVariablesSelected(exchange, processInstanceId);
 			if( varsSelected!= null){
@@ -357,16 +364,17 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 	}
 
 
-	private Map<String, Object> createTaskMapFromTask( Task task){
+	private Map<String, Object> createTaskMapFromTask( Task task,boolean varsOnly){
 		Map<String, Object> taskMap = new HashMap();
+		taskMap.put("id", task.getId());
+		taskMap.put("name", task.getName());
+		if( varsOnly) return taskMap;
 		taskMap.put("assignee", task.getAssignee());
 		taskMap.put("createTime", task.getCreateTime());
 		taskMap.put("delegationState", task.getDelegationState());
 		taskMap.put("description", task.getDescription());
 		taskMap.put("dueDate", task.getDueDate());
 		taskMap.put("executionId", task.getExecutionId());
-		taskMap.put("id", task.getId());
-		taskMap.put("name", task.getName());
 		taskMap.put("owner", task.getOwner());
 		taskMap.put("parentTaskId", task.getParentTaskId());
 		taskMap.put("priority", task.getPriority());
@@ -379,14 +387,15 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		}
 		return taskMap;
 	}
-	private Map<String, Object> createTaskMapFromHistoricTaskInstance( HistoricTaskInstance task){
+	private Map<String, Object> createTaskMapFromHistoricTaskInstance( HistoricTaskInstance task,boolean varsOnly){
 		Map<String, Object> taskMap = new HashMap();
+		taskMap.put("id", task.getId());
+		taskMap.put("name", task.getName());
+		if( varsOnly) return taskMap;
 		taskMap.put("assignee", task.getAssignee());
 		taskMap.put("description", task.getDescription());
 		taskMap.put("dueDate", task.getDueDate());
 		taskMap.put("executionId", task.getExecutionId());
-		taskMap.put("id", task.getId());
-		taskMap.put("name", task.getName());
 		taskMap.put("owner", task.getOwner());
 		taskMap.put("parentTaskId", task.getParentTaskId());
 		taskMap.put("priority", task.getPriority());
@@ -525,10 +534,12 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		}
 		if( !"complete".equals(taskOperation)){ //This becames in "complete" handled
 			if( pv != null && pv.size() > 0){
-				getTaskService().setVariables( taskId, rv );
+				getTaskService().setVariables( taskId, pv );
 			}
 		}
-		this.processService.executeTaskOperation( taskId, taskOperation, pv, this.isCheckAssignments );
+		if( !"setVariables".equals(taskOperation)){ 
+			this.processService.executeTaskOperation( taskId, taskOperation, pv, this.isCheckAssignments );
+		}
 	}
 
 	private void doSendMessageEvent(Exchange exchange) {

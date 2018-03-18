@@ -19,6 +19,6 @@ package org.ms123.common.process.camel;
 
 public enum ProcessOperation {
 
-	sendMessageEvent, sendSignalEvent, sendSignalToReceiveTask, startProcess, getProcessVariables, queryProcessInstances, queryTasks, executeTaskOperation, deleteProcessInstance
+	sendMessageEvent, sendSignalEvent, sendSignalToReceiveTask, startProcess, getProcessVariables, queryProcessInstances, queryTasks, getTaskVariables, executeTaskOperation, deleteProcessInstance
 }
 
