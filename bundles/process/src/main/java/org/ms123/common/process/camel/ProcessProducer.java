@@ -517,12 +517,16 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 		String taskOperation = getString(exchange, "taskOperation", this.taskOperation);
 		String taskId = getString(exchange, "taskId", this.taskId);
 		Map<String,Object> pv = getProcessVariables(exchange);
-//		pv.putAll( getProcessAssignments(exchange) );
 		info(this,"doExecuteTaskOperation("+taskOperation+","+taskId+".variables:"+pv);
 		
 		Map<String,Object> tv = getTaskAssignments(exchange);
 		if( tv != null && tv.size() > 0){
 			getTaskService().setVariablesLocal( taskId, tv );
+		}
+		if( !"complete".equals(taskOperation)){ //This becames in "complete" handled
+			if( pv != null && pv.size() > 0){
+				getTaskService().setVariables( taskId, rv );
+			}
 		}
 		this.processService.executeTaskOperation( taskId, taskOperation, pv, this.isCheckAssignments );
 	}
