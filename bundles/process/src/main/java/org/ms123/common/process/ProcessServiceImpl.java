@@ -304,10 +304,14 @@ public class ProcessServiceImpl extends BaseProcessServiceImpl implements Proces
 	}
 
 	public String getInstanceDiagram(
-			@PName("processInstanceId") String processInstanceId) throws RpcException {
+			@PName("namespace")        String namespace, 
+			@PName("path")             String path, 
+			@PName("processInstanceId") String processInstanceId
+			) throws RpcException {
 		try {
+			String processJson = this.gitService.searchContent(namespace, path, "sw.process");
 			ProcessInstanceDiagramResource pir = new ProcessInstanceDiagramResource(this, processInstanceId);
-			return pir.getDiagram();
+			return pir.getDiagram(processJson, namespace);
 		} catch (Exception e) {
 			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "ProcessService.getInstanceDiagram:", e);
 		}

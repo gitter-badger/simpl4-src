@@ -262,7 +262,14 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 
 		_getDiagram: function (id) {
 			if(!id || id.toLowerCase() == "starterror" ) return;
-			var source = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getInstanceDiagram", { processInstanceId:id });
+			var file = this._processDefinition.key.substring( this.namespace.length+1);
+			console.log("file:",file);
+			var source = ms123.util.Remote.rpcSync(this.getProcessEngine()+":getInstanceDiagram",
+				 { 
+					namespace: this.namespace,
+					path: file,
+					processInstanceId:id 
+				});
 			var image = new qx.ui.basic.Image(source);
 			//image.setScale(true);
 			//image.setWidth(500);
