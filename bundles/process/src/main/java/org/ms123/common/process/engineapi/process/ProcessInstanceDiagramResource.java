@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.image.impl.DefaultProcessDiagramGenerator;
+import org.ms123.common.process.image.impl.DefaultProcessDiagramGenerator;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.RepositoryService;
 import org.ms123.common.libhelper.Base64;
@@ -50,7 +50,7 @@ public class ProcessInstanceDiagramResource extends BaseResource {
 			JsonNode editorNode = new ObjectMapper().readTree(processJson);
 			BpmnModel bpmnModel = jsonConverter.convertToBpmnModel(editorNode);
 			DefaultProcessDiagramGenerator dp = new DefaultProcessDiagramGenerator();
-			InputStream resource = dp.generateDiagram(bpmnModel, "png", getPE().getRuntimeService().getActiveActivityIds(m_processInstanceId),new java.util.ArrayList(),null,null,DefaultProcessDiagramGenerator.class.getClassLoader(),1.0d);
+			InputStream resource = dp.generateDiagram(bpmnModel, "png", getPE().getRuntimeService().getActiveActivityIds(m_processInstanceId),new java.util.ArrayList(),"Arial","Arial","Arial",DefaultProcessDiagramGenerator.class.getClassLoader(),1.0d);
 			if( resource == null){
 				return "data:image/png;base64," + notfound;
 			}
