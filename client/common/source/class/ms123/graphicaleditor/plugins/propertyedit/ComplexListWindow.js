@@ -198,6 +198,8 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 				var width = this.items[i].width();
 				var type = this.items[i].type();
 
+				var readonly = this.items[i].readonly() ? this.__maskedEval(this.items[i].readonly(),this._env) : false;
+				this.items[i]._readonly = readonly;
 				if (type == ms123.oryx.Config.TYPE_STRING) {
 					var f = null;
 					if( this.items[i].filter ){
@@ -206,7 +208,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 						f = new qx.ui.table.celleditor.TextField();
 					}
 					tcm.setCellEditorFactory(i, f);
-					table.getTableModel().setColumnEditable(i, true);
+					table.getTableModel().setColumnEditable(i, !readonly);
 				} else if (type == ms123.oryx.Config.TYPE_CHOICE) {
 					var r = new qx.ui.table.cellrenderer.Replace();
 					tcm.setDataCellRenderer(i, r);
@@ -216,7 +218,6 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 					var self = this;
 					items.each(function (value) {
 						var b = value.enabled ? self.__maskedEval(value.enabled(),self._env) : true;
-						console.log("value:",value.value()+"="+b);
 						if( b){
 							var option = [value.title(), null, value.value()];
 							listData.push(option);
@@ -235,8 +236,7 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 					var f = new qx.ui.table.celleditor.SelectBox();
 					f.setListData(listData);
 					tcm.setCellEditorFactory(i, f);
-					table.getTableModel().setColumnEditable(i, true);
-
+					table.getTableModel().setColumnEditable(i, !readonly);
 				} else if (type == ms123.oryx.Config.TYPE_COMBO) {
 					var r = new qx.ui.table.cellrenderer.Replace();
 					tcm.setDataCellRenderer(i, r);
@@ -260,16 +260,15 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 					var f = new qx.ui.table.celleditor.ComboBox();
 					f.setListData(listData);
 					tcm.setCellEditorFactory(i, f);
-					table.getTableModel().setColumnEditable(i, true);
-
+					table.getTableModel().setColumnEditable(i, !readonly);
 				} else if (type == ms123.oryx.Config.TYPE_BOOLEAN) {
 					tcm.setDataCellRenderer(i, booleanCellRendererFactory);
 					tcm.setCellEditorFactory(i, booleanCellEditorFactory);
-					table.getTableModel().setColumnEditable(i, true);
+					table.getTableModel().setColumnEditable(i, !readonly);
 				} else if (type == ms123.oryx.Config.TYPE_INTEGER) {
 					tcm.setDataCellRenderer(i, numberCellRendererFactory);
 					tcm.setCellEditorFactory(i, numberCellEditorFactory);
-					table.getTableModel().setColumnEditable(i, true);
+					table.getTableModel().setColumnEditable(i, !readonly);
 				} else if (type == ms123.oryx.Config.TYPE_CONSTRAINTS) {
 					tcm.setDataCellRenderer(i, new ms123.graphicaleditor.plugins.propertyedit.ImageRenderer());
 					table.getTableModel().setColumnEditable(i, false);
@@ -302,9 +301,16 @@ qx.Class.define("ms123.graphicaleditor.plugins.propertyedit.ComplexListWindow", 
 			if (data == undefined || !data || data == "") {;
 			} else {
 				try{
-					console.log("data:" + data);
 					data = qx.lang.Json.parse(data);
 					if( this.config.asArray){
+						for (var i = 0; i < data.length; i++) {
+							for (var j = 0; j < this.items.length; j++) {
+								var item = this.items[j];
+								if( item._readonly){
+									data[i][item.id()] = item.value();
+								}
+							}
+						}
 						this.setTableData(data);
 					}else{
 						this.setTableData(data.items);

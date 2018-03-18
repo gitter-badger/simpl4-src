@@ -137,6 +137,9 @@ qx.Class.define("ms123.oryx.core.stencilset.ComplexPropertyItem", {
 
 		disable: function () {
 			return this._jsonItem.disable;
+		},
+		readonly: function () {
+			return this._jsonItem.readonly;
 		}
 	},
 	/******************************************************************************
