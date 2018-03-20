@@ -462,7 +462,11 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 
 			colIds.push("id");
 			colHds.push(this.tr("processexplorer.id"));
-			colWidth.push(45);
+			colWidth.push(100);
+
+			colIds.push("taskId");
+			colHds.push(this.tr("processexplorer.taskId"));
+			colWidth.push(100);
 
 			colIds.push("activityName");
 			colHds.push(this.tr("processexplorer.activityName"));
@@ -518,6 +522,8 @@ qx.Class.define("ms123.processexplorer.plugins.ProcessHistory", {
 					});
 				}
 			}, this, false);
+			table.getTableModel().setColumnEditable(0, true);
+			table.getTableModel().setColumnEditable(1, true);
 			var tcm = table.getTableColumnModel();
 			colWidth.each((function (w, index) {
 				var resizeBehavior = tcm.getBehavior();
