@@ -907,7 +907,9 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			}else{
 				String name = eval(trimToEmpty(tokens.get(0)),exchange,String.class);
 				Object value = eval(trimToEmpty(tokens.get(1)),exchange,Object.class);
-				info(this,"setProcessVariable("+name+","+value.getClass().getSimpleName()+"):"+value);
+				if( name == null ) continue;
+				if( value == null ) value="";
+				info(this,"setProcessVariable("+name+"):"+value);
 				eq.processVariableValueEquals( name, value);
 			}
 		}
@@ -980,9 +982,11 @@ public class ProcessProducer extends DefaultProducer implements ProcessConstants
 			if( tokens.size() == 1){
 				hq.variableValueEquals(processVariable,eval(trimToEmpty(tokens.get(0)),exchange,Object.class));
 			}else{
-				String name = trimToEmpty(tokens.get(0));
+				String name = eval(trimToEmpty(tokens.get(0)),exchange,String.class);
 				Object value = eval(trimToEmpty(tokens.get(1)),exchange,Object.class);
-				info(this,"setProcessVariable("+name+","+value.getClass().getSimpleName()+"):"+value);
+				if( name == null ) continue;
+				if( value == null ) value="";
+				info(this,"setProcessVariable("+name+"):"+value);
 				hq.variableValueEquals( name, value);
 			}
 		}
