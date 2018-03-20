@@ -1202,6 +1202,11 @@
 		:host /deep/ div.dropdown-field > input.fakeinput {
 			font-size: 14px !important;
 		}
+		:host /deep/ .selectize-input /deep/ input {
+			max-height:15px !important;
+			font-size:12px !important;
+			font-weight:200 !important;
+		}
 
 	</style>
 	<template>
@@ -1253,6 +1258,10 @@
 						type: String,
 						value: ','
 				},
+				combobox: {
+						type: Boolean,
+						value: false
+				},
 				diacritics: {
 						type: Boolean,
 						value: true
@@ -1267,7 +1276,7 @@
 				},
 				persist: {
 						type: Boolean,
-						value: true
+						value: false
 				},
 				openOnFocus: {
 						type: Boolean,
@@ -1569,7 +1578,7 @@
 				var options = {
 						delimiter: this.delimiter,
 						diacritics: this.diacritics,
-						create: this.onCreate.bind(this),
+						create: this.combobox,
 						createOnBlur: this.onCreate.bind(this),
 						createFilter: this.createFilter,
 						highlight: this.highlight,
