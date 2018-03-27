@@ -32,11 +32,15 @@ public interface DataLayer {
 
 	public Map insertObject(SessionContext sessionContext, Map dataMap, String entityName) throws Exception;
 
+	public Map insertObject(Map dataMap, String namespace, String entityName) throws Exception;
+
 	public Map insertObject(SessionContext sessionContext, Map dataMap, String entityName, String entityNameParent, String idParent) throws Exception;
 
 	public Map insertObject(SessionContext sessionContext, Map dataMap, Map hintsMap, String entityName, String entityNameParent, String idParent) throws Exception;
 
 	public Map insertObject(SessionContext sessionContext, Map dataMap, Map filterMap, Map hintsMap, String entityName, String entityNameParent, String idParent) throws Exception;
+
+	public Map updateObject(Map dataMap, String namespace, String entityName, String id) throws Exception;
 
 	public Map updateObject(Map dataMap, StoreDesc sdesc, String entityName, String id);
 

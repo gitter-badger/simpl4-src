@@ -30,6 +30,9 @@ import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.security.OServerSecurity;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.server.security.authenticator.ODefaultPasswordAuthenticator;
+import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
+import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
+import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
@@ -37,18 +40,25 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.orientechnologies.orient.server.config.OServerUserConfiguration;
 import java.io.File;
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.auth.api.AuthService;
+import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.rpc.CallService;
 import org.ms123.common.rpc.PName;
+import org.ms123.common.rpc.PDefaultBool;
 import org.ms123.common.rpc.POptional;
 import org.ms123.common.rpc.RpcException;
 import org.ms123.common.setting.api.SettingService;
@@ -88,7 +98,7 @@ initSchema musr be with getRawGraph done
  */
 @SuppressWarnings("unchecked")
 @Component(enabled = true, configurationPolicy = ConfigurationPolicy.optional, immediate = true, properties = { "rpc.prefix=orientdb" })
-public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, EventHandler  {
+public class OrientDBServiceImpl extends BaseOrientDBServiceImpl implements OrientDBService,FrameworkListener, EventHandler  {
 	private Map<String, OrientGraphFactory> factoryMap = new HashMap<String, OrientGraphFactory>();
 	private OServer server;
 	private OServerAdmin serverAdmin;
@@ -305,6 +315,70 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 			graph.shutdown();
 		}
 	}
+	@RequiresRoles("admin")
+	public void exportDatabase(
+			@PName("namespace") String namespace, 
+			@PName("exportFile") String exportFile, 
+			@PName("databaseName") String databaseName, 
+			@PName("classList") @POptional List<String> classList, 
+			@PName("withSchema") @POptional @PDefaultBool(false) Boolean withSchema) throws RpcException {
+		OrientGraphFactory f = getFactory(databaseName);
+		OrientGraph graph = f.getTx();
+		try {
+			OCommandOutputListener listener = new OCommandOutputListener() {
+					@Override
+					public void onMessage(String msg) { }
+			};
+			String gitSpace = System.getProperty("git.repos");
+			File file = new File( gitSpace, new File( namespace, exportFile).toString());
+			ODatabaseExport export = new ODatabaseExport(graph.getRawGraph(), new FileOutputStream(file), listener);
+			info(this,"exportDatabase.databaseName:"+databaseName);
+			info(this,"exportDatabase.withSchema:"+withSchema);
+			export.setIncludeInfo(false);
+			export.setIncludeClusterDefinitions(false);
+			export.setIncludeSchema(withSchema);
+			export.setIncludeSecurity(false);
+			export.setUseLineFeedForRecords(true);
+			export.setIncludeIndexDefinitions(false);
+			export.setIncludeManualIndexes(false);
+			if( classList!=null){
+				Set classSet = new HashSet();
+				for( String c : classList){
+					classSet.add( c.toUpperCase());
+				}
+				info(this,"exportDatabase.classSet:"+classSet);
+				export.setIncludeClasses(classSet);
+			}
+			export.exportDatabase();
+			export.close();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "OrientDBServiceImpl.exportDatabase:", e);
+		}finally{
+			graph.shutdown();
+		}
+	}
+
+	@RequiresRoles("admin")
+	public void importDatabase(
+			@PName("namespace") String namespace, 
+			@PName("importFile") String importFile, 
+			@PName("databaseName") String databaseName, 
+			@PName("drop") @POptional @PDefaultBool(false) Boolean drop) throws RpcException {
+		OrientGraphFactory f = getFactory(databaseName);
+		OrientGraph graph = f.getTx();
+		try {
+			String gitSpace = System.getProperty("git.repos");
+			File file = new File( gitSpace, new File( namespace, importFile).toString());
+			graph.begin();
+			doImport( graph, namespace, file, drop );
+			graph.commit();
+		} catch (Exception e) {
+			throw new RpcException(ERROR_FROM_METHOD, INTERNAL_SERVER_ERROR, "OrientDBServiceImpl.importDatabase:", e);
+		}finally{
+			graph.shutdown();
+			//sessionContext.handleFinally();
+		}
+	}
 
 	/* Begin Teststuff*/
 	public void testGraph( @PName("name") String name ) throws RpcException {
@@ -516,13 +590,19 @@ public class OrientDBServiceImpl implements OrientDBService,FrameworkListener, E
 	@Reference(dynamic = true, optional = true)
 	public void setPermissionService(PermissionService paramPermissionService) {
 		this.permissionService = paramPermissionService;
-		info(this,"CallServiceImpl.setPermissionService:" + paramPermissionService);
+		info(this,"OrientDBServiceImpl.setPermissionService:" + paramPermissionService);
 	}
 
 	@Reference(dynamic = true, optional = true)
 	public void setAuthService(AuthService authService) {
 		this.authService = authService;
-		info(this,"PermissionImpl.setAuthService:" + authService);
+		info(this,"OrientDBServiceImpl.setAuthService:" + authService);
+	}
+
+	@Reference(target = "(kind=orientdb)", dynamic = true, optional = true)
+	public void setDataLayer(DataLayer dataLayer) {
+		System.out.println("OrientDBServiceImpl.setDataLayer:" + dataLayer);
+		this.dataLayer = dataLayer;
 	}
 }
 

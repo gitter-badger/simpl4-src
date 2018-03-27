@@ -194,6 +194,13 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 		return retMap;
 	}
 
+	public Map insertObject(Map dataMap, String namespace, String entityName) throws Exception{
+		info("insertObject("+entityName+"):" + dataMap);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"data");
+		SessionContext sessionContext = getSessionContext(sdesc);
+		return insertObject( sessionContext, dataMap, entityName);
+	}
+
 	public Map insertObject(SessionContext sessionContext, Map dataMap, String entityName) throws Exception {
 		return insertObject(sessionContext, dataMap, null, null, entityName, null, null);
 	}
@@ -468,6 +475,13 @@ public class JdoLayerImpl implements org.ms123.common.data.api.DataLayer {
 			sessionContext.handleFinally(ut);
 		}
 		return retMap;
+	}
+
+	public Map updateObject(Map dataMap, String namespace, String entityName, String id) throws Exception{
+		info("insertObject("+entityName+"):" + dataMap);
+		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"data");
+		SessionContext sessionContext = getSessionContext(sdesc);
+		return updateObject( sessionContext, dataMap, entityName, id);
 	}
 
 	public Map updateObject(SessionContext sessionContext, Map dataMap, String entityName, String id) throws Exception {
