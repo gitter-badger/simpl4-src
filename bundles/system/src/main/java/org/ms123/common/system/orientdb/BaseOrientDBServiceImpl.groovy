@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.ms123.common.data.api.DataLayer;
+import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.data.api.SessionContext;
 import org.ms123.common.libhelper.Inflector;
 import org.ms123.common.store.StoreDesc;
@@ -43,11 +44,18 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @groovy.transform.TypeChecked
 abstract class BaseOrientDBServiceImpl{
 	protected DataLayer dataLayer;
+	protected EntityService entityService;
 	protected Inflector inflector = Inflector.getInstance();
 
 	public void doImport( OrientGraph graph,String namespace, File imp, boolean drop){
 		StoreDesc sdesc = StoreDesc.getNamespaceData(namespace,"odata");
 		SessionContext sc = this.dataLayer.getSessionContext(sdesc);
+		List<Map> etList = this.entityService.getEntitytypes( sdesc.getStoreId());
+		Map entityMap = [:];
+		for( et in etList){
+			entityMap[et.name] = et.name;
+		}
+		info(this,"entityMap:"+entityMap);
 		def inputJSON = new JsonSlurper().parseText(imp.text);
 		def records = (inputJSON as Map).records as List;
 		records.sort{a,b->
@@ -83,19 +91,26 @@ abstract class BaseOrientDBServiceImpl{
 			def firstMap = [:];
 			records.each{ record ->
 				def clazzName = record["@class"];
-				if( firstMap[clazzName] == null){
-					firstMap[clazzName] = "";
-					info( this, "deleteVertex("+clazzName+")");
-					executeUpdate(graph, "delete vertex "+clazzName);
+				def entityName = inflector.lowerFirst(inflector.getEntityNameCamelCase(clazzName));
+				if( entityMap[entityName] != null){
+					if( firstMap[clazzName] == null){
+						firstMap[clazzName] = "";
+						info( this, "deleteVertex("+clazzName+")");
+						executeUpdate(graph, "delete vertex "+clazzName);
+					}
 				}
 			}
 		}
-		records.each{ insertRecord(sc, it as Map) }
+		records.each{ record ->
+			def clazzName = record["@class"];
+			def entityName = inflector.lowerFirst(inflector.getEntityNameCamelCase(clazzName));
+			if( entityMap[entityName] != null){
+				insertRecord(sc, entityName, record as Map);
+			}
+		}
 	}
 
-	def insertRecord( SessionContext sc, Map record ){
-		def clazzName = record["@class"];
-		def entityName = this.inflector.getEntityNameCamelCase(clazzName);
+	def insertRecord( SessionContext sc, String entityName, Map record ){
 		info( this, "insertRecord("+entityName+"):"+record);
 		def rid = record["@rid"] as String;
 		record.remove('@class');

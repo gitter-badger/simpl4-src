@@ -55,6 +55,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.ms123.common.permission.api.PermissionService;
 import org.ms123.common.auth.api.AuthService;
+import org.ms123.common.entity.api.EntityService;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.rpc.CallService;
 import org.ms123.common.rpc.PName;
@@ -597,6 +598,12 @@ public class OrientDBServiceImpl extends BaseOrientDBServiceImpl implements Orie
 	public void setAuthService(AuthService authService) {
 		this.authService = authService;
 		info(this,"OrientDBServiceImpl.setAuthService:" + authService);
+	}
+
+	@Reference(dynamic = true, optional = true)
+	public void setEntityService(EntityService entityService) {
+		this.entityService = entityService;
+		info(this,"OrientDBServiceImpl.setEntityService:" + entityService);
 	}
 
 	@Reference(target = "(kind=orientdb)", dynamic = true, optional = true)
