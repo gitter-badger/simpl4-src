@@ -159,6 +159,14 @@ abstract class BaseOrientDBServiceImpl{
 			}
 		}
 	}
+	List getEntitytypes(String namespace){
+		List<Map> etList = this.entityService.getEntitytypes( namespace+"_odata");
+		List entityList = [];
+		for( et in etList){
+			entityList.add(et.name);
+		}
+		return entityList;
+	}
 	abstract void executeUpdate(OrientGraph graph, String sql, Object... args);
 }
 

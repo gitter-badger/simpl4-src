@@ -318,7 +318,6 @@ public class OrientDBServiceImpl extends BaseOrientDBServiceImpl implements Orie
 	}
 	@RequiresRoles("admin")
 	public void exportDatabase(
-			@PName("namespace") String namespace, 
 			@PName("exportFile") String exportFile, 
 			@PName("databaseName") String databaseName, 
 			@PName("classList") @POptional List<String> classList, 
@@ -331,7 +330,7 @@ public class OrientDBServiceImpl extends BaseOrientDBServiceImpl implements Orie
 					public void onMessage(String msg) { }
 			};
 			String gitSpace = System.getProperty("git.repos");
-			File file = new File( gitSpace, new File( namespace, exportFile).toString());
+			File file = new File( gitSpace, exportFile);
 			ODatabaseExport export = new ODatabaseExport(graph.getRawGraph(), new FileOutputStream(file), listener);
 			info(this,"exportDatabase.databaseName:"+databaseName);
 			info(this,"exportDatabase.withSchema:"+withSchema);
@@ -342,14 +341,15 @@ public class OrientDBServiceImpl extends BaseOrientDBServiceImpl implements Orie
 			export.setUseLineFeedForRecords(true);
 			export.setIncludeIndexDefinitions(false);
 			export.setIncludeManualIndexes(false);
-			if( classList!=null){
-				Set classSet = new HashSet();
-				for( String c : classList){
-					classSet.add( c.toUpperCase());
-				}
-				info(this,"exportDatabase.classSet:"+classSet);
-				export.setIncludeClasses(classSet);
+			if( classList==null || classList.size()==0){
+				classList = getEntitytypes(databaseName);
 			}
+			Set classSet = new HashSet();
+			for( String c : classList){
+				classSet.add( c.toUpperCase());
+			}
+			info(this,"exportDatabase.classSet:"+classSet);
+			export.setIncludeClasses(classSet);
 			export.exportDatabase();
 			export.close();
 		} catch (Exception e) {
@@ -361,7 +361,6 @@ public class OrientDBServiceImpl extends BaseOrientDBServiceImpl implements Orie
 
 	@RequiresRoles("admin")
 	public void importDatabase(
-			@PName("namespace") String namespace, 
 			@PName("importFile") String importFile, 
 			@PName("databaseName") String databaseName, 
 			@PName("drop") @POptional @PDefaultBool(false) Boolean drop) throws RpcException {
@@ -369,8 +368,9 @@ public class OrientDBServiceImpl extends BaseOrientDBServiceImpl implements Orie
 		OrientGraph graph = f.getTx();
 		try {
 			String gitSpace = System.getProperty("git.repos");
-			File file = new File( gitSpace, new File( namespace, importFile).toString());
+			File file = new File( gitSpace, importFile);
 			graph.begin();
+			String namespace = importFile.split("/")[0];
 			doImport( graph, namespace, file, drop );
 			graph.commit();
 		} catch (Exception e) {
