@@ -56,6 +56,24 @@
 				return ret;
 			}
 
+			var updateQueryStringParam = function (key, value) {
+				var baseUrl = [location.protocol, '//', location.host, location.pathname].join(''), urlQueryString = document.location.search, newParam = key + '=' + value, params = '?' + newParam;
+				if (urlQueryString) {
+					updateRegex = new RegExp('([\?&])' + key + '[^&]*');
+					removeRegex = new RegExp('([\?&])' + key + '=[^&;]+[&;]?');
+					if( typeof value == 'undefined' || value == null || value == '' ) {
+						params = urlQueryString.replace(removeRegex, "$1");
+						params = params.replace( /[&;]$/, "" );
+					} else if (urlQueryString.match(updateRegex) !== null) {
+						params = urlQueryString.replace(updateRegex, "$1" + newParam);
+					} else { // Otherwise, add it to end of query string
+						params = urlQueryString + '&' + newParam;
+					}
+				}
+				if( params == '?') params="";
+				window.history.replaceState({}, document.title, baseUrl + params);
+			};
+
 			function removeQueryParameter() {
 				var uri = window.location.toString();
 				if ( uri.indexOf( "?" ) > 0 ) {
@@ -140,9 +158,7 @@
 			var qtheme = getParameterByName( "theme" );
 			var qlang = getParameterByName( "lang" );
 			//removeQueryParameter();
-			//console.log( "search:", location );
-			//console.log( "qlang:" + qlang );
-			//console.log( "qtheme:" + qtheme );
+			updateQueryStringParam("lang",null);
 			var lang = Simpl4.Cache.getItem( "lang" );
 			if ( qlang ) {
 				simpl4.util.BaseManager.setLanguage( qlang );
