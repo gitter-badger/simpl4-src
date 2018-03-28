@@ -62,6 +62,7 @@ public class OrientDBSessionContextImpl extends BaseOrientDBSessionContextImpl i
 	private OrientDBService orientdbService;
 	private SettingService settingService;
 	private PermissionService permissionService;
+	private Map<String,Object> propertyMap = new HashMap<String,Object>();
 
 	public OrientDBSessionContextImpl(DataLayer data, StoreDesc sd, OrientDBService os) {
 		this.sdesc = sd;
@@ -538,11 +539,11 @@ public class OrientDBSessionContextImpl extends BaseOrientDBSessionContextImpl i
 	}
 
 	public void setProperty(String key, Object value) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.setProperty");
+		this.propertyMap.put(key,value);
 	}
 
 	public Object getProperty(String key) {
-		throw new UnsupportedOperationException("Not implemented:OrientDBSessionContext.getProperty");
+		return this.propertyMap.get(key);
 	}
 }
 

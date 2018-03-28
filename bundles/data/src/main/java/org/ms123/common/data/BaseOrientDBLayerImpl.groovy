@@ -106,6 +106,7 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 
 	public Map executeInsertObject(SessionContext sc, String entityName,Map data){
 		def obj = _executeInsertObject(sc, entityName, data, false);
+		sc.setProperty("inserted", obj );
 		return [ id : obj.getIdentity() ];
 	}
 	protected Object _executeInsertObject(SessionContext sc, String entityName,Map data, detach){
@@ -140,7 +141,10 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				Class clazz = getClass(sc, v.linkedclass);
 				def id = data[k]._id;
 				if( id && id.startsWith("#") ){
-					obj[k] = _getObject(clazz, id);
+					obj[k] = sc.getProperty(id);
+					if( obj[k] == null){
+						obj[k] = _getObject(clazz,id);
+					}
 				}
 			}else if( isEmbeddedObj(v.datatype) && data[k] != null){
 				debug(this,"EmbeddedObj("+entityName+":"+k+"):"+data[k]);
@@ -149,10 +153,20 @@ abstract class BaseOrientDBLayerImpl implements org.ms123.common.data.api.DataLa
 				debug(this,"LinkedMulti("+entityName+":"+k+"):"+data[k]);
 				def objList = [];
 				Class clazz = getClass(sc, v.linkedclass);
-				for( Map childData : data[k] ){
-					if( childData._id && childData._id.startsWith("#") ){
-						def child = _getObject(clazz, childData._id);
+				for( def cdata : data[k] ){
+					if( cdata instanceof String){
+						def child  = sc.getProperty(cdata as String);
+						debug(this,"cdata("+cdata+"):"+child);
+						if( child == null){
+							child = _getObject(clazz, cdata as String);
+						}
 						objList.add( child );
+					}else{	
+						Map childData = cdata as Map;
+						if( childData._id && childData._id.startsWith("#") ){
+							def child = _getObject(clazz, childData._id);
+							objList.add( child );
+						}
 					}
 				}
 				obj[k] = objList;
