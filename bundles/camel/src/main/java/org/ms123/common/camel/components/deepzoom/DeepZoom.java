@@ -38,6 +38,7 @@ import static com.jcabi.log.Logger.error;
 /**
  *
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class DeepZoom {
 
 	static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";

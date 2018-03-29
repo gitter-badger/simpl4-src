@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import org.apache.camel.Exchange;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class VfsGetResult extends VfsResult {
 
 	/**

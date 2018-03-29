@@ -68,7 +68,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import groovy.lang.GroovyShell;
 import flexjson.*;
-import static org.apache.commons.lang3.StringEscapeUtils.unescapeJava;
+import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 import org.apache.commons.beanutils.*;
 
 /**
@@ -104,6 +104,9 @@ public abstract class BaseCamelBehavior extends BpmnActivityBehavior implements 
 	protected ActivityExecution m_execution;
 	protected Map m_mapRouting;
 
+/**
+  * @deprecated overriding deprecated method
+  */
 	public void execute(ActivityExecution execution) throws Exception {
 		m_js.prettyPrint(true);
 		m_execution = execution;

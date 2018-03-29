@@ -20,6 +20,7 @@ package org.ms123.common.camel.components.vfs.result;
 import java.util.Map;
 import org.apache.camel.Exchange;
 
+@SuppressWarnings({"unchecked","deprecation"})
 public class VfsPutResult extends VfsResult {
 
 	/**

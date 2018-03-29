@@ -45,6 +45,7 @@ import org.apache.pdfbox.text.TextPositionComparator;
 
 /**
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class PDFExtractor extends PDFTextStripper {
 
 	private static final float ENDOFLASTTEXTX_RESET_VALUE = -1;
