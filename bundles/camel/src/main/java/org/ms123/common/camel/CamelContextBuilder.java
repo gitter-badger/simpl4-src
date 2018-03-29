@@ -53,6 +53,7 @@ import org.ms123.common.camel.components.hazelcast.*;
 import org.ms123.common.camel.components.zookeeper.*;
 import org.ms123.common.camel.components.deepzoom.*;
 import org.ms123.common.camel.components.scpevent.*;
+import org.ms123.common.camel.components.consumer.*;
 import org.ms123.common.camel.trace.*;
 import org.ms123.common.camel.api.CamelService;
 import org.ms123.common.process.api.ProcessService;
@@ -129,6 +130,7 @@ public class CamelContextBuilder {
 		sr.put("zookeeper", new ZooKeeperComponent());
 		sr.put("deepzoom", new DeepZoomComponent());
 		sr.put("scpevent", new ScpEventComponent());
+		sr.put("scriptconsumer", new ScriptConsumerComponent());
 		sr.put("jndiContext", jndiContext);
 
 		Collection<ServiceReference<DataLayer>> srList	=	bc.getServiceReferences(DataLayer.class, "(kind=orientdb)");

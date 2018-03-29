@@ -20,9 +20,11 @@ package org.ms123.common.camel.components.consumer;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.Script;
+import groovy.transform.CompileStatic;
+import groovy.transform.TypeChecked;
+import groovy.transform.TypeCheckingMode;
 import java.io.File;
 import java.net.URL;
-import java.util.Map;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
@@ -40,23 +42,17 @@ import org.osgi.service.event.EventHandler;
 import static com.jcabi.log.Logger.info;
 import static org.apache.commons.io.FileUtils.readFileToString;
 
-@groovy.transform.CompileStatic
-@groovy.transform.TypeChecked
+@CompileStatic
+@TypeChecked
 public class ScriptConsumerConsumer extends DefaultConsumer {
-	File file;
-	def main;
 	String namespace;
-	Long lastMod = 0L;
+	File scriptFile;
+	String scriptName;
 	Class scriptClazz;
+	Object scriptInstance;
 	String scriptSource;
-	ClassLoader classLoader;
+	GroovyClassLoader classLoader;
 	ScriptConsumerEndpoint endpoint;
-	/*public GroovyProcessor(script, f, ns, main ){
-		this.lastMod = f.lastModified();
-		this.namespace = ns;
-		this.main = main;
-		parse(script, this.file.getName());
-	}*/
 
 	private final ScriptConsumerEndpoint endpoint;
 
@@ -66,63 +62,54 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 	}
 
 	protected void doStart() throws Exception {
-		if( this.file == null){
-			this.file = endpoint.getScriptfile();
-			this.namespace = endpoint.getNamespace();
-		}
+		this.namespace = endpoint.getNamespace();
+		this.scriptFile = endpoint.getScriptfile();
+		this.scriptName = this.scriptFile.getName();
+		this.scriptSource = readFileToString(this.scriptFile);
+		parse();
 		execute();
 		super.doStart();
 	}
 
 	protected void doStop() throws Exception {
+		callingStartStop(false);
 		super.doStop();
 	}
 
-
-	def testModified(){
-		if( this.file == null) return;
-		def curMod = this.file.lastModified();
-		if( curMod > this.lastMod){
-			def script = readFileToString(this.file);
-			parse(script, this.file.getName());
-			this.lastMod = curMod;
-		}
-	}
-
-	private void parse(String scriptStr,String scriptName) {
-		info(this,"GroovyProcessor.parse("+scriptName+"):"+scriptStr);
-		if( scriptStr == null) return null;
-		this.scriptSource = scriptStr;
+	private void parse() {
+		info(this,"GroovyProcessor.parse("+this.scriptName+")");
 
 		def parentLoader = new URLClassLoader( endpoint.getClassPath(this.namespace) as URL[], this.getClass().getClassLoader() )
 
 		CompilerConfiguration config = new CompilerConfiguration();
-		config.setScriptBaseClass(org.ms123.common.camel.jsonconverter.GroovyBase.class.getName());
+		config.setScriptBaseClass(GroovyBase.class.getName());
 		def importCustomizer = new ImportCustomizer();
 		importCustomizer.addStarImports("org.apache.camel");
 		importCustomizer.addStarImports("groovy.transform");
 		config.addCompilationCustomizers(importCustomizer);
-		//GroovyClassLoader loader =  new CollectorClassLoader(parentLoader,config);
-		GroovyClassLoader loader =  new GroovyClassLoader(parentLoader,config);
-		this.classLoader = loader;
+		this.classLoader =  new GroovyClassLoader(parentLoader,config);
 
 		try{
-			GroovyCodeSource gcs = new GroovyCodeSource( scriptStr, "Script_"+scriptName, "/groovy/shell");
-			this.scriptClazz = loader.parseClass(gcs,false);
+			GroovyCodeSource gcs = new GroovyCodeSource( this.scriptSource, "Script_"+this.scriptName, "/groovy/shell");
+			this.scriptClazz = this.classLoader.parseClass(gcs,false);
 		}catch(Throwable e){
-			String msg = Utils.formatGroovyException(e,scriptStr);
+			String msg = Utils.formatGroovyException(e,this.scriptSource);
 			throw new RuntimeException("GroovyProcessor.parse("+scriptName+"):"+msg);
 		}
 	}
 
-	private Object run(Script script, Map vars, String scriptName) {
-		println("GroovyProcessor.run("+scriptName+"):"+vars);
+	@CompileStatic(TypeCheckingMode.SKIP)
+	private void callingStartStop( start) {
+		info(this,"GroovyProcessor.callingStartStop("+start+","+this.scriptName+")");
 
 		Thread.currentThread().setContextClassLoader(classLoader);//needed orientdb-groovy/OrientGraphHelper.groovy
 
-		script.setBinding(new Binding(vars));
 		try{
-			return script.run();
+			if( start ){
+				this.scriptInstance.start();
+			}else{
+				this.scriptInstance.stop();
+			}
 		}catch(groovy.lang.MissingMethodException e){
 			e.printStackTrace();
 			Object[] args = e.getArguments();
@@ -132,28 +119,15 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 				a += k+args[i];
 				k = ",";
 			}
-			throw new RuntimeException("GroovyProcessor.run("+scriptName+"):"+e.getMethod() + "("+ a + ") not found");
+			throw new RuntimeException("GroovyProcessor.callingStartStop("+this.scriptName+"):"+e.getMethod() + "("+ a + ") not found");
 		}catch(Exception ex){
 			ex.printStackTrace();
 			String msg = Utils.formatGroovyException(ex,scriptSource);
-			throw new RuntimeException("GroovyProcessor.run("+scriptName+"):"+msg );
+			throw new RuntimeException("GroovyProcessor.callingStartStop("+this.scriptFile+"):"+msg );
 		}
 	}
 
-	public void execute() {
-		testModified();
-
-		def params = [:];
-		/*params.put("exchange", ex);
-		def ctx = ex.getContext();
-		def registry = ctx.getRegistry();
-		params.put("headers", ex.in.headers);
-		params.put("h", ex.in.headers);
-		params.put("min", ex.in);
-		params.put("msg", ex.in);
-		params.put("registry", registry);
-		params.put("properties", ex.properties);
-		params.put("p", ex.properties);*/
+	private void execute() {
 		def env = [
 			gitRepos: System.getProperty("git.repos"),
 			simpl4Dir: System.getProperty("simpl4.dir"),
@@ -162,44 +136,46 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 			namespace: this.namespace,
 			hostname: InetAddress.getLocalHost().getHostName()
 		]
-		def script = 	this.scriptClazz.newInstance() as Script;
-		params.put("env", env);
+		this.scriptInstance = 	this.scriptClazz.newInstance();
+		if( endpoint.fieldExists(this.scriptClazz,"env")){
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "env", env );
+		}
 		if( endpoint.fieldExists(this.scriptClazz,"entityService")){
-			endpoint.injectField( this.scriptClazz, script, "entityService", endpoint.lookupServiceByString( "org.ms123.common.entity.api.EntityService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "entityService", endpoint.lookupServiceByString( "org.ms123.common.entity.api.EntityService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"permissionService")){
-			endpoint.injectField( this.scriptClazz, script, "permissionService", endpoint.lookupServiceByString( "org.ms123.common.permission.api.PermissionService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "permissionService", endpoint.lookupServiceByString( "org.ms123.common.permission.api.PermissionService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"processService")){
-			endpoint.injectField( this.scriptClazz, script, "processService", endpoint.lookupServiceByString( "org.ms123.common.process.api.ProcessService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "processService", endpoint.lookupServiceByString( "org.ms123.common.process.api.ProcessService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"authService")){
-			endpoint.injectField( this.scriptClazz, script, "authService", endpoint.lookupServiceByString( "org.ms123.common.auth.api.AuthService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "authService", endpoint.lookupServiceByString( "org.ms123.common.auth.api.AuthService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"dataLayer")){
-			endpoint.injectField( this.scriptClazz, script, "dataLayer", endpoint.getDataLayer())
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "dataLayer", endpoint.getDataLayer())
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"dataLayerJdo")){
-			endpoint.injectField( this.scriptClazz, script, "dataLayerJdo", endpoint.getDataLayerJdo())
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "dataLayerJdo", endpoint.getDataLayerJdo())
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"messageService")){
-			endpoint.injectField( this.scriptClazz, script, "messageService", endpoint.lookupServiceByString( "org.ms123.common.message.MessageService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "messageService", endpoint.lookupServiceByString( "org.ms123.common.message.MessageService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"settingService")){
-			endpoint.injectField( this.scriptClazz, script, "settingService", endpoint.lookupServiceByString( "org.ms123.common.setting.api.SettingService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "settingService", endpoint.lookupServiceByString( "org.ms123.common.setting.api.SettingService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"registryService")){
-			endpoint.injectField( this.scriptClazz, script, "registryService", endpoint.lookupServiceByString( "org.ms123.common.system.registry.RegistryService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "registryService", endpoint.lookupServiceByString( "org.ms123.common.system.registry.RegistryService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"callService")){
-			endpoint.injectField( this.scriptClazz, script, "callService", endpoint.lookupServiceByString( "org.ms123.common.rpc.CallService"))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "callService", endpoint.lookupServiceByString( "org.ms123.common.rpc.CallService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"orientGraph")){
-			endpoint.injectField( this.scriptClazz, script, "orientGraph", endpoint.getOrientGraph( this.namespace))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "orientGraph", endpoint.getOrientGraph( this.namespace))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"orientGraphRoot")){
-			endpoint.injectField( this.scriptClazz, script, "orientGraphRoot", endpoint.getOrientGraphRoot( this.namespace))
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "orientGraphRoot", endpoint.getOrientGraphRoot( this.namespace))
 		}
-		run(script,params,this.file.getName());
+		callingStartStop(true);
 	}
 }
