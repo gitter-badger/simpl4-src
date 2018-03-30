@@ -27,18 +27,11 @@ import java.io.File;
 import java.net.URL;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.impl.DefaultConsumer;
-import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.ms123.common.libhelper.Utils;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.EventConstants;
-import org.osgi.service.event.EventHandler;
 import static com.jcabi.log.Logger.info;
 import static org.apache.commons.io.FileUtils.readFileToString;
 

@@ -19,11 +19,13 @@ package org.ms123.common.camel.components.consumer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ComponentConfiguration;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.EndpointCompleter;
+import static com.jcabi.log.Logger.info;
 
 /**
  */
@@ -42,7 +44,10 @@ public class ScriptConsumerComponent extends UriEndpointComponent implements End
 	}
 
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-		ScriptConsumerEndpoint endpoint = new ScriptConsumerEndpoint(uri, this, remaining);
+		ScriptConsumerEndpoint endpoint = new ScriptConsumerEndpoint(uri, this, new HashMap(parameters));
+		parameters.keySet().removeIf(key-> 
+			!(key.equals("scriptfile") || key.equals("namespace"))
+		);
 		setProperties(endpoint, parameters);
 		return endpoint;
 	}

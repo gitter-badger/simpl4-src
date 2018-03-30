@@ -20,13 +20,16 @@ package org.ms123.common.camel.components.consumer;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
 import org.apache.camel.Consumer;
 import org.apache.camel.core.osgi.utils.BundleContextUtils;
+import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.ms123.common.camel.api.ExchangeUtils;
 import org.ms123.common.data.api.DataLayer;
 import org.ms123.common.git.GitService;
 import org.ms123.common.system.orientdb.OrientDBService;
@@ -42,11 +45,13 @@ public class ScriptConsumerEndpoint extends DefaultEndpoint {
 	@UriParam
 	private String scriptfile;
 	private String namespace;
+	private Map<String, Object> parameters;
 
 	private BundleContext bundleContext;
 
-	public ScriptConsumerEndpoint(String uri, ScriptConsumerComponent component, String address) {
+	public ScriptConsumerEndpoint(String uri, ScriptConsumerComponent component, Map<String, Object> parameters) {
 		super(uri, component);
+		this.parameters = parameters;
 		bundleContext = BundleContextUtils.getBundleContext(ScriptConsumerEndpoint.class);
 	}
 
@@ -88,6 +93,14 @@ public class ScriptConsumerEndpoint extends DefaultEndpoint {
 			throw new RuntimeException("ScriptConsumerEndpoint.Cannot resolve service:" + clazz);
 		}
 		return service;
+	}
+
+	public Object getParameter( String name){
+		return this.parameters.get(name);
+	}
+
+	public Map<String,Object> getParameters(){
+		return this.parameters;
 	}
 
 	protected DataLayer getDataLayer() throws Exception{

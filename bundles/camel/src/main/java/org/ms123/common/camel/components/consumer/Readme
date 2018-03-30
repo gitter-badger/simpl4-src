@@ -59,7 +59,7 @@ class Play  implements OLiveResultListener{
   def env;
   def token;
   def doStart() {
-    info(this, "start.orientdbLiveListener:"+orientGraphRoot);
+    info(this, "start.orientdbLiveListener:"+this.endpoint.getParameter("param1")); //In Extra Parameter defined
     executeLiveQuery( "live select * from Master");
   }
   def doStop() {
