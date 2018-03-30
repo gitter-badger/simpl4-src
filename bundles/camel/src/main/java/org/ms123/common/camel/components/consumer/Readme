@@ -1,4 +1,6 @@
-//Example
+////////////////////////////////
+//Example1: ScpEvent
+////////////////////////////////
 
 import groovy.transform.CompileStatic
 import java.nio.file.Path;
@@ -29,5 +31,59 @@ class Play  implements SshFileEventListener{
     ExchangeUtils.setDestination("p.pathname", filePath.toString(), exchange);
     ExchangeUtils.setDestination("p.vfsRoot", vfsRoot.toString(), exchange);
     process( exchange);
+  }
+}
+
+////////////////////////////////
+//Example2: OrientdbLiveQuery
+////////////////////////////////
+
+import groovy.transform.CompileStatic
+import com.orientechnologies.common.exception.OException;
+import com.orientechnologies.orient.core.db.record.ORecordOperation;
+import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.orientechnologies.orient.core.sql.query.OLiveQuery;
+import com.orientechnologies.orient.core.sql.query.OLiveResultListener;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import java.util.Map;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
+import org.ms123.common.camel.api.ExchangeUtils;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
+
+class Play  implements OLiveResultListener{
+  def orientGraphRoot;
+  def endpoint;
+  def env;
+  def token;
+  def doStart() {
+    info(this, "start.orientdbLiveListener:"+orientGraphRoot);
+    executeLiveQuery( "live select * from Master");
+  }
+  def doStop() {
+    info(this, "stop.orientdbLiveListener:"+this.token);
+    if( this.token ){
+      this.orientGraphRoot.getRawGraph().command(new OCommandSQL("live unsubscribe "+this.token)).execute();
+    }
+  }
+  def executeLiveQuery(String sql, Object... args) {
+    List<ODocument> result =  this.orientGraphRoot.getRawGraph().query(new OLiveQuery<ODocument>(sql, this));
+    this.token = result.get(0).field("token");
+    info(this,"executeLiveQuery("+sql+"):"+result);
+  }
+  public void onLiveResult(int iLiveToken, ORecordOperation iOp) throws OException {
+    def json = iOp.getRecord().toJSON("rid,class");
+    Exchange exchange = this.endpoint.createExchange(ExchangePattern.InOnly);
+    ExchangeUtils.setDestination("body", json, exchange);
+    process( exchange);
+  }
+  public void onError(int iLiveToken) {
+    info(this,"Live query terminate due to error:"+iLiveToken);
+  }
+
+  public void onUnsubscribe(int iLiveToken) {
+    info(this,"Live query terminate with unsubscribe:"+iLiveToken);
   }
 }
