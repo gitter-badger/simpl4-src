@@ -1,0 +1,33 @@
+//Example
+
+import groovy.transform.CompileStatic
+import java.nio.file.Path;
+import java.util.Map;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
+import org.ms123.common.camel.api.ExchangeUtils;
+import org.ms123.common.system.ssh.SshFileEventListener;
+import static com.jcabi.log.Logger.error;
+import static com.jcabi.log.Logger.info;
+
+class Play  implements SshFileEventListener{
+  def sshService;
+  def endpoint;
+  def env;
+  def doStart() {
+    info(this, "start.testListener:"+sshService);
+    hello( "calling");
+    sshService.addFileEventListener(this);
+  }
+  def doStop() {
+    info(this, "stop.testListener");
+    this.sshService.removeFileEventListener(this);
+  }
+  public void fileCreated(String username, Path filePath, Path vfsRoot, Map<String, Object> params) {
+    info(this, "fileCreated("+username+"):"+filePath+"|"+vfsRoot+"|"+params);
+    Exchange exchange = this.endpoint.createExchange(ExchangePattern.InOnly);
+    ExchangeUtils.setDestination("p.pathname", filePath.toString(), exchange);
+    ExchangeUtils.setDestination("p.vfsRoot", vfsRoot.toString(), exchange);
+    process( exchange);
+  }
+}
