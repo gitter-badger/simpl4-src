@@ -63,7 +63,7 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 		this.namespace = endpoint.getNamespace();
 		this.scriptFile = endpoint.getScriptfile();
 		this.scriptName = this.scriptFile.getName();
-		this.scriptSource = readFileToString(this.scriptFile);
+		this.scriptSource = readFileToString(this.scriptFile, "UTF-8");
 		parse();
 		execute();
 		super.doStart();
@@ -104,9 +104,9 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 
 		try{
 			if( start ){
-				this.scriptInstance.start();
+				this.scriptInstance.doStart();
 			}else{
-				this.scriptInstance.stop();
+				this.scriptInstance.doStop();
 			}
 		}catch(groovy.lang.MissingMethodException e){
 			e.printStackTrace();
@@ -127,8 +127,20 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 
 	@CompileStatic(TypeCheckingMode.SKIP)
 	private void enrichScriptInstance(){
-		this.scriptInstance.metaClass.hello = { a ->
-			info(this,"Bla Bla:"+a);
+		this.scriptInstance.metaClass.hello = {  param ->
+			info(this,"Hello from script:"+param);
+		}
+		this.scriptInstance.metaClass.process = { exchange ->
+			info(this,"scriptInstance.process:"+exchange);
+			try {
+				getAsyncProcessor().process(exchange, new AsyncCallback() {
+					@Override
+					public void done(boolean doneSync) {
+					}
+				});
+			} catch (Exception e) {
+				getExceptionHandler().handleException("Error processing:" , e);
+			}
 		}
 	}
 
@@ -146,8 +158,14 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 		if( endpoint.fieldExists(this.scriptClazz,"env")){
 			endpoint.injectField( this.scriptClazz, this.scriptInstance, "env", env );
 		}
+		if( endpoint.fieldExists(this.scriptClazz,"endpoint")){
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "endpoint", this.endpoint );
+		}
 		if( endpoint.fieldExists(this.scriptClazz,"entityService")){
 			endpoint.injectField( this.scriptClazz, this.scriptInstance, "entityService", endpoint.lookupServiceByString( "org.ms123.common.entity.api.EntityService"))
+		}
+		if( endpoint.fieldExists(this.scriptClazz,"sshService")){
+			endpoint.injectField( this.scriptClazz, this.scriptInstance, "sshService", endpoint.lookupServiceByString( "org.ms123.common.system.ssh.SshService"))
 		}
 		if( endpoint.fieldExists(this.scriptClazz,"permissionService")){
 			endpoint.injectField( this.scriptClazz, this.scriptInstance, "permissionService", endpoint.lookupServiceByString( "org.ms123.common.permission.api.PermissionService"))
