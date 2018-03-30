@@ -54,8 +54,6 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 	GroovyClassLoader classLoader;
 	ScriptConsumerEndpoint endpoint;
 
-	private final ScriptConsumerEndpoint endpoint;
-
 	public ScriptConsumerConsumer(ScriptConsumerEndpoint endpoint, Processor processor) {
 		super(endpoint, processor);
 		this.endpoint = endpoint;
@@ -82,7 +80,7 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 		def parentLoader = new URLClassLoader( endpoint.getClassPath(this.namespace) as URL[], this.getClass().getClassLoader() )
 
 		CompilerConfiguration config = new CompilerConfiguration();
-		config.setScriptBaseClass(GroovyBase.class.getName());
+		//config.setScriptBaseClass(org.ms123.common.camel.components.consumer.GroovyBase.class.getName());
 		def importCustomizer = new ImportCustomizer();
 		importCustomizer.addStarImports("org.apache.camel");
 		importCustomizer.addStarImports("groovy.transform");
@@ -127,6 +125,13 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 		}
 	}
 
+	@CompileStatic(TypeCheckingMode.SKIP)
+	private void enrichScriptInstance(){
+		this.scriptInstance.metaClass.hello = { a ->
+			info(this,"Bla Bla:"+a);
+		}
+	}
+
 	private void execute() {
 		def env = [
 			gitRepos: System.getProperty("git.repos"),
@@ -137,6 +142,7 @@ public class ScriptConsumerConsumer extends DefaultConsumer {
 			hostname: InetAddress.getLocalHost().getHostName()
 		]
 		this.scriptInstance = 	this.scriptClazz.newInstance();
+		enrichScriptInstance();
 		if( endpoint.fieldExists(this.scriptClazz,"env")){
 			endpoint.injectField( this.scriptClazz, this.scriptInstance, "env", env );
 		}
