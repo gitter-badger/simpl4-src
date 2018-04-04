@@ -46,6 +46,9 @@ qx.Class.define('ms123.datamapper.Datamapper', {
 			this._facade.getConfig = this._getConfig.bind(this);
 			this._facade.isOrientDB = (content != null && content.database == "orientdb") ? true : false;
 			console.log("isOrientDB:", this._facade.isOrientDB);
+			if( content!=null && typeof content == 'string'){
+				content = qx.lang.Json.parse(content);
+			}
 			if( !content.input){
 				content = null;
 			}
