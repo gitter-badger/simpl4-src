@@ -24,6 +24,7 @@ public interface HazelcastConstantsOwn {
 
 	public static final String OBJECT_ID = "objectId";
 	public static final String SOURCE = "source";
+	public static final String SQL = "sql";
 
 	public static final String NAMESPACE = "namespace";
 

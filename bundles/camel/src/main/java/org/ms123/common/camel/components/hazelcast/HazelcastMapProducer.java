@@ -39,6 +39,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 	private HazelcastMapEndpoint endpoint;
 	private String objectId;
 	private String source;
+	private String sql;
 	private String destination;
 	private String cacheName;;
 	private HazelcastInstance hazelcastInstance;
@@ -50,6 +51,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 		this.endpoint = endpoint;
 		this.objectId = endpoint.parameters.get(OBJECT_ID);
 		this.source = endpoint.parameters.get(SOURCE);
+		this.sql = endpoint.parameters.get(SQL);
 		this.destination = endpoint.parameters.get(DESTINATION);
 	}
 
@@ -64,12 +66,14 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 		}
 
 
-		String oid = ExchangeUtils.getParameter(this.objectId, exchange, String.class, OPERATION);
-
-
+		String oid = null;
 		String soperation = endpoint.parameters.get(OPERATION);
-		debug(this, "OID:" + oid+"\tOperation:"+soperation);
 		final int operation = Integer.parseInt(soperation);
+		if( HazelcastConstants.QUERY_OPERATION != operation){
+			oid = ExchangeUtils.getParameter(this.objectId, exchange, String.class, OPERATION);
+		}
+
+		debug(this, "OID:" + oid+"\tOperation:"+soperation);
 		switch (operation) {
 
 		case HazelcastConstants.PUT_OPERATION:
@@ -112,8 +116,11 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer implements Ha
 	 * query map with a sql like syntax (see http://www.hazelcast.com/)
 	 */
 	private void query(String query, Exchange exchange) {
-		Collection<Object> result = getCache().values(new SqlPredicate(query));
-		exchange.getOut().setBody(result);
+		String sql = ExchangeUtils.getSource(this.sql, exchange, String.class);
+		debug(this,"HazelcastMapProducer.query:"+sql);
+		Collection<Object> result = getCache().values(new SqlPredicate(sql));
+		debug(this,"HazelcastMapProducer.query.resul:"+sql);
+		ExchangeUtils.setDestination(this.destination,result , exchange);
 	}
 
 	/**

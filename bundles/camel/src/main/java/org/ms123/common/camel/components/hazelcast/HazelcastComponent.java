@@ -76,11 +76,13 @@ public class HazelcastComponent extends UriEndpointComponent implements Hazelcas
 		String operation = getAndRemoveOrResolveReferenceParameter(parameters, HazelcastConstants.OPERATION_PARAM, String.class);
 		String objectId = getAndRemoveOrResolveReferenceParameter(parameters, OBJECT_ID, String.class);
 		String source = getAndRemoveOrResolveReferenceParameter(parameters, SOURCE, String.class);
+		String sql = getAndRemoveOrResolveReferenceParameter(parameters, SQL, String.class);
 		String destination = getAndRemoveOrResolveReferenceParameter(parameters, DESTINATION, String.class);
 
 		Map<String, String> params = new HashMap<String, String>();
 		params.put(OBJECT_ID, objectId);
 		params.put(SOURCE, source);
+		params.put(SQL, sql);
 		params.put(DESTINATION, destination);
 		params.put(OPERATION, operation);
 

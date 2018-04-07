@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Collection;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -107,8 +108,16 @@ public class OrientDBMapStore  implements MapStore<String,Object> {
 	}
 
 	public Set loadAllKeys() {
-		info(this, "hazel.loadAllKey");
-		return null;
+		info(this, "hazel.loadAllKey:"+this.mapName);
+		OCommandRequest query = new OSQLSynchQuery("select key from Store where map=?");
+		Iterable<Element> result = this.orientGraph.command(query).execute(this.mapName);
+		Set keySet = new HashSet();
+		for (Element elem : result) {
+			Object key = elem.getProperty("key");
+			keySet.add( key );
+		}
+		info(this, "hazel.loadAllKey("+this.mapName+"):"+keySet);
+		return keySet;
 	}
 
 
