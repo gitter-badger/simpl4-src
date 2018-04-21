@@ -3,6 +3,8 @@
 [![alt text](https://raw.githubusercontent.com/ms123s/simpl4-deployed/master/etc/images/simpl4_logo.png  "simpl4 logo")] (http://www.simpl4.org) building
 =================
 
+[![Join the chat at https://gitter.im/simpl4-platform/Lobby](https://badges.gitter.im/simpl4-platform/Lobby.svg)](https://gitter.im/simpl4-platform/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 If you're only interested in a installation, go to [*simpl4-deployed*](https://github.com/ms123s/simpl4-deployed) or [*see here*] (http://web.simpl4.org/repo/webdemo/start.html#links)
 
 ##### Open-Source- development environment
